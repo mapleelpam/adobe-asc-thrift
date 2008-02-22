@@ -1,0 +1,4 @@
+A.ns1::foo() override
+ReferenceError: Error #1070: Method foo not found on errors.A
+	at errors::C/errors:ns1::foo()
+	at global$init()

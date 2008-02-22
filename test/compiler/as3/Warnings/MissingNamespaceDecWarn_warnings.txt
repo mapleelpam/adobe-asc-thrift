@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1084: Missing namespace declaration (e.g. variable is not defined to be public, private, etc.).
+-------------------------------------------------------------------------
+  as3\Warnings\MissingNamespaceDecWarn.as(13): function 'foo' will be scoped to the default namespace: A: internal.  It will not be visible outside of this package.
+    		function foo():void{}
+    ...........^
+
+-------------------------------------------------------------------------
+

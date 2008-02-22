@@ -1,0 +1,17 @@
+ERROR:   file = error1012.as(8:8)
+         mesg = code=1012; arg1=; arg2=; arg3=
+         srce = static var sv = 1;
+ERROR:   file = error1012.as(11:8)
+         mesg = code=1012; arg1=; arg2=; arg3=
+         srce = static class B {}
+ERROR:   file = error1012.as(11:21)
+         mesg = code=1131; arg1=; arg2=; arg3=
+         srce = static class B {}
+ERROR:   file = error1012.as(15:10)
+         mesg = code=1012; arg1=; arg2=; arg3=
+         srce = static class B {}
+ERROR:   file = error1012.as(15:23)
+         mesg = code=1131; arg1=; arg2=; arg3=
+         srce = static class B {}
+
+5 errors found

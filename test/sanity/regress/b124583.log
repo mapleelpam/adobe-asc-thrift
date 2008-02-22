@@ -1,0 +1,5 @@
+ERROR:   file = b124583.as(2:10)
+         mesg = code=1021; arg1=; arg2=; arg3=
+         srce = function foo() {}
+
+1 error found

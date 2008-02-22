@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\ScrollTypeWarn.as(13): Migration issue: The property SCROLL_TYPE is no longer supported.  Use the Event.SCROLL constant instead..
+    	trace(Event.SCROLL_TYPE);
+    .............^
+
+-------------------------------------------------------------------------
+

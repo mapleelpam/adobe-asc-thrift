@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\ImagePropWarn.as(8): Migration issue: The property Image is no longer supported.  The Image class has been renamed BitmapData..
+    	Image = true;
+    .^
+
+-------------------------------------------------------------------------
+

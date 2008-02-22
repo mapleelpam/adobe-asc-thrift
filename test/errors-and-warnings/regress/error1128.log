@@ -1,0 +1,14 @@
+ERROR:   file = error1128.as(7:20)
+         mesg = code=1128; arg1=; arg2=; arg3=
+         srce = var x:uint = -1;
+ERROR:   file = error1128.as(8:11)
+         mesg = code=1128; arg1=; arg2=; arg3=
+         srce = x = -1;
+ERROR:   file = error1128.as(9:11)
+         mesg = code=1128; arg1=; arg2=; arg3=
+         srce = v = -1;
+ERROR:   file = error1128.as(13:11)
+         mesg = code=1128; arg1=; arg2=; arg3=
+         srce = (new C).f(-1);
+
+4 errors found

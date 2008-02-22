@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectMaskWarn.as(12): Migration issue: The property _mask is no longer supported.  Use the DisplayObject.mask property instead..
+    	a._mask = 1;
+    ...^
+
+-------------------------------------------------------------------------
+

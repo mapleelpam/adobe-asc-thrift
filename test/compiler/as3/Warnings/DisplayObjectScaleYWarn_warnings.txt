@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectScaleYWarn.as(12): Migration issue: The property _yscale is no longer supported.  Use the DisplayObject.scaleY property instead..
+    	a._yscale = 10;
+    ...^
+
+-------------------------------------------------------------------------
+

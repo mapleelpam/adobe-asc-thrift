@@ -1,0 +1,6 @@
+
+param count mismatch
+   virt params=2 optional=0 BaseInterfaceMethod/BaseInterfaceMethod::interface_method()
+   over params=1 optional=0 BaseInterfaceMethod/BaseInterfaceMethod::interface_method()
+VerifyError: Error #1053: Illegal override of IllegalInterfaceOverride in internal.IllegalInterfaceOverride.
+	at global$init()

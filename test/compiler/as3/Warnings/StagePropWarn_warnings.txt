@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\StagePropWarn.as(9): Migration issue: The property Stage is no longer supported.  For more information, see DisplayObject.stage..
+    	Stage = "";
+    .^
+
+-------------------------------------------------------------------------
+

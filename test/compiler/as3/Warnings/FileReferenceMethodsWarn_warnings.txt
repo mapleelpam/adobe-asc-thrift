@@ -1,0 +1,16 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\FileReferenceMethodsWarn.as(11): Migration issue: The method addListener is no longer supported.  For more information, see addEventListener(eventName, listener, useCapture, priority )..
+        fileRef.addListener(listener);
+    ............^
+
+  as3\Warnings\FileReferenceMethodsWarn.as(12): Migration issue: The method removeListener is no longer supported.  For more information, see removeEventListener(eventName, listener, useCapture)..
+        fileRef.removeListener(listener);
+    ............^
+
+-------------------------------------------------------------------------
+

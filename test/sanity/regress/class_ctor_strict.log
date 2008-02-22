@@ -1,0 +1,5 @@
+ERROR:   file = class_ctor_strict.as(12:18)
+         mesg = code=1203; arg1=A; arg2=; arg3=
+         srce = function B()
+
+1 error found

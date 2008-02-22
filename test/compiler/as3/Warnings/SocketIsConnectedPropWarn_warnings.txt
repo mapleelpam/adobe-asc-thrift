@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\SocketIsConnectedPropWarn.as(12): Migration issue: The property isConnected is no longer supported.  Use the Socket.connected property instead..
+     a.isConnected;
+    ...^
+
+-------------------------------------------------------------------------
+

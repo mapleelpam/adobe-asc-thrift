@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\CMcapabilities.as(10): Migration issue: The method capabilities is no longer supported.  The capabilities class has been renamed Capabilities..
+     new capabilities();
+    .....^
+
+-------------------------------------------------------------------------
+

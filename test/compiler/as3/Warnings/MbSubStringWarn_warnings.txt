@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\MbSubStringWarn.as(9): Migration issue: The method mbsubstring is no longer supported.  Use the String.substr method instead..
+    	mbsubstring('String',2,5);
+    .^
+
+-------------------------------------------------------------------------
+

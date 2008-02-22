@@ -1,0 +1,14 @@
+ERROR:   file = constClass.as(3:6)
+         mesg = code=1188; arg1=A2; arg2=; arg3=
+         srce = A2 = null; // const error
+ERROR:   file = constClass.as(4:6)
+         mesg = code=1188; arg1=A2; arg2=; arg3=
+         srce = A2 = CC; // ditto
+ERROR:   file = constClass.as(9:10)
+         mesg = code=1188; arg1=Number; arg2=; arg3=
+         srce = Number = String;   // error, need to test imported defs too
+ERROR:   file = constClass.as(10:26)
+         mesg = code=1049; arg1=; arg2=; arg3=
+         srce = Number.NEGATIVE_INFINITY=0; // ditto
+
+4 errors found

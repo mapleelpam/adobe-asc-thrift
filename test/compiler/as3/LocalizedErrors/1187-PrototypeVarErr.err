@@ -1,0 +1,7 @@
+
+[Compiler] Error #1187: The prototype attribute is invalid.
+PrototypeVarErr.as, Ln 11, Col 10:
+prototype var x : int = 10
+.........^
+
+1 error found

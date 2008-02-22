@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\ConnectTypeWarn.as(12): Migration issue: The property CONNECT_TYPE is no longer supported.  Use the Event.CONNECT constant instead..
+    	trace(Event.CONNECT_TYPE);
+    .............^
+
+-------------------------------------------------------------------------
+

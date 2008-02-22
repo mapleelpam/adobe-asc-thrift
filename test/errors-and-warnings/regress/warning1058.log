@@ -1,0 +1,9 @@
+WARNING: file = warning1058.as(5:4)
+         mesg = code=1058; arg1=_focusrect; arg2=Check help for 'InteractiveObject.focusRect'
+         srce = _focusrect = false;
+WARNING: file = warning1058.bar.as.inc(1:23)
+         mesg = code=1058; arg1=_focusrect; arg2=Check help for 'InteractiveObject.focusRect'
+         srce = public function f() { _focusrect = 22; }
+WARNING: file = warning1058.foo.as.inc(1:1)
+         mesg = code=1058; arg1=_focusrect; arg2=Check help for 'InteractiveObject.focusRect'
+         srce = _focusrect;

@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\RandomWarn.as(9): Migration issue: The method random is no longer supported.  Use Math.random() instead..
+    	random();
+    .^
+
+-------------------------------------------------------------------------
+

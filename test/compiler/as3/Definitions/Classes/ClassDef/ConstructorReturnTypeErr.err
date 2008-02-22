@@ -1,0 +1,7 @@
+
+[Compiler] Error #1130: A constructor cannot specify a return type.
+   ConstructorReturnTypeErr.as, Ln 18, Col 20: 
+   		public function Bar():Bar{}
+   ...................^
+
+1 error found

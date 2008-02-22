@@ -1,0 +1,5 @@
+ERROR:   file = error1040.as(8:10)
+         mesg = code=1040; arg1=; arg2=; arg3=
+         srce = i:{
+
+1 error found

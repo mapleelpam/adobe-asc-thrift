@@ -1,0 +1,7 @@
+
+[Compiler] Error #1087: Syntax error: extra characters found after end of program.
+   DoubleQualifiedReferenceErr.as, Ln 16, Col 11: 
+   a.ns2::ns1::x;
+   ..........^
+
+1 error found

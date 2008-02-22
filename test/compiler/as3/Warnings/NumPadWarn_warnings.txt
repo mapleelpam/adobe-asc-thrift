@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\NumPadWarn.as(12): Migration issue: The property NUMPAD is no longer supported.  Use one of the NUMPAD_0 -> NUMPAD_9 constants instead..
+    	a.NUMPAD;
+    ...^
+
+-------------------------------------------------------------------------
+

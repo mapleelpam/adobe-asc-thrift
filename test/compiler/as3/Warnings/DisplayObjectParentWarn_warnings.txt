@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectParentWarn.as(12): Migration issue: The property _parent is no longer supported.  Use the DisplayObject.parent property instead..
+    	a._parent = "hello";
+    ...^
+
+-------------------------------------------------------------------------
+

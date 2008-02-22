@@ -1,0 +1,5 @@
+in catch: Error
+in finally
+ReferenceError: Error #1065: Variable e is not defined.
+	at ()
+	at global$init()

@@ -1,0 +1,14 @@
+ERROR:   file = invalidtypeexpr.as(1:24)
+         mesg = code=1084; arg1=leftbrace; arg2=leftparen
+         srce = class Test extends Date(){
+ERROR:   file = invalidtypeexpr.as(8:24)
+         mesg = code=1084; arg1=identifier; arg2=true
+         srce = class Test2 implements true
+ERROR:   file = invalidtypeexpr.as(12:15)
+         mesg = code=1084; arg1=rightparen; arg2=plus
+         srce = function s(a:x+b):foo()
+ERROR:   file = invalidtypeexpr.as(12:22)
+         mesg = code=1158; arg1=; arg2=
+         srce = function s(a:x+b):foo()
+
+4 errors found

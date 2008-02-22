@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\CancelTypeWarn.as(11): Migration issue: The property CANCEL_TYPE is no longer supported.  Use the Event.CANCEL constant instead..
+            trace(Event.CANCEL_TYPE);
+    ....................^
+
+-------------------------------------------------------------------------
+

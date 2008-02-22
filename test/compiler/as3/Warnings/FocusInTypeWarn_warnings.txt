@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\FocusInTypeWarn.as(11): Migration issue: The property FOCUS_IN_TYPE is no longer supported.  Use the FocusEvent.FOCUS_IN constant instead..
+    	trace(FocusEvent.FOCUS_IN_TYPE);
+    ..................^
+
+-------------------------------------------------------------------------
+

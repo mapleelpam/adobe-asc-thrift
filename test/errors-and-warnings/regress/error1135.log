@@ -1,0 +1,11 @@
+ERROR:   file = error1135.as(3:19)
+         mesg = code=1135; arg1=void; arg2=
+         srce = function initPB(f:void):void {}
+ERROR:   file = error1135.as(3:25)
+         mesg = code=1135; arg1=void; arg2=
+         srce = function initPB(f:void):void {}
+ERROR:   file = error1135.as(4:7)
+         mesg = code=1135; arg1=void; arg2=
+         srce = var v:void;
+
+3 errors found

@@ -1,0 +1,37 @@
+WARNING: file = warning1002.as(13:14)
+         mesg = code=1002; arg1=b; arg2=
+         srce = t.b();
+WARNING: file = warning1002.as(14:21)
+         mesg = code=1002; arg1=b; arg2=
+         srce = delete t.b()
+WARNING: file = warning1002.as(18:21)
+         mesg = code=1002; arg1=a; arg2=
+         srce = delete t.a();
+WARNING: file = warning1002.as(20:17)
+         mesg = code=1002; arg1=Ar; arg2=
+         srce = (new Ar());
+WARNING: file = warning1002.as(24:12)
+         mesg = code=1002; arg1=pop; arg2=
+         srce = pop();
+WARNING: file = warning1002.as(28:29)
+         mesg = code=1002; arg1=pop1; arg2=
+         srce = delete repeaters.pop1();
+WARNING: file = warning1002.as(29:29)
+         mesg = code=1002; arg1=pop1; arg2=
+         srce = delete repeaters.pop1(1);
+WARNING: file = warning1002.as(34:29)
+         mesg = code=1002; arg1=pop; arg2=
+         srce = delete repeaters.pop();
+WARNING: file = warning1002.as(35:29)
+         mesg = code=1002; arg1=pop; arg2=
+         srce = delete repeaters.pop(1);
+WARNING: file = warning1002.as(37:36)
+         mesg = code=1002; arg1=pop; arg2=
+         srce = (true? delete repeaters.pop():repeaters.pop());
+WARNING: file = warning1002.as(39:24)
+         mesg = code=1002; arg1=missingMethod; arg2=
+         srce = delete this.missingMethod();
+WARNING: file = warning1002.as(40:33)
+         mesg = code=1002; arg1=missingMethod; arg2=
+         srce = return ("E1 " + this.missingMethod());
+

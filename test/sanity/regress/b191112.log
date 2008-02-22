@@ -1,0 +1,2 @@
+VerifyError: Error #1014: Class a.b.c.d::Foo could not be found.
+	at global$init()

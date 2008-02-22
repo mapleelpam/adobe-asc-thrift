@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\CMactive.as(8): Migration issue: The method isActive is no longer supported.  Use the Accessibility.active property instead..
+    	trace(Accessibility.isActive());
+    .....................^
+
+-------------------------------------------------------------------------
+

@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectNameWarn.as(12): Migration issue: The property _name is no longer supported.  Use the DisplayObject.name property instead..
+    	a._name = "hello";
+    ...^
+
+-------------------------------------------------------------------------
+

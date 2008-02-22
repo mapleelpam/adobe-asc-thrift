@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\GetPropertyWarn.as(13): Migration issue: The method getProperty is no longer supported.  Access properties directly using dot (.) notation instead..
+    	getProperty(a,"_x");
+    .^
+
+-------------------------------------------------------------------------
+

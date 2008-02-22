@@ -1,0 +1,20 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #3594: Unknown method.
+-------------------------------------------------------------------------
+  as3\Warnings\DateWarn.as(11): getUTCYear is not a recognized method of the dynamic class Date.
+       trace(date.getUTCYear());
+    ..............^
+
+  as3\Warnings\DateWarn.as(12): getYear is not a recognized method of the dynamic class Date.
+       trace(date.getYear());
+    ..............^
+
+  as3\Warnings\DateWarn.as(13): setYear is not a recognized method of the dynamic class Date.
+       date.setYear(1969);
+    ........^
+
+-------------------------------------------------------------------------
+

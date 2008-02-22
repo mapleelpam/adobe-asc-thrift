@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+
+<!-- Smoke test for asc.exe's ability to catch warnings and errors
+
+Author (i.e. who to bug when you find a bug): Jono Spiro
+
+This buildfile does regression testing for negative test cases: e.g. warnings and errors.
+   - This works nearly identically to regular sanity testing.
+   - All files are run with the following args: "-import ../../lib/Global.abc -import ../../lib/playerglobal.abc -coach -sanity -log"
+   - If you need special cases (e.g. no coach, or -strict), you add them to the buildfile like with regular sanities.
+
+*** How to add test cases! ***
+   - Come up with a test case that is supposed to generate either warnings or errors (asc doesn't show warnings if you get errors, and vice versa, of course)
+   - Add the .as file to "test/errors-and-warnings/regress" and ".../tests"
+   - Run the file with the following arguments to get the regression log file: "-import ../../lib/global.abc -coach -sanity -log"
+      - The key to this is "-sanity" outputs errors/warnings in a system-independent way (as far as I can tell, so far)
+   - Move the logfile into ".../regress"
+   - type "ant" and check the diff, as usua
+
+   You probably want to give them names based on whether they came from a bug, or whether it's general regression testing for a particular errorcode (e.g. error1012).
+-->
+
+
+<project name="asc-error-warning-test" default="all" basedir=".">
+
+<!-- test directories are relative to ./asc/test -->
+
+<property name="root.dir" value="../.."/>
+<property name="bin.dir"  value="${root.dir}/bin"/>
+<property name="lib.dir"  value="${root.dir}/lib"/>
+<property name="abc_lib.dir" value="../../../lib"/>
+<property name="src.dir"  value="tests"/>
+<property name="log.dir"  value="log"/>
+<property name="reg.dir"  value="regress"/>
+
+<property name="asc.name" value="asc"/>
+
+<target name="all" depends="first"/>
+
+<!-- use "ant first" to validate the current version of asc.exe in the ./bin directory -->
+<!-- use "ant compare" to compare the java version to the cpp version -->
+<!-- use "ant java" is used by autobuild -->
+
+<target name="first" depends="clean,initialize_first,test_first,finalize_first"/>
+
+<target name="clean">
+	<delete>
+		<fileset dir="${src.dir}" includes="*.out,*.abc,*.log" />
+	</delete>
+    <delete dir="${log.dir}" />
+    <delete file="diff.out" />
+    <delete file="build.out" />
+	<delete>
+		<fileset dir="." includes="*.suo,*.dmp,*.sln" />
+	</delete>
+</target>
+
+<target name="initialize_first">
+    <delete>
+       <fileset dir="." includes="*.out"/>
+    </delete>
+</target>
+
+<target name="test_first">
+    <!-- Test parser -->
+    <delete>
+       <fileset dir="${src.dir}" includes="**/*.log"/>
+       <fileset dir="." includes="*.out"/>
+    </delete>
+    
+    <apply executable="${bin.dir}/${asc.name}">
+        <arg line="-import ${abc_lib.dir}/Global.abc -import ${abc_lib.dir}/playerglobal.abc -coach -sanity -log"/>
+        <fileset dir="${src.dir}" includes="**/*.as"/>
+    </apply>
+    
+    <!-- remove abc output files (unneeded) -->
+	<delete>
+		<fileset dir="${src.dir}" includes="*.abc" />
+	</delete>
+</target>
+
+<target name="finalize_first">
+    <exec executable="diff" output="diff.out">
+        <arg line="--ignore-all-space --ignore-blank-lines"/>
+        <arg line="regress"/>
+        <arg line="tests"/>
+    </exec>
+</target>
+
+</project>

@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectMouseXWarn.as(12): Migration issue: The property _xmouse is no longer supported.  Use the DisplayObject.mouseX property instead..
+    	a._xmouse = 10;
+    ...^
+
+-------------------------------------------------------------------------
+

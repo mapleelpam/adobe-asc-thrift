@@ -1,0 +1,7 @@
+
+[Compiler] Error #1177: The return statement cannot be used in global initialization code.
+ecma3.e12_9_1_Err.as, Ln 30, Col 8:
+return;
+.......^
+
+1 error found

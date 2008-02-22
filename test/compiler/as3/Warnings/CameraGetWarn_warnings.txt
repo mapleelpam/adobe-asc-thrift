@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\CameraGetWarn.as(10): Migration issue: The method get is no longer supported.  Use the Camera.getCamera() method instead..
+    	var myvar:Camera = Camera.get();
+    ...........................^
+
+-------------------------------------------------------------------------
+

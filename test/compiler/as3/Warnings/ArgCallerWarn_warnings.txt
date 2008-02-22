@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\ArgCallerWarn.as(16): Migration issue: The property caller is no longer supported.  Try declaring caller as an argument of the function instead..
+            if (arguments.caller!=CallingFunction){
+    ......................^
+
+-------------------------------------------------------------------------
+

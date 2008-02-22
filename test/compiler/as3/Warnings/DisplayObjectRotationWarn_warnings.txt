@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectRotationWarn.as(12): Migration issue: The property _rotation is no longer supported.  Use the DisplayObject.rotation property instead..
+    	a._rotation = 10;
+    ...^
+
+-------------------------------------------------------------------------
+

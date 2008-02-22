@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectYWarn.as(12): Migration issue: The property _y is no longer supported.  Use the DisplayObject.y property instead..
+    	a._y = 10;
+    ...^
+
+-------------------------------------------------------------------------
+

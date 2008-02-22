@@ -1,0 +1,22 @@
+
+[Compiler] Error #1084: Syntax error: expecting leftparen before end of program.
+1109-ExpectingExpression.as, Ln 6, Col 3:
+if
+..^
+
+[Compiler] Error #1084: Syntax error: expecting identifier before end of program.
+1109-ExpectingExpression.as, Ln 6, Col 3:
+if
+..^
+
+[Compiler] Error #1084: Syntax error: expecting rightparen before end of program.
+1109-ExpectingExpression.as, Ln 6, Col 3:
+if
+..^
+
+[Compiler] Error #1084: Syntax error: expecting identifier before end of program.
+1109-ExpectingExpression.as, Ln 6, Col 3:
+if
+..^
+
+4 errors found

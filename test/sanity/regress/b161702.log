@@ -1,0 +1,5 @@
+in catch, throwing exception
+in finally
+TypeError: blah
+	at ()
+	at global$init()

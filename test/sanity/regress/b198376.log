@@ -1,0 +1,5 @@
+success
+ReferenceError: Error #1074: Illegal write to read-only property g on b198376.as$1.b.
+	at b198376.as$1::a$iinit()
+	at b198376.as$1::b$iinit()
+	at global$init()

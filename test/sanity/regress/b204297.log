@@ -1,0 +1,8 @@
+ERROR:   file = b204297.as(12:11)
+         mesg = code=1044; arg1=a; arg2=Errors:A; arg3=Errors:D
+         srce = class D implements C {}
+ERROR:   file = b204297.as(12:11)
+         mesg = code=1044; arg1=b; arg2=Errors:B; arg3=Errors:D
+         srce = class D implements C {}
+
+2 errors found

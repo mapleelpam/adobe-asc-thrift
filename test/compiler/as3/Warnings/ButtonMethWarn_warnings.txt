@@ -1,0 +1,16 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\ButtonMethWarn.as(8): Migration issue: The method Button is no longer supported.  The Button class has been renamed SimpleButton..
+    	new Button();	
+    .....^
+
+  as3\Warnings\ButtonMethWarn.as(9): Migration issue: The method Button is no longer supported.  The Button class has been renamed SimpleButton..
+    	Button();
+    .^
+
+-------------------------------------------------------------------------
+

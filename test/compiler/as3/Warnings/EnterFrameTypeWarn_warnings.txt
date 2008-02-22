@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\EnterFrameTypeWarn.as(12): Migration issue: The property ENTER_FRAME_TYPE is no longer supported.  Use the Event.ENTER_FRAME constant instead..
+    	trace(Event.ENTER_FRAME_TYPE);
+    .............^
+
+-------------------------------------------------------------------------
+

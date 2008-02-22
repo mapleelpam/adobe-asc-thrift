@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\ActivateTypeWarn.as(12): Migration issue: The property ACTIVATE_TYPE is no longer supported.  Use the Event.ACTIVATE constant instead..
+    	trace(Event.ACTIVATE_TYPE);
+    .............^
+
+-------------------------------------------------------------------------
+

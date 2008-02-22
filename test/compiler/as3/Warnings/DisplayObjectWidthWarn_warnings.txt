@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectWidthWarn.as(12): Migration issue: The property _width is no longer supported.  Use the DisplayObject.width property instead..
+    	a._width = 10;
+    ...^
+
+-------------------------------------------------------------------------
+

@@ -1,0 +1,8 @@
+<employee>
+  <name>
+    <first/>
+    <last>Wong</last>
+  </name>
+</employee>
+first: 
+last: Wong

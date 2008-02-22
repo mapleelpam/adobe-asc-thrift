@@ -1,0 +1,20 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1008: Missing type declaration.
+-------------------------------------------------------------------------
+  as3\Warnings\CloseTypeWarn.as(15): return value for function 'closeListener' has no type declaration.
+            public function closeListener(event:Event){
+    ................................................^
+
+-------------------------------------------------------------------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\CloseTypeWarn.as(13): Migration issue: The property CLOSE_TYPE is no longer supported.  Use the Event.CLOSE constant instead..
+            someEventDispatcher.addEventListener(Event.CLOSE_TYPE,closeListener);
+    ...................................................^
+
+-------------------------------------------------------------------------
+

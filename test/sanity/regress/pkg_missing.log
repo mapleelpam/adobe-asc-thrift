@@ -1,0 +1,5 @@
+ERROR:   file = pkg_missing.as(1:12)
+         mesg = code=1172; arg1=A.A; arg2=; arg3=
+         srce = import A.A.*;
+
+1 error found

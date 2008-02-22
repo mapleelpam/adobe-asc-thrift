@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\MaxScrollPropWarn.as(9): Migration issue: The property maxscroll is no longer supported.  For more information, see textField.maxScroll..
+    	maxscroll = 10;
+    .^
+
+-------------------------------------------------------------------------
+

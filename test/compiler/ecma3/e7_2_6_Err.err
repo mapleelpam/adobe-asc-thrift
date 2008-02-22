@@ -1,0 +1,32 @@
+
+[Compiler] Error #1093: Syntax error.
+ecma3.e7_2_6_Err.as, Ln 45, Col 93:
+array\[item..\] = new TestCase.*
+............................................................................................^
+
+[Compiler] Error #1084: Syntax error: expecting rightparen before nb.
+ecma3.e7_2_6_Err.as, Ln 45, Col 94:
+array\[item..\] = new TestCase.*
+.............................................................................................^
+
+[Compiler] Error #1093: Syntax error.
+ecma3.e7_2_6_Err.as, Ln 46, Col 93:
+array\[item..\] = new TestCase.*
+............................................................................................^
+
+[Compiler] Error #1084: Syntax error: expecting rightparen before rb.
+ecma3.e7_2_6_Err.as, Ln 46, Col 94:
+array\[item..\] = new TestCase.*
+.............................................................................................^
+
+[Compiler] Error #1084: Syntax error: expecting rightparen before 8.
+ecma3.e7_2_6_Err.as, Ln 47, Col 98:
+array\[item..\] = new TestCase.*
+.................................................................................................^
+
+[Compiler] Error #1084: Syntax error: expecting rightparen before 9.
+ecma3.e7_2_6_Err.as, Ln 48, Col 98:
+array\[item..\] = new TestCase.*
+.................................................................................................^
+
+6 errors found

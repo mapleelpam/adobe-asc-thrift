@@ -1,0 +1,17 @@
+# fields are test names, setting name, configurations, values
+# requires -strict to produce error
+as3/LocalizedErrors/1049-IllegalAssignmentToConst        ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/LocalizedErrors/1118-ImplicitCoercionToSubtype       ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/LocalizedErrors/1129-DuplicateInterfaceDefErr        ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/LocalizedErrors/1136-IncorrectArgsErr                ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/LocalizedErrors/1137-IncorrectArgsNoMoreThanErr      ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/LocalizedErrors/1061-StaticCallToUndefinedMethod     ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/LocalizedErrors/1180-UndefinedMethodErr              ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/LocalizedErrors/1188-IllegalAssgnErr                 ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/LocalizedErrors/1195-InaccessibleMethodErr           ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/Warnings/.*                                          ,    asc.args         , asc-full|asc-smokes   ,    -warnings -AS3 -import global.abc -import playerglobal.abc
+# expected failures, under investigating
+as3/LocalizedErrors/1083-ExpectedPrimaryExprBeforeErr    ,    expectedfailure  , asc-full|asc-smokes   ,
+as3/LocalizedErrors/1186-PrototypeVarBindingErr          ,    expectedfailure  , asc-full|asc-smokes   ,
+as3/LocalizedErrors/1187-PrototypeVarErr                 ,    expectedfailure  , asc-full|asc-smokes   ,
+as3/LocalizedErrors/1190-BaseClassNotCTCErr              ,    expectedfailure  , asc-full|asc-smokes   ,

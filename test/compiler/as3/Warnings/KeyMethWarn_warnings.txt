@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\KeyMethWarn.as(8): Migration issue: The method Key is no longer supported.  The Key class has been renamed Keyboard..
+    	Key();
+    .^
+
+-------------------------------------------------------------------------
+

@@ -1,0 +1,2 @@
+TypeError: Error #1016: Descendants operator (..) not supported on type Array.
+	at global$init()

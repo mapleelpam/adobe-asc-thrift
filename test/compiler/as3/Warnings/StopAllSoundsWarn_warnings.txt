@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\StopAllSoundsWarn.as(9): Migration issue: The method stopAllSounds is no longer supported.  For more information, see Sound.stopAllSounds()..
+    	stopAllSounds();
+    .^
+
+-------------------------------------------------------------------------
+

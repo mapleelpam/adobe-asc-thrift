@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\ChrWarn.as(9): Migration issue: The method chr is no longer supported.  Use String.fromCharCode() instead..
+    	chr();
+    .^
+
+-------------------------------------------------------------------------
+

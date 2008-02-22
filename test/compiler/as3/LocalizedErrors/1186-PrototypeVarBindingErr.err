@@ -1,0 +1,7 @@
+
+[Compiler] Error #1186: The prototype attribute is invalid.
+1186-PrototypeVarBindingErr.as, Ln 10, Col 10:
+prototype var x : int,y:int = 10
+.........^
+
+1 error found

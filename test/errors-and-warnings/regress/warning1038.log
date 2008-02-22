@@ -1,0 +1,7 @@
+WARNING: file = warning1038.as(4:14)
+         mesg = code=1038; arg1=; arg2=
+         srce = num = new Number(" ");
+WARNING: file = warning1038.as(9:11)
+         mesg = code=1038; arg1=; arg2=
+         srce = num = new Number(" ");
+

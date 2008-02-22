@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectHeightWarn.as(12): Migration issue: The property _height is no longer supported.  Use the DisplayObject.height property instead..
+    	a._height = 10;
+    ...^
+
+-------------------------------------------------------------------------
+

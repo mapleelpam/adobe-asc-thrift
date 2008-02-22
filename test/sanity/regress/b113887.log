@@ -1,0 +1,7 @@
+A constructor
+A.prototype.f being set
+set it.
+value of A.prototype.f:
+function Function() {}
+running a.f:
+hello, world!

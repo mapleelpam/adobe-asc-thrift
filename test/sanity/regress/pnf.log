@@ -1,0 +1,38 @@
+ERROR:   file = pnf.as(3:3)
+         mesg = code=1119; arg1=x; arg2=Class; arg3=
+         srce = A.x
+ERROR:   file = pnf.as(4:3)
+         mesg = code=1119; arg1=x; arg2=Class; arg3=
+         srce = A.x = 10
+ERROR:   file = pnf.as(5:3)
+         mesg = code=1061; arg1=x; arg2=Class; arg3=
+         srce = A.x()
+ERROR:   file = pnf.as(6:10)
+         mesg = code=1119; arg1=x; arg2=Class; arg3=
+         srce = delete A.x
+ERROR:   file = pnf.as(13:3)
+         mesg = code=1119; arg1=x; arg2=Class; arg3=
+         srce = B.x
+ERROR:   file = pnf.as(14:3)
+         mesg = code=1119; arg1=x; arg2=Class; arg3=
+         srce = B.x = 10
+ERROR:   file = pnf.as(15:3)
+         mesg = code=1061; arg1=x; arg2=Class; arg3=
+         srce = B.x()
+ERROR:   file = pnf.as(16:10)
+         mesg = code=1119; arg1=x; arg2=Class; arg3=
+         srce = delete B.x
+ERROR:   file = pnf.as(17:3)
+         mesg = code=1119; arg1=x; arg2=pnf.as$1:B; arg3=
+         srce = b.x
+ERROR:   file = pnf.as(18:3)
+         mesg = code=1119; arg1=x; arg2=pnf.as$1:B; arg3=
+         srce = b.x = 10
+ERROR:   file = pnf.as(19:3)
+         mesg = code=1061; arg1=x; arg2=pnf.as$1:B; arg3=
+         srce = b.x()
+ERROR:   file = pnf.as(20:10)
+         mesg = code=1119; arg1=x; arg2=pnf.as$1:B; arg3=
+         srce = delete b.x
+
+12 errors found

@@ -1,0 +1,6 @@
+
+return types dont match
+   virt Object BaseInterfaceGetter/get BaseInterfaceGetter::interface_prop()
+   over String internal::IllegalInterfaceOverride/get interface_prop()
+VerifyError: Error #1053: Illegal override of IllegalInterfaceOverride in internal.IllegalInterfaceOverride.
+	at global$init()

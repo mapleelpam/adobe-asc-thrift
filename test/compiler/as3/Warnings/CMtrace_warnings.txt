@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\CMtrace.as(6): Migration issue: The method print is no longer supported.  For more information, see PrintJob.start()..
+    print("this is the 'print' statement.")
+    ^
+
+-------------------------------------------------------------------------
+

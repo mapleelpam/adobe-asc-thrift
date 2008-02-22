@@ -1,0 +1,464 @@
+<?xml version="1.0"?>
+
+<!-- 
+
+Smoke test for asc.exe
+
+Usage:
+
+1/ Anyone who changes code to the asc code base should run
+   this smoke test before they checkin, and after they
+   pull a fresh copy of the source tree to verify the result
+   of the checkin.
+2/ Anyone testing the compiler should run these tests against 
+   the asc/avmplus pair they intend to use
+
+Setup:
+
+1/ Copy asc.exe into the ./bin directory (e.g. /as/asc/bin).
+   By default, the java shell (asc.exe) is in this directory.
+2/ If you are testing the java version, make sure that the
+   configuration file, jvm.config is setup properly. See
+   the comments in that file for further instructions.
+3/ Copy into the ./bin directory the avmplus.exe that you 
+   want to test the compiler against. By default, the version
+   of the avmplus.exe that the last dev to checkin is in that
+   directory.
+
+Running:
+
+1/ Make ./test/sanity your current shell directory
+2/ Execute ant
+3/ Any regressions will be indicated in the differences in
+   the diff.out file in the ./sanity directory.
+  
+Care and feeding:
+
+1/ Add any tests that exercises the compiler
+   in a unique way. Consider adding tests that exercise the core
+   objects (e.g. Date) to the standalone avmplus smoke tests (tbd) 
+   and/or the player integrated avmplus smoke tests, rather than here
+2/ Keep the tests simple so that they can be easily maintained. Since
+   we diff the log files, they do not have to print "Pass" or "Fail"
+   strings, but it should be clear from the output what has broken.
+3/ Avoid printing any configuration or performance dependent output
+   to a log file
+3/ Add the .as file to the ./tests directory, and the .as and .log
+   files to the ./regress directory. If you want, you can add the
+   .p and .il files to the regress directory, although they are
+   ignored by the diff process
+
+Comments:
+
+jdyer@macromedia.com
+
+-->
+
+<project name="asc-test" default="all" basedir=".">
+
+<property file="build.properties"/>
+
+<!-- test directories are relative to ./asc/test -->
+
+<property name="root.dir" value="../.."/>
+<property name="bin.dir"  value="${root.dir}/bin"/>
+<property name="lib.dir"  value="${root.dir}/lib"/>
+<property name="abc_lib.dir" value="../../../lib"/>
+<property name="src.dir"  value="tests"/>
+<property name="log.dir"  value="log"/>
+<property name="reg.dir"  value="regress"/>
+
+<property name="asc.name" value="asc.jar"/>
+<property name="avm.name" value="avmplus"/>
+
+<target name="all" depends="first"/>
+
+<!-- use "ant first" to validate the current version of asc.exe in the ./bin directory -->
+<!-- use "ant compare" to compare the java version to the cpp version -->
+
+<!-- use "ant java" is used by autobuild -->
+
+<target name="compare" depends="first,second"/>
+<target name="first" depends="initialize_first,parser_first,compiler_first,dash_in_first,runtime_first,finalize_first"/>
+<target name="second" depends="initialize_second,parser_second,compiler_second,dash_in_second,finalize_second"/>
+
+<target name="java" depends="initialize_first,parser_first,compiler_first,dash_in_first,finalize_second"/>
+
+<target name="initialize_first">
+    <delete>
+	    <fileset dir="${root.dir}/test/sanity" includes="*.out"/>
+    </delete>
+    <mkdir dir="${log.dir}"/>
+    <copy todir="${src.dir}">  <!-- get fresh copy of latest global.abc from /main/as/lib -->
+		<fileset dir="${abc_lib.dir}"/>
+	</copy>	
+</target>
+
+<target name="clean" >
+	<delete>
+		<fileset dir="${src.dir}" includes="*.il,*.out,*.abc,*.p,*.log" />
+	</delete>
+    <delete dir="${log.dir}" />
+    <delete file="diff.out" />
+    <delete file="build.out" />
+	<delete>
+		<fileset dir="." includes="*.suo,*.dmp,*.sln" />
+	</delete>
+</target>
+		
+<target name="parser_first">
+    <!-- Test parser -->
+    <delete>
+        <fileset dir="${src.dir}" includes="**/*.p"/>
+        <fileset dir="${log.dir}" includes="**/*.p"/>
+        <fileset dir="${log.dir}" includes="**/*.p"/>
+        <fileset dir="${log.dir}" includes="**/*.log"/>
+	    <fileset dir="${root.dir}/test/sanity" includes="*.out"/>
+    </delete>
+    <apply executable="java" output="build.out" append="true" parallel="true">
+        <arg line="-jar ${lib.dir}/${asc.name}" />
+        <arg line="-p"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="**/*.es,**/*.as" excludes="playerglobal.as,t.as,shell.as,shellASC.as"/>
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="**/*.p"/>
+    </copy>
+    <copy file="build.out" tofile="${log.dir}/1.out"/>
+</target>
+
+<target name="compiler_first">
+    <delete>
+        <fileset dir="${src.dir}" includes="**/*.il"/>
+        <fileset dir="${src.dir}" includes="**/*.abc"/>
+        <fileset dir="${log.dir}" includes="**/*.il"/>
+        <fileset dir="${log.dir}" includes="**/*.abc"/>
+	    <fileset dir="${root.dir}/test/sanity" includes="*.out"/>
+    </delete>
+
+	<!-- most of the tests are one-file tests -->
+    <apply executable="java" output="build.out" append="true" parallel="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <!-- <arg line="-i -m -optimize"/> -->
+        <arg line="-i -m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="**/*.es,**/*.as" excludes="dict.as,bug123884*.as,importorder*.as,metadata2.as,playerglobal.as,t.as,restarg.as,shellASC.as,shell.as,constClass.as,pnf.as,pkg_missing.as,invalidtypeexpr.as"/>
+    </apply>
+
+    <!-- dict needs shell.abc -->
+    <apply executable="java" output="build.out" append="true" parallel="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <!-- <arg line="-i -m -optimize"/> -->
+        <arg line="-i -m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-import ${abc_lib.dir}/shell.abc"/>
+        <fileset dir="${src.dir}" includes="dict.as"/>
+    </apply>
+
+
+	<!-- begin error test -->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-strict -sanity -log "/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="constClass.as,pnf.as,pkg_missing.as,b124583.as,invalidtypeexpr.as"/> <!-- b107194.as,b109751.as,b112393.as,b115412.as,b121391.as -->
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="constClass.log,pnf.log,pkg_missing.log,b124583.log,invalidtypeexpr.log"/> <!-- b107194.log,b109751.log,b112393.log,b115412.log,b121391.log -->
+    </copy>
+	<!-- end error test -->
+
+	<!-- begin metadata test - Simple test compiling with metadata on, verifies that C++ and java metadata match,
+		and that it doesn't cause other problems-->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-sanity -log -md"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="metadata2.as"/> 
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="metadata2.log"/> 
+    </copy>
+	<!-- end metadata test -->
+
+	<!-- begin import order test -->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="importorder_a.as"/>
+    </apply>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-import ${src.dir}/importorder_a.as"/>
+        <fileset dir="${src.dir}" includes="importorder_b.as"/>
+    </apply>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-import ${src.dir}/importorder_b.as"/>
+        <arg line="-import ${src.dir}/importorder_a.as"/>
+        <fileset dir="${src.dir}" includes="importorder.as"/>
+    </apply>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-import ${src.dir}/importorder_b.abc"/>
+        <arg line="-import ${src.dir}/importorder_a.abc"/>
+        <fileset dir="${src.dir}" includes="importorder_abc.as"/>
+    </apply>
+	<!-- end import order test -->
+
+	<!-- other import tests -->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="bug123884-import.as"/>
+    </apply>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-import ${src.dir}/bug123884-import.as"/>
+        <fileset dir="${src.dir}" includes="bug123884.as"/>
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="**/*.il"/>
+        <fileset dir="${src.dir}" includes="**/*.abc"/>
+    </copy>
+    <copy file="build.out" tofile="${log.dir}/2.out"/>
+</target>
+
+<target name="dash_in_first">
+    <!-- Test parser -->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-i -m"/>
+        <arg line="-in ${src.dir}/hello.as"/>
+        <arg line="-in ${src.dir}/hello.as"/>
+        <arg line="-in ${src.dir}/hello.as"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="hello.as"/>
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="hello.il"/>
+        <fileset dir="${src.dir}" includes="hello.abc"/>
+    </copy>
+</target>
+
+<target name="runtime_first">
+    <delete>
+        <fileset dir="${src.dir}" includes="**/*.log"/>
+	    <fileset dir="${root.dir}/test/sanity" includes="*.out"/>
+    </delete>
+    <apply executable="${bin.dir}/${avm.name}" output="build.out" append="true">
+        <arg line="-log ${avm.args}" />
+        <fileset dir="${src.dir}" includes="**/*.abc" excludes="bug123884*.abc,importorder*.abc,metadata.abc,Global.abc,t.abc,shellASC.abc,shell.abc,toplevel.abc,pnf.abc,pkg_missing.abc,b124583.abc"/>
+    </apply>
+    <apply executable="${bin.dir}/${avm.name}" output="build.out" append="true">
+        <arg line="-log ${avm.args}"/>
+        <arg line="${src.dir}/importorder_a.abc"/>
+        <arg line="${src.dir}/importorder_b.abc"/>
+        <fileset dir="${src.dir}" includes="importorder.abc"/>
+    </apply>
+    <apply executable="${bin.dir}/${avm.name}" output="build.out" append="true">
+        <arg line="-log ${avm.args}"/>
+        <arg line="${src.dir}/importorder_a.abc"/>
+        <arg line="${src.dir}/importorder_b.abc"/>
+        <fileset dir="${src.dir}" includes="importorder_abc.abc"/>
+    </apply>
+    <apply executable="${bin.dir}/${avm.name}" output="build.out" append="true">
+        <arg line="-log ${avm.args}"/>
+        <arg line="${src.dir}/bug123884-import.abc"/>
+        <fileset dir="${src.dir}" includes="bug123884.abc"/>
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="**/*.log"/>
+    </copy>
+    <copy file="build.out" tofile="${log.dir}/3.out"/>
+</target>
+
+<target name="finalize_first">
+
+    <!-- copy .as files -->
+
+    <delete>
+        <fileset dir="${log.dir}" includes="**/*.as"/>
+    </delete>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="**/*.as" excludes="t.as"/>
+    </copy>
+    <exec executable="diff" output="diff.out">
+        <arg line="--ignore-all-space"/>
+        <arg line="--exclude=*.out"/>
+        <arg line="--exclude=*.p"/>
+        <arg line="--exclude=*.il"/>
+        <arg line="--exclude=*.abc"/>
+        <arg line="regress"/>
+        <arg line="log"/>
+    </exec>
+</target>
+
+<target name="initialize_second">
+    <delete file="${bin.dir}/asc.exe"/>
+    <copy file="${bin.dir}/asc.exe.j" tofile="${bin.dir}/asc.exe"/>
+    <copy todir="regress">
+        <fileset dir="${log.dir}" includes="**/*.p"/>
+        <fileset dir="${log.dir}" includes="**/*.il"/>
+        <fileset dir="${log.dir}" includes="**/*.out"/>
+        <fileset dir="${log.dir}" includes="**/*.abc"/>
+        <fileset dir="${log.dir}" includes="**/*.log"/>
+    </copy>
+</target>
+
+<target name="parser_second">
+    <!-- Test parser -->
+    <delete>
+        <fileset dir="${src.dir}" includes="**/*.p"/>
+        <fileset dir="${log.dir}" includes="**/*.p"/>
+	    <fileset dir="${root.dir}/test/sanity" includes="*.out"/>
+    </delete>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-p"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="**/*.es,**/*.as" excludes="playerglobal.as,t.as,shellASC.as,shell.as"/>
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="**/*.p"/>
+    </copy>
+    <copy file="build.out" tofile="${log.dir}/1.out"/>
+</target>
+
+<target name="compiler_second">
+    <delete>
+        <fileset dir="${src.dir}" includes="**/*.il"/>
+        <fileset dir="${src.dir}" includes="**/*.abc"/>
+        <fileset dir="${log.dir}" includes="**/*.il"/>
+        <fileset dir="${log.dir}" includes="**/*.abc"/>
+	    <fileset dir="${root.dir}/test/sanity" includes="*.out"/>
+    </delete>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-i -m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="**/*.es,**/*.as" excludes="bug123884*.as,importorder*.as,Global.abc,metadata2.as,playerglobal.as,t.as,restarg.as,shellASC.as,shell.as,constClass.as,pnf.as,pkg_missing.as,invalidtypeexpr.as"/>
+    </apply>
+<!-- begin error test -->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-strict -sanity -log"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="constClass.as,pnf.as,pkg_missing.as,b124583.as,invalidtypeexpr.as"/> <!-- b107194.as,b109751.as,b112393.as,b115412.as,b121391.as -->
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="constClass.log,pnf.log,pkg_missing.log,b124583.log,invalidtypeexpr.log"/> <!-- b107194.log,b109751.log,b112393.log,b115412.log,b121391.log -->
+    </copy>
+<!-- end error test -->
+<!-- begin metadata test - Simple test compiling with metadata on, verifies that C++ and java metadata match, and that it doesn't cause other problems-->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-sanity -log -md"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="metadata2.as"/> 
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="metadata2.log"/> 
+    </copy>
+<!-- end metadata test -->
+<!-- begin import order test -->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="importorder_a.as"/>
+    </apply>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-import ${src.dir}/importorder_a.as"/>
+        <fileset dir="${src.dir}" includes="importorder_b.as"/>
+    </apply>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-import ${src.dir}/importorder_b.as"/>
+        <arg line="-import ${src.dir}/importorder_a.as"/>
+        <fileset dir="${src.dir}" includes="importorder.as"/>
+    </apply>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-import ${src.dir}/importorder_b.abc"/>
+        <arg line="-import ${src.dir}/importorder_a.abc"/>
+        <fileset dir="${src.dir}" includes="importorder_abc.as"/>
+    </apply>
+<!-- end import order test -->
+<!-- other import tests -->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <fileset dir="${src.dir}" includes="bug123884-import.as"/>
+    </apply>
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-import ${src.dir}/bug123884-import.as"/>
+        <fileset dir="${src.dir}" includes="bug123884.as"/>
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="**/*.il"/>
+        <fileset dir="${src.dir}" includes="**/*.abc"/>
+    </copy>
+    <copy file="build.out" tofile="${log.dir}/2.out"/>
+</target>
+
+<target name="dash_in_second">
+    <!-- Test parser -->
+    <apply executable="java" output="build.out" append="true">
+        <arg line="-jar ${lib.dir}/${asc.name}"/>
+        <arg line="-i -m"/>
+        <arg line="-import ${abc_lib.dir}/Global.abc"/>
+        <arg line="-in ${src.dir}/hello.as"/>
+        <arg line="-in ${src.dir}/hello.as"/>
+        <arg line="-in ${src.dir}/hello.as"/>
+        <fileset dir="${src.dir}" includes="hello.as"/>
+    </apply>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="hello.il"/>
+        <fileset dir="${src.dir}" includes="hello.abc"/>
+    </copy>
+</target>
+
+<target name="finalize_second">
+
+    <!-- copy .as files -->
+
+    <delete>
+        <fileset dir="${log.dir}" includes="**/*.as"/>
+    </delete>
+    <copy todir="log">
+        <fileset dir="${src.dir}" includes="**/*.as" excludes="t.as"/>
+    </copy>
+    <exec executable="diff" output="diff.out">
+        <arg line="--ignore-all-space"/>
+        <arg line="--exclude=*.out"/>
+        <arg line="--exclude=*.log"/>
+        <arg line="--exclude=*.p"/>
+        <arg line="--exclude=*.il"/>
+        <arg line="regress"/>
+        <arg line="log"/>
+    </exec>
+</target>
+
+</project>

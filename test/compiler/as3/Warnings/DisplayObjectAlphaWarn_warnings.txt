@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\DisplayObjectAlphaWarn.as(12): Migration issue: The property _alpha is no longer supported.  Use the DisplayObject.alpha property instead..
+    	a._alpha = 10;
+    ...^
+
+-------------------------------------------------------------------------
+

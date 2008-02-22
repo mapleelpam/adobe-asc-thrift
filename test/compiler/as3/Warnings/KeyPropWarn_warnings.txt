@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\KeyPropWarn.as(8): Migration issue: The property Key is no longer supported.  The Key class has been renamed Keyboard..
+    	if(Key == true) {}
+    ....^
+
+-------------------------------------------------------------------------
+

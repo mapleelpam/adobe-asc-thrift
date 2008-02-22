@@ -1,0 +1,13 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\NewlinePropWarn.as(9): Migration issue: The property newline is no longer supported.  Use '
+' for newline..
+    	newline = true;
+    .^
+
+-------------------------------------------------------------------------
+

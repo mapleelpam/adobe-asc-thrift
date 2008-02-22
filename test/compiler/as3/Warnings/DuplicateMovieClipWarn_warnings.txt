@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1060: Unsupported ActionScript 2.0 function.
+-------------------------------------------------------------------------
+  as3\Warnings\DuplicateMovieClipWarn.as(13): Migration issue: The method duplicateMovieClip is no longer supported.  Replaced by new MovieClip class constructor function..
+    	duplicateMovieClip(a);
+    .^
+
+-------------------------------------------------------------------------
+

@@ -1,0 +1,12 @@
+
+Warning Report:
+---------------
+
+[Coach] Warning #1058: Unsupported ActionScript 2.0 property.
+-------------------------------------------------------------------------
+  as3\Warnings\AccPropWarn.as(12): Migration issue: The property accProps is no longer supported.  Use the DisplayObject.accessibilityProperties property instead..
+     a.accProps;
+    ...^
+
+-------------------------------------------------------------------------
+

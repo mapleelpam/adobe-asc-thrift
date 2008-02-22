@@ -1,0 +1,32 @@
+
+[Compiler] Error #1093: Syntax error.
+   temp.fla, Ln 1, Col 1: 
+   \?\?\?\? 
+   ^
+
+[Compiler] Error #1093: Syntax error.
+   temp.fla, Ln 1, Col 2: 
+   \?\?\?\? 
+   .^
+
+[Compiler] Error #1093: Syntax error.
+   temp.fla, Ln 1, Col 3: 
+   \?\?\?\? 
+   ..^
+
+[Compiler] Error #1093: Syntax error.
+   temp.fla, Ln 1, Col 4: 
+   \?\?\?\? 
+   ...^
+
+[Compiler] Error #1093: Syntax error.
+   temp.fla, Ln 1, Col 5: 
+   \?\?\?\? 
+   ....^
+
+[Compiler] Error #1093: Syntax error.
+   temp.fla, Ln 1, Col 6: 
+   \?\?\?\? 
+   .....^
+
+6 errors found
