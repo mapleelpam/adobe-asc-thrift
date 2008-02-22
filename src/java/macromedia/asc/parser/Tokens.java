@@ -34,6 +34,11 @@ package macromedia.asc.parser;
  */
 public interface Tokens
 {
+
+// when adding a new token, please update both the tokenClassNames and tokenToString
+// arrays to keep them in sync.  While no code within asc.jar accesses the tokenToString
+// array, it is still used by other code and must be kept up to date.
+
 /*
  * Token class values are negative, and token instances are positive so
  * that their values can point to their instance data in an array.
@@ -59,7 +64,8 @@ public interface Tokens
 	public static final int DOT_TOKEN = COMMA_TOKEN - 1;
 	public static final int DOUBLEDOT_TOKEN = DOT_TOKEN - 1;
 	public static final int TRIPLEDOT_TOKEN = DOUBLEDOT_TOKEN - 1;
-	public static final int DIV_TOKEN = TRIPLEDOT_TOKEN - 1;
+    public static final int DOTLESSTHAN_TOKEN = TRIPLEDOT_TOKEN -1;
+    public static final int DIV_TOKEN = DOTLESSTHAN_TOKEN - 1;
 	public static final int DIVASSIGN_TOKEN = DIV_TOKEN - 1;
 	public static final int COLON_TOKEN = DIVASSIGN_TOKEN - 1;
 	public static final int DOUBLECOLON_TOKEN = COLON_TOKEN - 1;
@@ -176,6 +182,10 @@ public interface Tokens
 	public static final int ERROR_TOKEN = EMPTY_TOKEN - 1;
 	public static final int LAST_TOKEN = EMPTY_TOKEN - 1;
 
+
+	// when adding a new token, please update both the tokenClassNames and tokenToString
+	// arrays to keep them in sync.  While no code within asc.jar accesses the tokenToString
+	// array, it is still used by other code and must be kept up to date.
 	public static final String[] tokenClassNames =
 		{
 			"<unused index>",
@@ -199,6 +209,7 @@ public interface Tokens
 			"dot",
 			"doubledot",
 			"tripledot",
+            "dotlessthan",
 			"div",
 			"divassign",
 			"colon",
@@ -317,6 +328,9 @@ public interface Tokens
             "full_mode"
 		};
 	
+	// when adding a new token, please update both the tokenClassNames and tokenToString
+	// arrays to keep them in sync.  While no code within asc.jar accesses the tokenToString
+	// array, it is still used by other code and must be kept up to date.
 	public static final String[] tokenToString =
 	{
 			"",//"<unused index>"
@@ -340,6 +354,7 @@ public interface Tokens
 			".",//"dot"
 			"..",//"doubledot"
 			"...",//"tripledot"
+			".<",//"dotlessthan"
 			"/",//"div"
 			"/=",//"divassign"
 			":",//"colon"
@@ -408,6 +423,7 @@ public interface Tokens
 			"interface",//"interface"
 			"is",//"is"
 			"namespace",//"namespace"
+			"config",//"config"
 			"native",//"native"
 			"new",//"new"
 			"null",//"null"

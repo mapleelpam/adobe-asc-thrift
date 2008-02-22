@@ -56,6 +56,9 @@ public class GlobalBuilder extends PackageBuilder
         cx.uintType();
         cx.stringType();
         cx.numberType();
+        cx.doubleType();
+        if (cx.statics.es4_numerics)
+        	cx.decimalType();
         cx.nullType();
         cx.voidType();
         cx.xmlType();
@@ -97,24 +100,35 @@ public class GlobalBuilder extends PackageBuilder
 		UnaryOperator(cx, ob, cx.stringType(), CALL_Unary, SLOT_Global_TypeofOp);
 		UnaryOverload(cx, ob, SLOT_Global_TypeofOp, cx.stringType(), cx.booleanType(), CALL_Empty, SLOT_Global_TypeofOp_B);
 		UnaryOverload(cx, ob, SLOT_Global_TypeofOp, cx.stringType(), cx.intType(), CALL_Empty, SLOT_Global_TypeofOp_I);
-		UnaryOverload(cx, ob, SLOT_Global_TypeofOp, cx.stringType(), cx.numberType(), CALL_Empty, SLOT_Global_TypeofOp_N);
+		UnaryOverload(cx, ob, SLOT_Global_TypeofOp, cx.stringType(), cx.uintType(), CALL_Empty, SLOT_Global_TypeofOp_U);
+		UnaryOverload(cx, ob, SLOT_Global_TypeofOp, cx.stringType(), cx.doubleType(), CALL_Empty, SLOT_Global_TypeofOp_D);
+		if (cx.statics.es4_numerics)
+			UnaryOverload(cx, ob, SLOT_Global_TypeofOp, cx.stringType(), cx.decimalType(), CALL_Empty, SLOT_Global_TypeofOp_M);
 		UnaryOverload(cx, ob, SLOT_Global_TypeofOp, cx.stringType(), cx.stringType(), CALL_Empty, SLOT_Global_TypeofOp_S);
 		UnaryOverload(cx,ob,SLOT_Global_TypeofOp,cx.stringType(),cx.voidType(),CALL_Empty,SLOT_Global_TypeofOp_U );
 
 		// ++
-		UnaryOperator(cx, ob, cx.numberType(), CALL_Unary, SLOT_Global_IncrementOp);
+		UnaryOperator(cx, ob, cx.doubleType(), CALL_Unary, SLOT_Global_IncrementOp);
         UnaryOverload(cx, ob, SLOT_Global_IncrementOp, cx.intType(), cx.intType(), CALL_Empty, SLOT_Global_IncrementOp_I);
-		UnaryOperator(cx, ob, cx.numberType(), CALL_Unary, SLOT_Global_IncrementLocalOp);
+        if (cx.statics.es4_numerics)
+			UnaryOverload(cx, ob, SLOT_Global_IncrementOp, cx.decimalType(), cx.decimalType(), CALL_Empty, SLOT_Global_IncrementOp);
+		UnaryOperator(cx, ob, cx.doubleType(), CALL_Unary, SLOT_Global_IncrementLocalOp);
         UnaryOverload(cx, ob, SLOT_Global_IncrementLocalOp, cx.intType(), cx.intType(), CALL_Empty, SLOT_Global_IncrementLocalOp_I);
+        if (cx.statics.es4_numerics)
+			UnaryOverload(cx, ob, SLOT_Global_IncrementLocalOp, cx.decimalType(), cx.decimalType(), CALL_Empty, SLOT_Global_IncrementLocalOp);
 
 		// --
-		UnaryOperator(cx, ob, cx.numberType(), CALL_Unary, SLOT_Global_DecrementOp);
+		UnaryOperator(cx, ob, cx.doubleType(), CALL_Unary, SLOT_Global_DecrementOp);
+		if (cx.statics.es4_numerics)
+			UnaryOverload(cx, ob, SLOT_Global_DecrementOp, cx.decimalType(), cx.decimalType(), CALL_Empty, SLOT_Global_DecrementOp);
         UnaryOverload(cx, ob, SLOT_Global_DecrementOp, cx.intType(), cx.intType(), CALL_Empty, SLOT_Global_DecrementOp_I);
-		UnaryOperator(cx, ob, cx.numberType(), CALL_Unary, SLOT_Global_DecrementLocalOp);
+		UnaryOperator(cx, ob, cx.doubleType(), CALL_Unary, SLOT_Global_DecrementLocalOp);
         UnaryOverload(cx, ob, SLOT_Global_DecrementLocalOp, cx.intType(), cx.intType(), CALL_Empty, SLOT_Global_DecrementLocalOp_I);
 
 		// unary +
-		UnaryOperator(cx, ob, cx.numberType(), CALL_Unary, SLOT_Global_UnaryPlusOp);
+		UnaryOperator(cx, ob, cx.doubleType(), CALL_Unary, SLOT_Global_UnaryPlusOp);
+		if (cx.statics.es4_numerics)
+			UnaryOverload(cx, ob, SLOT_Global_UnaryPlusOp, cx.decimalType(), cx.decimalType(), CALL_Unary, SLOT_Global_UnaryPlusOp_M);
 		UnaryOverload(cx, ob, SLOT_Global_UnaryPlusOp, cx.intType(), cx.intType(), CALL_Unary, SLOT_Global_UnaryPlusOp_I);
 
 		// binary +
@@ -123,11 +137,15 @@ public class GlobalBuilder extends PackageBuilder
 		//BinaryOverload(cx, ob, SLOT_Global_BinaryPlusOp, cx.intType(), cx.intType(), cx.intType(), SLOT_Global_BinaryPlusOp_II);
 
 		// unary -
-		UnaryOperator(cx, ob, cx.numberType(), CALL_Unary, SLOT_Global_UnaryMinusOp);
+		UnaryOperator(cx, ob, cx.doubleType(), CALL_Unary, SLOT_Global_UnaryMinusOp);
+		if (cx.statics.es4_numerics)
+			UnaryOverload(cx, ob, SLOT_Global_UnaryMinusOp, cx.decimalType(), cx.decimalType(), CALL_Unary, SLOT_Global_UnaryMinusOp);
 		UnaryOverload(cx, ob, SLOT_Global_UnaryMinusOp, cx.intType(), cx.intType(), CALL_Unary, SLOT_Global_UnaryMinusOp_I);
 
 		// binary -
-		BinaryOperator(cx, ob, cx.numberType(), SLOT_Global_BinaryMinusOp);
+		BinaryOperator(cx, ob, cx.doubleType(), SLOT_Global_BinaryMinusOp);
+		if (cx.statics.es4_numerics)
+			BinaryOverload(cx, ob, SLOT_Global_BinaryMinusOp, cx.decimalType(), cx.decimalType(), cx.decimalType(), SLOT_Global_BinaryMinusOp);
 		// cn: disable integer overloads for math operators where result could exceed MAX_INT.  With additional code analysis, we might be able to tell where it would safe to use this.
 		//BinaryOverload(cx, ob, SLOT_Global_BinaryMinusOp, cx.intType(), cx.intType(), cx.intType(), SLOT_Global_BinaryMinusOp_II);
 
@@ -141,15 +159,21 @@ public class GlobalBuilder extends PackageBuilder
         UnaryOverload(cx, ob, SLOT_Global_LogicalNotOp, cx.booleanType(), cx.intType(), CALL_Unary, SLOT_Global_LogicalNotOp_I);
 
 		// *
-		BinaryOperator(cx, ob, cx.numberType(), SLOT_Global_MultiplyOp);
+		BinaryOperator(cx, ob, cx.doubleType(), SLOT_Global_MultiplyOp);
+		if (cx.statics.es4_numerics)
+			BinaryOverload(cx, ob, SLOT_Global_MultiplyOp, cx.decimalType(), cx.decimalType(), cx.decimalType(), SLOT_Global_MultiplyOp);
 		// cn: disable integer overloads for math operators where result could exceed MAX_INT.  With additional code analysis, we might be able to tell where it would safe to use this.
 		//BinaryOverload(cx, ob, SLOT_Global_MultiplyOp, cx.intType(), cx.intType(), cx.intType(), SLOT_Global_MultiplyOp_II);
 
 		// /
-		BinaryOperator(cx, ob, cx.numberType(), SLOT_Global_DivideOp);
+		BinaryOperator(cx, ob, cx.doubleType(), SLOT_Global_DivideOp);
+		if (cx.statics.es4_numerics)
+			BinaryOverload(cx, ob, SLOT_Global_DivideOp, cx.decimalType(), cx.decimalType(), cx.decimalType(), SLOT_Global_DivideOp);
 
 		// %
-		BinaryOperator(cx, ob, cx.numberType(), SLOT_Global_ModulusOp);
+		BinaryOperator(cx, ob, cx.doubleType(), SLOT_Global_ModulusOp);
+		if (cx.statics.es4_numerics)
+			BinaryOverload(cx, ob, SLOT_Global_ModulusOp, cx.decimalType(), cx.decimalType(), cx.decimalType(), SLOT_Global_ModulusOp);
 
 		// <<
 		BinaryOperator(cx, ob, cx.intType(), SLOT_Global_LeftShiftOp);

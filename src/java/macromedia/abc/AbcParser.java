@@ -17,6 +17,7 @@ import macromedia.asc.util.ObjectList;
 import macromedia.asc.util.Context;
 import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.IntList;
+import macromedia.asc.util.Decimal128;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.ObjectValue;
 import macromedia.asc.semantics.TypeValue;
@@ -63,6 +64,7 @@ public final class AbcParser
     private int[] cPoolIntPositions;
     private int[] cPoolUIntPositions;
     private int[] cPoolDoublePositions;
+    private int[] cPoolDecimalPositions;
     private String[] cPoolStrs;
     private int[] cPoolNsPositions;
     private int[] cPoolNsSetPositions;
@@ -85,11 +87,11 @@ public final class AbcParser
     {
         try
         {
-            /*int minor_version =*/ buf.readU16();
+            int minor_version = buf.readU16();
             /*int major_version =*/ buf.readU16();
 
-            // Scane the bytecode for the stuff we care about
-            scanCpool();
+            // Scan the bytecode for the stuff we care about
+            scanCpool(minor_version >= ActionBlockConstants.MINORwithDECIMAL);
             scanMethods();
             scanMetadata();
             scanClasses();
@@ -152,9 +154,10 @@ public final class AbcParser
         }
     }
 
-    void scanCpool()
+    void scanCpool(boolean hasDecimal)
     {
-        int size = (int)buf.readU32();
+    	int size;
+        size = (int)buf.readU32();
         cPoolIntPositions = new int[size];
         if (debug) System.out.println("ints "+size);
         for (int i = 1; i < size; i++)
@@ -163,24 +166,37 @@ public final class AbcParser
             buf.readU32();
         }
         size = (int)buf.readU32();
-        if (debug) System.out.println("uints "+size);
         cPoolUIntPositions = new int[size];
+        if (debug) System.out.println("uints "+size);
         for (int i = 1; i < size; i++)
         {
             cPoolUIntPositions[i] = buf.pos();
             buf.readU32();
         }
         size = (int)buf.readU32();
-        if (debug) System.out.println("doubles "+size);
         cPoolDoublePositions = new int[size];
+        if (debug) System.out.println("doubles "+size);
         for (int i = 1; i < size; i++)
         {
             cPoolDoublePositions[i] = buf.pos();
             buf.readDouble();
         }
+        if (hasDecimal) {
+        	size = (int)buf.readU32();
+            if (debug) System.out.println("decimals "+size);
+        	cPoolDecimalPositions = new int[size];
+        	for (int i = 1; i < size; i++) {
+        		cPoolDecimalPositions[i] = buf.pos();
+        		buf.readDouble(); // cheapest way to skip 64 bits
+        		buf.readDouble(); // decimals are 128 bits
+        	}
+        }
+        else {
+        	cPoolDecimalPositions = new int[0];
+        }
         size = (int)buf.readU32();
-        if (debug) System.out.println("strings "+size);
         cPoolStrs = new String[size>0?size:1];
+        if (debug) System.out.println("strings "+size);
         cPoolStrs[0] = "";
         for (int i = 1; i < size; i++)
         {
@@ -445,7 +461,7 @@ public final class AbcParser
         {
             bind.typeref = typeIdNode.ref;
         }
-        
+
         ret.def = (DefinitionNode) ctx.getNodeFactory().variableDefinition(attr, tok, ctx.getNodeFactory().list(null, bind));
         return ret;
                 // This is always a definition node. only while parsing prototype vars could it be a statement list
@@ -558,7 +574,7 @@ public final class AbcParser
 
         buf.readU32(); // skip the name
         int flags = buf.readU8();
-        boolean needs_rest = (flags & ActionBlockConstants.METHOD_Needrest) != 0;
+        boolean needs_rest = (flags & ActionBlockConstants.METHOD_Needrest) != 0 || (flags & ActionBlockConstants.METHOD_IgnoreRest) != 0;
         boolean has_optional = (flags & ActionBlockConstants.METHOD_HasOptional) != 0;
         boolean has_param_names = (flags & ActionBlockConstants.METHOD_HasParamNames) != 0;
         int optional_count = 0;
@@ -671,6 +687,14 @@ public final class AbcParser
                 val = getNumberFromCPool(value_index, value_kind);
                 current_node = nf.literalNumber(String.valueOf(val));
                 break;
+            case ActionBlockConstants.CONSTANT_Decimal: {
+            	Decimal128 dval = getDecimalFromCPool(value_index);
+            	String sval = dval.toString();
+            	if (ctx.statics.es4_numerics)
+            		sval += "m";
+            	current_node = nf.literalNumber(sval);
+            	break;
+            }
             case ActionBlockConstants.CONSTANT_True:
                 current_node = nf.literalBoolean(true);
                 break;
@@ -955,7 +979,7 @@ public final class AbcParser
 
         ret.slot = slot;
 
-		obj.builder.ImplicitCall(ctx,obj,slot_id,cframe,CALL_Method,-1,-1);
+        obj.builder.ImplicitCall(ctx,obj,slot_id,cframe,CALL_Method,-1,-1);
 		obj.builder.ImplicitConstruct(ctx,obj,slot_id,cframe,CALL_Method,-1,-1);
 
         if( isInterface )
@@ -1160,6 +1184,16 @@ public final class AbcParser
     	return cPoolStrs[id];
     }
 
+    Decimal128 getDecimalFromCPool(int id) {
+        int pos = cPoolDecimalPositions[id];
+        int orig = buf.pos();
+        buf.seek(pos);
+        byte rep[] = buf.readBytes(16);
+    	Decimal128 dval = new Decimal128(rep);
+        buf.seek(orig);
+    	return dval;
+    }
+    
     double getNumberFromCPool(int id, int kind)
     {
         double ret = 0.0;

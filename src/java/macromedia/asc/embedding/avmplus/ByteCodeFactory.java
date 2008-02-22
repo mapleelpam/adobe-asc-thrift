@@ -49,6 +49,7 @@ public class ByteCodeFactory
     private Map<Integer, ByteList> nsProtectedConstants;
     private Map<Integer, ByteList> nsStaticProtectedConstants;
 	private Map<Integer, ByteList> intConstants;
+	private Map<Integer, ByteList> uintConstants;
 	private ByteList FALSE;
 	private ByteList TRUE;
 	private ByteList NULL;
@@ -63,6 +64,7 @@ public class ByteCodeFactory
         nsProtectedConstants = new HashMap<Integer, ByteList>();
         nsStaticProtectedConstants = new HashMap<Integer, ByteList>();
         intConstants = new HashMap<Integer, ByteList>();
+        uintConstants = new HashMap<Integer, ByteList>();
 
 		FALSE = new ByteList(1);
 		Byte(FALSE, CONSTANT_False);
@@ -82,6 +84,7 @@ public class ByteCodeFactory
         nsProtectedConstants.clear();
         nsStaticProtectedConstants.clear();
 		intConstants.clear();
+		uintConstants.clear();
 	}
 
 	public static ByteList allocBytes()
@@ -400,6 +403,37 @@ public class ByteCodeFactory
 	}
 
 	/**
+	 * Make a CONSTANT_Uint_info
+	 */
+
+	public ByteList ConstantUintInfo(long value)
+	{
+		/* Java doesn't have unsigned ints.  If you cast a double to an int, you
+		 * 	don't get the correct bits for uints larger than Integer.MAX_VALUE.
+		 * However, if you coerce a long to an int, it just truncates to 32 bits
+		 * */
+		if (show_bytecode)
+		{
+			cpool_out.write("\n      ConstantUintInfo " + value);
+		}
+
+		// IntegerPool just caches Objects needed for the Map.  We don't need 
+		// a separate pool for uints
+		Integer num = IntegerPool.getNumber((int)value);
+		if (uintConstants.containsKey(num))
+		{
+			return uintConstants.get(num);
+		}
+
+		ByteList bytes = allocBytes(5);
+		//bytes = Byte(bytes, CONSTANT_Integer);
+		bytes = Int(bytes, value);
+
+		uintConstants.put(num, bytes);
+		return bytes;
+	}
+
+	/**
 	 * Make a CONSTANT_Double_info
 	 */
 
@@ -419,6 +453,25 @@ public class ByteCodeFactory
 	public ByteList ConstantDoubleInfo(double value)
 	{
 		return ConstantDoubleInfo(allocBytes(9), value);
+	}
+
+	/**
+	 * Make a CONSTANT_Decimal_info
+	 */
+
+	public ByteList ConstantDecimalInfo(ByteList bytes, Decimal128 value)
+	{
+		if (show_bytecode)
+		{
+            cpool_out.write("\n      ConstantDecimalInfo "+value.toString());
+		}
+		bytes = value.toByteList(bytes);
+		return bytes;
+	}
+
+	public ByteList ConstantDecimalInfo(Decimal128 value)
+	{
+		return ConstantDecimalInfo(allocBytes(16), value);
 	}
 
 	/**
@@ -1087,6 +1140,8 @@ public static ByteList MethodBody(ByteList bytes,
                                        ObjectList<ByteList> constant_uint_pool,
                                        int constant_double_pool_count,
                                        ObjectList<ByteList> constant_double_pool,
+                                       int constant_decimal_pool_count,
+                                       ObjectList<ByteList> constant_decimal_pool,
                                        int constant_utf8_pool_count,
                                        ObjectList<ByteList> constant_utf8_pool,
                                        int constant_mn_pool_count,
@@ -1111,7 +1166,8 @@ public static ByteList MethodBody(ByteList bytes,
 		if (show_bytecode)
 		{
 			defns_out.write("\n      ActionBlock major_version=" + major_version + " minor_version=" + minor_version + " constant_int_count= " + constant_int_pool_count +
-                " constant_uint_count=: " + constant_uint_pool_count + " constant_double_count= " + constant_double_pool_count +
+                " constant_uint_count=: " + constant_uint_pool_count + 
+                " constant_double_count= " + constant_double_pool_count + " constant_decimal_count= " + constant_decimal_pool_count +
                 " constant_utf8_count=" + constant_utf8_pool_count + " constant_namespace_count="+ constant_ns_pool_count +
                 " constant_namespaceset_count=" + constant_nss_pool_count  + " constant_multiname_count=" +constant_mn_pool_count
 				+ " methods_count=" + methods_count + " metadata_count=" + metadata_count + " classes_count=" + classes_count + " scripts_count=" + scripts_count
@@ -1133,6 +1189,16 @@ public static ByteList MethodBody(ByteList bytes,
         if (constant_double_pool_count != 0)
         {
             bytes = ConstantPool(bytes, constant_double_pool);
+        }
+        if (minor_version < MINORwithDECIMAL) {
+        	assert(constant_decimal_pool_count == 0);
+        } else {
+            Int(bytes, constant_decimal_pool_count);
+            if (constant_decimal_pool_count != 0)
+            {
+                bytes = ConstantPool(bytes, constant_decimal_pool);
+            }
+        	
         }
         Int(bytes, constant_utf8_pool_count);
         if (constant_utf8_pool_count != 0)

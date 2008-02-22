@@ -68,6 +68,18 @@ public final class Scanner
         return positions;
     }
 
+    public static int[] scanDecimalConstants(BytecodeBuffer in)
+    {
+        int size = (int)in.readU32();
+        int[] positions = new int[size];
+        for (int i = 1; i < size; i++)
+        {
+            positions[i] = in.pos();
+            in.readBytes(16);
+        }
+        return positions;
+    }
+
     public static int[] scanStrConstants(BytecodeBuffer in)
     {
         int size = (int)in.readU32();

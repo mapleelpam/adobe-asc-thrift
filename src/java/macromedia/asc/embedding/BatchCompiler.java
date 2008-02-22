@@ -95,6 +95,8 @@ public class BatchCompiler
 		TypeValue.init();
 		ObjectValue.init();
 		s = new ContextStatics();
+		
+		//s.es4_numerics = ...
 
 		file = new ArrayList<File>(args.length);
 		for (int i = 0, length = args.length; i < length; i++)

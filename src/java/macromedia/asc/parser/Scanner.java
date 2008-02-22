@@ -919,6 +919,14 @@ public final class Scanner implements ErrorConstants
                         case 'e':
                             state = exponentstart_state;
                             continue;
+                        case 'd':
+                        case 'm':
+                        case 'i':
+                        case 'u':
+                        	if (!ctx.statics.es4_numerics)
+                        		retract();
+                            state = start_state;
+                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
                         default:
                             retract();
                             state = start_state;
@@ -957,6 +965,12 @@ public final class Scanner implements ErrorConstants
                         case 'F':
                             state = hexinteger_state;
                             continue;
+                        case 'u':
+                        case 'i':
+                        	if (!ctx.statics.es4_numerics)
+                        		retract();
+                            state = start_state; 
+                            return makeTokenInstance( NUMBERLITERAL_TOKEN, input.copy() );
                         default:  
                             retract();
                             state = start_state; 
@@ -986,6 +1000,9 @@ public final class Scanner implements ErrorConstants
                         case '.':
                             state = doubledot_state;
                             continue;
+                        case '<':
+                            state = start_state;
+                            return DOTLESSTHAN_TOKEN;
                         default:
                             retract();
                             state = start_state;
@@ -1031,6 +1048,14 @@ public final class Scanner implements ErrorConstants
                         case '.':
                             state = decimal_state;
                             continue;
+                        case 'd':
+                        case 'm':
+                        case 'u':
+                        case 'i':
+                        	if (!ctx.statics.es4_numerics)
+                        		retract();
+                            state = start_state;
+                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
                         case 'E':
                         case 'e':
                             state = exponentstart_state;
@@ -1061,6 +1086,12 @@ public final class Scanner implements ErrorConstants
                         case '9':
                             state = decimal_state;
                             continue;
+                        case 'd':
+                        case 'm':
+                        	if (!ctx.statics.es4_numerics)
+                        		retract();
+                            state = start_state;
+                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
                         case 'E':
                         case 'e':
                             state = exponentstart_state;
@@ -1120,6 +1151,12 @@ public final class Scanner implements ErrorConstants
                         case '9':
                             state = exponent_state;
                             continue;
+                   		case 'd':
+                   		case 'm':
+                        	if (!ctx.statics.es4_numerics)
+                        		retract();
+                            state = start_state;
+                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
                         default:
                             retract();
                             state = start_state;
@@ -3218,7 +3255,7 @@ public final class Scanner implements ErrorConstants
                             return CONST_TOKEN;
                     }
 
-                    /*
+                     /*
                      * prefix: conf
                      */
                 case conf_state:
@@ -3332,7 +3369,7 @@ public final class Scanner implements ErrorConstants
                             return CONFIG_TOKEN;
                     }
 
-                    /*
+                   /*
                      * prefix: cont
                      */
 

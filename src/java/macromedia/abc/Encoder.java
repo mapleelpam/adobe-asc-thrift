@@ -313,14 +313,14 @@ public class Encoder implements Visitor
 			methodInfo.writeU32(paramTypes.length);
 		}
 
-		methodInfo.writeU32(pool.history.getIndex(poolIndex, 6, returnType));
+		methodInfo.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, returnType));
 
 		for (int i = 0, paramCount = (paramTypes == null) ? 0 : paramTypes.length; i < paramCount; i++)
 		{
-			methodInfo.writeU32(pool.history.getIndex(poolIndex, 6, paramTypes[i]));
+			methodInfo.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, paramTypes[i]));
 		}
 
-		methodInfo.writeU32((disableDebugging) ? 0 : pool.history.getIndex(poolIndex, 3, nativeName));
+		methodInfo.writeU32((disableDebugging) ? 0 : pool.history.getIndex(poolIndex, IndexHistory.cp_string, nativeName));
 
         if( disableDebugging )
         {
@@ -350,16 +350,19 @@ public class Encoder implements Visitor
 			switch (value_kinds[i])
 			{
 		    case CONSTANT_Utf8:
-				kind = 3;
+				kind = IndexHistory.cp_string;
 				break;
 		    case CONSTANT_Integer:
-				kind = 0;
+				kind = IndexHistory.cp_int;
 				break;
 		    case CONSTANT_UInteger:
-				kind = 1;
+				kind = IndexHistory.cp_uint;
 				break;
 		    case CONSTANT_Double:
-				kind = 2;
+				kind = IndexHistory.cp_double;
+				break;
+		    case CONSTANT_Decimal:
+				kind = IndexHistory.cp_decimal;
 				break;
 		    case CONSTANT_Namespace:
 		    case CONSTANT_PrivateNamespace:
@@ -368,16 +371,16 @@ public class Encoder implements Visitor
             case CONSTANT_ProtectedNamespace:
             case CONSTANT_ExplicitNamespace:
             case CONSTANT_StaticProtectedNs:
-				kind = 4;
+				kind = IndexHistory.cp_ns;
 				break;
 			case CONSTANT_Qname:
 			case CONSTANT_QnameA:
 		    case CONSTANT_Multiname:
 		    case CONSTANT_MultinameA:
-				kind = 6;
+				kind = IndexHistory.cp_mn;
 				break;
 		    case CONSTANT_Namespace_Set:
-				kind = 5;
+				kind = IndexHistory.cp_nsset;
 				break;
 			}
 
@@ -411,7 +414,7 @@ public class Encoder implements Visitor
         {
             for( int i = 0 ; i < param_names.length; ++i )
             {
-                methodInfo.writeU32( pool.history.getIndex(poolIndex, 3, returnType) );
+                methodInfo.writeU32( pool.history.getIndex(poolIndex, IndexHistory.cp_string, returnType) );
             }
         }
 	}
@@ -427,7 +430,7 @@ public class Encoder implements Visitor
                 return;
 
             BytecodeBuffer b = new BytecodeBuffer(6);
-            b.writeU32(pool.history.getIndex(poolIndex, 3, name));
+            b.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_string, name));
             if (keys == null)
             {
                 b.writeU32(0);
@@ -439,12 +442,12 @@ public class Encoder implements Visitor
 
             for (int i = 0, keyCount = (keys == null) ? 0 : keys.length; i < keyCount; i++)
             {
-                b.writeU32(pool.history.getIndex(poolIndex, 3, keys[i]));
+                b.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_string, keys[i]));
             }
 
             for (int i = 0, valueCount = (values == null) ? 0 : values.length; i < valueCount; i++)
             {
-                b.writeU32(pool.history.getIndex(poolIndex, 3, values[i]));
+                b.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_string, values[i]));
             }
 
             metadataInfo.addByteArray(poolIndex, index, b);
@@ -458,8 +461,8 @@ public class Encoder implements Visitor
 
 	public void startInstance(int name, int superName, boolean isDynamic, boolean isFinal, boolean isInterface, int[] interfaces, int iinit, int protectedNamespace)
 	{
-		classInfo.writeU32(pool.history.getIndex(poolIndex, 6, name));
-		classInfo.writeU32(pool.history.getIndex(poolIndex, 6, superName));
+		classInfo.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, name));
+		classInfo.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, superName));
 
 		int flags = 0;
 		flags = (isFinal) ? (flags | CLASS_FLAG_final) : flags;
@@ -470,7 +473,7 @@ public class Encoder implements Visitor
 
 		if (protectedNamespace != 0)
 		{
-			classInfo.writeU32(pool.history.getIndex(poolIndex, 4, protectedNamespace));
+			classInfo.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_ns, protectedNamespace));
 		}
 		
 		if (interfaces == null)
@@ -484,7 +487,7 @@ public class Encoder implements Visitor
 
 		for (int i = 0, interfaceCount = interfaces == null ? 0 : interfaces.length; i < interfaceCount; i++)
 		{
-			classInfo.writeU32(pool.history.getIndex(poolIndex, 6, interfaces[i]));
+			classInfo.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, interfaces[i]));
 		}
 
 		classInfo.writeU32(methodInfo.getIndex(poolIndex, iinit));
@@ -565,10 +568,10 @@ public class Encoder implements Visitor
 			exceptions.writeU32(opcodes.getOffset(start));
 			exceptions.writeU32(opcodes.getOffset(end));
 			exceptions.writeU32(opcodes.getOffset(target));
-			exceptions.writeU32(pool.history.getIndex(poolIndex, 6, type));
+			exceptions.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, type));
 			if (minorVersion != 15)
 			{
-				exceptions.writeU32(pool.history.getIndex(poolIndex, 6, name));
+				exceptions.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, name));
 			}
 		}
 	}
@@ -655,7 +658,7 @@ public class Encoder implements Visitor
 
 	public void slotTrait(int trait_kind, int name, int slotId, int type, int value, int value_kind, int[] metadata)
 	{
-		currentBuffer.writeU32(pool.history.getIndex(poolIndex, 6, name));
+		currentBuffer.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, name));
         IntList new_metadata = trimMetadata(metadata);
 		if ( ((trait_kind >> 4) & TRAIT_FLAG_metadata) != 0 && new_metadata.size()==0 )
 		{
@@ -664,23 +667,26 @@ public class Encoder implements Visitor
 		currentBuffer.writeU8(trait_kind);
 
 		currentBuffer.writeU32(slotId);
-		currentBuffer.writeU32(pool.history.getIndex(poolIndex, 6, type));
+		currentBuffer.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, type));
 
 		int kind = -1;
 
 		switch(value_kind)
 		{
 		case CONSTANT_Utf8:
-			kind = 3;
+			kind = IndexHistory.cp_string;
 			break;
 		case CONSTANT_Integer:
-			kind = 0;
+			kind = IndexHistory.cp_int;
 			break;
 		case CONSTANT_UInteger:
-			kind = 1;
+			kind = IndexHistory.cp_uint;
 			break;
 		case CONSTANT_Double:
-			kind = 2;
+			kind = IndexHistory.cp_double;
+			break;
+		case CONSTANT_Decimal:
+			kind = IndexHistory.cp_decimal;
 			break;
 		case CONSTANT_Namespace:
 		case CONSTANT_PrivateNamespace:
@@ -689,16 +695,16 @@ public class Encoder implements Visitor
         case CONSTANT_ProtectedNamespace:
         case CONSTANT_ExplicitNamespace:
         case CONSTANT_StaticProtectedNs:			
-			kind = 4;
+			kind = IndexHistory.cp_ns;
 			break;
 		case CONSTANT_Qname:
 		case CONSTANT_QnameA:
 		case CONSTANT_Multiname:
 		case CONSTANT_MultinameA:
-			kind = 6;
+			kind = IndexHistory.cp_mn;
 			break;
 		case CONSTANT_Namespace_Set:
-			kind = 5;
+			kind = IndexHistory.cp_nsset;
 			break;
 		}
 
@@ -732,7 +738,7 @@ public class Encoder implements Visitor
 
 	public void methodTrait(int trait_kind, int name, int dispId, int methodInfo, int[] metadata)
 	{
-		currentBuffer.writeU32(pool.history.getIndex(poolIndex, 6, name));
+		currentBuffer.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, name));
         IntList new_metadata = trimMetadata(metadata);
 		if ( ((trait_kind >> 4) & TRAIT_FLAG_metadata) != 0 && new_metadata.size()==0 )
 		{
@@ -749,7 +755,7 @@ public class Encoder implements Visitor
 
 	public void classTrait(int kind, int name, int slotId, int classIndex, int[] metadata)
 	{
-		currentBuffer.writeU32(pool.history.getIndex(poolIndex, 6, name));
+		currentBuffer.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, name));
         IntList new_metadata = trimMetadata(metadata);
 		if ( ((kind >> 4) & TRAIT_FLAG_metadata) != 0 && new_metadata.size()==0 )
 		{
@@ -765,7 +771,7 @@ public class Encoder implements Visitor
 
 	public void functionTrait(int kind, int name, int slotId, int methodInfo, int[] metadata)
 	{
-		currentBuffer.writeU32(pool.history.getIndex(poolIndex, 6, name));
+		currentBuffer.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, name));
         IntList new_metadata = trimMetadata(metadata);
 		if ( ((kind >> 4) & TRAIT_FLAG_metadata) != 0 && new_metadata.size()==0 )
 		{
@@ -978,7 +984,7 @@ public class Encoder implements Visitor
 				opcodes.writeU8(di_local);
 				// FIX: is this a constant pool index? if so, we need to know the constant type...
 				// opcodes.writeU32(index);
-				opcodes.writeU32(pool.history.getIndex(poolIndex, 3, index));
+				opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_string, index));
 				opcodes.writeU8(slot);
 				opcodes.writeU32(linenum);
 			}
@@ -992,7 +998,7 @@ public class Encoder implements Visitor
 			if (!disableDebugging)
 			{
 				beginop(OP_debugfile);
-				opcodes.writeU32(pool.history.getIndex(poolIndex, 3, index));
+				opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_string, index));
 			}
 		}
 	}
@@ -1040,7 +1046,7 @@ public class Encoder implements Visitor
 	    if (opcodePass == 1)
 	    {
 	    	beginop(OP_pushstring);
-	    	opcodes.writeU32(pool.history.getIndex(poolIndex, 3, index));
+	    	opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_string, index));
 	    }
     }
 
@@ -1049,7 +1055,7 @@ public class Encoder implements Visitor
 	    if (opcodePass == 1)
 	    {
 	    	beginop(OP_pushnamespace);
-	    	opcodes.writeU32(pool.history.getIndex(poolIndex, 4, index));
+	    	opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_ns, index));
 	    }
     }
 
@@ -1058,7 +1064,7 @@ public class Encoder implements Visitor
 	    if (opcodePass == 1)
 	    {
 	    	beginop(OP_pushint);
-		    opcodes.writeU32(pool.history.getIndex(poolIndex, 0, index));
+		    opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_int, index));
 	    }
     }
 
@@ -1067,7 +1073,7 @@ public class Encoder implements Visitor
 	    if (opcodePass == 1)
 	    {
 	    	beginop(OP_pushuint);
-		    opcodes.writeU32(pool.history.getIndex(poolIndex, 1, index));
+		    opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_uint, index));
 	    }
     }
 
@@ -1076,7 +1082,16 @@ public class Encoder implements Visitor
 	    if (opcodePass == 1)
 	    {
 	    	beginop(OP_pushdouble);
-		    opcodes.writeU32(pool.history.getIndex(poolIndex, 2, index));
+		    opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_double, index));
+	    }
+    }
+
+    public void OP_pushdecimal(int index)
+    {
+	    if (opcodePass == 1)
+	    {
+	    	beginop(OP_pushdecimal);
+		    opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_decimal, index));
 	    }
     }
 
@@ -1118,6 +1133,14 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_pushnan);
+		}
+	}
+
+	public void OP_pushdnan()
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_pushdnan);
 		}
 	}
 
@@ -1214,6 +1237,24 @@ public class Encoder implements Visitor
 		}
 	}
 
+	public void OP_convert_m()
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_convert_m);
+		}
+	}
+
+	public void OP_convert_m_p(int param)
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_convert_m);
+			opcodes.writeU32(param);
+		}
+	}
+
+
 	public void OP_convert_b()
 	{
 		if (opcodePass == 1)
@@ -1259,6 +1300,15 @@ public class Encoder implements Visitor
 		}
 	}
 
+	public void OP_negate_p(int param)
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_negate_p);
+			opcodes.writeU32(param);
+		}
+	}
+
 	public void OP_negate_i()
 	{
 		if (opcodePass == 1)
@@ -1275,6 +1325,15 @@ public class Encoder implements Visitor
 		}
 	}
 
+	public void OP_increment_p(int param)
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_increment_p);
+			opcodes.writeU32(param);
+		}
+	}
+
 	public void OP_increment_i()
 	{
 		if (opcodePass == 1)
@@ -1288,6 +1347,16 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_inclocal);
+			opcodes.writeU32(index);
+		}
+	}
+
+	public void OP_inclocal_p(int param, int index)
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_inclocal_p);
+			opcodes.writeU32(param);
 			opcodes.writeU32(index);
 		}
 	}
@@ -1326,6 +1395,15 @@ public class Encoder implements Visitor
 		}
 	}
 
+	public void OP_decrement_p(int param)
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_decrement_p);
+			opcodes.writeU32(param);
+		}
+	}
+
 	public void OP_decrement_i()
 	{
 		if (opcodePass == 1)
@@ -1339,6 +1417,16 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_declocal);
+			opcodes.writeU32(index);
+		}
+	}
+
+	public void OP_declocal_p(int param, int index)
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_declocal_p);
+			opcodes.writeU32(param);
 			opcodes.writeU32(index);
 		}
 	}
@@ -1411,6 +1499,17 @@ public class Encoder implements Visitor
 		}
 	}
 
+	public void OP_add_p(int param)
+	{
+		if (opcodePass == 1)
+		{
+			if (opat(1) == OP_coerce_a)
+				rewind(1);
+			beginop(OP_add_p);
+			opcodes.writeU32(param);
+		}
+	}
+
 	public void OP_add_i()
 	{
 		if (opcodePass == 1)
@@ -1430,6 +1529,21 @@ public class Encoder implements Visitor
 				return;
 			}
 			beginop(OP_subtract);
+		}
+	}
+
+	public void OP_subtract_p(int param)
+	{
+		if (opcodePass == 1)
+		{
+			if (opat(1) == OP_pushbyte && readByteAt(1) == 1)
+			{
+				rewind(1);
+				OP_decrement_p(param);
+				return;
+			}
+			beginop(OP_subtract_p);
+			opcodes.writeU32(param);
 		}
 	}
 
@@ -1455,6 +1569,15 @@ public class Encoder implements Visitor
 		}
 	}
 
+	public void OP_multiply_p(int param)
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_multiply_p);
+			opcodes.writeU32(param);
+		}
+	}
+
 	public void OP_multiply_i()
 	{
 		if (opcodePass == 1)
@@ -1471,11 +1594,29 @@ public class Encoder implements Visitor
 		}
 	}
 
+	public void OP_divide_p(int param)
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_divide_p);
+			opcodes.writeU32(param);
+		}
+	}
+
 	public void OP_modulo()
 	{
 		if (opcodePass == 1)
 		{
 			beginop(OP_modulo);
+		}
+	}
+
+	public void OP_modulo_p(int param)
+	{
+		if (opcodePass == 1)
+		{
+			beginop(OP_modulo_p);
+			opcodes.writeU32(param);
 		}
 	}
 
@@ -1808,7 +1949,7 @@ public class Encoder implements Visitor
 	{
 		if (opcodePass == 1)
 		{
-			if (opat(1) == OP_findpropstrict && readIntAt(1) == pool.history.getIndex(poolIndex, 6, index))
+			if (opat(1) == OP_findpropstrict && readIntAt(1) == pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index))
 			{
 				rewind(1);
 				OP_getlex(index);
@@ -1816,7 +1957,7 @@ public class Encoder implements Visitor
 			}
 
 			beginop(OP_getproperty);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -1828,7 +1969,7 @@ public class Encoder implements Visitor
                 rewind(1);
 
             beginop(OP_setproperty);
-            opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+            opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
         }
     }
 
@@ -1840,7 +1981,7 @@ public class Encoder implements Visitor
                 rewind(1);
 
             beginop(OP_initproperty);
-            opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+            opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
         }
     }
 
@@ -1849,7 +1990,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_getdescendants);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -1858,7 +1999,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_findpropstrict);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -1867,7 +2008,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_findproperty);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -1876,7 +2017,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_finddef);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 	
@@ -1885,7 +2026,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_getlex);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -1928,7 +2069,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_deleteproperty);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -2035,7 +2176,7 @@ public class Encoder implements Visitor
 	        	rewind(1);
 			
 			beginop(OP_callproperty);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 			opcodes.writeU32(argc);
 		}
 	}
@@ -2045,7 +2186,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_callproplex);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 			opcodes.writeU32(argc);
 		}
 	}
@@ -2055,7 +2196,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_constructprop);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 			opcodes.writeU32(argc);
 		}
 	}
@@ -2065,7 +2206,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_callsuper);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 			opcodes.writeU32(argc);
 		}
 	}
@@ -2075,7 +2216,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_getsuper);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -2084,7 +2225,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_setsuper);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -2116,7 +2257,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_astype);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -2132,14 +2273,14 @@ public class Encoder implements Visitor
 	{
 		if (opcodePass == 1)
 		{
-			if (opat(1) == OP_coerce && readIntAt(1) == pool.history.getIndex(poolIndex, 6, index))
+			if (opat(1) == OP_coerce && readIntAt(1) == pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index))
 			{
 				// second coerce to same type is redundant
 				return;
 			}
 
 			beginop(OP_coerce);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -2266,7 +2407,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_istype);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 		}
 	}
 
@@ -2383,7 +2524,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_dxns);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 3, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_string, index));
 		}
 	}
 
@@ -2614,7 +2755,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_callsupervoid);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 			opcodes.writeU32(argc);
 		}
 	}
@@ -2624,7 +2765,7 @@ public class Encoder implements Visitor
 		if (opcodePass == 1)
 		{
 			beginop(OP_callpropvoid);
-			opcodes.writeU32(pool.history.getIndex(poolIndex, 6, index));
+			opcodes.writeU32(pool.history.getIndex(poolIndex, IndexHistory.cp_mn, index));
 			opcodes.writeU32(argc);
 		}
 	}

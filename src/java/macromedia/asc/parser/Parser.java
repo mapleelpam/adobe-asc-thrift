@@ -792,7 +792,30 @@ public final class Parser
         }
         else
         {
-            result = nodeFactory.identifier(scanner.getTokenText(match(IDENTIFIER_TOKEN)),ctx.input.positionOfMark());
+//            result = nodeFactory.identifier(scanner.getTokenText(match(IDENTIFIER_TOKEN)),ctx.input.positionOfMark());
+            int pos = ctx.input.positionOfMark();
+            String id = scanner.getTokenText(match(IDENTIFIER_TOKEN));
+            if( lookahead(DOTLESSTHAN_TOKEN) )
+            {
+                match(DOTLESSTHAN_TOKEN);
+                result = nodeFactory.typeIdentifier(id,parseTypeExpressionList(),ctx.input.positionOfMark());
+                if( lookahead(UNSIGNEDRIGHTSHIFT_TOKEN) )
+                {
+                    // Transform >>> to >> and eat one >
+                    nexttoken = RIGHTSHIFT_TOKEN;
+                }
+                else if( lookahead( RIGHTSHIFT_TOKEN ) )
+                {
+                    // Transform >> to > and eat one >
+                    nexttoken = GREATERTHAN_TOKEN;
+                }
+                else
+                {
+                    match(GREATERTHAN_TOKEN);
+                }
+            }
+            else
+                result = nodeFactory.identifier(id,pos);
         }
 
         if (debug)
@@ -1579,7 +1602,7 @@ XMLElementContent
         nodeFactory.has_dxns = false;
 
         boolean is_ctor = false;
-        if (ctx.dialect(Features.DIALECT_ES4) && block_kind_stack.last() == CLASS_TOKEN
+        if (ctx.statics.es4_nullability && block_kind_stack.last() == CLASS_TOKEN
                 && first != null && first.name.equals(current_class_name)) {
             is_ctor = true;
         }
@@ -2436,7 +2459,7 @@ XMLElementContent
 
         if (lookahead(DOT_TOKEN) || lookahead(LEFTBRACKET_TOKEN) ||
             (HAS_DESCENDOPERATORS && lookahead(DOUBLEDOT_TOKEN)) ||
-            lookahead(AMPERSAND_TOKEN))
+            lookahead(AMPERSAND_TOKEN) )
         {
             first = parsePropertyOperator(first);
             result = parseFullNewSubexpressionPrime(first);
@@ -5541,13 +5564,13 @@ XMLElementContent
             else if( third instanceof StatementListNode )
             {
                 StatementListNode sln = (StatementListNode) third;     // remove any gratuitous nestings
-                if( sln.config_attrs == null )
+                if( sln.config_attrs == null && !sln.has_pragma )
                 {
                     if( second == null )
                     {
                         second = sln;
                     }
-                    else 
+                    else
                     {
                         second.items.addAll(sln.items);
                     }
@@ -5558,6 +5581,20 @@ XMLElementContent
                 	// out due to conditional compilation
                 	second = nodeFactory.statementList(second, third);
                 }
+            }
+            else if (third instanceof PragmaNode) {
+                // make sure it's at the top of the block
+            	if (second != null) {
+            		for (int i = 0; i < second.items.size(); i++) {
+            			Node kid = second.items.at(i);
+            			if (!(kid instanceof PragmaNode)) {
+            				error(syntax_error,kError_Parser_NumericUseMisplaced);
+            				break;
+            			}
+            		}
+            	}
+            	second = nodeFactory.statementList(second, third);
+            	second.has_pragma = true;
             }
             else
             {
@@ -5625,8 +5662,10 @@ XMLElementContent
         }
         else
         {
-            error(kError_UndefinedNamespace);
-            //result = nodeFactory.pragma(parsePragmaItems(),ctx.input.positionOfMark());
+            if( ctx.statics.es4_numerics )
+                result = nodeFactory.pragma(parsePragmaItems(allowIn_mode),ctx.input.positionOfMark());
+            else
+                error(kError_UndefinedNamespace);  // Do what we used to do... better than an unlocalized internal error of feature not implemented
         }
 
         if (debug)
@@ -5637,7 +5676,49 @@ XMLElementContent
         return result;
     }
 
-    public ListNode parsePragmaItems()
+	public Node parsePragmaItem(int mode) {
+        Node id;
+        Node argument;
+        if (debug)
+        {
+            System.err.println("begin parsePragmaItem");
+        }
+
+        id = parseIdentifier();
+        if (lookahead(COMMA_TOKEN) || lookaheadSemicolon(mode)) {
+            argument = null;
+        } 
+        else if (lookahead(TRUE_TOKEN)) {
+            match(TRUE_TOKEN);
+            argument = nodeFactory.literalBoolean(true,ctx.input.positionOfMark());
+        }
+        else if (lookahead(FALSE_TOKEN))
+        {
+            match(FALSE_TOKEN);
+            argument = nodeFactory.literalBoolean(false,ctx.input.positionOfMark());
+        }
+        else if (lookahead(NUMBERLITERAL_TOKEN))
+        {
+            argument = nodeFactory.literalNumber(scanner.getTokenText(match(NUMBERLITERAL_TOKEN)),
+                                               ctx.input.positionOfMark());
+        }
+        else if (lookahead(STRINGLITERAL_TOKEN))
+        {
+            boolean[] is_single_quoted = new boolean[1];
+            String enclosedText = scanner.getStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
+            argument = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
+        }
+        else argument = parseIdentifier();
+        Node result = nodeFactory.usePragma(id, argument, ctx.input.positionOfMark());
+
+        if (debug)
+        {
+            System.err.println("finish parsePragmaItem");
+        }
+        return result;
+    }
+
+    public ListNode parsePragmaItems(int mode)
     {
 
         if (debug)
@@ -5647,10 +5728,38 @@ XMLElementContent
 
         ListNode result = null;
 
-        // ISSUE: complete. For now just one identifier after use or #
+        Node first = parsePragmaItem(mode);
 
-        result = nodeFactory.list(null, nodeFactory.pragmaExpression(parseIdentifier(), null,ctx.input.positionOfMark()));
+        result = parsePragmaItemsPrime(nodeFactory.list(null, first), mode); 
 
+        if (debug)
+        {
+            System.err.println("finish parsePragmaItems");
+        }
+        return result;
+    }
+
+	public ListNode parsePragmaItemsPrime(ListNode first, int mode) {
+        if (debug)
+        {
+            System.err.println("begin parsePragmaItemsPrime");
+        }
+
+        ListNode result;
+
+        if (lookahead(COMMA_TOKEN)) {
+            match(COMMA_TOKEN);
+            Node second;
+            second = parsePragmaItem(mode);
+            result =  parsePragmaItemsPrime(nodeFactory.list(first, second), mode);
+        }
+        else
+            result = first;
+
+        if (debug)
+        {
+            System.err.println("finish parsePragmaItemsPrime");
+        }
         return result;
     }
 
@@ -7050,7 +7159,7 @@ XMLElementContent
             result = nodeFactory.className(null, first);
         }
 
-        if( ctx.dialect(Features.DIALECT_ES4) )
+        if( ctx.statics.es4_nullability )
         {
             if( lookahead(NOT_TOKEN))
             {
@@ -7341,7 +7450,7 @@ XMLElementContent
         if (lookahead(ASSIGN_TOKEN))
         {
             match(ASSIGN_TOKEN);
-            if( ctx.dialect(Features.DIALECT_ES4) )
+            if( ctx.statics.es4_nullability )
             {
                 if( lookahead(STRINGLITERAL_TOKEN) )
                 {
@@ -7484,7 +7593,7 @@ XMLElementContent
             scanner.input.report_pos = false;  // Don't give position to generated nodes, since they don't have corresponding source
 
             configs = parseDirectives(null, null);
-            
+
             scanner = orig;
             ctx.input = input;
             lastToken = orig_lastToken;

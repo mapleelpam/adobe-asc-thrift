@@ -47,6 +47,7 @@ public class CompilerPlug
 	public String swf_options;
 	public String avmplus_exe;
     public int dialect;
+    public int target;
     public boolean optimize;
     public ObjectList<ConfigVar> configs;
 
@@ -66,6 +67,7 @@ public class CompilerPlug
 		language = "EN";
 	    handler = new CompilerHandler();
         dialect = 7;
+        target = 1;  // Default to FP10, constants in macromedia.asc.embedding.avmplus.Features
         optimize = false;
         in = null;
 

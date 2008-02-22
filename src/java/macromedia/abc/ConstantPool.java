@@ -11,15 +11,40 @@
 
 package macromedia.abc;
 
-import macromedia.asc.util.IntegerPool;
-import static macromedia.asc.embedding.avmplus.ActionBlockConstants.*;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Decimal;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Double;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_ExplicitNamespace;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_False;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Integer;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Multiname;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_MultinameA;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_MultinameL;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_MultinameLA;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Namespace;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Namespace_Set;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Null;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_PackageInternalNs;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_PackageNamespace;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_PrivateNamespace;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_ProtectedNamespace;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Qname;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_QnameA;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_RTQname;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_RTQnameA;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_RTQnameL;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_RTQnameLA;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_StaticProtectedNs;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_True;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_UInteger;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Utf8;
 
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
+
+import macromedia.asc.util.Decimal128;
+import macromedia.asc.util.IntegerPool;
+
 
 /**
  * Constant {
@@ -28,6 +53,9 @@ import java.util.Iterator;
  * kind=1 { // CONSTANT_utf8
  * U16 length
  * U8[length]
+ * }
+ * kind=2 { // CONSTANT_Decimal
+ * U8[16] value
  * }
  * kind=3 { // CONSTANT_Integer
  * S32 value
@@ -65,31 +93,38 @@ import java.util.Iterator;
 public class ConstantPool
 {
 	public static final Object NULL = new Object();
+	
+	public boolean poolHasDecimal;
 
 	public static ConstantPool merge(ConstantPool[] pools)
 	{
 		// create a new ConstantPool big enough for the combined pools.
 		int preferredSize = 0;
+		boolean hasDecimal = false;
 
 		for (int i = 0, size = pools.length; i < size; i++)
 		{
+			if (pools[i].decimalpositions.length > 0)
+				hasDecimal = true;
 			preferredSize += pools[i].mnEnd;
 		}
 
-		ConstantPool newPool = new ConstantPool();
+		ConstantPool newPool = new ConstantPool(hasDecimal); // make room for decimal in the one we create
 		newPool.in = new BytecodeBuffer(preferredSize);
-		newPool.history = new IndexHistory(pools);
+		newPool.history = new IndexHistory(pools, hasDecimal);
 
 		return newPool;
 	}
 
-	ConstantPool()
+	ConstantPool(boolean hasDecimal)
 	{
+		poolHasDecimal = hasDecimal;
 	}
 
-	public ConstantPool(BytecodeBuffer in) throws DecoderException
+	public ConstantPool(BytecodeBuffer in, boolean hasDecimal) throws DecoderException
 	{
 		this.in = in;
+		poolHasDecimal = hasDecimal;
 		scan();
 	}
 
@@ -101,6 +136,13 @@ public class ConstantPool
 		uintEnd = in.pos();
 		doublepositions = Scanner.scanDoubleConstants(in);
 		doubleEnd = in.pos();
+		if (poolHasDecimal) {
+			decimalpositions = Scanner.scanDecimalConstants(in);
+			decimalEnd = in.pos();
+		} else {
+			decimalpositions = new int[0];
+			decimalEnd = in.pos();
+		}
 		strpositions = Scanner.scanStrConstants(in);
 		strEnd = in.pos();
 		nspositions = Scanner.scanNsConstants(in);
@@ -113,6 +155,7 @@ public class ConstantPool
 		size = ((intpositions.length == 0) ? 0 : (intpositions.length - 1)) +
 			   ((uintpositions.length == 0) ? 0: (uintpositions.length - 1)) +
 			   ((doublepositions.length == 0) ? 0 : (doublepositions.length - 1)) +
+			   ((decimalpositions.length == 0) ? 0 : (decimalpositions.length - 1)) +
 			   ((strpositions.length == 0) ? 0 : (strpositions.length - 1)) +
 			   ((nspositions.length == 0) ? 0 : (nspositions.length - 1)) +
 			   ((nsspositions.length == 0) ? 0 : (nsspositions.length - 1)) +
@@ -126,6 +169,7 @@ public class ConstantPool
     int[] intpositions;
     int[] uintpositions;
     int[] doublepositions;
+    int[] decimalpositions;
     int[] strpositions;
     int[] nspositions;
     int[] nsspositions;
@@ -134,6 +178,7 @@ public class ConstantPool
 	int intEnd;
 	int uintEnd;
 	int doubleEnd;
+	int decimalEnd;
 	int strEnd;
 	int nsEnd;
 	int nssEnd;
@@ -189,6 +234,21 @@ public class ConstantPool
         double value = in.readDouble();
         in.seek(originalPos);
         return value;
+	}
+
+	public Decimal128 getDecimal(int index) throws DecoderException
+	{
+		if (index == 0)
+		{
+			return Decimal128.ZERO;
+		}
+
+		int pos = decimalpositions[index];
+		int originalPos = in.pos();
+		in.seek(pos);
+        byte[] valbytes = in.readBytes(16);
+        in.seek(originalPos);
+        return new Decimal128(valbytes); // perhaps need to change endian
 	}
 
 	public String getString(int index) throws DecoderException
@@ -268,7 +328,7 @@ public class ConstantPool
             throw new DecoderException("abc Decoder Erro: problem reading namespace set.");
         }
 	}
-
+	
 	public int getNamespaceIndexForQName(int index) throws DecoderException {
 		if (index == 0)
 		{
@@ -448,6 +508,9 @@ public class ConstantPool
             case CONSTANT_Double:
                 value = createDouble(getDouble(index));
                 return value;
+            case CONSTANT_Decimal:
+                value = getDecimal(index);
+                return value;
             case CONSTANT_Qname:
             case CONSTANT_QnameA:
                 value = getQName(index);
@@ -532,10 +595,20 @@ public class ConstantPool
 
 final class IndexHistory
 {
-	IndexHistory(ConstantPool[] pools)
+	public static final int cp_int = 0;
+	public static final int cp_uint = 1;
+	public static final int cp_double = 2;
+	public static final int cp_decimal = 3;
+	public static final int cp_string = 4;
+	public static final int cp_ns = 5;
+	public static final int cp_nsset = 6;
+	public static final int cp_mn = 7;
+	
+	IndexHistory(ConstantPool[] pools, boolean poolHasDecimal)
 	{
 		this.pools = pools;
 		poolSizes = new int[pools.length];
+		hasDecimal = poolHasDecimal;
 
 		int size = 0, preferredSize = 0;
 		for (int i = 0, length = pools.length; i < length; i++)
@@ -546,13 +619,15 @@ final class IndexHistory
 		}
 
 		map = new int[size];
-		in4 = new BytecodeBuffer(preferredSize);
-		in5 = new BytecodeBuffer(preferredSize);
-		in6 = new BytecodeBuffer(preferredSize);
+		in_ns = new BytecodeBuffer(preferredSize);
+		in_nsset = new BytecodeBuffer(preferredSize);
+		in_mn = new BytecodeBuffer(preferredSize);
 
 		intP = new ByteArrayPool();
 		uintP = new ByteArrayPool();
 		doubleP = new ByteArrayPool();
+		if (hasDecimal)
+			decimalP = new ByteArrayPool();
 		stringP = new ByteArrayPool();
 		nsP = new NSPool();
 		nssP = new NSSPool();
@@ -572,8 +647,10 @@ final class IndexHistory
 	private int[] poolSizes;
 	private int[] map;
 
-	private ByteArrayPool intP, uintP, doubleP, stringP, nsP, nssP, mnP;
-	private BytecodeBuffer in4, in5, in6;
+	private boolean hasDecimal;
+	
+	private ByteArrayPool intP, uintP, doubleP, decimalP, stringP, nsP, nssP, mnP;
+	private BytecodeBuffer in_ns, in_nsset, in_mn;
 	// private Set<Integer> nss;
 
     // Needed so we can strip out the index for all CONSTANT_PrivateNamespace entries
@@ -609,6 +686,8 @@ final class IndexHistory
 		intP.writeTo(b);
 		uintP.writeTo(b);
 		doubleP.writeTo(b);
+		if (hasDecimal)
+			decimalP.writeTo(b);
 		stringP.writeTo(b);
 		nsP.writeTo(b);
 		nssP.writeTo(b);
@@ -624,37 +703,42 @@ final class IndexHistory
 	{
 		int index = poolSizes[poolIndex];
 
-		if (kind > 0)
+		if (kind > cp_int)
 		{
 			index += (pools[poolIndex].intpositions.length == 0) ? 0 : (pools[poolIndex].intpositions.length - 1);
 		}
 
-		if (kind > 1)
+		if (kind > cp_uint)
 		{
 			index += (pools[poolIndex].uintpositions.length == 0) ? 0 : (pools[poolIndex].uintpositions.length - 1);
 		}
 
-		if (kind > 2)
+		if (kind > cp_double)
 		{
 			index += (pools[poolIndex].doublepositions.length == 0) ? 0 : (pools[poolIndex].doublepositions.length - 1);
 		}
 
-		if (kind > 3)
+		if (hasDecimal && (kind > cp_decimal))
+		{
+			index += (pools[poolIndex].decimalpositions.length == 0) ? 0 : (pools[poolIndex].decimalpositions.length - 1);
+		}
+
+		if (kind > cp_string)
 		{
 			index += (pools[poolIndex].strpositions.length == 0) ? 0 : (pools[poolIndex].strpositions.length - 1);
 		}
 
-		if (kind > 4)
+		if (kind > cp_ns)
 		{
 			index += (pools[poolIndex].nspositions.length == 0) ? 0 : (pools[poolIndex].nspositions.length - 1);
 		}
 
-		if (kind > 5)
+		if (kind > cp_nsset)
 		{
 			index += (pools[poolIndex].nsspositions.length == 0) ? 0 : (pools[poolIndex].nsspositions.length - 1);
 		}
 
-		if (kind > 6)
+		if (kind > cp_mn)
 		{
 			index += (pools[poolIndex].mnpositions.length == 0) ? 0 : (pools[poolIndex].mnpositions.length - 1);
 		}
@@ -672,7 +756,7 @@ final class IndexHistory
 	    int[] positions = null;
 	    int length = 0, endPos = 0;
 
-	    if (kind == 0)
+	    if (kind == cp_int)
 	    {
 		    positions = pool.intpositions;
 		    length = positions.length;
@@ -680,7 +764,7 @@ final class IndexHistory
 		    baPool = intP;
 		    poolIn = pool.in;
 	    }
-	    else if (kind == 1)
+	    else if (kind == cp_uint)
 	    {
 		    positions = pool.uintpositions;
 		    length = positions.length;
@@ -688,7 +772,7 @@ final class IndexHistory
 		    baPool = uintP;
 		    poolIn = pool.in;
 	    }
-	    else if (kind == 2)
+	    else if (kind == cp_double)
 	    {
 		    positions = pool.doublepositions;
 		    length = positions.length;
@@ -696,7 +780,16 @@ final class IndexHistory
 		    baPool = doubleP;
 		    poolIn = pool.in;
 	    }
-	    else if (kind == 3)
+	    else if (kind == cp_decimal)
+	    {
+	    	assert(hasDecimal);
+		    positions = pool.decimalpositions;
+		    length = positions.length;
+		    endPos = pool.decimalEnd;
+		    baPool = decimalP;
+		    poolIn = pool.in;
+	    }
+	    else if (kind == cp_string)
 	    {
 		    positions = pool.strpositions;
 		    length = positions.length;
@@ -704,7 +797,7 @@ final class IndexHistory
 		    baPool = stringP;
 		    poolIn = pool.in;
 	    }
-	    else if (kind == 4)
+	    else if (kind == cp_ns)
 	    {
 		    positions = pool.nspositions;
 		    length = positions.length;
@@ -712,7 +805,7 @@ final class IndexHistory
 		    baPool = nsP;
 		    poolIn = pool.in;
 	    }
-	    else if (kind == 5)
+	    else if (kind == cp_nsset)
 	    {
 		    positions = pool.nsspositions;
 		    length = positions.length;
@@ -720,7 +813,7 @@ final class IndexHistory
 		    baPool = nssP;
 		    poolIn = pool.in;
 	    }
-	    else if (kind == 6)
+	    else if (kind == cp_mn)
 	    {
 		    positions = pool.mnpositions;
 		    length = positions.length;
@@ -732,20 +825,20 @@ final class IndexHistory
 	    int start = positions[j];
 	    int end = (j != length - 1) ? positions[j + 1] : endPos;
 
-	    if (kind == 4)
+	    if (kind == cp_ns)
 	    {
 		    int pos = positions[j];
 		    int originalPos = poolIn.pos();
 		    poolIn.seek(pos);
-		    start = in4.size();
+		    start = in_ns.size();
 		    int nsKind = poolIn.readU8();
-		    in4.writeU8(nsKind);
+		    in_ns.writeU8(nsKind);
 		    switch (nsKind)
 		    {
 		    case CONSTANT_PrivateNamespace:
                 if( this.disableDebuggingInfo )
                 {
-                    in4.writeU32(0); // name not important for private namespace
+                    in_ns.writeU32(0); // name not important for private namespace
                     break;
                 }
                 // else fall through and treat like a normal namespace
@@ -756,22 +849,22 @@ final class IndexHistory
             case CONSTANT_ExplicitNamespace:
             case CONSTANT_StaticProtectedNs:				
 			    int index = (int) poolIn.readU32();
-			    int newIndex = getIndex(poolIndex, 3, index); // 3 = String
-			    in4.writeU32(newIndex);
+			    int newIndex = getIndex(poolIndex, cp_string, index);
+			    in_ns.writeU32(newIndex);
 			    break;
 		    default:
 			    assert false; // can't possibly happen...
 		    }
             poolIn.seek(originalPos);
-            end = in4.size();
-            poolIn = in4;
+            end = in_ns.size();
+            poolIn = in_ns;
 	    }
-	    else if (kind == 5)
+	    else if (kind == cp_nsset)
 	    {
 		    int pos = positions[j];
 		    int originalPos = poolIn.pos();
 		    poolIn.seek(pos);
-		    start = in5.size();
+		    start = in_nsset.size();
 
 		    /*
 		    nss.clear();
@@ -786,31 +879,31 @@ final class IndexHistory
 		    {
 			    int index = k.next();
 			    int newIndex = getIndex(poolIndex, 4, index);
-			    in5.writeU32(newIndex);
+			    in_nsset.writeU32(newIndex);
 		    }
             */
 
 		    int count = (int) poolIn.readU32();
-		    in5.writeU32(count);
+		    in_nsset.writeU32(count);
 		    for (int k = 0; k < count; k++)
 		    {
 			    int index = (int) poolIn.readU32();
-			    int newIndex = getIndex(poolIndex, 4, index);
-			    in5.writeU32(newIndex);
+			    int newIndex = getIndex(poolIndex, cp_ns, index);
+			    in_nsset.writeU32(newIndex);
 		    }
 
 		    poolIn.seek(originalPos);
-		    end = in5.size();
-		    poolIn = in5;
+		    end = in_nsset.size();
+		    poolIn = in_nsset;
 	    }
-	    else if (kind == 6)
+	    else if (kind == cp_mn)
 	    {
 		    int pos = positions[j];
 		    int originalPos = poolIn.pos();
 		    poolIn.seek(pos);
-		    start = in6.size();
+		    start = in_mn.size();
 		    int constKind = poolIn.readU8();
-		    in6.writeU8(constKind);
+		    in_mn.writeU8(constKind);
 
 		    switch (constKind)
 		    {
@@ -818,30 +911,30 @@ final class IndexHistory
 		    case CONSTANT_QnameA:
 		    {
 			    int namespaceIndex = (int) poolIn.readU32();
-			    int newNamespaceIndex = getIndex(poolIndex, 4, namespaceIndex);
-			    in6.writeU32(newNamespaceIndex);
+			    int newNamespaceIndex = getIndex(poolIndex, cp_ns, namespaceIndex);
+			    in_mn.writeU32(newNamespaceIndex);
 			    int nameIndex = (int) poolIn.readU32();
-			    int newNameIndex = getIndex(poolIndex, 3, nameIndex);
-			    in6.writeU32(newNameIndex);
+			    int newNameIndex = getIndex(poolIndex, cp_string, nameIndex);
+			    in_mn.writeU32(newNameIndex);
 			    break;
 		    }
 		    case CONSTANT_Multiname:
 		    case CONSTANT_MultinameA:
 		    {
 			    int nameIndex = (int) poolIn.readU32();
-			    int newNameIndex = getIndex(poolIndex, 3, nameIndex);
-			    in6.writeU32(newNameIndex);
+			    int newNameIndex = getIndex(poolIndex, cp_string, nameIndex);
+			    in_mn.writeU32(newNameIndex);
 			    int namespace_set = (int) poolIn.readU32();
-			    int newNamespace_set = getIndex(poolIndex, 5, namespace_set);
-			    in6.writeU32(newNamespace_set);
+			    int newNamespace_set = getIndex(poolIndex, cp_nsset, namespace_set);
+			    in_mn.writeU32(newNamespace_set);
 			    break;
 		    }
 		    case CONSTANT_RTQname:
 		    case CONSTANT_RTQnameA:
 		    {
 			    int index = (int) poolIn.readU32();
-			    int newIndex = getIndex(poolIndex, 3, index);
-			    in6.writeU32(newIndex);
+			    int newIndex = getIndex(poolIndex, cp_string, index);
+			    in_mn.writeU32(newIndex);
 			    break;
 		    }
 		    case CONSTANT_RTQnameL:
@@ -851,8 +944,8 @@ final class IndexHistory
 		    case CONSTANT_MultinameLA:
 			{
 				int namespace_set = (int) poolIn.readU32();
-				int newNamespace_set = getIndex(poolIndex, 5, namespace_set);
-				in6.writeU32(newNamespace_set);
+				int newNamespace_set = getIndex(poolIndex, cp_nsset, namespace_set);
+				in_mn.writeU32(newNamespace_set);
 				break;
 			}
 		    default:
@@ -860,8 +953,8 @@ final class IndexHistory
 		    }
 
 		    poolIn.seek(originalPos);
-		    end = in6.size();
-		    poolIn = in6;
+		    end = in_mn.size();
+		    poolIn = in_mn;
 	    }
 
 	    int newIndex = baPool.contains(poolIn, start, end);

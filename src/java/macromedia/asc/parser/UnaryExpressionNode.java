@@ -33,6 +33,7 @@ public class UnaryExpressionNode extends Node
 	public int op;
 	public ReferenceValue ref;
 	public Slot slot;
+    public NumberUsage numberUsage;
 
 	public UnaryExpressionNode(int op, Node expr)
 	{
@@ -40,6 +41,7 @@ public class UnaryExpressionNode extends Node
 		this.expr = expr;
 		void_result = false;
 		slot = null;
+		numberUsage = null;
 	}
 
 	public Value evaluate(Context cx, Evaluator evaluator)

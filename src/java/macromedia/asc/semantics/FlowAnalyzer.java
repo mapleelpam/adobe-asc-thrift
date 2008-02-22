@@ -71,6 +71,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
     private ObjectList<String> fun_name_stack = new ObjectList<String>();
     private IntList with_used_stack = new IntList();
     private IntList exceptions_used_stack = new IntList();
+    private ObjectList<NumberUsage> number_usage_stack = new ObjectList<NumberUsage>();
 
     private ObjectList<String> region_name_stack = new ObjectList<String>();
     private String package_name = "";
@@ -189,6 +190,42 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
         if( node.ref == null)
         {
+            if( node instanceof TypeIdentifierNode )
+            {
+                // Transform references to Vector.<T> to a concrete class
+                // this can be removed once type parameters are fully suported.
+                TypeIdentifierNode tin = (TypeIdentifierNode)node;
+                if("Vector".equals(tin.name) && tin.typeArgs.items.size() == 1)
+                {
+                    Value val2 = tin.typeArgs.evaluate(cx, this);
+                    ReferenceValue typeref = val2 instanceof ReferenceValue ? (ReferenceValue)val2 : null;
+                    if( typeref != null)
+                    {
+                        Value type = typeref.getValue(cx);
+                        NodeFactory nf = cx.getNodeFactory();
+                        if( type == cx.intType() )
+                        {
+                            node.name = "Vector$int";
+                        }
+                        else if ( type == cx.uintType() )
+                        {
+                            node.name = "Vector$uint";
+                        }
+                        else if ( type == cx.numberType() )
+                        {
+                            node.name = "Vector$double";
+                        }
+                        else
+                        {
+                            node.name = "Vector$object";
+                        }
+                    }
+                }
+                else
+                {
+                    // TODO: error
+                }
+            }
             Namespaces namespaces;
 
             // Add the namespaces associated with
@@ -464,6 +501,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
             System.out.print("\n// +LiteralNumber");
         }
 
+    	node.numberUsage = number_usage_stack.last();
         getEmitter().AddStmtToBlock(node.toString());
 
         if (debug)
@@ -673,6 +711,12 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
     public Value evaluate(Context cx, CallExpressionNode node)
     {
+        if( node.ref != null )
+        {
+            // Already evaluated this node
+            return node.ref;
+        }
+
         if (debug)
         {
             System.out.print("\n// +CallExpression");
@@ -696,6 +740,23 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         else
         {
             node.ref = null;
+        }
+
+        if( node.ref != null && "Vector$object".equals(node.ref.name) && node.ref.namespaces.contains(cx.publicNamespace()))
+        {
+            if(node.expr instanceof TypeIdentifierNode)
+            {
+                TypeIdentifierNode tin = (TypeIdentifierNode)node.expr;
+                int args_size = node.args != null ? node.args.size():0;
+                ObjectList<Node> new_args = new ObjectList<Node>(args_size+1);
+                new_args.push_back(tin.typeArgs.items.at(0));
+                if( node.args != null )
+                {
+                    new_args.addAll(node.args.items);
+                }
+                node.args = cx.getNodeFactory().argumentList(null, null);
+                node.args.items = new_args;
+            }
         }
 
         if( node.isAttributeIdentifier() )
@@ -778,6 +839,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                 Slot slot = null;
                 node.ref.setBase(node.base);  // inherited attribute
                 slot = node.ref.getSlot(cx, GET_TOKEN);
+                node.ref.setKind(SET_TOKEN);
                 if (slot != null)
                 {
                     slot.addDefBits(node.gen_bits);
@@ -845,6 +907,8 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         int t1 = allocateTemp();  // approximation of actual temp usage.
         int t2 = allocateTemp();
         int t3 = allocateTemp();
+        
+        node.numberUsage = number_usage_stack.last();
 
         getEmitter().AddStmtToBlock(node.toString());
 
@@ -886,6 +950,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         getEmitter().AddStmtToBlock(node.toString());
 
         node.expr.evaluate(cx, this);
+        node.numberUsage = number_usage_stack.last();
 
         if (debug)
         {
@@ -907,6 +972,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
         node.lhs.evaluate(cx, this);
         node.rhs.evaluate(cx, this);
+        node.numberUsage = number_usage_stack.last();
 
         if (debug)
         {
@@ -950,8 +1016,11 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
 	    for (int i = 0, size = node.items.size(); i < size; i++)
         {
-	    	Node n = node.items.at(i);
-	    	n.evaluate(cx,this);
+	        Node n = node.items.get(i);
+            if (n != null)
+            {
+                n.evaluate(cx, this);
+            }
         }
 
         if (debug)
@@ -985,7 +1054,6 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         return val;
     }
 
-   
     /*
      * Statements
      */
@@ -999,6 +1067,10 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
         NodeFactory nodeFactory = cx.getNodeFactory();
 
+        if (node.has_pragma) {
+        	NumberUsage blockUsage = new NumberUsage(number_usage_stack.back());
+        	number_usage_stack.push_back(blockUsage);
+        }
         ObjectValue obj = cx.scope();
         boolean inside_class = false;
         if (obj.builder instanceof InstanceBuilder ||
@@ -1035,6 +1107,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                     if (n.isDefinition())
                     {
                         DefinitionNode def = ((n instanceof DefinitionNode) ? (DefinitionNode)n : null);
+
                         // Eval the definition. At this point we are iterating backward
                         // (to find the end point dominator) so definitions are ordered
                         // last to first. This is weird, but should not be a problem
@@ -1255,6 +1328,10 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
             default_namespaces.pop_back();
         }
 */
+        if (node.has_pragma) {
+        	node.numberUsage = number_usage_stack.back();
+        	number_usage_stack.pop_back();
+        }
         if (debug)
         {
             System.out.print("\n// -StatementListNode");
@@ -2482,6 +2559,8 @@ if (node.state == ProgramNode.Inheritance)
 
         this_contexts.add(global_this);
         super_context.add(super_error);
+        
+        number_usage_stack.add(new NumberUsage());	// place to hang numeric usage info
 
         // Function expressions that occur in the current block will be
         // compiled as though they had occured at the end of the block.
@@ -3117,7 +3196,7 @@ else
 
         if (node.initializer != null)
         {
-        	if( cx.dialect(Features.DIALECT_ES4) && cx.scope().builder instanceof InstanceBuilder )
+        	if( cx.statics.es4_nullability && cx.scope().builder instanceof InstanceBuilder )
         	{
         		// Initializers for instance variables should not have access to this.
         		cx.scope().setInitOnly(true);
@@ -3126,12 +3205,12 @@ else
         	
             node.initializer.evaluate(cx,this);
 
-        	if( cx.dialect(Features.DIALECT_ES4) && cx.scope().builder instanceof InstanceBuilder )
+        	if( cx.statics.es4_nullability && cx.scope().builder instanceof InstanceBuilder )
         	{
         		cx.scope().setInitOnly(false);
             	this_contexts.pop_back();
         	}
-        }
+         }
 
         ObjectValue obj = getVariableDefinitionScope(cx);
 
@@ -4268,7 +4347,7 @@ else
                     node.cframe.type = cx.typeType().getDefaultTypeInfo();
                     if( node.cframe.prototype != null )
                     {
-                    	node.cframe.prototype.clearInstance(cx,new InstanceBuilder(fullname),node.cframe, "",true);
+                    	node.cframe.prototype.clearInstance(cx,new InstanceBuilder(fullname),node.cframe, "", true);
                     	node.iframe = node.cframe.prototype;
                     }
                     else
@@ -4715,12 +4794,12 @@ else
             {
                 for (Node n : node.instanceinits)
                 {
-                	if( cx.dialect(Features.DIALECT_ES4)  && !n.isDefinition())
+                	if( cx.statics.es4_nullability  && !n.isDefinition())
                 		node.iframe.setInitOnly(true);
 
                 	n.evaluate(cx, this);
 
-                	if( cx.dialect(Features.DIALECT_ES4)  && !n.isDefinition())
+                	if( cx.statics.es4_nullability  && !n.isDefinition())
                 		node.iframe.setInitOnly(false);
 
                 }
@@ -5333,7 +5412,8 @@ else
                                     {
                                         node.hasFalse = true;
                                     }
-                                    if( !(cx.scope().builder instanceof ClassBuilder || cx.scope().builder instanceof InstanceBuilder) )                                    {
+                                    if( !(cx.scope().builder instanceof ClassBuilder || cx.scope().builder instanceof InstanceBuilder) )
+                                    {
                                         cx.error(node.pos()-1, kError_InvalidNamespace);
                                     }
                                     else
@@ -5778,7 +5858,7 @@ else
         Namespaces hasNamespaces = obj.hasNames(cx,GET_TOKEN,node.ref.name,namespaces);
         if( hasNamespaces != null )
         {
-    		cx.error(node.pos()-1, kError_DuplicateNamespaceDefinition);
+            cx.error(node.pos()-1, kError_DuplicateNamespaceDefinition);
         }
         else
         {
@@ -5935,7 +6015,68 @@ else
 
     public Value evaluate(Context cx, PragmaNode node)
     {
-        cx.internalError(node.pos(), "PragmaNode not yet implemented");
+        if (debug)
+        {
+            System.out.print("\n// +PragmaNode");
+        }
+        if (node.list != null)
+        	node.list.evaluate(cx, this);
+
+        if (debug)
+        {
+            System.out.print("\n// -PragmaNode");
+        }
+        return null;
+     }
+
+    public Value evaluate(Context cx, UsePrecisionNode node)
+    {
+        if (debug)
+        {
+            System.out.print("\n// +UsePrecisionNode");
+        }
+        NumberUsage currentParams = number_usage_stack.last();
+        if ((1 <= node.precision) && (node.precision <= 34)) {
+        		currentParams.set_precision(node.precision);
+        }
+        else {
+        	cx.error(node.pos(), kError_InvalidPrecision);
+        }
+        if (debug)
+        {
+            System.out.print("\n// -UsePrecisionNode");
+        }
+        return null;
+    }
+
+    public Value evaluate(Context cx, UseNumericNode node)
+    {
+        if (debug)
+        {
+            System.out.print("\n// +UseNumericNode");
+        }
+        NumberUsage currentParams = number_usage_stack.last();
+        currentParams.set_usage(node.numeric_mode);
+        if (debug)
+        {
+            System.out.print("\n// -UseNumericNode");
+        }
+        return null;
+    }
+
+    public Value evaluate(Context cx, UseRoundingNode node)
+    {
+        if (debug)
+        {
+            System.out.print("\n// +UseRoundingNode");
+        }
+        NumberUsage currentParams = number_usage_stack.last();
+        currentParams.set_rounding(node.mode);
+        
+        if (debug)
+        {
+            System.out.print("\n// -UseRoundingNode");
+        }
         return null;
     }
 
@@ -6283,5 +6424,4 @@ else
         }
         return v;
     }
-
 }

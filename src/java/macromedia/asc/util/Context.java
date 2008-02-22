@@ -53,6 +53,7 @@ import static macromedia.asc.embedding.avmplus.RuntimeConstants.*;
  */
 public final class Context implements ErrorConstants
 {
+	
     private String parser_scanner_input_origin;
     private String qualified_origin;
     public Parser parser;
@@ -76,6 +77,10 @@ public final class Context implements ErrorConstants
     public static final String NS_PRIVATE_SUFFIX   = "$private";
     public static final String NS_PROTECTED_SUFFIX = "$protected";
     public static final String NS_STATIC_PROTECTED_SUFFIX = "$staticprotected";
+    
+    
+    public Decimal128Context decimal_ctx;
+    public int decimalParams;
 
     private static int contextIds=0;
     private int contextId;
@@ -123,6 +128,8 @@ public final class Context implements ErrorConstants
         this.parser = origCtx.parser;
         this.parser_scanner_input_origin = origCtx.parser_scanner_input_origin;
 	this.qualified_origin = origCtx.qualified_origin;
+        this.decimal_ctx = origCtx.decimal_ctx;
+        this.decimalParams = origCtx.decimalParams;
     }
 
     // A context holds the parser_scanner_input_origin of the input file where the current code comes from.
@@ -627,7 +634,7 @@ public final class Context implements ErrorConstants
             {
                 // else, keep using current type
             }
-            else if ((type.getTypeId() & def_types.get(i).getTypeId()) == 0)
+            else if (type != null && (type.getTypeId() & def_types.get(i).getTypeId()) == 0)
             {
                 // ISSUE: Why don't some definitions have their type set?
                 // See: moz\tests\ecma_2\Statements\dowhile-006
@@ -773,9 +780,7 @@ public final class Context implements ErrorConstants
                     // do nothing, e4x values are string values transparently (i.e. without having to call toString()/toXMLString()).
                 }
                     // unrelated cast (unless its between number types)
-                else if ( !((expected.getTypeValue() == numberType() && (actual[0].getTypeValue() == intType() || actual[0].getTypeValue() == uintType())) ||
-                    (expected.getTypeValue() == uintType() && (actual[0].getTypeValue() == intType() || actual[0].getTypeValue() == numberType())) ||
-                    (expected.getTypeValue() == intType() && (actual[0].getTypeValue() == uintType() || actual[0].getTypeValue() == numberType())) )) // always allow coercion between number types
+                else if ( !(expected.isNumeric(this) && actual[0].isNumeric(this))) // always allow coercion between number types
                 {
                     error(expr.pos()-1, kError_ImplicitCoercisionOfUnrelatedType, actual[0].getName(this).toString(), expected.getName(this).toString());
                 }
@@ -1174,19 +1179,54 @@ public final class Context implements ErrorConstants
 
     public TypeValue numberType()
     {
+    	// treated the same as double
         if (statics._numberType == null)
         {
             String name = "Number";
             QName qname = new QName(publicNamespace(), name);
             ObjectValue protected_namespace = getNamespace(qname.toString(), NS_PROTECTED);
             ObjectValue static_protected_namespace = getNamespace(qname.toString(), NS_STATIC_PROTECTED);
-            statics._numberType = new TypeValue(this, new ClassBuilder(qname,protected_namespace,static_protected_namespace), qname, TYPE_number);
+            statics._numberType = new TypeValue(this, new ClassBuilder(qname,protected_namespace,static_protected_namespace), qname, TYPE_double);
             statics._numberType.prototype = new ObjectValue(this, new InstanceBuilder(qname), statics._numberType);
             statics.builtins.put(name, statics._numberType);
         }
         return statics._numberType;
     }
 
+    public TypeValue doubleType()
+    {
+    	if (!statics.es4_numerics)	// to deal with old Global.abc files without double defined.
+    		return numberType();
+        if (statics._doubleType == null)
+        {
+            String name = "double";
+            QName qname = new QName(publicNamespace(), name);
+            ObjectValue protected_namespace = getNamespace(qname.toString(), NS_PROTECTED);
+            ObjectValue static_protected_namespace = getNamespace(qname.toString(), NS_STATIC_PROTECTED);
+            statics._doubleType = new TypeValue(this, new ClassBuilder(qname,protected_namespace,static_protected_namespace), qname, TYPE_double);
+            statics._doubleType.baseclass = objectType(); // since this is not in older Global.abc
+            statics._doubleType.prototype = new ObjectValue(this, new InstanceBuilder(qname), statics._doubleType);
+            statics.builtins.put(name, statics._doubleType);
+        }
+        return statics._doubleType;
+    }
+
+    public TypeValue decimalType()
+    {
+    	// leave null unless es4_numerics
+        if (statics._decimalType == null && statics.es4_numerics)
+        {
+            String name = "decimal";
+            QName qname = new QName(publicNamespace(), name);
+            ObjectValue protected_namespace = getNamespace(qname.toString(), NS_PROTECTED);
+            ObjectValue static_protected_namespace = getNamespace(qname.toString(), NS_STATIC_PROTECTED);
+            statics._decimalType = new TypeValue(this, new ClassBuilder(qname,protected_namespace,static_protected_namespace), qname, TYPE_decimal);
+            statics._decimalType.prototype = new ObjectValue(this, new InstanceBuilder(qname), statics._decimalType);
+            statics.builtins.put(name, statics._decimalType);
+        }
+        return statics._decimalType;
+    }
+    
     public TypeValue xmlType()
     {
         if (statics._xmlType == null)
@@ -1318,13 +1358,21 @@ public final class Context implements ErrorConstants
     }
 
     /**
-     * Check which version of the language we're compiling for.  9 is ES3, 10 is AS3, 11 is ES4.
+     * Check which version of the language we're compiling for.  9 is ES3, 10 is AS3
      * @param n
-     * @return
      */
     public boolean dialect(int n)
     {
         return statics.dialect == n;
+    }
+
+    /**
+     * check which version of the VM we're compiling for.  Returns true if the target is
+     * greater or equal to the version passed in
+     */
+    public boolean abcVersion(int n)
+    {
+        return statics.abc_version >= n;
     }
 
     public boolean isNamespace( String ns_name )
@@ -1387,7 +1435,7 @@ public final class Context implements ErrorConstants
         }
 
         UnresolvedNamespace ns = new UnresolvedNamespace(cx, node, ref);
-        ns.name = "__unresolved__ns__" + statics.unresolved_ns_count++;
+        ns.name = ("__unresolved__ns__" + statics.unresolved_ns_count++).intern();
         ObjectList<ObjectValue> scopes = new ObjectList<ObjectValue>(statics.scopes);
         unresolved_namespaces.put(ns, scopes);
         return ns;
@@ -1478,10 +1526,10 @@ public final class Context implements ErrorConstants
                          (kind_part.length() != 0) ? name+kind_part : name);
     }
 
-	public ObjectList<Node> getComments()
-	{
-		return comments;
-	}
+    public ObjectList<Node> getComments()
+    {
+        return comments;
+    }
 
     public String toString() {
       if(Node.useDebugToStrings)

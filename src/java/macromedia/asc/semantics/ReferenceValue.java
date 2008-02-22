@@ -168,7 +168,9 @@ public final class ReferenceValue extends Value implements ErrorConstants
 
             if( slottype.getTypeValue().includes(cx,deftype != null ? deftype.getTypeValue() : null))
             {
-                if (slottype.getTypeValue() == cx.numberType() || slottype.getTypeValue() == cx.noType()) // exception for number & object
+            	TypeValue tv = slottype.getTypeValue();
+            	// RES I'm not sure whether isNumber is right since old code didn't do this for int
+                if (tv.isNumeric(cx) || (tv == cx.noType())) // exception for number & object
                     this.type = slottype;
                 else
                     this.type = deftype;

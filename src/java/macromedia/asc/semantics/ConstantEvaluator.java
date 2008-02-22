@@ -32,6 +32,10 @@ import macromedia.asc.util.IntList;
 import macromedia.asc.util.Names;
 import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.ObjectList;
+import macromedia.asc.util.NumberUsage;
+import macromedia.asc.util.Decimal128Context;
+import macromedia.asc.util.Decimal128;
+import macromedia.asc.util.NumberConstant;
 
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.*;
@@ -75,6 +79,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
     //  all source files prior to the normal CE evaluation of each source file.  This flag
     //  prevents us from performing PreprocessTypeInfo step twice in that case.
     private boolean typeInfoPreprocessing_complete;  
+    
+    private Decimal128Context currentDecimalContext;
 
 
     public ConstantEvaluator(Context cx)
@@ -138,7 +144,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 	    for (int i = 0, size = defList.size(); i < size; i++)
         {
 	        Node it = defList.get(i);
-			if (it instanceof LabeledStatementNode)        
+			if (it instanceof LabeledStatementNode)
 			{
 				it = ((LabeledStatementNode)it).statement;
 			}
@@ -200,6 +206,10 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             else if( it instanceof BinaryProgramNode )
             {
                 PreprocessDefinitionTypeInfo(cx, ((BinaryProgramNode)it));
+            }
+            else if( it instanceof StatementListNode )
+            {
+                PreprocessDefinitionTypeInfo(cx, ((StatementListNode)it).items, static_context);
             }
             else if (static_context == false)
             {   // deal with blocks created for for, with, try, catch, and finally clauses.
@@ -982,9 +992,11 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         //  the emitter has to first convert the string into a number to see if it fits
         //  into its int representation.
         TypeValue[] type = new TypeValue[1];
-        node.numericValue = cx.getEmitter().getValueOfNumberLiteral( node.value, type);
+        node.numericValue = cx.getEmitter().getValueOfNumberLiteral( node.value, type, node.numberUsage);
         node.type = type[0];
-        return new ObjectValue(node.value, node.type);
+        ObjectValue ret = new ObjectValue(node.value, node.type);
+        ret.setNumberUsage(node.numberUsage);
+        return ret;
     }
 
     public Value evaluate(Context cx, LiteralStringNode node)
@@ -1212,6 +1224,24 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         Value val = node.expr.evaluate(cx, this);
         TypeInfo[] type = new TypeInfo[1];
         type[0] = val.getType(cx);
+        
+        TypeValue currentNumberType = cx.doubleType();
+        if (node.numberUsage != null)
+        	switch (node.numberUsage.get_usage()) {
+         	case NumberUsage.use_int:
+        		currentNumberType = cx.intType();
+        		break;
+        	case NumberUsage.use_uint:
+        		currentNumberType = cx.uintType();
+        		break;
+        	case NumberUsage.use_decimal:
+        		currentNumberType = cx.decimalType();
+        		break;
+        	case NumberUsage.use_double:
+        	case NumberUsage.use_Number:
+        	default:
+        		currentNumberType = cx.doubleType();
+        	}
 
         switch (node.op)
         {
@@ -1223,15 +1253,15 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 break;
             case PLUS_TOKEN:
                 slot_index = SLOT_Global_UnaryPlusOp;
-                cx.coerce(node.expr,type,cx.numberType().getDefaultTypeInfo());
+                cx.coerce(node.expr,type,currentNumberType.getDefaultTypeInfo());
                 break;
             case MINUS_TOKEN:
                 slot_index = SLOT_Global_UnaryMinusOp;
-                cx.coerce(node.expr,type,cx.numberType().getDefaultTypeInfo());
+                cx.coerce(node.expr,type,currentNumberType.getDefaultTypeInfo());
                 break;
             case BITWISENOT_TOKEN:
                 slot_index = SLOT_Global_BitwiseNotOp;
-                cx.coerce(node.expr,type,cx.numberType().getDefaultTypeInfo());
+                cx.coerce(node.expr,type,currentNumberType.getDefaultTypeInfo());
                 break;
             case NOT_TOKEN:
                 slot_index = SLOT_Global_LogicalNotOp;
@@ -1290,6 +1320,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             val = null;
         }
 
+        TypeInfo type = val != null ? val.getType(cx) : null;
+
         if (node.ref != null)
         {
             node.ref.calcUseDefinitions(cx, rch_bits);
@@ -1328,7 +1360,6 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
 
         }
-        TypeInfo type = val != null ? val.getType(cx) : null;
         ObjectValue global = cx.builtinScope();
         int slot_index = 0;
         switch (node.op)
@@ -1354,7 +1385,25 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         TypeInfo atype[] = new TypeInfo[1];
         atype[0] = s != null ? s.getType() : val!=null ? val.getType(cx) : cx.noType().getDefaultTypeInfo();      // get the static type from the reference value, or literal
 
-        cx.coerce(node.expr,atype,cx.numberType().getDefaultTypeInfo());
+        
+        TypeValue currentNumberType = cx.doubleType();
+        if (node.numberUsage != null)
+        	switch (node.numberUsage.get_usage()) {
+         	case NumberUsage.use_int:
+        		currentNumberType = cx.intType();
+        		break;
+        	case NumberUsage.use_uint:
+        		currentNumberType = cx.uintType();
+        		break;
+        	case NumberUsage.use_decimal:
+        		currentNumberType = cx.decimalType();
+        		break;
+        	case NumberUsage.use_double:
+        	case NumberUsage.use_Number:
+        	default:
+        		currentNumberType = cx.doubleType();
+        	}
+        cx.coerce(node.expr,atype,currentNumberType.getDefaultTypeInfo());
 
         return type != null ? type.getPrototype() : null;
     }
@@ -1429,15 +1478,13 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     else if (lhstype[0].getTypeValue() == cx.nullType() || rhstype[0].getTypeValue() == cx.nullType())
                     {
                         if (lhstype[0].getTypeValue() == cx.nullType() &&
-                            (rhstype[0].getTypeValue() == cx.numberType() || rhstype[0].getTypeValue() == cx.intType() ||
-                             rhstype[0].getTypeValue() == cx.uintType()   || rhstype[0].getTypeValue() == cx.booleanType() ))
+                            (rhstype[0].getTypeValue().isNumeric(cx)   || rhstype[0].getTypeValue() == cx.booleanType() ))
                         {
                             cx.error(node.pos()-1, kError_IncompatableValueComparison, lhstype[0].getName(cx).toString(), rhstype[0].getName(cx).toString());
                         }
                             // yes, this could be combined with the above, but it would be hard to read
                         else if (rhstype[0].getTypeValue() == cx.nullType() &&
-                                 (lhstype[0].getTypeValue() == cx.numberType() || lhstype[0].getTypeValue() == cx.intType() ||
-                                  lhstype[0].getTypeValue() == cx.uintType()   || lhstype[0].getTypeValue() == cx.booleanType() ))
+                                 (lhstype[0].getTypeValue().isNumeric(cx)   || lhstype[0].getTypeValue() == cx.booleanType() ))
                         {
                             cx.error(node.pos()-1, kError_IncompatableValueComparison, lhstype[0].getName(cx).toString(), rhstype[0].getName(cx).toString());
                         }
@@ -1450,8 +1497,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                         // no problem, <a>test</a> == "test"; // is true
                     }
                     // Check for comparision between unrelated types (unless its between number types)
-                    else if ( !((lhstype[0].getTypeValue() == cx.numberType() || lhstype[0].getTypeValue() == cx.intType() || lhstype[0].getTypeValue() == cx.uintType()) &&
-                        (rhstype[0].getTypeValue() == cx.numberType() || rhstype[0].getTypeValue() == cx.intType() || rhstype[0].getTypeValue() == cx.uintType())) )
+                    else if ( !((lhstype[0].getTypeValue().isNumeric(cx)) && (rhstype[0].getTypeValue().isNumeric(cx))) )
                     {
                         cx.error(node.pos()-1, kError_IncompatableValueComparison, lhstype[0].getName(cx).toString(), rhstype[0].getName(cx).toString());
                     }
@@ -1462,28 +1508,48 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
         TypeValue lhstypeval = lhstype[0] != null ? lhstype[0].getTypeValue() : null;
         TypeValue rhstypeval = rhstype[0] != null ? rhstype[0].getTypeValue() : null;
+        
+        TypeValue currentNumberType = cx.doubleType();
+        if (node.numberUsage != null)
+        	switch (node.numberUsage.get_usage()) {
+         	case NumberUsage.use_int:
+        		currentNumberType = cx.intType();
+        		break;
+        	case NumberUsage.use_uint:
+        		currentNumberType = cx.uintType();
+        		break;
+        	case NumberUsage.use_decimal:
+        		currentNumberType = cx.decimalType();
+        		break;
+        	case NumberUsage.use_double:
+        	case NumberUsage.use_Number:
+        	default:
+        		currentNumberType = cx.doubleType();
+        	}
+
 
         // now process op as normal
         switch (node.op)
         {
             case MULT_TOKEN:
                 slot_index = SLOT_Global_MultiplyOp;
+                // RES this is probably wrong with uint as a full citizen
                 if ((lhstypeval == cx.intType() || lhstypeval == cx.uintType()) && (rhstypeval == cx.intType() || rhstypeval == cx.uintType()))
                 {
                     resultType = cx.intType().getDefaultTypeInfo();
                 }
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 break;
             case DIV_TOKEN:
                 slot_index = SLOT_Global_DivideOp;
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 break;
             case MODULUS_TOKEN:
                 slot_index = SLOT_Global_ModulusOp;
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 break;
             case PLUS_TOKEN:
                 if( lhsval != null && rhsval != null && lhsval.hasValue() && rhsval.hasValue() )
@@ -1505,10 +1571,10 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 {
                     resultType = cx.xmlListType().getDefaultTypeInfo();
                 }
-                else if ( (lhstypeval == cx.numberType() || lhstypeval == cx.intType() || lhstypeval == cx.uintType()) &&
-                          (rhstypeval == cx.numberType() || rhstypeval == cx.intType() || rhstypeval == cx.uintType()) )
+                else if ( (lhstypeval != null) && (lhstypeval.isNumeric(cx)) &&
+                          (rhstypeval != null) && (rhstypeval.isNumeric(cx)) )
                 {
-                    resultType = cx.numberType().getDefaultTypeInfo();
+                    resultType = currentNumberType.getDefaultTypeInfo();
                 }
                 else if ( lhstypeval == cx.stringType() || rhstypeval == cx.stringType() ) // anything + a string is a string.
                 {
@@ -1522,25 +1588,25 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 break;
             case MINUS_TOKEN:
                 slot_index = SLOT_Global_BinaryMinusOp;
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 if ((lhstypeval == cx.intType() || lhstypeval == cx.uintType()) && (rhstypeval == cx.intType() || rhstypeval == cx.uintType()))
                     resultType = cx.intType().getDefaultTypeInfo();
                 break;
             case LEFTSHIFT_TOKEN:
                 slot_index = SLOT_Global_LeftShiftOp;
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 break;
             case RIGHTSHIFT_TOKEN:
                 slot_index = SLOT_Global_RightShiftOp;
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 break;
             case UNSIGNEDRIGHTSHIFT_TOKEN:
                 slot_index = SLOT_Global_UnsignedRightShiftOp;
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 break;
             case LESSTHAN_TOKEN:
                 slot_index = SLOT_Global_LessThanOp;
@@ -1582,18 +1648,18 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 break;
             case BITWISEAND_TOKEN:
                 slot_index = SLOT_Global_BitwiseAndOp;
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 break;
             case BITWISEXOR_TOKEN:
                 slot_index = SLOT_Global_BitwiseXorOp;
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 break;
             case BITWISEOR_TOKEN:
                 slot_index = SLOT_Global_BitwiseOrOp;
-                cx.coerce(node.lhs,lhstype,cx.numberType());
-                cx.coerce(node.rhs,rhstype,cx.numberType());
+                cx.coerce(node.lhs,lhstype,currentNumberType);
+                cx.coerce(node.rhs,rhstype,currentNumberType);
                 break;
             case LOGICALAND_TOKEN:
                 slot_index = SLOT_Global_LogicalAndOp;
@@ -1651,7 +1717,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
             if( lhsval instanceof ObjectValue && rhsval instanceof ObjectValue )
             {
-                val = computeBinaryExpr(cx,node.op,(ObjectValue)lhsval,(ObjectValue)rhsval);
+                val = computeBinaryExpr(cx,node.op,(ObjectValue)lhsval,(ObjectValue)rhsval, node.numberUsage);
             }
             else if (resultType != null)
             {
@@ -1667,7 +1733,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
     }
 
 
-    public Value computeBinaryExpr(Context cx, int op, ObjectValue lv, ObjectValue rv)
+    public Value computeBinaryExpr(Context cx, int op, ObjectValue lv, ObjectValue rv, NumberUsage numberUsage)
     {
         ObjectValue val = null;
         TypeInfo lt = lv.getType(cx);
@@ -1681,66 +1747,202 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             case MINUS_TOKEN:
             case MULT_TOKEN:
             case DIV_TOKEN:
-//            case MODULUS_TOKEN:
-            {
-                if( (ltval == cx.numberType() || ltval == cx.intType() || ltval == cx.uintType()) &&
-                    (rtval == cx.numberType() || rtval == cx.intType() || rtval == cx.uintType()) )
-                {
-                    TypeValue[] type = new TypeValue[1];
-                    double ld = cx.getEmitter().getValueOfNumberLiteral( lv.getValue(), type);
-                    double rd = cx.getEmitter().getValueOfNumberLiteral( rv.getValue(), type);
-                    double d = 0.0/0;
-
-                    switch( op )
-                    {
-                    case MINUS_TOKEN:
-                        d = ld-rd;
-                        break;
-                    case MULT_TOKEN:
-                        d = ld*rd;
-                        break;
-                    case DIV_TOKEN:
-                        d = ld/rd;
-                        break;
-/*
-                    case MODULUS_TOKEN:
-                        d = ld%rd;
-                        break;
-*/
-                    default:
-
-                    }
-                    val = new ObjectValue(Double.toString(d), cx.numberType());
-                }
-                break;
-            }
             case PLUS_TOKEN:
+            case MODULUS_TOKEN:
             {
-                if( (ltval == cx.numberType() || ltval == cx.intType() || ltval == cx.uintType()) &&
-                    (rtval == cx.numberType() || rtval == cx.intType() || rtval == cx.uintType()) )
+                if( (ltval != null) && ltval.isNumeric(cx) && rtval.isNumeric(cx) )
                 {
-                    TypeValue[] type = new TypeValue[1];
-                    double ld = cx.getEmitter().getValueOfNumberLiteral( lv.getValue(), type);
-                    double rd = cx.getEmitter().getValueOfNumberLiteral( rv.getValue(), type);
-                    double d = 0.0/0;
-                    val = new ObjectValue(Double.toString(d), cx.numberType());
-                }
-/*
-                else
-                if( lt == cx.stringType() || rt == cx.stringType() )
-                {
-                    String ls = lv.toString();
-                    String rs = rv.toString();
-                    val = new ObjectValue(ls+rs,cx.stringType());
+                    TypeValue[] ltype = new TypeValue[1];
+                    TypeValue[] rtype = new TypeValue[1];
+                    NumberConstant lval = cx.getEmitter().getValueOfNumberLiteral( lv.getValue(), ltype, numberUsage);
+                    NumberConstant rval = cx.getEmitter().getValueOfNumberLiteral( rv.getValue(), rtype, numberUsage);
+                    
+                    boolean forceType = true;
+                    int usage = numberUsage.get_usage();
+                    if (usage == NumberUsage.use_Number) {
+                       	/* in this case, the types of the operands determine the type of the result */
+                    	forceType = false;
+                    	if (cx.statics.es4_numerics && ((ltype[0] == cx.decimalType()) || (rtype[0] == cx.decimalType()))) {
+                    		usage = NumberUsage.use_decimal;
+                    	}
+                    	//else usage = Context.NU_DOUBLE; // we could overflow
+                    	
+                    	else if ((ltype[0] == cx.doubleType()) || (rtype[0] == cx.doubleType()) ||
+                    			(ltype[0] == cx.numberType()) || (rtype[0] == cx.numberType())) {
+                    		usage = NumberUsage.use_double;
+                    	}
+                    	else if ((ltype[0] == cx.intType()) || (rtype[0] == cx.uintType())) {
+                    		if (lval.intValue() >= 0)
+                    			usage = NumberUsage.use_uint;
+                    		else
+                    			usage = NumberUsage.use_double;
+                    	}
+                    	else if ((ltype[0] == cx.uintType()) || (rtype[0] == cx.intType())) {
+                    		if (rval.intValue() >= 0)
+                    			usage = NumberUsage.use_uint;
+                    		else
+                    			usage = NumberUsage.use_double;
+                    	}
+                    	else
+                    		usage = NumberUsage.use_int;
+                    }
+                    switch (usage) {
+                    case NumberUsage.use_decimal: {
+                    	Decimal128 d = Decimal128.NaN;
+                    	Decimal128 ld = lval.decimalValue();
+                    	Decimal128 rd = rval.decimalValue();
+                    	currentDecimalContext.setPrecision(numberUsage.get_precision());
+                    	currentDecimalContext.setRoundingMode(numberUsage.get_java_roundingMode());
+                    	switch ( op ) {
+                    	case MINUS_TOKEN:
+                    		d = ld.subtract(rd, currentDecimalContext);
+                    		break;
+                    	case PLUS_TOKEN:
+                    		d = ld.add(rd, currentDecimalContext);
+                    		break;
+                    	case MULT_TOKEN:
+                    		d = ld.multiply(rd, currentDecimalContext);
+                    		break;
+                    	case DIV_TOKEN:
+                    		d = ld.divide(rd, currentDecimalContext);
+                    		break;
+                    	case MODULUS_TOKEN:
+                    		d = ld.remainder(rd, currentDecimalContext);
+                    		break;
+                    	default: // shouldn't be possible
+                    	}
+                    	// we won't be here unless cx.statics.es4_numerics is true
+                    	val = new ObjectValue(d.toString() + "m", cx.decimalType());
+                    	break;
+                    } // case NU_DECIMAL
+                    case NumberUsage.use_double: {
+                    	double d = Double.NaN;
+                    	double ld = lval.doubleValue();
+                    	double rd = rval.doubleValue();
+                    	switch ( op ) {
+                    	case MINUS_TOKEN:
+                    		d = ld - rd;
+                    		break;
+                    	case PLUS_TOKEN:
+                    		d = ld + rd;
+                    		break;
+                    	case MULT_TOKEN:
+                    		d = ld * rd;
+                    		break;
+                    	case DIV_TOKEN:
+                    		d = ld / rd;
+                    		break;
+                    	case MODULUS_TOKEN:
+                    		d = ld % rd;
+                    		break;
+                    	default: // shouldn't be possible
+                    	}
+                    	val = new ObjectValue(Double.toString(d), cx.doubleType());
+                    	break;
+                    } // case NU_DOUBLE
+                    case NumberUsage.use_int: {
+                    	int i = 0;
+                    	int li = lval.intValue();
+                    	int ri = rval.intValue();
+                    	double d = 0;
+                    	double ld = lval.doubleValue();
+                    	double rd = rval.doubleValue();
+                    	switch ( op ) {
+                    	case MINUS_TOKEN:
+                    		i = li - ri;
+                    		d = ld - rd;
+                    		break;
+                    	case PLUS_TOKEN:
+                    		i = li + ri;
+                    		d = ld + rd;
+                    		break;
+                    	case MULT_TOKEN:
+                    		i = li * ri;
+                    		d = ld * rd;
+                    		break;
+                    	case DIV_TOKEN:
+                    		i = li / ri;
+                    		d = ld / rd;
+                    		break;
+                    	case MODULUS_TOKEN:
+                    		if (ri == 0) {
+                    			return new ObjectValue("NaN", cx.doubleType());
+                    		}
+                    		i = li % ri;
+                    		d = ld % rd;
+                    		break;
+                    	default: // shouldn't be possible
+                    	}
+                    	if (forceType || (((int)d) == i))
+                    		val = new ObjectValue(Integer.toString(i), cx.intType());
+                    	else
+                        	val = new ObjectValue(Double.toString(d), cx.doubleType());
+                    	break;
+                    } // case NU_INT
+                    case NumberUsage.use_uint: {
+                     	long d = 0;
+                    	long ld = lval.uintValue();
+                    	long rd = rval.uintValue();
+                    	switch ( op ) {
+                    	case MINUS_TOKEN:
+                    		d = ld - rd;
+                    		break;
+                    	case PLUS_TOKEN:
+                    		d = ld + rd;
+                    		break;
+                    	case MULT_TOKEN:
+                    		d = ld * rd;
+                    		break;
+                    	case DIV_TOKEN:
+                    		if (rd == 0) {
+                    			// divide by 0
+                    			String sval;
+                    			if (ld == 0)
+                    				sval = "NaN";
+                    			else if (ld < 0)
+                    				sval = "-Infinity";
+                    			else 
+                    				sval = "Infinity";
+                    			return new ObjectValue(sval, cx.doubleType());
+                    		}
+                    		d = ld / rd;
+                    		break;
+                    	case MODULUS_TOKEN:
+                    		if (rd == 0) {
+                    			return new ObjectValue("NaN", cx.doubleType());
+                    		}
+                    		d = ld % rd;
+                    		break;
+                    	default: // shouldn't be possible
+                    	}
+                    	if (forceType || ((d >= 0) && (d <= 0xFFFFFFFFL))) {
+                    		d &= 0xFFFFFFFFL; // truncate to 32 bits in the forceType case
+                    		val = new ObjectValue(Long.toString(d), cx.uintType());
+                    	}
+                    	else {
+                    		double dval;
+                    		if ((op == MULT_TOKEN) && (d > 0xFFFFFFFFL || (d < 0))) {
+                    			// could be from overflow in multiply.  Redo in double
+                    			dval = lval.doubleValue() * rval.doubleValue();
+                    		}
+                    		else
+                    			dval = (double)d;
+                    		val = new ObjectValue(Double.toString(dval), cx.doubleType());
+                    	}
+                    	break;
+                    } // case NU_UINT
+                    default: 
+
+                    } // switch cx.numeric_usage
+                    
+                } // both types numeric
+                else {
+                	if (op == PLUS_TOKEN) {
+                		val = cx.noType().prototype;
+                	}
                 }
                 break;
-*/
-                else
-                {
-                    val = cx.noType().prototype;
-                }
             }
-
             default:
                 val = cx.noType().prototype;
                 break;
@@ -1966,7 +2168,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
         }
 
-        return ObjectValue.undefinedValue;
+       return ObjectValue.undefinedValue;
     }
 
     public Value evaluate(Context cx, EmptyStatementNode node)
@@ -2274,13 +2476,13 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 slot.declaredBy.builder instanceof InstanceBuilder ||
                 slot.declaredBy.builder instanceof ClassBuilder ) )
         {
-        	if( cx.dialect(Features.DIALECT_ES4) && cx.scope().builder instanceof InstanceBuilder )
+        	if( cx.statics.es4_nullability && cx.scope().builder instanceof InstanceBuilder )
         	{
         		// Initializers for instance variables should not have access to this.
         		cx.scope().setInitOnly(true);
         	}
             Value val = node.initializer.evaluate(cx,this);
-        	if( cx.dialect(Features.DIALECT_ES4) && cx.scope().builder instanceof InstanceBuilder )
+        	if( cx.statics.es4_nullability && cx.scope().builder instanceof InstanceBuilder )
         	{
         		cx.scope().setInitOnly(false);
         	}
@@ -2721,60 +2923,83 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 break;  // error
             }
             break;
-        case TYPE_number:
+        case TYPE_double:
             switch(from.type.getTypeId())
             {
             case TYPE_void:
-            case TYPE_number:
+            case TYPE_double:
+            case TYPE_int:
+            case TYPE_uint:
+            case TYPE_decimal:		
+                return from;
+            default:
+                break;
+            }
+            break;
+        case TYPE_decimal:
+            switch(from.type.getTypeId())
+            {
+            case TYPE_void:
+            case TYPE_double:
+            case TYPE_decimal:		
             case TYPE_int:
                 return from;
             default:
                 break;
             }
             break;
+        case TYPE_uint:
+        {
+        	switch(from.type.getTypeId())
+        	{
+        	case TYPE_void:
+                return from;
+            case TYPE_uint:
+            	return from;
+            case TYPE_int:
+            case TYPE_decimal:
+            case TYPE_double:
+                String nstr = from.toString();
+                TypeValue[] ntype = new TypeValue[1];
+                // RES - for this check, I don't think I need the active number usage
+                double dval = cx.getEmitter().getValueOfNumberLiteral(nstr,ntype, new NumberUsage()).doubleValue();
+                long lval = (long)dval;
+                if( dval == lval &&
+                        lval >= 0 && lval <= 0xFFFFFFFFL )
+                        {
+                            return from;
+                        }
+                // otherwise error
+                break;
+        	}
+            break;
+        }
         case TYPE_int:
             switch(from.type.getTypeId())
             {
             case TYPE_void:
                 return from;
             case TYPE_int:
-                if( type == from.type )
-                {
-                    // either uint->uint, or int->int
-                    return from;
-                }
-                // else fall through because we have a uint -> int or int -> uint assignment
-            case TYPE_number:
+                     return from;
+            case TYPE_uint:
+            case TYPE_decimal:	// launder this through double to see if integral
+            case TYPE_double:
                 {
                 String nstr = from.toString();
                 TypeValue[] ntype = new TypeValue[1];
-                double dval = cx.getEmitter().getValueOfNumberLiteral(nstr,ntype);
+                double dval = cx.getEmitter().getValueOfNumberLiteral(nstr,ntype, new NumberUsage()).doubleValue();
                 long lval = (long)dval;
-
-                if( type.getTypeValue() == cx.uintType() )
-                {
-                    // is uint
-                    if( dval == lval &&
-                        lval >= 0 && lval <= 0xFFFFFFFFL )
-                        {
-                            return from;
-                        }
-                }
-                else
-                {
-                    // is integer
-                    if( dval == lval &&
+                if( dval == lval &&
                         lval >= -0x80000000L && lval <= 0x7fffffffL )
                     {
                         return from;
                     }
-
-                }
                 } // otherwise, error
                 break;
             default:
                 break; // error
             }
+            break;
         }
         return null;
     }
@@ -2950,6 +3175,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 node.imports.first().program.evaluate(cx, this);
             }
         }
+        
+        currentDecimalContext = new Decimal128Context(); // for use in constant folding
 
         // preprocess all definitions to set their slot.type, types, and decl_styles correctly.
         if (typeInfoPreprocessing_complete == false)  // only true when Flex calls us, false for normal asc usage.
@@ -3224,16 +3451,15 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 }
                 else
                 {
-    		        if( cx.dialect(Features.DIALECT_ES4) && !init.isDefinition() )
+    		        if( cx.statics.es4_nullability && !init.isDefinition() )
     		        	node.iframe.setInitOnly(true);
                 	
                     init.evaluate(cx, this);
 
-    		        if( cx.dialect(Features.DIALECT_ES4) && !init.isDefinition() )
+    		        if( cx.statics.es4_nullability && !init.isDefinition() )
     		        	node.iframe.setInitOnly(false);
                 }
             }
-
             doing_method = false; // all done with the instance initializers, can now do the actual methods in fexpr
         }
 
@@ -3299,8 +3525,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
     }
     
     private void checkClassInterfaceMethods(Context cx,
-            ClassDefinitionNode classNode,
-            ObjectValue interfaceIFrame)
+                                            ClassDefinitionNode classNode,
+                                            ObjectValue interfaceIFrame)
     {
         InstanceBuilder builder = (InstanceBuilder)interfaceIFrame.builder;
         Names names = builder.getNames();
@@ -3654,7 +3880,31 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
     public Value evaluate(Context cx, PragmaNode node)
     {
-        cx.internalError(node.pos(), "PragmaNode not yet implemented");
+        if (node.list != null)
+        {
+            node.list.evaluate(cx, this);
+        }
+        return null;
+    }
+
+    public Value evaluate(Context cx, UsePrecisionNode node)
+    {
+        // nothing to do in this pass.  
+    	// FlowAnalyzer already set params in BinaryExpression and UnaryExpression nodes
+        return null;
+    }
+
+    public Value evaluate(Context cx, UseNumericNode node)
+    {
+        // nothing to do in this pass.  
+    	// FlowAnalyzer already set params in StatementList nodes
+        return null;
+    }
+
+    public Value evaluate(Context cx, UseRoundingNode node)
+    {
+        // nothing to do in this pass.  
+    	// FlowAnalyzer already set params in BinaryExpression and UnaryExpression nodes
         return null;
     }
 

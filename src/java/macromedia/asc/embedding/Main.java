@@ -53,7 +53,9 @@ public class Main
 	static int earliest_dialect = 7;
 	static int latest_dialect = 11;
 	static int default_dialect = 9;
-	static int dialect = default_dialect;
+    static int default_target = TARGET_AVM2;  // Default to FP10
+    static int dialect = default_dialect;
+    static int target = default_target;
 
     static boolean optimize = false;
 
@@ -62,7 +64,7 @@ public class Main
 	static String swf_options = "";
 	static String language = "EN";
 	static String avmplus_exe = null;
-    
+
     static ObjectList<ConfigVar> config_vars = new ObjectList<ConfigVar>();
 
 	public static void main(String[] args) throws Exception
@@ -139,7 +141,30 @@ public class Main
 						{
 							FUTURE_ABC = true;
 						}
-						break;
+                        else if ( flag.length() == 10 && "-avmtarget".equals(flag))
+                        {
+                            ++i;
+                            try
+                            {
+                                String vm_target = args[i].trim();
+                                int v = Integer.parseInt(vm_target);
+                                switch(v) {
+                                case 1:
+                                    target = TARGET_AVM1;
+                                    break;
+                                case 2:
+                                    target = TARGET_AVM2;
+                                    break;
+                                default:
+                                    do_help = true;
+                                    break;
+                                }
+                            }
+                            catch(Exception e)
+                            {
+                                do_help = true;
+                            }
+                        }						break;
 
 					case 'c':
 						if (flag.length() == 6 && "-coach".equals(flag))
@@ -185,7 +210,7 @@ public class Main
 								emit_debug_info = true;
 						}
 						break;
-						
+
 					case 'e':
 						if (flag.length() == 4)
 						{
@@ -343,7 +368,8 @@ public class Main
 			System.out.println("  -language = set the language for output strings {EN|FR|DE|IT|ES|JP|KR|CN|TW}");
             System.out.println("  -optimize = produced an optimized abc file");
             System.out.println("  -config ns::name=value = define a configuration value in the namespace ns");
-			System.out.println("");
+            System.out.println("  -avmtarget <vm version number> = emit bytecode for a specific VM version, 1 is AVM1, 2 is AVM2, etc");
+            System.out.println("");
 			System.exit(1);
 		}
 
@@ -421,6 +447,7 @@ public class Main
 			plug.avmplus_exe = avmplus_exe;
             plug.language = language;
             plug.dialect = dialect;
+            plug.target = target;
             plug.optimize = optimize;
             plug.configs = config_vars;
 
@@ -485,11 +512,11 @@ public class Main
 			// delete all the input file streams
 		}
 	}
-    
+
     public static ConfigVar parseConfigVar(String s)
     {
         ConfigVar cv = null;
-    
+
         if( s != null )
         {
             int ns_end = s.indexOf("::");
@@ -505,7 +532,7 @@ public class Main
                 }
             }
         }
-    
+
         return cv;
     }
 }

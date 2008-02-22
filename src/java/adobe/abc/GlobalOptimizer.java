@@ -343,13 +343,10 @@ public class GlobalOptimizer
 			if (t.size != 0)
 				return;
 			int size = 0;
-			int firstSlot = 0;
 			if (t.base != null)
 			{
 				resolveType(t.base);
 				size = t.base.size;
-				firstSlot = t.base.slotCount;
-				
 			}
 			int hole = -1;
 			for (Binding b: t.defs.values())
@@ -398,9 +395,6 @@ public class GlobalOptimizer
 						}
 					}
 				}
-			}
-			for (int i=firstSlot, n=t.slotCount; i < n; i++)
-			{
 			}
 			if (size > 0)
 				System.out.println("sizeof "+t+" "+size);
@@ -527,6 +521,11 @@ public class GlobalOptimizer
 			{
 				Name name = names[p.readU30()]; // name
 				Binding b = new Binding(p.readU8(), name, this);
+				Binding old = t.defs.get(name);
+				while (old != null && old.peer != null)
+					old = old.peer;
+				if (old != null)
+					old.peer = b;
 				t.defs.put(name, b);
 				int slot = p.readU30(); // slot_id | disp_id
 				b.id = p.readU30(); // typename | class_id | method_id
@@ -658,6 +657,7 @@ public class GlobalOptimizer
 			readTraits(p, s);
 			for (Binding b : s.defs.values())
 				globals.put(b.name, sref);
+			s.setFinal();
 			return s;
 		}
 
@@ -674,6 +674,7 @@ public class GlobalOptimizer
 			init.name = c.name;
 			init.kind = "init";
 			readTraits(p, c);
+			c.setFinal();
 			return c;
 		}
 
@@ -1533,13 +1534,16 @@ public class GlobalOptimizer
 		
 		// var, const, class
 		Object value;// default value if any
-		Typeref type;
+		Typeref type; // if slot
 		
 		// function, getter, setter, method
 		Method method;	
 		
 		// metadata
 		Metadata[] md = nometadata;
+		
+		// if this is a get/set, points to corresponding set/get, if any.
+		Binding peer = null;
 
 		Binding(int kind, Name name, InputAbc abc)
 		{
@@ -1633,7 +1637,6 @@ public class GlobalOptimizer
 					for (int i=0, n=names.size(); i < n; i++)
 						if (0 == match(name, names.get(i)))
 							return values.get(i);
-					return null;
 				}
 				else
 				{
@@ -2238,9 +2241,9 @@ public class GlobalOptimizer
 					break;
 				}
 				
-				if (b.hasMetadata())
+				/*if (b.hasMetadata())
 					for (Metadata md : b.md)
-						addMetadata(md);
+						addMetadata(md);*/
 			}
 		}
 		
@@ -2711,14 +2714,14 @@ public class GlobalOptimizer
 	{
 		Type t = tref.t;
 		if (t == VOID) return "void";
-		if (isAtom(t)) return "Atom";
-		if (t == INT) return "int32";
+		if (isAtom(t)) return "BoxReturnType";
+		if (t == INT) return "int32_t";
 		if (t == BOOLEAN) return "bool";	// no, this would be bad.
-		if (t == UINT) return "uint32";
+		if (t == UINT) return "uint32_t";
 		if (t == STRING) return "Stringp";
 		if (t == NAMESPACE) return "Namespacep";
 		if (t == NUMBER) return "double";
-		else return "ScriptObject* /*"+tref.toString()+"*/";
+		else return "ScriptObjectp /*"+tref.toString()+"*/";
 	}
 
 	void emitSourceMethod(String prefix, Abc abc, 
@@ -2773,6 +2776,11 @@ public class GlobalOptimizer
 				throw new RuntimeException("native methods may not have optional parameters: "+impl);
 			}
 
+			if (m.needsRest())
+			{
+				throw new RuntimeException("native methods may not have rest args: "+impl);
+			}
+
 			// create a C++ declaration for the native thunk.
 			createThunkArgs(out_h, impl, m);
 			out_h.printf("AVMPLUS_NATIVE_METHOD_DECL(%s, %s)\n", ctype(m.returns), impl);
@@ -2822,7 +2830,7 @@ public class GlobalOptimizer
 			}
 			else if (m.params[i].t==BOOLEAN)
 			{
-				out_h.printf("    public: int32 %s_b; private: int32 %s_pad; public: inline bool %s() const { return %s_b != 0; }\n", argname, argname, argname, argname);
+				out_h.printf("    public: int32_t %s_b; private: int32_t %s_pad; public: inline bool %s() const { return %s_b != 0; }\n", argname, argname, argname, argname);
 			}
 			else if (m.params[i].t==OBJECT || m.params[i].t==ANY)
 			{
@@ -2830,14 +2838,12 @@ public class GlobalOptimizer
 			}
 			else
 			{
-				out_h.printf("    public: %s %s; private: int32 %s_pad; \n", ctype(m.params[i]), argname, argname);
+				out_h.printf("    public: %s %s; private: int32_t %s_pad; \n", ctype(m.params[i]), argname, argname);
 			}
 		}
-		if (m.needsRest())
-		{
-			out_h.printf("    public: Box rest[1]; /* actually, rest_count() */\n");
-			out_h.printf("    public: inline uintptr rest_count(uint32 argc) const { return argc-%d; }\n", m.params.length-1);
-		}
+
+		out_h.printf("    public: StatusOut* status_out;\n");
+
 		out_h.println("};");
 	}
 
@@ -3153,6 +3159,7 @@ public class GlobalOptimizer
 			case OP_declocal:
 			case OP_inclocal_i:
 			case OP_declocal_i:
+			case OP_newcatch:
 			//case OP_getglobalslot:
 			//case OP_setglobalslot:
 				out.writeU30(e.imm[0]);
@@ -3236,6 +3243,7 @@ public class GlobalOptimizer
 		// emit the code and leave room for the branch offsets,
 		// and compute the final position of each block.
 		Map<Block,Integer> pos = new HashMap<Block,Integer>();
+		Map<Block,Integer> blockends = new HashMap<Block,Integer>();
 		int code_len = 0;
 		Deque<Block> work = new ArrayDeque<Block>(code);
 		while (!work.isEmpty())
@@ -3283,6 +3291,7 @@ public class GlobalOptimizer
 				assert(last.op == OP_lookupswitch);
 				assert(false);//TODO
 			}
+			blockends.put(b,code_len);
 		}
 
 		out.writeU30(code_len);
@@ -3308,9 +3317,26 @@ public class GlobalOptimizer
 		out.writeU30(m.handlers.length);
 		for (Handler h: m.handlers)
 		{
-			out.writeU30(0);//TODO h.from);
-			out.writeU30(1);//TODO h.to);
-			out.writeU30(0);//TODO h.target
+			int from = code_len;
+			int to = 0;
+			for (Block b: code)
+			{
+				for (Edge x: b.xsucc)
+				{
+					if (x.to == h.entry)
+					{
+						if (pos.get(b) < from)
+							from = pos.get(b);
+						if (blockends.get(b) > to)
+							to = blockends.get(b);
+					}
+				}
+			}
+			out.writeU30(from);
+			out.writeU30(to);
+			int off = pos.get(h.entry);
+			System.out.println("handler "+h.entry+ " ["+from+","+to+")->"+off);
+			out.writeU30(off);
 			out.writeU30(abc.typeRef(h.type));
 			out.writeU30(abc.namePool.id(h.name));
 		}
@@ -4229,8 +4255,13 @@ public class GlobalOptimizer
 			uses.get(x).add(e);
 		return true;
 	}
+
+	boolean canEarlyBindMethod(Method m, Binding b)
+	{
+		return m.abc == b.abc;
+	}
 	
-	boolean canEarlyBind(Method m, Binding b)
+	boolean canEarlyBindSlot(Method m, Binding b)
 	{
 		return b.slot != 0 && m.abc == b.abc;
 	}
@@ -4448,14 +4479,14 @@ public class GlobalOptimizer
 			case OP_getsuper:
 			{
 				Typeref t0 = types.get(e.args[0]);
-				Binding bind = t0.find(e.ref);
+				Binding bind = t0.findGet(e.ref);
 				if (isSlot(bind))
 				{
 					e.clearEffect();
 					if (!t0.nullable)
 						e.clearPx();
 					e.ref = bind.name;
-					if (canEarlyBind(m, bind))
+					if (canEarlyBindSlot(m, bind))
 					{
 						if (!isConst(bind) || !constify(e, values.get(e)))
 						{
@@ -4492,7 +4523,7 @@ public class GlobalOptimizer
 							for (Expr a: e.args) 
 								uses.get(a).remove(e);
 						}
-						else if (canEarlyBind(m, bind))
+						else if (canEarlyBindSlot(m, bind))
 						{
 							e.op = OP_setslot;
 							e.imm = new int[] { bind.slot };
@@ -4511,7 +4542,7 @@ public class GlobalOptimizer
 				if (isSlot(bind))
 				{
 					e.ref = bind.name;
-					if (canEarlyBind(m, bind))
+					if (canEarlyBindSlot(m, bind))
 					{
 						e.op = OP_setslot;
 						e.imm = new int[] { bind.slot };
@@ -4534,7 +4565,7 @@ public class GlobalOptimizer
 			{
 				// TODO turn callproplex into callproperty if binding is method
 				Type t0 = type(types,e.args[0]);
-				Binding b0 = t0.find(e.ref);
+				Binding b0 = t0.findGet(e.ref);
 				if (b0 != null)
 				{
 					// narrow the binding
@@ -4549,13 +4580,13 @@ public class GlobalOptimizer
 							e.setPure();
 							changed=true;
 						}
-						else if (canEarlyBind(m,b0) && (t0.isFinal() || b0.isFinal()))
+						else if (canEarlyBindMethod(m,b0) && (t0.isFinal() || b0.isFinal()))
 						{
 							e.op = OP_callstatic;
 							e.m = b0.method;
 							changed=true;
 						}
-						else if (USE_CALLMETHOD && canEarlyBind(m,b0))
+						else if (USE_CALLMETHOD && canEarlyBindMethod(m,b0))
 						{
 							e.op = OP_callmethod;
 							e.imm = new int[] { b0.slot };
@@ -4599,13 +4630,18 @@ public class GlobalOptimizer
 				}
 				else if (e.op == OP_convert_i)
 				{
-					if (a0.op == OP_negate && type(types,a0.args[0]) == INT)
+					if (a0.op == OP_negate)
 					{
-						// convert_i(negate(int)) => negate_i(int)
-						// TODO can this be more aggressive and handle other number types too?
+						// convert_i(negate(x)) => negate_i(x)
 						e.op = OP_negate_i;
 						e.args = new Expr[] { a0.args[0] };
 						changed=true;
+					}
+					else if (a0.op == OP_decrement)
+					{
+						e.op = OP_decrement_i;
+						e.args = new Expr[] { a0.args[0] };
+						changed = true;
 					}
 				}
 				break;
@@ -5103,11 +5139,26 @@ public class GlobalOptimizer
 							m.cx.scopes.length > 0 ? m.cx.scopes[0] :
 								types.get(e.scopes[0]);
 	
-				Binding b = stref.t.find(e.ref);
-				if (b != null && b.type != null)
+				Binding b = stref.t.findGet(e.ref);
+				// code below is a copy of OP_getproperty
+				if (isSlot(b))
 				{
+					// TODO we only compute const value here if primitive type.
+					// it would be more correct if we knew whether the initializer
+					// changed the const value.  (consts can be computed in init).
 					tref = b.type;
-					break;
+					if (isConst(b) && defaultValueChanged(b))
+						v = b.value;
+				}
+				else if (isMethod(b))
+				{
+					// TODO if base type is or might be XML, return ANY
+					// TODO use MethodClosure, more specific than Function
+					tref = FUNCTION.ref.nonnull();
+				}
+				else if (isGetter(b))
+				{
+					tref = b.method.returns;
 				}
 				break;
 			}
@@ -5121,7 +5172,7 @@ public class GlobalOptimizer
 			case OP_constructprop:
 			{
 				Type ot = type(types,e.args[0]); // type of base object
-				Binding b = ot.find(e.ref);
+				Binding b = ot.findGet(e.ref);
 				if (b != null && b.type != null && b.type.t.itype != null)
 				{
 					tref = b.type.t.itype.ref.nonnull();
@@ -5134,7 +5185,7 @@ public class GlobalOptimizer
 			case OP_callproplex:
 			{
 				Type ot = type(types, e.args[0]);
-				Binding b = ot.find(e.ref);
+				Binding b = ot.findGet(e.ref);
 				if (isMethod(b))
 				{
 					tref = b.method.returns;
@@ -5200,7 +5251,7 @@ public class GlobalOptimizer
 			case OP_getproperty:
 			{
 				Type t0 = type(types, e.args[0]);
-				Binding b = t0.find(e.ref);
+				Binding b = t0.findGet(e.ref);
 				if (isSlot(b))
 				{
 					// TODO we only compute const value here if primitive type.
@@ -5763,12 +5814,8 @@ public class GlobalOptimizer
 							m.cx.scopes.length > 0 ? m.cx.scopes[0] :
 								types.get(e.scopes[0]);
 	
-				Binding b = stref.t.find(e.ref);
-				if (b != null && b.type != null)
-				{
-					tref = b.type;
-					break;
-				}
+				Binding b = stref.t.findGet(e.ref);
+				tref = verify_eval_getproperty(tref, b);
 				break;
 			}
 			
@@ -5781,7 +5828,7 @@ public class GlobalOptimizer
 			case OP_constructprop:
 			{
 				Type ot = type(types,e.args[0]); // type of base object
-				Binding b = ot.find(e.ref);
+				Binding b = ot.findGet(e.ref);
 				if (b != null && b.type != null && b.type.t.itype != null)
 				{
 					tref = b.type.t.itype.ref.nonnull();
@@ -5794,7 +5841,7 @@ public class GlobalOptimizer
 			case OP_callproplex:
 			{
 				Type ot = type(types, e.args[0]);
-				Binding b = ot.find(e.ref);
+				Binding b = ot.findGet(e.ref);
 				if (isMethod(b))
 				{
 					tref = b.method.returns;
@@ -5811,7 +5858,7 @@ public class GlobalOptimizer
 			case OP_callsuper:
 			{
 				Type ot = m.cx.base;
-				Binding b = ot.find(e.ref);
+				Binding b = ot.findGet(e.ref);
 				if (isMethod(b))
 				{
 					tref = b.method.returns;
@@ -5848,21 +5895,8 @@ public class GlobalOptimizer
 			case OP_getproperty:
 			{
 				Type t0 = type(types, e.args[0]);
-				Binding b = t0.find(e.ref);
-				if (isSlot(b))
-				{
-					tref = b.type;
-				}
-				else if (isMethod(b))
-				{
-					//tref = FUNCTION.ref.nonnull(); // TODO use MethodClosure
-					// avmplus uses ANY here. see Verifier::readBinding().
-					tref = ANY.ref;
-				}
-				else if (isGetter(b))
-				{
-					tref = b.method.returns;
-				}
+				Binding b = t0.findGet(e.ref);
+				tref = verify_eval_getproperty(tref, b);
 				break;
 			}
 			
@@ -6040,6 +6074,25 @@ public class GlobalOptimizer
 		}
 		
 		assert(tref != null && tref.t != null);
+		return tref;
+	}
+
+	private Typeref verify_eval_getproperty(Typeref tref, Binding b)
+	{
+		if (isSlot(b))
+		{
+			tref = b.type;
+		}
+		else if (isMethod(b))
+		{
+			//tref = FUNCTION.ref.nonnull(); // TODO use MethodClosure
+			// avmplus uses ANY here. see Verifier::readBinding().
+			tref = ANY.ref;
+		}
+		else if (isGetter(b))
+		{
+			tref = b.method.returns;
+		}
 		return tref;
 	}
 
@@ -6265,6 +6318,7 @@ public class GlobalOptimizer
 					break restused;
 			m.flags &= ~(METHOD_Arguments|METHOD_Needrest);
 			m.flags |= METHOD_IgnoreRest;
+			System.out.println("IGNORE_REST for "+m.name);
 		}
 
 		sched_greedy(m, code, locals, pred, exprs, conflicts);
@@ -7809,6 +7863,11 @@ public class GlobalOptimizer
 			return t.find(n);
 		}
 		
+		Binding findGet(Name n)
+		{
+			return t.findGet(n);
+		}
+		
 		public String toString()
 		{
 			return !t.ref.nullable || t==NULL || t==VOID || t==ANY ? t.toString() :
@@ -7859,6 +7918,11 @@ public class GlobalOptimizer
 			return (flags & CLASS_FLAG_final) != 0;
 		}
 		
+		void setFinal()
+		{
+			flags |= CLASS_FLAG_final;
+		}
+		
 		Binding find(Name n)
 		{
 			// look up the inheritance tree
@@ -7869,6 +7933,20 @@ public class GlobalOptimizer
 					return b;
 			}
 			return null;
+		}
+		
+		Binding findGet(Name n)
+		{
+			Binding first = find(n);
+			if (first != null && isSetter(first))
+			{
+				if (first.peer != null)
+					return first.peer;
+				Binding second;
+				if (base != null && isGetter(second=base.findGet(n)))
+					return second;
+			}
+			return first;
 		}
 		
 		Binding findSlot(int slot)

@@ -162,9 +162,14 @@ public class Features
      */
     public static final int DIALECT_ES3 = 9;
     public static final int DIALECT_AS3 = 10;
-    public static final int DIALECT_ES4 = 11;
-    
-	/**
+
+    /**
+     * constants to decide which version of the VM we're targeting
+     */
+    public static final int TARGET_AVM1 = 0;  //Flash9 VM
+    public static final int TARGET_AVM2 = 1;  //Flash10 VM
+
+    /**
 	 * Define which dialect feature set(s) to use
 	 * More than one feature set can be selected
 	 * at once (e.g. ES3 & E4X), but may lead to

@@ -107,6 +107,10 @@ public interface Visitor
 	void OP_dup();
 
 	void OP_swap();
+	
+	void OP_pushdecimal(int index);
+	
+	void OP_pushdnan();
 
 	void OP_convert_s();
 
@@ -121,10 +125,18 @@ public interface Visitor
 	void OP_convert_b();
 
 	void OP_convert_o();
+	
+	void OP_convert_m();
+	
+	void OP_convert_m_p(int param);
+
+	void OP_negate_p(int param);
 
 	void OP_negate();
 
 	void OP_negate_i();
+
+	void OP_increment_p(int param);
 
 	void OP_increment();
 
@@ -132,15 +144,21 @@ public interface Visitor
 
 	void OP_inclocal(int index);
 
+	void OP_inclocal_p(int param, int index);
+
 	void OP_kill(int index);
 
 	void OP_inclocal_i(int index);
 
 	void OP_decrement();
 
+	void OP_decrement_p(int param);
+
 	void OP_decrement_i();
 
 	void OP_declocal(int index);
+
+	void OP_declocal_p(int param, int index);
 
 	void OP_declocal_i(int index);
 
@@ -167,6 +185,16 @@ public interface Visitor
 	void OP_divide();
 
 	void OP_modulo();
+	
+	void OP_add_p(int param);
+
+	void OP_subtract_p(int param);
+
+	void OP_multiply_p(int param);
+
+	void OP_divide_p(int param);
+
+	void OP_modulo_p(int param);
 
 	void OP_lshift();
 

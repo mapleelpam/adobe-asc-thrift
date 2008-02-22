@@ -30,6 +30,7 @@ public class IncrementNode extends SelectorNode
 	public int op;
 	public boolean isPostfix;
 	public Slot slot;
+	public NumberUsage numberUsage;
 
 	public IncrementNode(int op, Node expr, boolean isPostfix)
 	{
@@ -38,6 +39,7 @@ public class IncrementNode extends SelectorNode
         this.isPostfix = isPostfix;
 		slot = null;
 		ref = null;
+        numberUsage = null;
 		void_result = false;
 	}
 

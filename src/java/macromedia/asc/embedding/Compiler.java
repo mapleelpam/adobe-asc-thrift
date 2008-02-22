@@ -19,6 +19,7 @@ package macromedia.asc.embedding;
 
 import macromedia.asc.embedding.avmplus.ActionBlockEmitter;
 import macromedia.asc.embedding.avmplus.GlobalBuilder;
+import macromedia.asc.embedding.avmplus.Features;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.*;
 import macromedia.asc.util.*;
@@ -342,7 +343,8 @@ public class Compiler implements ErrorConstants
                                                 boolean emit_metadata,
                                                     boolean save_comment_nodes/*=false*/,
                                                         int dialect /*=0*/,
-                                                            boolean optimize)
+                                                            int target,
+                                                                boolean optimize)
     {
         // Initialize the compiler before compiling anything
         init();
@@ -352,6 +354,14 @@ public class Compiler implements ErrorConstants
 		statics.handler = handler;
 		statics.use_static_semantics = use_static_semantics;
         statics.dialect = dialect;
+        statics.setAbcVersion(target);
+        
+        // don't allow decimal on 1.4
+        {
+        	String ver = System.getProperty("java.version", "noVersion");
+        	if (ver.indexOf("1.4") >= 0)
+        		statics.es4_numerics = false;
+        }
 
         Context cx = new Context(statics);
 		cx.setLanguage(language);
@@ -592,6 +602,7 @@ public class Compiler implements ErrorConstants
 			mainplug.emit_metadata,
 			mainplug.save_comment_nodes,
 			mainplug.dialect,
+            mainplug.target,
             mainplug.optimize
 				);
     }
@@ -626,6 +637,7 @@ public class Compiler implements ErrorConstants
             mainplug.emit_metadata,
             mainplug.save_comment_nodes,
             mainplug.dialect,
+            mainplug.target,
             mainplug.optimize);
     }
     
@@ -735,7 +747,7 @@ public class Compiler implements ErrorConstants
     {
         if (status(cx) == 0)
         {
-        	emitter.dumpCpoolVars();
+        	//emitter.dumpCpoolVars();
             String str = emitter.header_str();
 			int count = bytes.length;
             PrintWriter out = null;

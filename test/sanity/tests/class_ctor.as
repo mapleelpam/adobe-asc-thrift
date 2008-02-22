@@ -1,3 +1,5 @@
+try
+{
 class A {
 function A(x) { 
 print("A$A",x) 
@@ -39,4 +41,8 @@ print("F$F",z)
 var d : D = new D(1)
 var e : E = new E(1,2)
 var f : F = new F(1,2,3)
-
+}
+catch (e)
+{
+print("caught exception: "+e);
+}

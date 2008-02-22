@@ -32,6 +32,10 @@ public class StatementListNode extends Node
 	public boolean dominates_program_endpoint;
     public boolean was_empty;
     public boolean is_loop;
+    public boolean is_block;
+    public boolean has_pragma;
+    
+    public NumberUsage numberUsage; // use if is_block
     public ObjectValue default_namespace;
     public AttributeListNode config_attrs;
 
@@ -40,7 +44,9 @@ public class StatementListNode extends Node
 		dominates_program_endpoint = false;
         was_empty = false;
         is_loop = false;
-
+        is_block = false;
+        has_pragma = false;
+        numberUsage = null;
 		if( item != null )
 		{
             items.add(item);

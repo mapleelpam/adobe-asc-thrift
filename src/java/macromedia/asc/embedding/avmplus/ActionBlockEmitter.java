@@ -31,14 +31,23 @@ import macromedia.asc.util.ObjectList;
 import macromedia.asc.util.Qualifiers;
 import macromedia.asc.util.Slots;
 import macromedia.asc.util.IntegerPool;
+import macromedia.asc.util.Decimal128;
+import macromedia.asc.util.NumberUsage;
+import macromedia.asc.util.NumberConstant;
+import macromedia.asc.util.DoubleNumberConstant;
+import macromedia.asc.util.DecimalNumberConstant;
+import macromedia.asc.util.IntNumberConstant;
+import macromedia.asc.util.UintNumberConstant;
 
 import java.io.PrintWriter;
+import java.io.IOException;
 import java.util.*;
 
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.*;
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.*;
 import static macromedia.asc.embedding.avmplus.ByteCodeFactory.*;
 import static macromedia.asc.parser.Tokens.*;
+
 
 /**
  * ActionBlockEmitter
@@ -96,6 +105,9 @@ public class ActionBlockEmitter extends Emitter
         private Map<ByteList, Integer> constant_int_map= new HashMap<ByteList, Integer>();
         public ObjectList<ByteList> constant_int_pool = new ObjectList<ByteList>();
         
+        private Map<ByteList, Integer> constant_decimal_map= new HashMap<ByteList, Integer>();
+        public ObjectList<ByteList> constant_decimal_pool = new ObjectList<ByteList>();
+        
         /*
         class ByteListComparator implements Comparator
         {
@@ -122,7 +134,7 @@ public class ActionBlockEmitter extends Emitter
 
         public ActionBlock(boolean show_bytecode)
         {
-            minor_version = MINOR;
+            minor_version = cx.statics.es4_numerics? MINORwithDECIMAL : MINOR;
             major_version = MAJOR;
             vars_count = 0;
             vars = new ObjectList<ByteList>();
@@ -309,7 +321,7 @@ public class ActionBlockEmitter extends Emitter
 
         }
 
-        public int addUIntConstant(ByteList bytes)
+        public int addUintConstant(ByteList bytes)
         {
             // See if this constant is already in the pool.
             Integer mapcheck = constant_uint_map.get(bytes);
@@ -335,6 +347,7 @@ public class ActionBlockEmitter extends Emitter
             return index;
 
         }
+
         public int addIntConstant(ByteList bytes)
         {
             // See if this constant is already in the pool.
@@ -353,6 +366,37 @@ public class ActionBlockEmitter extends Emitter
 
             constant_int_pool.add(bytes);
             int index = constant_int_pool.size();
+//        if( show_bytecode ) printf( " . %d",index);
+            if (show_bytecode)
+            {
+                bytecodeFactory.cpool_out.write(" -> " + index);
+            }
+            return index;
+
+        }
+
+        public int addDecimalConstant(ByteList bytes)
+        {
+        	/*
+        	 * If Global.abc has decimals, we need to build them into our pool, but we won't write
+        	 * them out unless cx.dialect(Features.DIALECT_ES4);
+        	 */
+            // See if this constant is already in the pool.
+            Integer mapcheck = constant_decimal_map.get(bytes);
+
+            if (mapcheck != null)
+            {
+                int constant_index = mapcheck.intValue();
+                return constant_index + 1;
+            }
+
+            // Add it to map for fast lookups
+            constant_decimal_map.put(bytes, constant_decimal_pool.size());
+
+            // If not, then add it.
+
+            constant_decimal_pool.add(bytes);
+            int index = constant_decimal_pool.size();
 //        if( show_bytecode ) printf( " . %d",index);
             if (show_bytecode)
             {
@@ -666,6 +710,8 @@ public class ActionBlockEmitter extends Emitter
             ab.constant_uint_pool,
             (ab.constant_double_pool.size() == 0 ? 0 : ab.constant_double_pool.size() + 1),
             ab.constant_double_pool,
+            (ab.constant_decimal_pool.size() == 0 ? 0 : ab.constant_decimal_pool.size() + 1),
+            ab.constant_decimal_pool,
             (ab.constant_utf8_pool.size() == 0 ? 0 : ab.constant_utf8_pool.size() + 1),
             ab.constant_utf8_pool,
             (ab.constant_mn_pool.size() == 0 ? 0 : ab.constant_mn_pool.size() + 1),
@@ -693,6 +739,7 @@ public class ActionBlockEmitter extends Emitter
         int value_index = 0;
         String value = objValue.toString();
         TypeValue defaultValueType = objValue.type != null ? objValue.type.getTypeValue() : null;
+        NumberUsage numberUsage = objValue.getNumberUsage();
         // TODO: this should probably deal with non-nullable object types
         if (defaultValueType == cx.booleanType())
         {
@@ -707,12 +754,22 @@ public class ActionBlockEmitter extends Emitter
         else if (defaultValueType == cx.intType())
         {
             TypeValue[] type = new TypeValue[1];
-            value_index = ab.addIntConstant(bytecodeFactory.ConstantIntegerInfo((int)getValueOfNumberLiteral(value,type)));
+            value_index = ab.addIntConstant(bytecodeFactory.ConstantIntegerInfo(getValueOfNumberLiteral(value,type, numberUsage).intValue()));
         }
-        else if (defaultValueType == cx.numberType())
+        else if (defaultValueType == cx.uintType())
         {
             TypeValue[] type = new TypeValue[1];
-            value_index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(getValueOfNumberLiteral(value,type)));
+            value_index = ab.addUintConstant(bytecodeFactory.ConstantUintInfo(getValueOfNumberLiteral(value,type, numberUsage).uintValue()));
+        }
+        else if (defaultValueType == cx.doubleType())
+        {
+            TypeValue[] type = new TypeValue[1];
+            value_index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(getValueOfNumberLiteral(value,type, numberUsage).doubleValue()));
+        }
+        else if (cx.statics.es4_numerics && (defaultValueType == cx.decimalType()))
+        {
+            TypeValue[] type = new TypeValue[1];
+            value_index = ab.addDecimalConstant(bytecodeFactory.ConstantDecimalInfo(getValueOfNumberLiteral(value,type, numberUsage).decimalValue()));
         }
         else if (defaultValueType == cx.nullType())
         {
@@ -747,9 +804,17 @@ public class ActionBlockEmitter extends Emitter
         {
             value_kind = CONSTANT_Integer;
         }
-        else if (defaultValueType == cx.numberType())
+        else if (defaultValueType == cx.uintType())
+        {
+            value_kind = CONSTANT_UInteger;
+        }
+        else if (defaultValueType == cx.doubleType())
         {
             value_kind = CONSTANT_Double;
+        }
+        else if (cx.statics.es4_numerics && (defaultValueType == cx.decimalType()))
+        {
+            value_kind = CONSTANT_Decimal;
         }
         else if (defaultValueType == cx.nullType())
         {
@@ -883,10 +948,12 @@ public class ActionBlockEmitter extends Emitter
     
                     int value_index = 0;
                     byte value_kind = 0;
-                    if (slot.getInitializerValue() != null)
+                    ObjectValue iv = slot.getInitializerValue();
+                    if (iv != null)
                     {
                         value_required = true;
-                        String value = slot.getInitializerValue().toString();
+                        String value = iv.toString();
+                        NumberUsage numberUsage = iv.getNumberUsage(); 
                         TypeValue defaultValueType = slot.getInitializerValue().type != null ? slot.getInitializerValue().type.getTypeValue() : null;
                         if (defaultValueType == cx.booleanType())
                         {
@@ -902,13 +969,23 @@ public class ActionBlockEmitter extends Emitter
                         }
                         else if (defaultValueType == cx.intType())
                         {
-                            value_index = ab.addIntConstant(bytecodeFactory.ConstantIntegerInfo((int)getValueOfNumberLiteral(value,new TypeValue[1])));
+                            value_index = ab.addIntConstant(bytecodeFactory.ConstantIntegerInfo(getValueOfNumberLiteral(value,new TypeValue[1], numberUsage).intValue()));
                             value_kind = CONSTANT_Integer;
                         }
-                        else if (defaultValueType == cx.numberType())
+                        else if (defaultValueType == cx.uintType())
                         {
-                            value_index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(getValueOfNumberLiteral(value,new TypeValue[1])));
+                            value_index = ab.addUintConstant(bytecodeFactory.ConstantUintInfo(getValueOfNumberLiteral(value,new TypeValue[1], numberUsage).uintValue()));
+                            value_kind = CONSTANT_UInteger;
+                        }
+                        else if (defaultValueType == cx.doubleType())
+                        {
+                            value_index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(getValueOfNumberLiteral(value,new TypeValue[1], numberUsage).doubleValue()));
                             value_kind = CONSTANT_Double;
+                        }
+                        else if (cx.statics.es4_numerics && (defaultValueType == cx.decimalType()))
+                        {
+                            value_index = ab.addDecimalConstant(bytecodeFactory.ConstantDecimalInfo(getValueOfNumberLiteral(value,new TypeValue[1], numberUsage).decimalValue()));
+                            value_kind = CONSTANT_Decimal;
                         }
                         else if (defaultValueType == cx.nullType())
                         {
@@ -1244,163 +1321,210 @@ public class ActionBlockEmitter extends Emitter
         }
     }
 
-       // utility used by getValueOfNumberLiteral
-        final private int unHex(char c)
-        {
-            return Character.digit(c,16);
-        }
+    // utility used by getValueOfNumberLiteral
+    final private int unHex(char c)
+    {
+        return Character.digit(c,16);
+    }
 
 
          // Parses a string into a double format number, set ppType to numberType if the result
          //  is larger than this emitter can hold in a signed integer, or if the string is
          //  floating point format, else sets ppType to cx.intType().  Replaces getTypeOfNumberLiteral
          //  because you can't tell the type of a number until you know how large it is.
-        public double getValueOfNumberLiteral(String str, TypeValue[] ppType)
-        {
-            double  resultSign = 1.0;
-            int     len = str.length();
-            int     startIndex = 0;
-            double  sum = 0.0;
-            int     base = 10;
+        
+        // Gets value of number literal and its type.  
+        // If in use <numeric type> pragma, you can still override with suffix.
+        // If in use int or use uint, if not overridden by suffix, floating literals are still floating.
+        // I'm wondering about the previous statement and whether the committee should change its mind
+        
+    private static final long MAXUINT = (long)Integer.MAX_VALUE + (long)Integer.MAX_VALUE + 1;
+    private static Decimal128 D128_SIXTEEN = null;
+    private static Decimal128 D128_HEXDIGIT[] = null; // create first time needed
 
-            // First check if this is a base 10 float, perhaps with exponent.  Assume lexer has ensured the
-            //  format is valid (i.e. no hex numbers with exponents, multiple .'s etc.)
-
-            if( str.equals("NaN") )
-            {
-                ppType[0] = cx.numberType();
-                return Double.NaN;
-            }
-            else
-            if( str.equals("Infinity") )
-            {
-                ppType[0] = cx.numberType();
-                return Double.POSITIVE_INFINITY;
-            }
-            else
-            if( str.equals("-Infinity") )
-            {
-                ppType[0] = cx.numberType();
-                return Double.NEGATIVE_INFINITY;
-            }
-            else																			 // short cut.  max integer is 2147483647, 10 digits
-            if ((str.indexOf(".") > -1 || str.indexOf("e") > -1 || str.indexOf("E") > -1 || str.length() > 10) &&
-                 !(str.indexOf("x") > -1 || str.indexOf("X") > -1)) 
-            {
-
-                Double d = Double.valueOf(str);
-
-                if (d.isNaN())
-                {
-                    sum = Double.NaN;
-                    ppType[0] = cx.numberType();
-                }
-                else if (d.isInfinite())
-                {
-                    sum = (str.charAt(0) == '-') ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-                    ppType[0] = cx.numberType();
-                }
-                else if (d.doubleValue() == 0.0 && str.charAt(0) == '-')
-                {
-                    sum = d.doubleValue();
-                    ppType[0] = cx.numberType(); // avoid sum == (int)sum test below because 0 == -0, and there is no integer version of negative zero
-                }
-                else
-                {
-                    sum = d.doubleValue();
-                    // avmplus treats numbers > 2^29 as doubles internally. 
-                    int intSum = (int)sum;
-                    if (sum == intSum ) // && ((intSum << 3) >> 3) == intSum )
-                    {
-                        ppType[0] = cx.intType();
-                    }
-                    else        
-                    {
-                        ppType[0] = cx.numberType();
-                    }
-                }
-                
-                return sum;
-            }
-            if ( len > 1 && (str.charAt(0) == '-' || str.charAt(0) == '+') )
-            {
-                resultSign = ((str.charAt(0) == '-') ? -1.0 : 1.0);
-                startIndex = 1;
-            }
-            if ( len > 2 )
-            {
-                if ( str.charAt(startIndex) == '0' )
-                {
+	private NumberConstant getDecimalValueOrInt(String str, boolean force, TypeValue[] ppType) {
+        // convert str into a decimal128 value.  
+        // if force, return a decimal128 for sure, otherwise return int or uint if value will fit
+        // check for NaN and Infinity
+		Decimal128 dval;
+        if (str.equals("NaN")) {
+            ppType[0] = cx.decimalType();
+            return new DecimalNumberConstant(Decimal128.NaN);
+        }
+        else if (str.equals("Infinity")){
+            ppType[0] = cx.decimalType();
+            return new DecimalNumberConstant(Decimal128.INFINITY);
+        }
+        else if (str.equals("-Infinity")){
+            ppType[0] = cx.decimalType();
+            return new DecimalNumberConstant(Decimal128.NEGINFINITY);
+        }
+             
+        boolean isInt = false;
+        if ((str.indexOf(".") > -1 || str.indexOf("e") > -1 || 
+             str.indexOf("E") > -1 || str.length() > 10) &&
+            !(str.indexOf("x") > -1 || str.indexOf("X") > -1)) {
+            // looks like floating, and not hex
+            dval = new Decimal128(str);
+        }
+        else {
+            // looks like an integral value. It could be hex
+            isInt = true;
+            int base = 10;
+            int startIndex = 0;
+            int len = str.length();
+            boolean negative = false;
+            if (len > 1) {
+                char c0 = str.charAt(startIndex);
+                if ((c0 == '-') || (c0 == '+')) {
                     startIndex++;
-                    // check for hex/octal number, skip over necessary chars
-                    if (str.charAt(startIndex) == 'x' || str.charAt(startIndex) == 'X')
-                    {
+                    if (c0 == '-')
+                        negative = true;
+                }
+            }
+            if (len > 2) {
+                if ( str.charAt(startIndex) == '0') {
+                    startIndex++;
+                    char c0 = str.charAt(startIndex);
+                    if ((c0 == 'x') || (c0 == 'X')) {
                         base = 16;
                         startIndex++;
                     }
-                    else
-                    {
-                        // Octal support has been dropped in AS3.
-                        base = 10;
-                        //base = 8;
+                }
+            }
+            // skip leading zeros, but not the last one
+            while (startIndex < (len-1) && str.charAt(startIndex) == '0')
+                startIndex++;
+            if (base == 10) {
+                String str2 = str.substring(startIndex, len);
+                dval = new Decimal128(str2);
+            }
+            else { // base == 16
+                // can we really have hex constants for type decimal?
+                int end, newDigit;
+                if (D128_HEXDIGIT == null) {
+                    // wow, somebody is creating a hex Decimal128 value.  We'll need digits
+                    D128_HEXDIGIT = new Decimal128[16];
+                    for (int ndx = 0; ndx < 16; ndx++) {
+                        D128_HEXDIGIT[ndx] = new Decimal128(ndx);
+                    }
+                    D128_SIXTEEN = new Decimal128(16);
+                }
+                dval = Decimal128.ZERO;
+                for (end = startIndex; end < len; end++) {
+                    newDigit = unHex(str.charAt(end));
+                    dval = D128_SIXTEEN.multiply(dval).add(D128_HEXDIGIT[newDigit]);
+                }
+        			
+            }
+            // negate if needed
+            if (negative) {
+                if (dval.equals(Decimal128.ZERO)) {
+                    dval = Decimal128.NEGZERO;
+                    isInt = false;
+                }
+                else
+                    dval = Decimal128.ZERO.subtract(dval);
+            }
+        }
+        if (!force && isInt) {
+            // value is integral.  See if it fits in a smaller type
+            long ival = dval.longValue();
+            if ((Integer.MIN_VALUE <= ival) && (ival <= Integer.MAX_VALUE)) {
+                ppType[0] = cx.intType();
+                return new IntNumberConstant((int)ival);
+            }
+            else if ((0 <= ival) && (ival <= MAXUINT)) {
+                ppType[0] = cx.uintType();
+                return new UintNumberConstant(ival);
+            }
+        }
+        // either not integral or not small enough to fit in uint or int
+        ppType[0] = cx.decimalType();
+        // canonicalize NaN and Infinity
+        if (dval.isNaN())
+            dval = Decimal128.NaN;
+        else if (!dval.isFinite()) {
+            if (str.charAt(0) == '-') 
+                dval = Decimal128.NEGINFINITY;
+            else
+                dval = Decimal128.INFINITY;
+        }
+        return new DecimalNumberConstant(dval);
+    }
+
+	private NumberConstant getDoubleValueOrInt(String str, boolean force, TypeValue[] ppType) {
+        Double d;
+        double sum = 0;
+        if (str.equals("NaN")) {
+            ppType[0] = cx.doubleType();
+            return new DoubleNumberConstant(Double.NaN);
+        }
+        else if (str.equals("Infinity")){
+            ppType[0] = cx.doubleType();
+            return new DoubleNumberConstant(Double.POSITIVE_INFINITY);
+        }
+        else if (str.equals("-Infinity")){
+            ppType[0] = cx.doubleType();
+            return new DoubleNumberConstant(Double.NEGATIVE_INFINITY);
+        }
+
+        boolean isInt = false;
+        if ((str.indexOf(".") > -1 || str.indexOf("e") > -1 || 
+             str.indexOf("E") > -1 || str.length() > 10) &&
+            !(str.indexOf("x") > -1 || str.indexOf("X") > -1)) {
+            // looks like floating, and not hex
+            d = Double.valueOf(str);
+            sum = d.doubleValue();
+        }
+        else {
+            // looks like an integral value. It could be hex
+            isInt = true;
+            int base = 10;
+            int startIndex = 0;
+            int len = str.length();
+            boolean negative = false;
+            if (len > 1) {
+                char c0 = str.charAt(0);
+                if ((c0 == '-') || (c0 == '+')) {
+                    startIndex++;
+                    if (c0 == '-')
+                        negative = true;
+                }
+            }
+            if (len > 2) {
+                if ( str.charAt(startIndex) == '0') {
+                    startIndex++;
+                    char c0 = str.charAt(startIndex);
+                    if ((c0 == 'x') || (c0 == 'X')) {
+                        base = 16;
+                        startIndex++;
                     }
                 }
             }
-
-        // skip leading zeros
-        while (startIndex < len && str.charAt(startIndex) == '0')
-            startIndex++;
-        String str2 = str.substring(startIndex, len);  // need to count bits of precision starting from first nonzero digit
-        len -= startIndex;  //  Necessary to accurately detect when we've read more 
-        startIndex = 0;     //  than 53 bits worth of mantissa data (where roundoff error occurs).
-
-        int        newDigit = 0;
-        int        end;
-        boolean    roundUp = false;
-
-        switch(base)
-        {
+            // skip leading zeros
+            while (startIndex < (len-1) && str.charAt(startIndex) == '0')
+                startIndex++;
+            String str2 = str.substring(startIndex, len);  // need to count bits of precision starting from first nonzero digit
+            len -= startIndex;  //  Necessary to accurately detect when we've read more 
+            startIndex = 0;     //  than 53 bits worth of mantissa data (where roundoff error occurs).
+            int        newDigit = 0;
+            int        end;
+            boolean    roundUp = false;
+            switch(base)
+            {
             case 10:
                 for (end=startIndex; end < len; end++)
                 {
                     newDigit = str2.charAt(end) - '0';
                     sum = sum*base + newDigit;
                 }
-				if (sum > 2147483647) // i.e. biggest integer possible.  After that, error creeps into the above calculation.
-				{
-					Double d = Double.valueOf(str2);
-					sum = d.doubleValue();
-				}
-                break;
-
-            case 8:
-                for (end=startIndex; end*3 < 52; end++) // 3 bits of precision per digit. 3bits*18 = 54
+                if (sum > 2147483647) // i.e. biggest integer possible.  After that, error creeps into the above calculation.
                 {
-                    if (end >= len)  // out of bits before 52
-                        break;
-                    newDigit = str2.charAt(end) - '0';
-                    sum = sum*base + newDigit;
-                }
-
-                if (end < len-1) // number contains more than 53 bits of precision, may need to roundUp last digit processed.
-                {
-                    int bit53 = newDigit & 0x1; // i.e. the 54th bit, the first to be dropped from the mantissa.
-                    int bit54 = (newDigit & 0x2) >> 1; // roundUp if bit54 is 1 and either the bit before it or any bit after it is 1
-
-                    roundUp = false;
-                    double factor = 1.0;
-                    while(end++ < len)
-                    {
-                        newDigit = str2.charAt(end) - '0';
-                        roundUp |= (newDigit != 0); // any trailing positive bit causes us to round up
-                        factor *= base;
-                    }
-                    roundUp = (bit54 != 0) && ((bit53 != 0) || roundUp);
-                    sum += (roundUp ? 1.0 : 0.0);
-                    sum *= factor;
+                    d = Double.valueOf(str2);
+                    sum = d.doubleValue();
                 }
                 break;
-
             case 16:
                 for (end=startIndex; end*4 < 53; end++) // 4 bits of precision per digit, 4*13=52
                 {
@@ -1415,7 +1539,7 @@ public class ActionBlockEmitter extends Emitter
                     newDigit  = unHex(str2.charAt(end));
                     int bit54 = (newDigit & 0x8) >> 3;  // the 54th bit is the first to be dropped from the mantissa.
                     roundUp   = (newDigit & 0x7) != 0;  // check if any bit after bit54 is set
-
+                        
                     double factor = base;
                     while(++end < len)
                     {
@@ -1428,27 +1552,147 @@ public class ActionBlockEmitter extends Emitter
                     sum *= factor;
                 }
                 break;
+            }
+            // negate if needed
+            if (negative) {
+                if (sum == 0.0) {
+                    d = Double.valueOf("-0");
+                    sum = d.doubleValue();
+                    isInt = false; // can't represent -0 as an int
+                }
+                else
+                    sum = -sum;
+            }
         }
-        // check for negative 0.  Note: double math above will not produce -0, Double.valueOf will, and 0 == -0 but is not the same number
-        if (resultSign==-1 && sum == 0.0)
-        {
-            Double d = Double.valueOf("-0");
-            ppType[0] = cx.numberType();
-            return d.doubleValue();    // don't multiply by resultSign
+        if (!force && isInt) {
+            // value is integral.  See if it fits in a smaller type
+            long ival = (long)sum;
+            if ((Integer.MIN_VALUE <= ival) && (ival <= Integer.MAX_VALUE)) {
+                ppType[0] = cx.intType();
+                return new IntNumberConstant((int)ival);
+            }
+            // don't make it uint unless ES4
+            else if (cx.statics.es4_numerics && (0 <= ival) && (ival <= MAXUINT)) {
+                ppType[0] = cx.uintType();
+                return new UintNumberConstant(ival); 
+            }
+        }
+        // either not integral or not small enough to fit in uint or int                                 
+        ppType[0] = cx.doubleType();
+        // canonicalize NaN and Infinity
+        d = Double.valueOf(sum);
+        if (d.isNaN())
+            d = Double.NaN;
+        else if (d.isInfinite()) {
+            if (str.charAt(0) == '-') 
+                d = Double.NEGATIVE_INFINITY;
+            else
+                d = Double.POSITIVE_INFINITY;
+        }
+        return new DoubleNumberConstant(d.doubleValue());
+    }
+        
+        
+   public NumberConstant getValueOfNumberLiteral(String str, TypeValue[] ppType, NumberUsage numberUsage)
+    {
+        NumberConstant result;
+        
+        if (!cx.statics.es4_numerics) {
+        	// do things the old way
+        	return getDoubleValueOrInt(str, false, ppType);
         }
 
-        // avmplus treats numbers > 2^29 as doubles internally. 
-        int intSum = (int)sum;
-        if (sum == intSum) //  && ((intSum << 3) >> 3) == intSum )
-        {
-            ppType[0] = cx.intType();
+        TypeValue ftype = null;  // force type of literal to this if integral
+        TypeValue floating_ftype; // use this if floating
+        
+        boolean forceType;
+
+        if (numberUsage == null) {
+        	// can happen when processing imports
+        	floating_ftype = cx.doubleType();
+        	forceType = false;
         }
-        else        
-        {
-            ppType[0] = cx.numberType();
+        else {
+            if (numberUsage.get_floating_usage() == NumberUsage.use_decimal)
+                floating_ftype = cx.decimalType();
+            else
+                floating_ftype = cx.doubleType();
+            forceType = true; // until proven otherwise
+            switch (numberUsage.get_usage()) {
+            case NumberUsage.use_int:
+                ftype = cx.intType();
+                break;
+            case NumberUsage.use_double:
+                ftype = cx.doubleType();
+                break;
+            case NumberUsage.use_uint:
+                ftype = cx.uintType();
+                break;
+            case NumberUsage.use_decimal:
+                ftype = cx.decimalType();
+                break;
+            case NumberUsage.use_Number:
+            default:
+                forceType = false;
+            }
+        	
         }
 
-        return sum * resultSign;
+        int len = str.length();
+        // See if there is a suffix to force the type of the literal
+    testlastchar:
+        while (true) { // dummy loop executed only once
+            switch(str.charAt(len-1)) {
+            case 'i': // from scanner, can only be on integer literals (i.e., no dot or "e")
+                ftype = cx.intType();
+                break;
+            case 'u': // from scanner, can only be on integer literals (i.e., no dot or "e")
+                ftype = cx.uintType();
+                break;
+            case 'm':
+                ftype = floating_ftype = cx.decimalType();
+                break;
+            case 'd':
+            	if ((str.indexOf('x') != -1) || (str.indexOf('X') != -1)) {
+            		// hex numbers can't have terminal d's
+            		break testlastchar;
+            	}
+                ftype = floating_ftype = cx.doubleType();
+                break;
+            default: 
+                break testlastchar;
+            }
+            forceType = true;
+            str = str.substring(0, len-1);
+            break;
+        } // dummy loop labelled testlastchar
+            
+        if (forceType) {
+            if (ftype == cx.doubleType()) {
+                return getDoubleValueOrInt(str, true, ppType);
+            }
+            else if (ftype == cx.decimalType()) {
+                return getDecimalValueOrInt(str, true, ppType);
+            }
+        }
+        // either not forceType or force to int or uint  
+        if (floating_ftype == cx.decimalType())
+            result = getDecimalValueOrInt(str, false, ppType);
+        else
+            result = getDoubleValueOrInt(str, false, ppType);
+            
+        if (forceType) {
+            ppType[0] = ftype; // either int or uint at this point
+            if (ftype == cx.intType()) {
+                if (!(result instanceof IntNumberConstant))
+                    result = new IntNumberConstant(result.intValue());
+            }
+            else { // ftype == cx.uintType()
+                if (!(result instanceof UintNumberConstant))
+                    result = new UintNumberConstant(result.uintValue());
+            }
+        }
+        return result;
     }
 
     // debug only
@@ -1745,12 +1989,18 @@ public class ActionBlockEmitter extends Emitter
 
         // we can't tell if its an int or a double until we know the value
         //  (integers can be larger than will fit into a 32bit signed int)
-         node.numericValue = getValueOfNumberLiteral(node.value, nuType);
+         node.numericValue = getValueOfNumberLiteral(node.value, nuType, node.numberUsage);
 
-        // but, if the format was scientific, force type to be Number
-        if (node.value.indexOf(".eE") > -1 && !(node.value.indexOf("xX") > -1))
-
-            node.type = cx.numberType();
+        // but, if decimal or the format was scientific, force type to be Number
+         if ((node.value.indexOf(".") > -1) ||
+              (((node.value.indexOf("e") > -1) || (node.value.indexOf("E") > -1)) && 
+               !((node.value.indexOf("x") > -1) || (node.value.indexOf("X") > -1))) )
+        {
+        	if (cx.statics.es4_numerics && (node.numberUsage != null && node.numberUsage.get_floating_usage() == NumberUsage.use_decimal))
+        		node.type = cx.decimalType();
+        	else
+        		node.type = cx.doubleType();
+        }
         else
             node.type = nuType[0];
 
@@ -2380,6 +2630,7 @@ public class ActionBlockEmitter extends Emitter
 
         ab.addBytesToTable(ab.scripts,bytecodeFactory.ScriptInfo(ab.scripts.at(package_info),init_info,traits,package_info));
 
+/*
         if (name.length() > 1)
         {
             // ignore packages "" and "$"
@@ -2394,6 +2645,7 @@ public class ActionBlockEmitter extends Emitter
             if (package_info >= native_package_count)
                 native_package_count = package_info+1;
         }
+*/
 
         if (show_instructions)
         {
@@ -3872,7 +4124,7 @@ public class ActionBlockEmitter extends Emitter
      * InvokeBinary
      */
 
-    protected void InvokeBinary(int op_index)
+    protected void InvokeBinary(int op_index, NumberUsage numberUsage)
     {
 
         showLineNumber();
@@ -3883,6 +4135,13 @@ public class ActionBlockEmitter extends Emitter
         }
 
         flushDebugInfo();
+        
+        int param = 0;
+        boolean useParam = false;
+        if (cx.statics.es4_numerics && !numberUsage.is_default()) {
+        	param = numberUsage.encode();
+        	useParam = true;
+        }
         
         last_in = IKIND_other;
 
@@ -3895,25 +4154,40 @@ public class ActionBlockEmitter extends Emitter
                 Add_i(ab.code);
                 break;
             case BINARY_BinaryPlusOp:
-                Add(ab.code);
+            	if (useParam)
+            		Add_p(ab.code, param);
+            	else
+            		Add(ab.code);
                 break;
             case BINARY_BinaryMinusOp_II:
                 Subtract_i(ab.code);
                 break;
             case BINARY_BinaryMinusOp:
-                Subtract(ab.code);
+            	if (useParam)
+            		Subtract_p(ab.code, param);
+            	else
+            		Subtract(ab.code);
                 break;
             case BINARY_MultiplyOp_II:
                 Multiply_i(ab.code);
                 break;
             case BINARY_MultiplyOp:
-                Multiply(ab.code);
+            	if (useParam)
+            		Multiply_p(ab.code, param);
+            	else
+            		Multiply(ab.code);
                 break;
             case BINARY_DivideOp:
-                Divide(ab.code);
+            	if (useParam)
+            		Divide_p(ab.code, param);
+            	else
+            		Divide(ab.code);
                 break;
             case BINARY_ModulusOp:
-                Modulo(ab.code);
+            	if (useParam)
+            		Modulo_p(ab.code, param);
+            	else
+            		Modulo(ab.code);
                 break;
             case BINARY_LeftShiftOp_II:
             case BINARY_LeftShiftOp:
@@ -4170,9 +4444,18 @@ public class ActionBlockEmitter extends Emitter
         }
     }
 
-    protected void InvokeUnary(int operator_id, int size, int data, Namespaces used_def_namespaces)
+    protected void InvokeUnary(int operator_id, int size, int data, 
+    		Namespaces used_def_namespaces, NumberUsage numberUsage)
     {
         showLineNumber();
+ 
+        int param = 0;
+        boolean useParam = false;
+        if (cx.statics.es4_numerics && numberUsage != null && !numberUsage.is_default()) {
+        	param = numberUsage.encode();
+        	useParam = true;
+        }
+        
         if (show_instructions)
         {
             code_out.println();
@@ -4198,7 +4481,12 @@ public class ActionBlockEmitter extends Emitter
                 Pushstring(ab.code, str_index);
                 break;
             case UNARY_TypeofOp_I:
-            case UNARY_TypeofOp_N:
+            case UNARY_TypeofOp_D:
+                str_index = ab.addUtf8Constant(bytecodeFactory.ConstantUtf8Info("number"));
+                Pushstring(ab.code, str_index);
+                break;
+            case UNARY_TypeofOp_M:
+                // The ES4 committee decided this should return number
                 str_index = ab.addUtf8Constant(bytecodeFactory.ConstantUtf8Info("number"));
                 Pushstring(ab.code, str_index);
                 break;
@@ -4214,25 +4502,37 @@ public class ActionBlockEmitter extends Emitter
                 Typeof(ab.code);
                 break;
             case UNARY_IncrementOp:
-                Increment(ab.code);
+            	if (useParam) 
+            		Increment_p(ab.code, param);
+            	else
+            		Increment(ab.code);
                 break;
             case UNARY_IncrementOp_I:
                 Increment_i(ab.code);
                 break;
             case UNARY_IncrementLocalOp:
-                Inclocal(ab.code, data);
+            	if (useParam)
+            		Inclocal_p(ab.code, data, param);
+            	else
+            		Inclocal(ab.code, data);
                 break;
             case UNARY_IncrementLocalOp_I:
                 Inclocal_i(ab.code, data);
                 break;
             case UNARY_DecrementOp:
-                Decrement(ab.code);
+            	if (useParam)
+                    Decrement_p(ab.code, param);
+            	else
+            		Decrement(ab.code);
                 break;
             case UNARY_DecrementOp_I:
                 Decrement_i(ab.code);
                 break;
             case UNARY_DecrementLocalOp:
-                Declocal(ab.code, data);
+            	if (useParam)
+                    Declocal_p(ab.code, data, param);
+            	else
+            		Declocal(ab.code, data);
                 break;
             case UNARY_DecrementLocalOp_I:
                 Declocal_i(ab.code, data);
@@ -4243,9 +4543,15 @@ public class ActionBlockEmitter extends Emitter
             case UNARY_UnaryPlusOp:
                 Convert_d(ab.code);
                 break;
+            case UNARY_UnaryPlusOp_M:
+                Convert_m(ab.code);
+                break;
             case UNARY_UnaryMinusOp_I:
             case UNARY_UnaryMinusOp:
-                Negate(ab.code);
+            	if (useParam) 
+            		Negate_p(ab.code, param);
+            	else
+            		Negate(ab.code);
                 break;
             case UNARY_LogicalNotOp_B:
             case UNARY_LogicalNotOp_I:
@@ -5200,16 +5506,22 @@ public class ActionBlockEmitter extends Emitter
      * PushNumber
      */
 
-    protected void PushNumber(double val, int type_id)
+    protected void PushNumber(NumberConstant val, int type_id)
     {
         showLineNumber();
         if (show_instructions)
         {
             code_out.println();
-
-            StringBuffer numStr = new StringBuffer();
-            IL_FormatDoubleAsString(val,numStr);
-            code_out.print("PushNumber " + numStr.toString() + ", " + typeToString(type_id));
+            String nn;
+            if (val.number_type() == NumberUsage.use_decimal) {
+            	nn = val.decimalValue().toString();
+            }
+            else {
+                StringBuffer numStr = new StringBuffer();
+                IL_FormatDoubleAsString(val.doubleValue(),numStr);
+                nn = numStr.toString();
+            }
+            code_out.print("PushNumber " + nn + ", " + typeToString(type_id));
         }
 
         flushDebugInfo();
@@ -5217,10 +5529,10 @@ public class ActionBlockEmitter extends Emitter
         last_ip = getIP();
         last_in = IKIND_push;
 
-        if (type_id == TYPE_int || type_id == TYPE_uint_external)
+        if (type_id == TYPE_int) // || type_id == TYPE_uint_external)
         {
             int index;
-            int ival = (int)val;
+            int ival = val.intValue();
             if ((byte)ival == ival)
             {
                 Pushbyte(ab.code, ival);
@@ -5235,17 +5547,56 @@ public class ActionBlockEmitter extends Emitter
                 Pushint(ab.code, index);
             }
         }
-        else
+        else if (type_id == TYPE_uint) {
+        	int index;
+        	long ival = val.uintValue();
+        	if ((ival & 0x7F) == ival) { // Pushbyte sign extends
+        		Pushbyte(ab.code, (int)ival);
+        	}
+        	else if ((ival & 0x7FFFF) == ival) { // Pushshort sign extends
+        		Pushshort(ab.code, (int)ival);
+        	}
+        	else {
+        		index = ab.addUintConstant(bytecodeFactory.ConstantUintInfo((int)ival));
+        		Pushuint(ab.code, index);
+        	}
+        }
+        else if (type_id == TYPE_double)
         {
-            if (Double.isNaN(val))
+        	double dval = val.doubleValue();
+            if (Double.isNaN(dval))
             {
                 Pushnan(ab.code);
             }
-            else
+            else  if ((dval != -0) && !Double.isInfinite(dval) && (dval == val.intValue()))
             {
-                int index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(val));
-                Pushdouble( ab.code, index);
+              	int ival = val.intValue();
+             	//it's an int.  see if there is simpler way to get on stack
+                if ((byte)ival == ival)
+                {
+                    Pushbyte(ab.code, ival);
+                }
+                else if ((short)ival == ival)
+                {
+                    Pushshort(ab.code, ival);
+                }
+                else
+                {
+                    int index = ab.addIntConstant(bytecodeFactory.ConstantIntegerInfo(ival));
+                    Pushint(ab.code, index);
+            	}
             }
+        	else {
+        		// not an integer
+        		int index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(dval));
+                Pushdouble( ab.code, index);
+        	}
+        }
+        else if (type_id == TYPE_decimal)
+        {
+        	Decimal128 dval = val.decimalValue();
+            int index = ab.addDecimalConstant(bytecodeFactory.ConstantDecimalInfo(dval));
+            Pushdecimal( ab.code, index);
         }
 
         if (show_instructions)
@@ -5702,19 +6053,38 @@ public class ActionBlockEmitter extends Emitter
         flushDebugInfo();        
     }
 
-    protected void ToNumber(int type_id)
+    protected void ToDouble(int type_id)
     {
         showLineNumber();
         if (show_instructions)
         {
             code_out.println();
-            code_out.print("ToNumber " + typeToString(type_id));
+            code_out.print("ToDouble " + typeToString(type_id));
         }
 
         flushDebugInfo();        
 
         last_in = IKIND_other;
         Convert_d(ab.code);
+
+        if (show_instructions)
+        {
+            code_out.write(" [" + cur_stack + "]");
+        }
+    }
+    protected void ToDecimal(int type_id)
+    {
+        showLineNumber();
+        if (show_instructions)
+        {
+            code_out.println();
+            code_out.print("ToDecimal " + typeToString(type_id));
+        }
+
+        flushDebugInfo();        
+
+        last_in = IKIND_other;
+        Convert_m(ab.code);
 
         if (show_instructions)
         {
@@ -6396,6 +6766,18 @@ protected void Setsuper(ByteList code,int index)
         Int(code, id);
     }
 
+    protected void Pushdecimal(ByteList code, int id)
+    {
+        stack(1);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Pushdouble " + id);
+        }
+
+        Byte(code, OP_pushdecimal);
+        Int(code, id);
+    }
+
     protected void Pushint(ByteList code, int id)
     {
         stack(1);
@@ -7052,6 +7434,29 @@ protected void Setsuper(ByteList code,int index)
         Byte(code, OP_convert_d);
     }
 
+    protected void Convert_m(ByteList code)
+    {
+        stack(0);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Convert.m");
+        }
+
+        Byte(code, OP_convert_m);
+    }
+
+    protected void Convert_m_p(ByteList code, int decimalParams)
+    {
+        stack(0);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Convert.m_dp(0x" + Integer.toHexString(decimalParams) + ")");
+        }
+
+        Byte(code, OP_convert_m_p);
+        Int(code, decimalParams);
+    }
+
     protected void Convert_b(ByteList code)
     {
         stack(0);
@@ -7153,6 +7558,18 @@ protected void Setsuper(ByteList code,int index)
         Byte(code, OP_negate_i);
     }
 
+    protected void Negate_p(ByteList code, int param)
+    {
+        stack(0);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Negate_p(" + Integer.toHexString(param) + ")");
+        }
+
+        Byte(code, OP_negate_p);
+        Int(code, param);
+    }
+
     protected void Increment(ByteList code)
     {
         stack(0);
@@ -7162,6 +7579,18 @@ protected void Setsuper(ByteList code,int index)
         }
 
         Byte(code, OP_increment);
+    }
+
+    protected void Increment_p(ByteList code, int decimalParams)
+    {
+        stack(0);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Increment_p(0x" + Integer.toHexString(decimalParams) + ")");
+        }
+
+        Byte(code, OP_increment_p);
+        Int(code, decimalParams);
     }
 
     protected void Increment_i(ByteList code)
@@ -7184,6 +7613,19 @@ protected void Setsuper(ByteList code,int index)
         }
 
         Byte(code, OP_inclocal);
+        Int(code, index);
+    }
+
+    protected void Inclocal_p(ByteList code, int index, int decimalParams)
+    {
+        stack(0);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Inclocal_p(0x" + Integer.toHexString(decimalParams) + ") " + index);
+        }
+
+        Byte(code, OP_inclocal_p);
+        Int(code, decimalParams);
         Int(code, index);
     }
 
@@ -7210,7 +7652,19 @@ protected void Setsuper(ByteList code,int index)
         Byte(code, OP_decrement);
     }
 
-    protected void Decrement_i(ByteList code)
+    protected void Decrement_p(ByteList code, int decimalParams)
+    {
+        stack(0);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Decrement_p(0x" + Integer.toHexString(decimalParams) + ")");
+        }
+
+        Byte(code, OP_decrement_p);
+        Int(code, decimalParams);
+    }
+
+   protected void Decrement_i(ByteList code)
     {
         stack(0);
         if (bytecodeFactory.show_bytecode)
@@ -7230,6 +7684,19 @@ protected void Setsuper(ByteList code,int index)
         }
 
         Byte(code, OP_declocal);
+        Int(code, index);
+    }
+
+    protected void Declocal_p(ByteList code, int index, int decimalParams)
+    {
+        stack(0);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Declocal_p(0x" + Integer.toHexString(decimalParams) + ") " + index);
+        }
+
+        Byte(code, OP_declocal_p);
+        Int(code, decimalParams);
         Int(code, index);
     }
 
@@ -7277,6 +7744,17 @@ protected void Setsuper(ByteList code,int index)
 
         Byte(code, OP_add);
     }
+    protected void Add_p(ByteList code, int decimalParams)
+    {
+        stack(-1);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Add_p(0x" + Integer.toHexString(decimalParams) + ")");
+        }
+
+        Byte(code, OP_add_p);
+        Int(code, decimalParams);
+    }
     protected void Add_i(ByteList code)
     {
         stack(-1);
@@ -7298,6 +7776,17 @@ protected void Setsuper(ByteList code,int index)
 
         Byte(code, OP_subtract);
     }
+    protected void Subtract_p(ByteList code, int decimalParams)
+    {
+        stack(-1);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Subtract_p(0x" + Integer.toHexString(decimalParams) + ")");
+        }
+
+        Byte(code, OP_subtract_p);
+        Int(code, decimalParams);
+   }
     protected void Subtract_i(ByteList code)
     {
         stack(-1);
@@ -7319,7 +7808,18 @@ protected void Setsuper(ByteList code,int index)
 
         Byte(code, OP_multiply);
     }
-    protected void Multiply_i(ByteList code)
+    protected void Multiply_p(ByteList code, int decimalParams)
+    {
+        stack(-1);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Multiply_p(0x" + Integer.toHexString(decimalParams) + ")");
+        }
+
+        Byte(code, OP_multiply_p);
+        Int(code, decimalParams);
+   }
+   protected void Multiply_i(ByteList code)
     {
         stack(-1);
         if (bytecodeFactory.show_bytecode)
@@ -7340,6 +7840,17 @@ protected void Setsuper(ByteList code,int index)
 
         Byte(code, OP_divide);
     }
+    protected void Divide_p(ByteList code, int decimalParams)
+    {
+        stack(-1);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Divide_dp(0x" + Integer.toHexString(decimalParams) + ")");
+        }
+
+        Byte(code, OP_divide_p);
+        Int(code, decimalParams);
+   }
 
     protected void Modulo(ByteList code)
     {
@@ -7352,7 +7863,19 @@ protected void Setsuper(ByteList code,int index)
         Byte(code, OP_modulo);
     }
 
-    protected void Lshift(ByteList code)
+    protected void Modulo_p(ByteList code, int decimalParams)
+    {
+        stack(-1);
+        if (bytecodeFactory.show_bytecode)
+        {
+            code_out.write("\n      " + getIP() + ":Modulo_p(0x" + Integer.toHexString(decimalParams) + ")");
+        }
+
+        Byte(code, OP_modulo_p);
+        Int(code, decimalParams);
+   }
+
+   protected void Lshift(ByteList code)
     {
         stack(-1);
         if (bytecodeFactory.show_bytecode)
@@ -7750,6 +8273,7 @@ protected void Setsuper(ByteList code,int index)
     public void reorderMainScript()
     {
         ab.scripts.add(ab.scripts.remove(0));
+        package_infos.add(package_infos.remove(0));
     }
 
     public String il_str()
@@ -7826,8 +8350,32 @@ protected void Setsuper(ByteList code,int index)
     	}
     }
 
+    private void dumpPackageInfos()
+    {
+        for( int i = 0; i < package_infos.size(); ++i )
+        {
+            String name = package_infos.get(i);
+            int package_info = i;
+            if (name.length() > 1)
+            {
+                // ignore packages "" and "$"
+
+                String constName = name.replace('.','_');
+                constName = constName.replace('/','_');
+                constName = constName.replace(':','_');
+                constName = constName.replace('|','_');
+                constName = constName.replace('$','_');
+
+                header_out.println("const int abcpackage_" + constName + " = " + package_info + ";");
+                if (package_info >= native_package_count)
+                    native_package_count = package_info+1;
+            }
+        }
+
+    }
     public String header_str()
     {
+        dumpPackageInfos();
         String out = header_out.toString();
         if (out.length() > 0)
             return out;

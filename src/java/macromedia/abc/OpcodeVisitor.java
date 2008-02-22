@@ -55,10 +55,12 @@ public class OpcodeVisitor implements Visitor
     public void OP_pushint(int index) {}
     public void OP_pushuint(int index) {}
     public void OP_pushdouble(int index) {}
+    public void OP_pushdecimal(int index) {}
 	public void OP_getlocal(int index) {}
 	public void OP_pushtrue() {}
 	public void OP_pushfalse() {}
 	public void OP_pushnan() {}
+	public void OP_pushdnan() {}
 	public void OP_pop() {}
 	public void OP_dup() {}
 	public void OP_swap() {}
@@ -67,18 +69,25 @@ public class OpcodeVisitor implements Visitor
     public void OP_esc_xattr() {}
     public void OP_checkfilter() {}
 	public void OP_convert_d() {}
+	public void OP_convert_m() {}
+	public void OP_convert_m_p(int params) {}
 	public void OP_convert_b() {}
 	public void OP_convert_o() {}
 	public void OP_negate() {}
+	public void OP_negate_p(int params) {}
 	public void OP_negate_i() {}
 	public void OP_increment() {}
+	public void OP_increment_p(int params) {}
 	public void OP_increment_i() {}
 	public void OP_inclocal(int index) {}
+	public void OP_inclocal_p(int params, int index) {}
 	public void OP_kill(int index) {}
 	public void OP_inclocal_i(int index) {}
 	public void OP_decrement() {}
+	public void OP_decrement_p(int params) {}
 	public void OP_decrement_i() {}
 	public void OP_declocal(int index) {}
+	public void OP_declocal_p(int params, int index) {}
 	public void OP_declocal_i(int index) {}
 	public void OP_typeof() {}
 	public void OP_not() {}
@@ -91,7 +100,13 @@ public class OpcodeVisitor implements Visitor
 	public void OP_multiply() {}
 	public void OP_multiply_i() {}
 	public void OP_divide() {}
+	public void OP_divide_i() {}
 	public void OP_modulo() {}
+	public void OP_add_p(int params) {}
+	public void OP_subtract_p(int params) {}
+	public void OP_multiply_p(int params) {}
+	public void OP_divide_p(int params) {}
+	public void OP_modulo_p(int params) {}
 	public void OP_lshift() {}
 	public void OP_rshift() {}
 	public void OP_urshift() {}

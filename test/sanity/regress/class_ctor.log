@@ -16,6 +16,4 @@ verify class_ctor.as$1::B$iinit()
                         scope: [global Object$ class_ctor.as$1::A$ class_ctor.as$1::B$] class_ctor.as$1::B 
                          locals: class_ctor.as$1::B * 
   3:constructsuper 0
-VerifyError: Error #1063: Argument count mismatch on class_ctor.as$1::A$iinit(). Expected 1, got 0.
-	at class_ctor.as$1::B$iinit()
-	at global$init()
+caught exception: VerifyError: Error #1063: Argument count mismatch on class_ctor.as$1::A$iinit(). Expected 1, got 0.

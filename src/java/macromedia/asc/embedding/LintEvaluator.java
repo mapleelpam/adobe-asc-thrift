@@ -13,7 +13,8 @@ package macromedia.asc.embedding;
 
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_bool;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_boolean;
-import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_number;
+import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_double;
+import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_decimal;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_int;
 import macromedia.asc.embedding.avmplus.*;
 import macromedia.asc.util.*;
@@ -404,7 +405,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 				Value  argTypeVal = arg.evaluate(cx, this);
 
 				evaluated = true;
-				returnVal = cx.numberType();
+				returnVal = cx.doubleType();	// RES don't bother with numberUsage issues here
 				if (argTypeVal == cx.stringType()
 						&& (arg instanceof LiteralStringNode)
 						&& "".equals(((LiteralStringNode)arg).value.trim()))
@@ -742,7 +743,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
                      node.args != null && node.args.items.size() == 1 && node.args.items.get(0) instanceof LiteralNumberNode)
             {
                 LiteralNumberNode ln = (LiteralNumberNode)(node.args.items.get(0));
-                if (ln.numericValue < 0)
+                if (ln.numericValue.doubleValue() < 0)
                     warning(node.getPosition(), cx.input, kWarning_NegativeUintLiteral);
             }
 					
@@ -824,7 +825,9 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 				ObjectValue base = node.ref.getBase();
 				if ((baseType != null && baseType != cx.voidType() && baseType != cx.nullType())
 					&& ((base != null && base.isFinal() && !base.isDynamic())
-								|| cx.numberType().includes(cx, baseType)
+								|| cx.doubleType().includes(cx, baseType)
+								|| cx.numberType() == baseType
+								|| (cx.statics.es4_numerics && cx.decimalType() == baseType)
 								|| cx.stringType() == baseType
 								|| cx.booleanType() == baseType
 								|| types[kMathType] == baseType))
@@ -864,7 +867,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		{
 			TypeValue t = slot.getType().getTypeValue();
 			TypeValue rt = (TypeValue)result;
-			if (t == cx.intType() || t == cx.uintType() || t == cx.numberType() || t == cx.booleanType())
+			if ((t != null) && (t.isNumeric(cx) || t == cx.booleanType()))
 				warning(node.args.getPosition(), cx.input, kWarning_BadNullAssignment, t.name.toString());
 		}
 		else if (slot != null && slot.getType().getTypeValue() == cx.booleanType() && result instanceof TypeValue &&
@@ -1042,7 +1045,28 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 	public Value evaluate( Context cx, IncrementNode node )
 	{
 		node.expr.evaluate(cx,this);
-		return (node.slot != null) ? node.slot.getType().getTypeValue() : cx.numberType();
+		if (node.slot != null)
+			return node.slot.getType().getTypeValue();
+		else {
+	        TypeValue currentNumberType = cx.doubleType();
+	        if (node.numberUsage != null)
+	        	switch (node.numberUsage.get_usage()) {
+	         	case NumberUsage.use_int:
+	        		currentNumberType = cx.intType();
+	        		break;
+	        	case NumberUsage.use_uint:
+	        		currentNumberType = cx.uintType();
+	        		break;
+	        	case NumberUsage.use_decimal:
+	        		currentNumberType = cx.decimalType();
+	        		break;
+	        	case NumberUsage.use_double:
+	        	case NumberUsage.use_Number:
+	        	default:
+	        		currentNumberType = cx.doubleType();
+	        	}
+	        return currentNumberType;
+		}
 	}
 
 	public Value evaluate( Context cx, BinaryExpressionNode node )
@@ -1094,13 +1118,14 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
   						{
   							case TYPE_boolean:
   							case TYPE_int: // same as case TYPE_uint:
-  							case TYPE_number:
+  							case TYPE_double:
+  							case TYPE_decimal:
   								warning(node.getPosition(), cx.input, kWarning_BadNullComparision, getSimpleTypeName(nonVoidType));
   								break;
   						}
   					}
   				}
-                if (lhsType == cx.numberType())
+                if (lhsType == cx.doubleType() || (cx.statics.es4_numerics && (lhsType == cx.decimalType())))
  				{
  					MemberExpressionNode mem = (node.lhs instanceof MemberExpressionNode) ? (MemberExpressionNode)(node.lhs) : null;
  					if (mem != null)
@@ -1110,7 +1135,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
  							warning(node.getPosition(), cx.input, kWarning_BadNaNComparision);
  					}
  				}
- 				if (rhsType == cx.numberType())
+ 				if (rhsType == cx.doubleType() || (cx.statics.es4_numerics && (lhsType == cx.decimalType())))
  				{
 					MemberExpressionNode mem = (node.rhs instanceof MemberExpressionNode) ? (MemberExpressionNode)(node.rhs) : null;
 					if (mem != null)
@@ -1246,11 +1271,11 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 								    funcName);
 						}
 					}
-                    else if (expectedType == cx.uintType() && item instanceof LiteralNumberNode && ((LiteralNumberNode)item).numericValue < 0)
+                    else if (expectedType == cx.uintType() && item instanceof LiteralNumberNode && ((LiteralNumberNode)item).numericValue.doubleValue() < 0)
                     {
                         warning(item.pos(),cx.input, kWarning_NegativeUintLiteral);
                     }
-                    else if (  (expectedType == cx.numberType() || expectedType == cx.intType() || expectedType == cx.uintType() || expectedType == cx.booleanType()) 
+                    else if (  ((expectedType != null) && (expectedType.isNumeric(cx) || expectedType == cx.booleanType())) 
                                 && item instanceof LiteralNullNode  )
                     {
                         warning(item.getPosition(), cx.input, kWarning_BadNullAssignment, expectedType.name.toString());
@@ -1525,7 +1550,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
         }
         else if (expected_returnType == cx.uintType())
         {
-            if (item instanceof LiteralNumberNode && ((LiteralNumberNode)item).numericValue < 0)
+            if (item instanceof LiteralNumberNode && ((LiteralNumberNode)item).numericValue.doubleValue() < 0)
             {
                 warning(item.pos(),cx.input, kWarning_NegativeUintLiteral);
             }
@@ -1536,7 +1561,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
             TypeValue rt = (TypeValue)returnType;
             warning(item.getPosition(), cx.input, kWarning_BadBoolAssignment, rt.name.toString());
         }
-        else if ( (expected_returnType == cx.numberType() || expected_returnType == cx.intType() || expected_returnType == cx.uintType() || expected_returnType == cx.booleanType()))
+        else if ((expected_returnType != null) && (expected_returnType.isNumeric(cx) || expected_returnType == cx.booleanType()))
         {
             if (item instanceof LiteralNullNode)
             {
@@ -1655,14 +1680,14 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
             }
             else if (!doing_method)
             {
-            	if( cx.dialect(Features.DIALECT_ES4) && cx.scope().builder instanceof InstanceBuilder )
+            	if( cx.statics.es4_nullability && cx.scope().builder instanceof InstanceBuilder )
             	{
             		cx.scope().setInitOnly(true);
             	}
             	
                 node.initializer.evaluate(cx,this);
 
-            	if( cx.dialect(Features.DIALECT_ES4) && cx.scope().builder instanceof InstanceBuilder )
+            	if( cx.statics.es4_nullability && cx.scope().builder instanceof InstanceBuilder )
             	{
             		cx.scope().setInitOnly(false);
             	}
@@ -2244,7 +2269,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 			doing_method = true;
             for(Node item : node.instanceinits)
 			{
-            	if( cx.dialect(Features.DIALECT_ES4) && !item.isDefinition() )
+            	if( cx.statics.es4_nullability && !item.isDefinition() )
             		node.iframe.setInitOnly(true);
             	
 				item.evaluate(cx,this);
@@ -2255,13 +2280,14 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
                     has_instance_vars = true;
                 }
                 
-                if( cx.dialect(Features.DIALECT_ES4) && !item.isDefinition() )
+                if( cx.statics.es4_nullability && !item.isDefinition() )
                 	node.iframe.setInitOnly(false);
 			}
+                
             doing_method = false;
 		}
 
-		
+
 
 		if (node.fexprs != null)
 		{
@@ -3195,6 +3221,21 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 	}
 
 	public Value evaluate(Context cx, PragmaNode node)
+	{
+		return cx.voidType();
+	}
+
+	public Value evaluate(Context cx, UsePrecisionNode node)
+	{
+		return cx.voidType();
+	}
+
+	public Value evaluate(Context cx, UseNumericNode node)
+	{
+		return cx.voidType();
+	}
+
+	public Value evaluate(Context cx, UseRoundingNode node)
 	{
 		return cx.voidType();
 	}

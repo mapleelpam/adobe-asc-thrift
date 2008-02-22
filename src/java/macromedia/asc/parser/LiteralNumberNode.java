@@ -29,13 +29,15 @@ public class LiteralNumberNode extends Node
 {
 	public TypeValue type;
 	public String value;
-    public double numericValue;
+    public NumberConstant numericValue;
+    public NumberUsage numberUsage;
 
 	public LiteralNumberNode(String value)
 	{
 		type = null;
 		void_result = false;
 		this.value = value.intern();
+		numberUsage = null;
 	}
 
 	public Value evaluate(Context cx, Evaluator evaluator)
@@ -79,7 +81,14 @@ public class LiteralNumberNode extends Node
 
 	public void negate()
 	{
-		value = "-" + value;
+		if (value.charAt(0) == '-') {
+			value = value.substring(1);
+		}
+		else {
+			value = "-" + value;
+		}
+
+		value = value.intern();
 	}
 
 	public String toString()

@@ -35,6 +35,7 @@ public class BinaryExpressionNode extends Node
 	public Slot slot;
     public TypeInfo lhstype;
     public TypeInfo rhstype;
+    public NumberUsage numberUsage;
 
 	public BinaryExpressionNode(int op, Node lhs, Node rhs)
 	{
@@ -45,6 +46,7 @@ public class BinaryExpressionNode extends Node
 		lhstype = null;
         rhstype = null;
 		void_result = false;
+		numberUsage = null;
 	}
 
 	public Value evaluate(Context cx, Evaluator evaluator)

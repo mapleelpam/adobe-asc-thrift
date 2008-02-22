@@ -148,6 +148,11 @@ public final class TypeValue extends ObjectValue
     	return name.name;
     }
 
+    public boolean isNumeric(Context cx) {
+    	return ((this == cx.intType()) || (this == cx.uintType()) || (this == cx.doubleType()) || 
+    			(this == cx.numberType()) || (cx.statics.es4_numerics && (this == cx.decimalType())));
+    }
+    
     public boolean isDynamic() { return false; }
 
     private TypeInfo default_typeinfo = null;

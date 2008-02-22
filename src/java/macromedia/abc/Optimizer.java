@@ -91,8 +91,10 @@ public class Optimizer
             {
                 // ThreadLocalToolkit.logInfo(tag.name);
                 decoders[j] = new Decoder(byte_codes[j]);
-                majorVersion = decoders[j].majorVersion;
-                minorVersion = decoders[j].minorVersion;
+                if (decoders[j].majorVersion > majorVersion)
+                	majorVersion = decoders[j].majorVersion;
+                if (decoders[j].minorVersion > minorVersion)
+                	minorVersion = decoders[j].minorVersion;
                 pools[j] = decoders[j].constantPool;
             }
             catch (Throwable ex)

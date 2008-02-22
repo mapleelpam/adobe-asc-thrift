@@ -54,6 +54,9 @@ Constant {
       kind=6 { // CONSTANT_Double
          U64 doublebits (little endian)
       }
+      kind=2 { // CONSTANT_Decimal
+         U8[16]
+      }
       kind=7,13 { // CONSTANT_Qname + CONSTANT_QnameA
          U16 namespace_index			// CONSTANT_Namespace, 0=AnyNamespace wildcard
          U16 name_index					// CONSTANT_Utf8, 0=AnyName wildcard
@@ -180,7 +183,7 @@ public final class Decoder
 	{
 		minorVersion = in.readU16();
 		majorVersion = in.readU16();
-		constantPool = new ConstantPool(in);
+		constantPool = new ConstantPool(in, minorVersion >= MINORwithDECIMAL);
 
 		int pos = in.pos();
 		methodInfo = new MethodInfo(in);
@@ -883,6 +886,12 @@ public final class Decoder
                     v.OP_pushdouble(index);
                     continue;
                 }
+                case OP_pushdecimal:
+                {
+                    int index = (int)in.readU32(); // constant pool index...
+                    v.OP_pushdecimal(index);
+                    continue;
+                }
 			    case OP_getlocal:
 			    {
 				    int index = (int)in.readU32();
@@ -902,6 +911,11 @@ public final class Decoder
 				case OP_pushnan:
 			    {
 				    v.OP_pushnan();
+					continue;
+			    }
+				case OP_pushdnan:
+			    {
+				    v.OP_pushdnan();
 					continue;
 			    }
 			    case OP_pop:
@@ -954,9 +968,26 @@ public final class Decoder
 				    v.OP_convert_o();
 			        continue;
 			    }
+			    case OP_convert_m:
+			    {
+				    v.OP_convert_m();
+			        continue;
+			    }
+			    case OP_convert_m_p:
+			    {
+					int param = (int)in.readU32();
+				    v.OP_convert_m_p(param);
+			        continue;
+			    }
 			    case OP_negate:
 			    {
 				    v.OP_negate();
+			        continue;
+			    }
+			    case OP_negate_p:
+			    {
+					int param = (int)in.readU32();
+				    v.OP_negate_p(param);
 			        continue;
 			    }
 				case OP_negate_i:
@@ -969,6 +1000,12 @@ public final class Decoder
 				    v.OP_increment();
 			        continue;
 			    }
+			    case OP_increment_p:
+			    {
+					int param = (int)in.readU32();
+				    v.OP_increment_p(param);
+			        continue;
+			    }
 			    case OP_increment_i:
 			    {
 				    v.OP_increment_i();
@@ -978,6 +1015,13 @@ public final class Decoder
 				{
 					int index = (int)in.readU32();
 					v.OP_inclocal(index);
+					continue;
+				}
+				case OP_inclocal_p:
+				{
+					int param = (int)in.readU32();
+					int index = (int)in.readU32();
+					v.OP_inclocal_p(param, index);
 					continue;
 				}
 				case OP_kill:
@@ -1002,6 +1046,12 @@ public final class Decoder
 				    v.OP_decrement();
 			        continue;
 			    }
+			    case OP_decrement_p:
+			    {
+					int param = (int)in.readU32();
+				    v.OP_decrement_p(param);
+			        continue;
+			    }
 			    case OP_decrement_i:
 			    {
 				    v.OP_decrement_i();
@@ -1011,6 +1061,13 @@ public final class Decoder
 			    {
 				    int index = (int)in.readU32();
 				    v.OP_declocal(index);
+				    continue;
+			    }
+				case OP_declocal_p:
+			    {
+					int param = (int)in.readU32();
+				    int index = (int)in.readU32();
+				    v.OP_declocal_p(param, index);
 				    continue;
 			    }
 				case OP_declocal_i:
@@ -1045,6 +1102,12 @@ public final class Decoder
 				    v.OP_add();
 			        continue;
 			    }
+			    case OP_add_p:
+			    {
+					int param = (int)in.readU32();
+				    v.OP_add_p(param);
+			        continue;
+			    }
 				case OP_add_i:
 			    {
 				    v.OP_add_i();
@@ -1053,6 +1116,12 @@ public final class Decoder
 			    case OP_subtract:
 			    {
 				    v.OP_subtract();
+			        continue;
+			    }
+			    case OP_subtract_p:
+			    {
+					int param = (int)in.readU32();
+				    v.OP_subtract_p(param);
 			        continue;
 			    }
 			    case OP_subtract_i:
@@ -1065,6 +1134,12 @@ public final class Decoder
 				    v.OP_multiply();
 			        continue;
 			    }
+			    case OP_multiply_p:
+			    {
+					int param = (int)in.readU32();
+				    v.OP_multiply_p(param);
+			        continue;
+			    }
 				case OP_multiply_i:
 			    {
 				    v.OP_multiply_i();
@@ -1075,9 +1150,21 @@ public final class Decoder
 				    v.OP_divide();
 			        continue;
 			    }
+			    case OP_divide_p:
+			    {
+					int param = (int)in.readU32();
+				    v.OP_divide_p(param);
+			        continue;
+			    }
 			    case OP_modulo:
 			    {
 				    v.OP_modulo();
+					continue;
+			    }
+			    case OP_modulo_p:
+			    {
+					int param = (int)in.readU32();
+				    v.OP_modulo_p(param);
 					continue;
 			    }
 			    case OP_lshift:

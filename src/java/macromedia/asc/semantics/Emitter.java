@@ -22,6 +22,8 @@ import macromedia.asc.util.IntList;
 import macromedia.asc.util.Context;
 import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.ObjectList; // for getTypeOfNumberLiteral
+import macromedia.asc.util.NumberConstant;
+import macromedia.asc.util.NumberUsage;
 
 /**
  * Emitter
@@ -76,13 +78,13 @@ public class Emitter
 		return bytes;
 	}
 
-	public double getValueOfNumberLiteral(String str, TypeValue[] type)
+	public NumberConstant getValueOfNumberLiteral(String str, TypeValue[] type, NumberUsage usage)
 	{
 		if (impl != null)
 		{
-			return impl.getValueOfNumberLiteral(str, type);
+			return impl.getValueOfNumberLiteral(str, type, usage);
 		}
-		return 0;
+		return null;
 	}
 
 	public void setPosition(int lnNum, int colPos, int pos)
@@ -574,11 +576,11 @@ public class Emitter
         }
     }
 
-    protected void InvokeBinary(int operator_id)
+    protected void InvokeBinary(int operator_id, NumberUsage numberUsage)
 	{
 		if (impl != null)
 		{
-			impl.InvokeBinary(operator_id);
+			impl.InvokeBinary(operator_id, numberUsage);
 		}
 	}
 
@@ -622,11 +624,11 @@ public class Emitter
         }
     }
 
-	protected void InvokeUnary(int operator_id, int size, int data, Namespaces used_def_namespaces)
+	protected void InvokeUnary(int operator_id, int size, int data, Namespaces used_def_namespaces, NumberUsage usage)
 	{
 		if (impl != null)
 		{
-			impl.InvokeUnary(operator_id, size, data, used_def_namespaces);
+			impl.InvokeUnary(operator_id, size, data, used_def_namespaces, usage);
 		}
 	}
 
@@ -838,7 +840,7 @@ public class Emitter
 		}
 	}
 
-	protected void PushNumber(double val, int type_id)
+	protected void PushNumber(NumberConstant val, int type_id)
 	{
 		if (impl != null)
 		{
@@ -995,11 +997,19 @@ public class Emitter
         }
     }
 
-    protected void ToNumber(int type_id)
+    protected void ToDouble(int type_id)
 	{
 		if (impl != null)
 		{
-			impl.ToNumber(type_id);
+			impl.ToDouble(type_id);
+		}
+	}
+
+    protected void ToDecimal(int type_id)
+	{
+		if (impl != null)
+		{
+			impl.ToDecimal(type_id);
 		}
 	}
 

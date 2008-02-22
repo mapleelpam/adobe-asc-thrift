@@ -208,34 +208,6 @@ Warning Report:
                             if (b < null)
     ............................^
 
-  as3\Warnings\DiffDataTypesWithNullUndefinedWarn.as(158): Illogical comparison with null.  Variables of type uint cannot be null.
-                            if (u == null)
-    ............................^
-
-  as3\Warnings\DiffDataTypesWithNullUndefinedWarn.as(162): Illogical comparison with null.  Variables of type uint cannot be null.
-                            if (u === null)
-    ............................^
-
-  as3\Warnings\DiffDataTypesWithNullUndefinedWarn.as(166): Illogical comparison with null.  Variables of type uint cannot be null.
-                            if (u != null)
-    ............................^
-
-  as3\Warnings\DiffDataTypesWithNullUndefinedWarn.as(170): Illogical comparison with null.  Variables of type uint cannot be null.
-                            if (u >= null)
-    ............................^
-
-  as3\Warnings\DiffDataTypesWithNullUndefinedWarn.as(174): Illogical comparison with null.  Variables of type uint cannot be null.
-                            if (u <= null)
-    ............................^
-
-  as3\Warnings\DiffDataTypesWithNullUndefinedWarn.as(178): Illogical comparison with null.  Variables of type uint cannot be null.
-                            if (u > null)
-    ............................^
-
-  as3\Warnings\DiffDataTypesWithNullUndefinedWarn.as(182): Illogical comparison with null.  Variables of type uint cannot be null.
-                            if (u < null)
-    ............................^
-
   as3\Warnings\DiffDataTypesWithNullUndefinedWarn.as(214): Illogical comparison with null.  Variables of type Number cannot be null.
                              if (n == null)
     .............................^

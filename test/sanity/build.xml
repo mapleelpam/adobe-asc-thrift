@@ -75,7 +75,7 @@ jdyer@macromedia.com
 <!-- look for global/shell.abc in qvm dir, if present -->
 <property name="qvm.dir" value="${root.dir}/../qvm"/>
 <available file="${qvm.dir}/core/builtin_full.abc" property="global.abc" value="${qvm.dir}/core/builtin_full.abc"/>
-<available file="${qvm.dir}/shell/toplevel.abc" property="shell.abc" value="${qvm.dir}/shell/toplevel.abc"/>
+<available file="${qvm.dir}/shell/shell_full.abc" property="shell.abc" value="${qvm.dir}/shell/shell_full.abc"/>
 
 <!-- explicitly adding the .exe on the end makes it easier to coexist between cygwin and bash in the same tree -->
 <condition property="asc.name" value="asc.exe" else="asc">
@@ -83,6 +83,11 @@ jdyer@macromedia.com
 </condition>
 <condition property="avm.name" value="avmplus.exe" else="avmplus">
 	<os family="windows"/>
+</condition>
+
+<!-- trick to skip es4 tests on non-es4-compliant vm's -->
+<condition property="es4.pattern" value="nonmatching*.as" else="es4*.as">
+	<available file="${qvm.dir}" type="dir"/>
 </condition>
 
 <echo message="global.abc is ${global.abc}"/>
@@ -139,7 +144,7 @@ jdyer@macromedia.com
     <apply executable="${asc.bin}" output="build.out" append="true" parallel="true">
         <arg line="-p"/>
         <arg line="-import ${global.abc}"/>
-        <fileset dir="${src.dir}" includes="**/*.es,**/*.as" excludes="playerglobal.as,t.as,shell.as,shellASC.as"/>
+        <fileset dir="${src.dir}" includes="**/*.es,**/*.as" excludes="playerglobal.as,t.as,shell.as,shellASC.as,decimal1.as"/>
     </apply>
     <copy todir="log">
         <fileset dir="${src.dir}" includes="**/*.p"/>
@@ -172,7 +177,7 @@ jdyer@macromedia.com
 																		equals.as,dynamic.as,doubleToInt.as,delete.as,constClass.as,const.as,class_ctor.as,incr.as,init.as,member.as,
 																		offsetStringTests.as,metadata2.as,playerglobal.as,t.as,restarg.as,shellASC.as,shell.as,pnf.as,
 																		pkg_missing.as,invalidtypeexpr.as,toStringRadix.as,plus2.as,overwrite.as,b191112.as,
-																		IllegalOverride*.as,es4*"/>
+																		IllegalOverride*.as,es4*.as,decimal1.as"/>
     </apply>
     
 	<!-- a handful can not be compiled with -strict, due to what they are testing -->
@@ -209,11 +214,19 @@ jdyer@macromedia.com
         <arg line="-i -m -strict -ES4 -sanity -log"/>
         <arg line="-import ${global.abc}"/>
         <arg line="-import ${shell.abc}"/>
-        <fileset dir="${src.dir}" includes="**/es4*.as" />
+        <fileset dir="${src.dir}" includes="**/${es4.pattern}" />
     </apply>
     <copy todir="log">
         <fileset dir="${src.dir}" includes="**/es4*.log" />
     </copy>
+
+    <!-- Decimal tests, need -11 flag -->
+    <apply executable="${asc.bin}" output="build.out" append="true" parallel="true">
+        <arg line="-i -strict -11 -sanity -log"/>
+        <arg line="-import ${global.abc}"/>
+        <arg line="-import ${shell.abc}"/>
+        <fileset dir="${src.dir}" includes="decimal1.as" />
+    </apply>
 
 	<!-- begin error test -->
     <apply executable="${asc.bin}" output="build.out" append="true">
@@ -321,6 +334,7 @@ jdyer@macromedia.com
     <apply executable="${asc.bin}" output="build.out" append="true">
         <arg line="-m -strict"/>
         <arg line="-import ${global.abc}"/>
+        <arg line="-import ${shell.abc}"/>
         <arg line="-import ${src.dir}/b191112-import.abc"/>
         <fileset dir="${src.dir}" includes="b191112.as"/>
     </apply>
@@ -496,7 +510,7 @@ jdyer@macromedia.com
     <apply executable="${asc.bin}" output="build.out" append="true">
         <arg line="-p"/>
         <arg line="-import ${global.abc}"/>
-        <fileset dir="${src.dir}" includes="**/*.es,**/*.as" excludes="playerglobal.as,t.as,shellASC.as,shell.as"/>
+        <fileset dir="${src.dir}" includes="**/*.es,**/*.as" excludes="playerglobal.as,t.as,shellASC.as,shell.as,decimal1.as"/>
     </apply>
     <copy todir="log">
         <fileset dir="${src.dir}" includes="**/*.p"/>

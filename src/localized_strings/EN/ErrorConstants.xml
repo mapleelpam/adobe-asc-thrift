@@ -301,8 +301,9 @@ d.xx = 44; // error, property is read-only</pre>
 		the following use of the <code>trace()</code> function is invalid, because of the missing
 		parentheses (the correct syntax is <code>trace("hello")</code>):
 
-<pre><code>import flash.utils.trace;
-trace "hello"</code></pre>
+<pre>
+trace "hello"
+</pre>
 	]]>
 	</description>
 

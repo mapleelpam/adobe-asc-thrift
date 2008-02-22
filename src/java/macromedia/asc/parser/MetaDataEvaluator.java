@@ -56,7 +56,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 
 		public KeylessValue(String v)
 		{
-			assert v == v.intern();
+			v=v.intern();//assert v == v.intern();
 			obj = v;
 		}
 	}
@@ -599,7 +599,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 		if (node.variable != null)
 			node.variable.evaluate(cx,this);
 
-    	if( cx.dialect(Features.DIALECT_ES4) && cx.scope().builder instanceof InstanceBuilder )
+    	if( cx.statics.es4_nullability && cx.scope().builder instanceof InstanceBuilder )
     	{
     		cx.scope().setInitOnly(true);
     	}
@@ -607,7 +607,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
     	if (node.initializer != null)
 			node.initializer.evaluate(cx,this);
     	
-    	if( cx.dialect(Features.DIALECT_ES4) && cx.scope().builder instanceof InstanceBuilder )
+    	if( cx.statics.es4_nullability && cx.scope().builder instanceof InstanceBuilder )
     	{
     		cx.scope().setInitOnly(false);
     	}
@@ -729,12 +729,12 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 		{
             for (Node init : node.instanceinits)
 			{
-            	if( cx.dialect(Features.DIALECT_ES4) && !init.isDefinition() )
+            	if( cx.statics.es4_nullability && !init.isDefinition() )
             		node.iframe.setInitOnly(true);
 
             	init.evaluate(cx, this);
 
-				if( cx.dialect(Features.DIALECT_ES4) && !init.isDefinition() )
+				if( cx.statics.es4_nullability && !init.isDefinition() )
             		node.iframe.setInitOnly(false);
 			}
 		}
@@ -857,6 +857,21 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 	};
 
 	public Value evaluate(Context cx, PragmaNode node)
+	{
+		return null;
+	};
+
+	public Value evaluate(Context cx, UsePrecisionNode node)
+	{
+		return null;
+	};
+
+	public Value evaluate(Context cx, UseNumericNode node)
+	{
+		return null;
+	};
+
+	public Value evaluate(Context cx, UseRoundingNode node)
 	{
 		return null;
 	};

@@ -483,6 +483,11 @@ public class Printer
             printOpcode(opNames[OP_pushdouble] + " cpool_double[" + index + "]");
         }
 
+        public void OP_pushdecimal(int index)
+        {
+            printOpcode(opNames[OP_pushdouble] + " cpool_decimal[" + index + "]");
+        }
+
 		public void OP_getlocal(int index)
 		{
 			printOpcode(opNames[OP_getlocal] + " r" + index);
@@ -501,6 +506,11 @@ public class Printer
 		public void OP_pushnan()
 		{
 			printOpcode(opNames[OP_pushnan]);
+		}
+
+		public void OP_pushdnan()
+		{
+			printOpcode(opNames[OP_pushdnan]);
 		}
 
 		public void OP_pop()
@@ -553,9 +563,24 @@ public class Printer
 			printOpcode(opNames[OP_convert_o]);
 		}
 
+		public void OP_convert_m()
+		{
+			printOpcode(opNames[OP_convert_m]);
+		}
+
+		public void OP_convert_m_p(int param)
+		{
+			printOpcode(opNames[OP_convert_m_p] + " p" + param);
+		}
+
 		public void OP_negate()
 		{
 			printOpcode(opNames[OP_negate]);
+		}
+
+		public void OP_negate_p(int param)
+		{
+			printOpcode(opNames[OP_negate_p] + " p" + param);
 		}
 
 		public void OP_negate_i()
@@ -568,6 +593,11 @@ public class Printer
 			printOpcode(opNames[OP_increment]);
 		}
 
+		public void OP_increment_p(int param)
+		{
+			printOpcode(opNames[OP_increment_p] + " p" + param);
+		}
+
 		public void OP_increment_i()
 		{
 			printOpcode(opNames[OP_increment_i]);
@@ -576,6 +606,11 @@ public class Printer
 		public void OP_inclocal(int index)
 		{
 			printOpcode(opNames[OP_inclocal] + " r" + index);
+		}
+
+		public void OP_inclocal_p(int param, int index)
+		{
+			printOpcode(opNames[OP_inclocal] + " p" + param + " r" + index);
 		}
 
 		public void OP_kill(int index)
@@ -593,6 +628,11 @@ public class Printer
 			printOpcode(opNames[OP_decrement]);
 		}
 
+		public void OP_decrement_p(int param)
+		{
+			printOpcode(opNames[OP_decrement_p] + " p" + param);
+		}
+
 		public void OP_decrement_i()
 		{
 			printOpcode(opNames[OP_decrement_i]);
@@ -601,6 +641,11 @@ public class Printer
 		public void OP_declocal(int index)
 		{
 			printOpcode(opNames[OP_declocal] + " r" + index);
+		}
+
+		public void OP_declocal_p(int param, int index)
+		{
+			printOpcode(opNames[OP_declocal_p] + " p" + param + " r" + index);
 		}
 
 		public void OP_declocal_i(int index)
@@ -633,6 +678,11 @@ public class Printer
 			printOpcode(opNames[OP_add]);
 		}
 
+		public void OP_add_p(int param)
+		{
+			printOpcode(opNames[OP_add] + " p" + param);
+		}
+
 		public void OP_add_i()
 		{
 			printOpcode(opNames[OP_add_i]);
@@ -641,6 +691,11 @@ public class Printer
 		public void OP_subtract()
 		{
 			printOpcode(opNames[OP_subtract]);
+		}
+
+		public void OP_subtract_p(int param)
+		{
+			printOpcode(opNames[OP_subtract_p] + " p" + param);
 		}
 
 		public void OP_subtract_i()
@@ -653,6 +708,11 @@ public class Printer
 			printOpcode(opNames[OP_multiply]);
 		}
 
+		public void OP_multiply_p(int param)
+		{
+			printOpcode(opNames[OP_multiply_p] + " p" + param);
+		}
+
 		public void OP_multiply_i()
 		{
 			printOpcode(opNames[OP_multiply_i]);
@@ -663,9 +723,19 @@ public class Printer
 			printOpcode(opNames[OP_divide]);
 		}
 
+		public void OP_divide_p(int param)
+		{
+			printOpcode(opNames[OP_divide_p] + " p" + param);
+		}
+
 		public void OP_modulo()
 		{
 			printOpcode(opNames[OP_modulo]);
+		}
+
+		public void OP_modulo_p(int param)
+		{
+			printOpcode(opNames[OP_modulo_p] + " p" + param);
 		}
 
 		public void OP_lshift()

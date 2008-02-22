@@ -903,6 +903,13 @@ public final class NodeFactory implements ErrorConstants
 		return node;
 	}
 
+    public TypeIdentifierNode typeIdentifier(String name, ListNode typeArgs, int pos)
+    {
+        TypeIdentifierNode node = new TypeIdentifierNode(name, typeArgs, pos);
+        node.setPositionTerminal(pos);
+        return node;
+    }
+
 	public Node ifStatement(ListNode test, Node tblock, Node eblock)
 	{
 		return ifStatement(test, tblock, eblock, -1);
@@ -2030,7 +2037,7 @@ public final class NodeFactory implements ErrorConstants
 		return node;
 	}
 
-	public TypedIdentifierNode typedIdentifier(Node identifier, Node type)
+    public TypedIdentifierNode typedIdentifier(Node identifier, Node type)
 	{
 		return typedIdentifier(identifier, type, -1);
 	}
@@ -2180,6 +2187,48 @@ public final class NodeFactory implements ErrorConstants
 		UseDirectiveNode node = new UseDirectiveNode(current_package, attrs, expr);
 		node.setPositionNonterminal(expr, pos);
         use_stmts = statementList(use_stmts,node);
+		return node;
+	}
+
+	public UsePragmaNode usePragma(Node id, Node argument)
+	{
+		return usePragma(id, argument, -1);
+	}
+
+
+	public UsePragmaNode usePragma(Node id, Node argument, int pos)
+	{
+        UsePragmaNode node = null;
+        if (id instanceof IdentifierNode && cx.statics.es4_numerics) {
+            String idval = ((IdentifierNode)id).toIdentifierString();
+            if (idval.equals("precision")) {
+                node = new UsePrecisionNode(id, argument);
+            }
+            else if (idval.equals("rounding")) {
+                node = new UseRoundingNode (id, argument);
+            }
+            else if (idval.equals("decimal")) {
+				node = new UseNumericNode(id, argument, NumberUsage.use_decimal);
+			}
+			else if (idval.equals("double")) {
+				node = new UseNumericNode(id, argument, NumberUsage.use_double);
+			}
+			else if (idval.equals("int")) {
+				node = new UseNumericNode(id, argument, NumberUsage.use_int);
+			}
+			else if (idval.equals("uint")) {
+				node = new UseNumericNode(id, argument, NumberUsage.use_uint);
+			}
+			else if (idval.equals("Number")) {
+				node = new UseNumericNode(id, argument, NumberUsage.use_Number);
+			}
+        }
+        if (node == null) {
+            // nothing matched
+            node = new UsePragmaNode(id, argument);
+        }
+		node.setPositionTerminal(pos);
+        //use_stmts = statementList(use_stmts,node);
 		return node;
 	}
 

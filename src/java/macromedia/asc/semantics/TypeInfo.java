@@ -62,6 +62,11 @@ public class TypeInfo
         this.is_nullable = nullable;
     }
 
+    public boolean isNumeric(Context cx) {
+    	return ((type == cx.intType()) || (type == cx.uintType()) || (type == cx.doubleType()) ||
+    			(type == cx.numberType()) || (cx.statics.es4_numerics && (type == cx.decimalType())));
+    }
+
     public int getTypeId()
     {
         // TODO: should there be different type-id's for nullable/non-nullable?
@@ -72,7 +77,7 @@ public class TypeInfo
     {
         boolean result = false;
 
-        if( cx.dialect(Features.DIALECT_ES4) && !this.is_nullable && other_type.is_nullable )
+        if( cx.statics.es4_nullability && !this.is_nullable && other_type.is_nullable )
             result = false;
         else
             result = this.type.includes(cx, other_type.type);
@@ -94,7 +99,7 @@ public class TypeInfo
         if( name == null )
         {
             name = type.name;
-            if( cx.dialect(Features.DIALECT_ES4) && !is_default )
+            if( cx.statics.es4_nullability && !is_default )
             {
                 name = new QName(name.ns, name.name + (is_nullable ? "?" : "!") );
             }

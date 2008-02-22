@@ -514,7 +514,7 @@ public final class InputBuffer
 	{
         if( !report_pos )
             return -1;
-        
+
         final int ret;
 
 		// This may happen with abc imports

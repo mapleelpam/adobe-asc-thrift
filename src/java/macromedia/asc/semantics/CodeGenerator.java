@@ -29,7 +29,13 @@ import macromedia.asc.parser.*;
 import macromedia.asc.util.Context;
 import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.ObjectList;
-import macromedia.asc.util.IntList;
+import macromedia.asc.util.NumberConstant;
+import macromedia.asc.util.IntNumberConstant;
+import macromedia.asc.util.UintNumberConstant;
+import macromedia.asc.util.DoubleNumberConstant;
+import macromedia.asc.util.DecimalNumberConstant;
+import macromedia.asc.util.Decimal128;
+
 
 import java.util.ListIterator;
 import java.io.File;
@@ -483,7 +489,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             if( node.ref != null )
             {
                 boolean is_attribute = node.selector.isAttributeIdentifier();
-                if( cx.dialect(Features.DIALECT_ES4 ) && doingClass() 
+                if( cx.abcVersion(Features.TARGET_AVM2) && doingClass()
                 		&&  base_index == scope_depth-1
                 		&& cx.scope(base_index).builder instanceof InstanceBuilder 
                 		&& slot != null && slot.declaredBy == cx.scope(base_index) )
@@ -1082,7 +1088,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         }
 
         // Call the operator
-        InvokeUnary(node.index, size - 1, -1, used_def_namespaces_sets.back());
+        InvokeUnary(node.index, size - 1, -1, used_def_namespaces_sets.back(), null);
         if (debug)
         {
             System.out.print("\n// -Invoke");
@@ -1378,7 +1384,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                 }
 
                 SetProperty(node.ref.name, node.ref.getImmutableNamespaces(),node.ref.isQualified(),is_super,is_attribute, is_constinit);
-                
+
                 if (!node.void_result)
                 {
                     LoadRegister(reg_offset+temp_val_reg, expr_type.getTypeId());
@@ -1846,12 +1852,12 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             Dup();
             StoreRegister(reg_offset+temp_name_reg.get(), TYPE_none);
 
-            InvokeUnary(UNARY_Get,0,-1,used_def_namespaces_sets.back());
+            InvokeUnary(UNARY_Get,0,-1,used_def_namespaces_sets.back(), node.numberUsage);
 
             if (node.isPostfix && !node.void_result)
             {
                 // Postfix result
-                ToNumber(TYPE_number); // ES3 11.3.2 step 6
+                ToDouble(TYPE_double); // ES3 11.3.2 step 6
                 Dup();
             }
         }
@@ -1886,7 +1892,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                 {
                     // Postfix result
                     if( !already_int )
-                        ToNumber(TYPE_number); // ES3 11.3.2 step 6
+                        ToDouble(TYPE_double); // ES3 11.3.2 step 6
                     Dup();
                 }
             }
@@ -1898,7 +1904,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                 {
                     // Postfix result
                     if( !already_int )
-                        ToNumber(TYPE_number); // ES3 11.3.2 step 6
+                        ToDouble(TYPE_double); // ES3 11.3.2 step 6
                     Dup();
                 }
             }
@@ -1919,7 +1925,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                 {
                     // Postfix result
                     if( !already_int )
-                        ToNumber(TYPE_number); // ES3 11.3.2 step 6
+                        ToDouble(TYPE_double); // ES3 11.3.2 step 6
                     Dup();
                 }
             }
@@ -1936,7 +1942,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                 {
                     // Postfix result
                     if( !already_int )
-                        ToNumber(TYPE_number); // ES3 11.3.2 step 6
+                        ToDouble(TYPE_double); // ES3 11.3.2 step 6
                     Dup();
                 }
 
@@ -1945,7 +1951,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         // Increment the value
 
-        InvokeUnary(node.slot.getMethodID(), 0, reg_offset+reg, used_def_namespaces_sets.back());
+        InvokeUnary(node.slot.getMethodID(), 0, reg_offset+reg, used_def_namespaces_sets.back(), node.numberUsage);
 
         // Put the new value back
 
@@ -1964,7 +1970,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             LoadRegister(reg_offset+temp_base_reg.get(), TYPE_none);    // Base object
             LoadRegister(reg_offset+temp_name_reg.get(), TYPE_none);
             LoadRegister(reg_offset+temp_val_reg.get(), TYPE_none);        // Value
-            InvokeUnary(UNARY_Put, 1, -1, used_def_namespaces_sets.back());
+            InvokeUnary(UNARY_Put, 1, -1, used_def_namespaces_sets.back(), node.numberUsage);
         }
         else
         {
@@ -2099,7 +2105,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                         node.expr.evaluate(cx,this);
                     }
                 }
-                InvokeUnary(node.slot.getMethodID(), 0, -1, used_def_namespaces_sets.back());
+                InvokeUnary(node.slot.getMethodID(), 0, -1, used_def_namespaces_sets.back(), node.numberUsage);
                 if (node.void_result)
                 {
                     Pop();
@@ -2183,7 +2189,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     node.lhs.evaluate(cx, this);
                 }
 
-                InvokeBinary(node.slot.getMethodID());
+                InvokeBinary(node.slot.getMethodID(), node.numberUsage);
                 break;
         }
 
@@ -2327,7 +2333,6 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         {
             freeTemp(i-2);
         }
-
 
         if (debug)
         {
@@ -3183,7 +3188,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         if (node.finallyblock != null)
         {
             // Jump index
-            PushNumber(-1, TYPE_int);
+            PushNumber(new IntNumberConstant(-1), TYPE_int);
 
             CatchClausesBegin();
 
@@ -3316,7 +3321,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         if (isFinallyPresent())
         {
-            PushNumber(-1, TYPE_int);
+            PushNumber(new IntNumberConstant(-1), TYPE_int);
         }
 
 
@@ -3567,7 +3572,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         // If this is a constructor, then insert a call to the base constructor,
         // and the instance initializer
 
-        if( "$construct".equals(node.ref.name) && cx.dialect(Features.DIALECT_ES4)  )
+        if( "$construct".equals(node.ref.name) && cx.statics.es4_nullability  )
         {
         	// Must run property initializers before this, or activation scope is pushed.  Setting properties
         	// will be handled with getlocal0, setproperty and arguments will use getlocal since there can be no intervening
@@ -3611,7 +3616,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             for (Slot s: activation.slots)
             {
                 int index = base_offset + s.getVarIndex();
-                if ( s.needsInit() && s.getVarIndex() >= firstlocal)
+                if ( s.needsInit() &&  s.getVarIndex() >= firstlocal)
                 {
                     StoreDefaultValue(cx, index, s, needs_activation);
                 }
@@ -3657,7 +3662,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 			}
 		}
 
-        if( "$construct".equals(node.ref.name) && !cx.dialect(Features.DIALECT_ES4)  )
+        if( "$construct".equals(node.ref.name) && !cx.statics.es4_nullability  )
         {
             doCtorSetup(node, cx, needs_activation);
         }
@@ -3738,7 +3743,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
 		// inline iinit
 
-		if( cx.dialect(Features.DIALECT_ES4)  )
+		if( cx.statics.es4_nullability )
 		{
 		    if( needs_activation )
 		    {
@@ -3757,12 +3762,12 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 		        // static/function/script initializers too?
 		        removeConstantInitializers(cx, def);
 		        
-		        if( cx.dialect(Features.DIALECT_ES4) && !def.isDefinition() )
+		        if( cx.statics.es4_nullability && !def.isDefinition() )
 		        	iframe.setInitOnly(true);
 		        
 		        def.evaluate(cx, this);
 		        
-		        if( cx.dialect(Features.DIALECT_ES4) && !def.isDefinition() )
+		        if( cx.statics.es4_nullability && !def.isDefinition() )
 		        	iframe.setInitOnly(false);
 		        
 		    }
@@ -3779,7 +3784,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 			iframe.setInitOnly(false);
 		}
 
-		if( cx.dialect(Features.DIALECT_ES4)  )
+		if( cx.statics.es4_nullability  )
 		{
 		    if( needs_activation )
 		    {
@@ -4014,7 +4019,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     ToBoolean(node.actual.getTypeId());
                     break;
                 case TYPE_int:
-                    ToNumber(node.actual.getTypeId());
+                    ToDouble(node.actual.getTypeId()); // RES what about decimal here
                     break;
             }
         }
@@ -4033,16 +4038,15 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                 int type_id = node.expected.getTypeId();
                 switch (type_id)
                 {
-                    /*
-                    case TYPE_uint:
-                        if (node.actual != cx.uintType())
+                     case TYPE_uint:
+                        if (node.actual == null || node.actual.getTypeValue() != cx.uintType())
                         {
                             ToUint();
                         }
                         break;
-                    */
                     /* cn: TYPE_uint == TYPE_int for internal handling.  Must explicitly compare against cx.uintType() */
                     case TYPE_int:
+                    	/*
                         if (node.expected.getTypeValue() == cx.uintType())
                         {
                             if (node.actual == null || node.actual.getTypeValue() != cx.uintType())
@@ -4050,16 +4054,27 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                                 ToUint();
                             }
                         }
-                        else if(node.actual == null || node.actual.getTypeValue() != cx.intType() )
+                        else // RES I made TYPE_uint not equal to TYPE_int to make use <numbertype> work
+                        */
+                        if(node.actual == null || node.actual.getTypeValue() != cx.intType() )
                         {
                             ToInt();
                         }
                         break;
 
+                    case TYPE_double:
                     case TYPE_number:
-                        if (node.actual == null || node.actual.getTypeValue() != cx.numberType())
+                        if (node.actual == null || 
+                        		(!((node.actual.getTypeValue() == cx.doubleType()) || 
+                        				(node.actual.getTypeValue() == cx.numberType()))))
                         {
-                            ToNumber(node.actual != null ? node.actual.getTypeId() : TYPE_none);
+                            ToDouble(node.actual != null ? node.actual.getTypeId() : TYPE_none);
+                        }
+                        break;
+                    case TYPE_decimal:
+                        if (cx.statics.es4_numerics && (node.actual == null || node.actual.getTypeValue() != cx.decimalType()))
+                        {
+                            ToDecimal(node.actual != null ? node.actual.getTypeId() : TYPE_none);
                         }
                         break;
                     case TYPE_boolean:
@@ -4568,7 +4583,29 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
     public Value evaluate(Context cx, PragmaNode node)
     {
-        cx.internalError(node.pos(), "PragmaNode not yet implemented");
+    	if (node.list != null)
+    	{
+    		node.list.evaluate(cx, this);
+    	}
+    	
+        return null;
+    }
+
+    public Value evaluate(Context cx, UsePrecisionNode node)
+    {
+        // nothing to do in this pass
+        return null;
+    }
+
+    public Value evaluate(Context cx, UseNumericNode node)
+    {
+        // nothing to do in this pass
+        return null;
+    }
+
+    public Value evaluate(Context cx, UseRoundingNode node)
+    {
+        // nothing to do in this pass
         return null;
     }
 
@@ -4751,6 +4788,10 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         return true; //Evaluator::checkFeature(cx,node);
     }
 
+    private static final NumberConstant ZeroInt = new IntNumberConstant(0);
+    private static final NumberConstant ZeroUint = new UintNumberConstant(0);
+    private static final NumberConstant NaNDouble = new DoubleNumberConstant(Double.NaN);
+    private static final NumberConstant NaNDecimal = new DecimalNumberConstant(Decimal128.NaN);
     public void StoreDefaultValue(Context cx, int index, Slot s, boolean needs_activation)
     {
         if (needs_activation)
@@ -4760,11 +4801,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         TypeInfo type = s.getType();
         if (type.getTypeValue() == cx.intType())
         {
-            PushNumber(0, TYPE_int);
+            PushNumber(ZeroInt, TYPE_int);
         }
         else if (type.getTypeValue() == cx.uintType())
         {
-            PushNumber(0, TYPE_uint_external); // cn: TYPE_uint == TYPE_int for internal purposes.
+            PushNumber(ZeroUint, TYPE_uint_external); // cn: TYPE_uint == TYPE_int for internal purposes.
             CheckType(type.getName(cx));
         }
         else if (type.getTypeValue() == cx.booleanType())
@@ -4773,8 +4814,15 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         }
         else if (type.getTypeValue() == cx.numberType())
         {
-            double x = 0;
-            PushNumber(x/x, TYPE_number);
+            PushNumber(NaNDouble, TYPE_double);
+        }
+        else if (type.getTypeValue() == cx.doubleType())
+        {
+            PushNumber(NaNDouble, TYPE_double);
+        }
+        else if (cx.statics.es4_numerics && (type.getTypeValue() == cx.decimalType()))
+        {
+            PushNumber(NaNDecimal, TYPE_decimal);
         }
         else if (type.getTypeValue() == cx.noType())
         {

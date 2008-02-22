@@ -14,6 +14,8 @@ package macromedia.asc.semantics;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_boolean;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_int;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_number;
+import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_double;
+import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_decimal;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_string;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_uint_external;
 import static macromedia.asc.parser.Tokens.*;
@@ -27,6 +29,8 @@ import macromedia.asc.util.IntList;
 import macromedia.asc.util.IntegerPool;
 import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.ObjectList;
+import macromedia.asc.util.NumberUsage;
+import macromedia.asc.util.NumberConstant;
 
 public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 
@@ -132,7 +136,7 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 
 	public Value evaluate(Context cx, LiteralNumberNode node) {
         TypeValue[] type = new TypeValue[1];
-        node.numericValue = cx.getEmitter().getValueOfNumberLiteral( node.value, type);
+        node.numericValue = cx.getEmitter().getValueOfNumberLiteral( node.value, type, node.numberUsage);
         node.type = type[0];
         return new ObjectValue(node.value, node.type);
 	}
@@ -294,7 +298,7 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 			else if( isNumericType(cx, tv) )
 			{
                 TypeValue[] type = new TypeValue[1];
-                double d = cx.getEmitter().getValueOfNumberLiteral( obj.getValue(), type);
+                double d = cx.getEmitter().getValueOfNumberLiteral( obj.getValue(), type, obj.getNumberUsage()).doubleValue();
                 if( Double.isNaN(d) || d == 0.0 )
                 	ret = Boolean.FALSE;
                 else
@@ -322,11 +326,8 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 			else if( isNumericType(cx, tv) )
 			{
                 TypeValue[] type = new TypeValue[1];
-                double d = cx.getEmitter().getValueOfNumberLiteral( obj.getValue(), type);
-                if( Double.isNaN(d)  )
-                	ret = "NaN";
-                else
-                	ret = String.valueOf(d);
+                NumberConstant v = cx.getEmitter().getValueOfNumberLiteral( obj.getValue(), type, obj.getNumberUsage());
+                ret = v.toString();
 			}
 		}
 		return ret;
@@ -348,7 +349,7 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
                 TypeValue[] type = new TypeValue[1];
                 try
                 {
-                	ret = cx.getEmitter().getValueOfNumberLiteral( obj.getValue(), type);
+                	ret = cx.getEmitter().getValueOfNumberLiteral( obj.getValue(), type, obj.getNumberUsage()).doubleValue();
                 }
                 catch(NumberFormatException nfe)
                 {
@@ -455,8 +456,8 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 					if( isNumericType(cx, lt) && isNumericType(cx, rt) )
 					{
 	                    TypeValue[] type = new TypeValue[1];
-	                    double ld = cx.getEmitter().getValueOfNumberLiteral( lhs_ov.getValue(), type);
-	                    double rd = cx.getEmitter().getValueOfNumberLiteral( rhs_ov.getValue(), type);
+	                    double ld = cx.getEmitter().getValueOfNumberLiteral( lhs_ov.getValue(), type, node.numberUsage).doubleValue();
+	                    double rd = cx.getEmitter().getValueOfNumberLiteral( rhs_ov.getValue(), type, node.numberUsage).doubleValue();
 	                    double d = 0.0/0;
 	                    d = ld + rd;
 	                    val = new ObjectValue(Double.toString(d), cx.numberType());
@@ -475,8 +476,8 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 	            	if( isNumericType(cx, lt) && isNumericType(cx, rt) )
 	            	{
 	                    TypeValue[] type = new TypeValue[1];
-	                    double ld = cx.getEmitter().getValueOfNumberLiteral( lhs_ov.getValue(), type);
-	                    double rd = cx.getEmitter().getValueOfNumberLiteral( rhs_ov.getValue(), type);
+	                    double ld = cx.getEmitter().getValueOfNumberLiteral( lhs_ov.getValue(), type, node.numberUsage).doubleValue();
+	                    double rd = cx.getEmitter().getValueOfNumberLiteral( rhs_ov.getValue(), type, node.numberUsage).doubleValue();
 	                    double d = 0.0/0;
 	                    switch( node.op )
 	                    {
@@ -940,6 +941,8 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
                     case TYPE_number:
                     case TYPE_int:
                     case TYPE_uint_external:
+                    case TYPE_decimal:
+                    case TYPE_double:
                         literal_node = cx.getNodeFactory().literalNumber(obj_val.getValue());
                         break;
                 }
@@ -984,7 +987,8 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 
 	public Value evaluate(Context cx, SwitchStatementNode node) {
 		node.expr = evalAndFold(cx, node.expr);
-		node.statements.evaluate(cx, this);
+        if( node.statements != null)
+            node.statements.evaluate(cx, this);
 		return null;
 	}
 
@@ -1405,5 +1409,20 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 	public Value evaluate(Context cx, DefaultXMLNamespaceNode node) {
 		return null;
 	}
+    public Value evaluate(Context cx, UsePrecisionNode node)
+    {
+        return null;
+    }
+
+    public Value evaluate(Context cx, UseNumericNode node)
+    {
+        return null;
+    }
+
+    public Value evaluate(Context cx, UseRoundingNode node)
+    {
+        return null;
+    }
+
 
 }

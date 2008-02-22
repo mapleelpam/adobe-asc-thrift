@@ -20,7 +20,7 @@ package macromedia.asc.embedding;
 public interface ErrorConstants
 {
    static final int kNumLanguages = 9;
-   static final int kNumErrorConstants = 175;
+   static final int kNumErrorConstants = 177;
 
 
       public static final int kError_OverrideOfFuncNotMarkedForOverride = 1024;
@@ -72,6 +72,7 @@ public interface ErrorConstants
       public static final int kError_Parser_ExpectingASingleExpressionWithinParenthesis = 1082;
       public static final int kError_Parser_ExpectedPrimaryExprBefore = 1083;
       public static final int kError_Parser_ExpectedToken = 1084;
+      public static final int kError_Parser_NumericUseMisplaced = 1085;
       public static final int kError_Parser_ExpectedSemicolon = 1086;
       public static final int kError_Parser_ExtraCharsAfterEndOfProgram = 1087;
       public static final int kError_Lexical_General = 1093;
@@ -180,6 +181,7 @@ public interface ErrorConstants
       public static final int kError_NonConstConfigVar = 1209;
       public static final int kError_InvalidConfigLocation = 1210;
       public static final int kError_ShadowedConfigNamespace = 1211;
+      public static final int kError_InvalidPrecision = 1212;
       public static final int kError_AmbiguousReference = 1000;
       public static final int kError_NamespaceAccessSpecifiers = 1003;
       public static final int kError_Unknown_Namespace = 1004;
@@ -378,6 +380,8 @@ public interface ErrorConstants
            new AscError(kError_ParserExpectingLeftBraceOrStringLiteral, "Syntax Error: expecting a left brace({)or string literal(\"\")." ),
            new AscError(kError_InvalidES4SuperStatement, "A super statement can be used only as the last item in a constructor initializer list." ),
            new AscError(kError_ThisUsedInInitializer, "The this keyword can not be used in property initializers." ),
+           new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34" ),
+           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block" ),
            new AscError(kError_NonConstantConfigInit, "The initializer for a configuration value must be a compile time constant." ),
            new AscError(kError_NonConstConfigVar, "A configuration variable may only be declared const." ),
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
@@ -556,6 +560,8 @@ public interface ErrorConstants
            new AscError(kError_ParserExpectingLeftBraceOrStringLiteral, "Syntax Error: expecting a left brace({)or string literal(\"\")." ),
            new AscError(kError_InvalidES4SuperStatement, "A super statement can be used only as the last item in a constructor initializer list." ),
            new AscError(kError_ThisUsedInInitializer, "The this keyword can not be used in property initializers." ),
+           new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34" ),
+           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block" ),
            new AscError(kError_NonConstantConfigInit, "The initializer for a configuration value must be a compile time constant." ),
            new AscError(kError_NonConstConfigVar, "A configuration variable may only be declared const." ),
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
@@ -734,6 +740,8 @@ public interface ErrorConstants
            new AscError(kError_ParserExpectingLeftBraceOrStringLiteral, "Syntax Error: expecting a left brace({)or string literal(\"\")." ),
            new AscError(kError_InvalidES4SuperStatement, "A super statement can be used only as the last item in a constructor initializer list." ),
            new AscError(kError_ThisUsedInInitializer, "The this keyword can not be used in property initializers." ),
+           new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34" ),
+           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block" ),
            new AscError(kError_NonConstantConfigInit, "The initializer for a configuration value must be a compile time constant." ),
            new AscError(kError_NonConstConfigVar, "A configuration variable may only be declared const." ),
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
@@ -912,6 +920,8 @@ public interface ErrorConstants
            new AscError(kError_ParserExpectingLeftBraceOrStringLiteral, "Syntax Error: expecting a left brace({)or string literal(\"\")." ),
            new AscError(kError_InvalidES4SuperStatement, "A super statement can be used only as the last item in a constructor initializer list." ),
            new AscError(kError_ThisUsedInInitializer, "The this keyword can not be used in property initializers." ),
+           new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34" ),
+           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block" ),
            new AscError(kError_NonConstantConfigInit, "The initializer for a configuration value must be a compile time constant." ),
            new AscError(kError_NonConstConfigVar, "A configuration variable may only be declared const." ),
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
@@ -1090,6 +1100,8 @@ public interface ErrorConstants
            new AscError(kError_ParserExpectingLeftBraceOrStringLiteral, "Syntax Error: expecting a left brace({)or string literal(\"\")." ),
            new AscError(kError_InvalidES4SuperStatement, "A super statement can be used only as the last item in a constructor initializer list." ),
            new AscError(kError_ThisUsedInInitializer, "The this keyword can not be used in property initializers." ),
+           new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34" ),
+           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block" ),
            new AscError(kError_NonConstantConfigInit, "The initializer for a configuration value must be a compile time constant." ),
            new AscError(kError_NonConstConfigVar, "A configuration variable may only be declared const." ),
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
@@ -1268,6 +1280,8 @@ public interface ErrorConstants
            new AscError(kError_ParserExpectingLeftBraceOrStringLiteral, "Syntax Error: expecting a left brace({)or string literal(\"\")." ),
            new AscError(kError_InvalidES4SuperStatement, "A super statement can be used only as the last item in a constructor initializer list." ),
            new AscError(kError_ThisUsedInInitializer, "The this keyword can not be used in property initializers." ),
+           new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34" ),
+           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block" ),
            new AscError(kError_NonConstantConfigInit, "The initializer for a configuration value must be a compile time constant." ),
            new AscError(kError_NonConstConfigVar, "A configuration variable may only be declared const." ),
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
@@ -1446,6 +1460,8 @@ public interface ErrorConstants
            new AscError(kError_ParserExpectingLeftBraceOrStringLiteral, "Syntax Error: expecting a left brace({)or string literal(\"\")." ),
            new AscError(kError_InvalidES4SuperStatement, "A super statement can be used only as the last item in a constructor initializer list." ),
            new AscError(kError_ThisUsedInInitializer, "The this keyword can not be used in property initializers." ),
+           new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34" ),
+           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block" ),
            new AscError(kError_NonConstantConfigInit, "The initializer for a configuration value must be a compile time constant." ),
            new AscError(kError_NonConstConfigVar, "A configuration variable may only be declared const." ),
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
@@ -1624,6 +1640,8 @@ public interface ErrorConstants
            new AscError(kError_ParserExpectingLeftBraceOrStringLiteral, "Syntax Error: expecting a left brace({)or string literal(\"\")." ),
            new AscError(kError_InvalidES4SuperStatement, "A super statement can be used only as the last item in a constructor initializer list." ),
            new AscError(kError_ThisUsedInInitializer, "The this keyword can not be used in property initializers." ),
+           new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34" ),
+           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block" ),
            new AscError(kError_NonConstantConfigInit, "The initializer for a configuration value must be a compile time constant." ),
            new AscError(kError_NonConstConfigVar, "A configuration variable may only be declared const." ),
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
@@ -1802,6 +1820,8 @@ public interface ErrorConstants
            new AscError(kError_ParserExpectingLeftBraceOrStringLiteral, "Syntax Error: expecting a left brace({)or string literal(\"\")." ),
            new AscError(kError_InvalidES4SuperStatement, "A super statement can be used only as the last item in a constructor initializer list." ),
            new AscError(kError_ThisUsedInInitializer, "The this keyword can not be used in property initializers." ),
+           new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34" ),
+           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block" ),
            new AscError(kError_NonConstantConfigInit, "The initializer for a configuration value must be a compile time constant." ),
            new AscError(kError_NonConstConfigVar, "A configuration variable may only be declared const." ),
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),

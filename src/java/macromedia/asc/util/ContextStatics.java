@@ -13,6 +13,7 @@ package macromedia.asc.util;
 
 import macromedia.asc.embedding.CompilerHandler;
 import macromedia.asc.embedding.avmplus.ByteCodeFactory;
+import macromedia.asc.embedding.avmplus.Features;
 import macromedia.asc.parser.NodeFactory;
 import macromedia.asc.parser.MetaDataNode;
 import macromedia.asc.semantics.Emitter;
@@ -107,7 +108,26 @@ public class ContextStatics
 	public boolean use_static_semantics = false;
     public int dialect = 9;
 
-	ObjectValue _publicNamespace;
+    public void setAbcVersion(int n) {
+        switch(n) {
+        case Features.TARGET_AVM1:
+            es4_numerics = false;
+            es4_nullability = false;
+            es4_vectors = false;
+            break;
+        case Features.TARGET_AVM2:
+            es4_numerics = false; // Are we supporting decimal for FP10?
+            es4_nullability = false;  // Nullability support not in VM yet
+            es4_vectors = true;  // Will be supporting vectors for FP10
+            break;
+        }
+    }
+    int abc_version = 0;
+    public boolean es4_numerics = false;
+    public boolean es4_nullability = false;
+    public boolean es4_vectors = false;
+
+    ObjectValue _publicNamespace;
 	ObjectValue _anyNamespace;
     TypeValue _noType;
     TypeValue _objectType;
@@ -120,7 +140,9 @@ public class ContextStatics
 	TypeValue _functionType;
 	TypeValue _intType;
 	TypeValue _uintType;
+    TypeValue _doubleType;
     TypeValue _numberType;
+    TypeValue _decimalType;
     TypeValue _xmlType;
 	TypeValue _xmlListType;
     TypeValue _regExpType;
@@ -151,7 +173,9 @@ public class ContextStatics
 		_functionType = null;
 		_intType = null;
 		_uintType = null;
-        _numberType = null;
+		_numberType = null;
+        _doubleType = null;
+        _decimalType = null;
         _xmlType = null;
 		_xmlListType = null;
         _regExpType = null;

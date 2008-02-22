@@ -19,6 +19,7 @@ package macromedia.asc.parser;
 
 import macromedia.asc.semantics.Value;
 import macromedia.asc.util.Context;
+import macromedia.asc.util.NumberUsage;
 
 import java.io.PrintWriter;
 
@@ -1542,6 +1543,28 @@ public class NodePrinter implements Evaluator
             node.list.evaluate(cx, this);
         }
         pop_out();
+        return null;
+    }
+
+    public Value evaluate(Context cx, UsePrecisionNode node)
+    {
+        indent();
+        out.print("usePrecision(" + node.precision + ")");
+        return null;
+    }
+
+    private static String[] usageName = {"Number", "decimal", "double", "int", "uint"};
+    public Value evaluate(Context cx, UseNumericNode node)
+    {
+        indent();
+        out.print("useNumeric(" + usageName[node.numeric_mode] + ")");
+        return null;
+    }
+
+    public Value evaluate(Context cx, UseRoundingNode node)
+    {
+        indent();
+        out.print("useRounding(" + NumberUsage.roundingModeName[node.mode] + ")");
         return null;
     }
 

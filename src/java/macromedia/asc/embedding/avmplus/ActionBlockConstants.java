@@ -22,12 +22,14 @@ package macromedia.asc.embedding.avmplus;
  */
 public interface ActionBlockConstants
 {
+	public static final int MINORwithDECIMAL = 17;
     /*
      * Constant pool tags
      */
 
     byte CONSTANT_Void = 0x00;  // not actually interned
     byte CONSTANT_Utf8 = 0x01;
+    byte CONSTANT_Decimal = 0x02;
     byte CONSTANT_Integer = 0x03;
     byte CONSTANT_UInteger = 0x04;
     byte CONSTANT_PrivateNamespace = 0x05;
@@ -141,6 +143,8 @@ public interface ActionBlockConstants
     int OP_pushscope = 0x30;
     int OP_pushnamespace = 0x31;
     int OP_hasnext2 = 0x32;
+    int OP_pushdecimal = 0x33;
+ 	int OP_pushdnan = 0x34;
 
     int OP_newfunction =  0x40;
     int OP_call =  0x41;
@@ -199,6 +203,8 @@ public interface ActionBlockConstants
     int OP_convert_b = 0x76;
     int OP_convert_o = 0x77;
     int OP_checkfilter = 0x78;
+    int OP_convert_m = 0x79;
+ 	int OP_convert_m_p = 0x7a;
 
     int OP_coerce =  0x80;
     
@@ -216,6 +222,7 @@ public interface ActionBlockConstants
     int OP_coerce_u        = 0x88;
 	int OP_coerce_o		   = 0x89;
 
+ 	int OP_negate_p = 0x8f;
     int OP_negate =  0x90;
     int OP_increment =  0x91;
     int OP_inclocal =  0x92;
@@ -225,6 +232,11 @@ public interface ActionBlockConstants
     int OP_not =  0x96;
     int OP_bitnot =  0x97;
 
+	int OP_increment_p = 0x9c;
+	int OP_inclocal_p = 0x9d;
+	int OP_decrement_p = 0x9e;
+	int OP_declocal_p = 0x9f;
+ 
     int OP_add =  0xa0;
     int OP_subtract =  0xa1;
     int OP_multiply =  0xa2;
@@ -247,6 +259,12 @@ public interface ActionBlockConstants
     int OP_istype =  0xb2;
     int OP_istypelate =  0xb3;
     int OP_in =  0xb4;
+    // arithmetic with decimal parameters
+    int OP_add_p = 0xb5;
+    int OP_subtract_p =  0xb6;
+    int OP_multiply_p =  0xb7;
+    int OP_divide_p =  0xb8;
+    int OP_modulo_p =  0xb9;
 
     int OP_increment_i =  0xc0;
     int OP_decrement_i =  0xc1;

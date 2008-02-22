@@ -15,6 +15,7 @@ import macromedia.abc.AbcParser;
 import macromedia.abc.Optimizer;
 
 import macromedia.asc.embedding.avmplus.ActionBlockEmitter;
+import macromedia.asc.embedding.avmplus.Features;
 import macromedia.asc.embedding.avmplus.GlobalBuilder;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.*;
@@ -55,7 +56,9 @@ public class ScriptCompiler
     private static File mainFile;
 
     private static String outputFile;
-	private static boolean builtinFlag;
+    private static String outputDir;
+
+    private static boolean builtinFlag;
 	private static boolean debugFlag;
 	private static boolean optimize;
 	
@@ -104,12 +107,14 @@ public class ScriptCompiler
 		System.err.println("Files: " + file.size() + " Time: " + (System.currentTimeMillis() - startTime) + "ms");
 	}
 
+    static ObjectList<ConfigVar> config_vars = new ObjectList<ConfigVar>();
 	private static void init(String[] args) throws Throwable
 	{
 		ObjectList<String> filespecs = new ObjectList<String>();
 		ObjectList<Boolean> imported = new ObjectList<Boolean>();
 
 		boolean use_static_semantics = false;
+		boolean decimalFlag = false;
 		
 		for (int i = 0, length = args.length; i < length; i++)
 		{
@@ -133,15 +138,33 @@ public class ScriptCompiler
 			{
 				debugFlag = true;
 			}
+			else if (args[i].equals("-m"))
+			{
+				decimalFlag = true;
+			}
             else if (args[i].equals("-out"))
             {
                 outputFile = args[++i];
             }
-			else if (args[i].equals("-import"))
+            else if (args[i].equals("-outdir"))
+            {
+                outputDir = args[++i];
+            }
+            else if (args[i].equals("-import"))
 			{
 				filespecs.add(args[++i]);
 				imported.add(new Boolean(true));
 			}
+            else if(args[i].equals("-config"))
+            {
+                ++i;
+                String temp = args[i];
+                ConfigVar cv = Main.parseConfigVar(temp);
+                if( cv != null)
+                    config_vars.push_back(cv);
+                else
+                	System.err.println("ERROR: couldn't parse config var "+temp);
+            }
 			else
 			{
 				filespecs.add(args[i]);
@@ -153,6 +176,7 @@ public class ScriptCompiler
 		ObjectValue.init();
 		s = new ContextStatics();
 		s.use_static_semantics = use_static_semantics;
+		s.es4_numerics = decimalFlag;	// to make decimal things work
 
 		file = new ArrayList<File>(filespecs.size());
         cx = new ArrayList<Context>(filespecs.size());
@@ -170,6 +194,8 @@ public class ScriptCompiler
 
 				Context cxFile = new Context(s);
 				cx.add(cxFile);
+				
+				cxFile.config_vars.addAll(config_vars);
 				
                 if (!importFlag)
                 {
@@ -197,7 +223,11 @@ public class ScriptCompiler
 					emitter.add(mainEmitter);
 				}
 			}
-		}
+            else
+            {
+                System.err.println("Warning, unable to open file " + f.getPath());
+            }
+        }
 
 		node = new ArrayList<ProgramNode>(file.size());
 		fa = new ArrayList<FlowAnalyzer>(file.size());
@@ -209,21 +239,27 @@ public class ScriptCompiler
 	{
 		for (int i = start; i < end; i++)
 		{
-			cx.get(i).setEmitter(emitter.get(i));
-			cx.get(i).setScriptName(file.get(i).getName());
-			cx.get(i).setPath(file.get(i).getParent());
+			Context cxi = cx.get(i);
+			cxi.setEmitter(emitter.get(i));
+			cxi.setScriptName(file.get(i).getName());
+			cxi.setPath(file.get(i).getParent());
 
+			ProgramNode program;
 			if (file.get(i).getName().endsWith(".as"))
 			{
-				node.add((new Parser(cx.get(i), new FileInputStream(file.get(i)), file.get(i).getPath(), null)).parseProgram());
+				program = new Parser(cxi, new FileInputStream(file.get(i)), file.get(i).getPath(), null).parseProgram();
 			}
 			else
 			{
-				node.add((new AbcParser(cx.get(i), file.get(i).getPath())).parseAbc());
+				program = new AbcParser(cxi, file.get(i).getPath()).parseAbc();
 			}
+			node.add(program);
 
-			cx.get(i).getNodeFactory().pkg_defs.clear();
-            cx.get(i).getNodeFactory().compound_names.clear();
+			cxi.getNodeFactory().pkg_defs.clear();
+            cxi.getNodeFactory().compound_names.clear();
+            
+        	ConfigurationEvaluator ce = new ConfigurationEvaluator();
+        	program.evaluate(cxi, ce);
 		}
 	}
 
@@ -270,7 +306,7 @@ public class ScriptCompiler
 				}
 				if (!found)
 				{
-					System.err.println(ref.toMultiName() + " in " + file.get(i) + " not resolved");
+					System.err.println(ref.toMultiName() + " on line " + cx.get(i).getInputLine(ref.getPosition()) + " of file " + file.get(i) + " not resolved");
 				}
 			}
 
@@ -452,7 +488,7 @@ public class ScriptCompiler
 				}
 				if (!found)
 				{
-					System.err.println(ref.toMultiName() + " in " + file.get(i) + " not resolved");
+					System.err.println(ref.toMultiName() + " on line " + cx.get(i).getInputLine(ref.getPosition()) + " of file " + file.get(i) + " not resolved");
 				}
 			}
 
@@ -485,7 +521,7 @@ public class ScriptCompiler
 				}
 				if (!found)
 				{
-					System.err.println(ref.toMultiName() + " in " + file.get(i) + " not resolved");
+					System.err.println(ref.toMultiName() + " on line " + cx.get(i).getInputLine(ref.getPosition()) + " of file " + file.get(i) + " not resolved");
 				}
 			}
 
@@ -518,7 +554,7 @@ public class ScriptCompiler
 				}
 				if (!found)
 				{
-					System.err.println(ref.toMultiName() + " in " + file.get(i) + " not resolved");
+					System.err.println(ref.toMultiName() + " on line " + cx.get(i).getInputLine(ref.getPosition()) + " of file " + file.get(i) + " not resolved");
 				}
 			}
 
@@ -617,15 +653,28 @@ public class ScriptCompiler
         {
             outputFile = mainFile.getName().substring(0, mainFile.getName().length() - ".as".length());
         }
-		FileOutputStream out = new FileOutputStream(new File(mainFile.getParentFile(), outputFile + ".abc"));
-		
-		if (optimize)
+        File out_dir = null;
+        if( outputDir == null )
+        {
+            out_dir = mainFile.getParentFile();
+        }
+        else
+        {
+            out_dir = new File(outputDir);
+        }
+
+        FileOutputStream out = new FileOutputStream(new File(out_dir, outputFile + ".abc"));
+
+        if (optimize)
 			bytes = Optimizer.optimize(bytes);
 		byte[] abc = bytes.toByteArray(false);
 
 		System.err.println(outputFile + ": " + abc.length);
 		out.write(abc);
 		out.close();
+
+        // Reset the path so printNative outputs to the right directory
+        mainContext.setPath(out_dir.getPath());
 
         Compiler.printNative(mainContext, outputFile, mainEmitter, abc);
 	}
@@ -655,7 +704,7 @@ public class ScriptCompiler
 				}
 				if (!found)
 				{
-					System.err.println(ref.toMultiName() + " in " + file.get(i) + " not resolved");
+					System.err.println(ref.toMultiName() + " on line " + cx.get(i).getInputLine(ref.getPosition()) + " of file " + file.get(i) + " not resolved");
 				}
 			}
 

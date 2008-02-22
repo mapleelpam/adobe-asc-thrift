@@ -25,6 +25,7 @@ import macromedia.asc.util.ObjectList;
 import macromedia.asc.util.Qualifiers;
 import macromedia.asc.util.Slots;
 import macromedia.asc.util.Values;
+import macromedia.asc.util.NumberUsage;
 import macromedia.asc.parser.ClassDefinitionNode;
 import macromedia.asc.parser.Node;
 import macromedia.asc.parser.Tokens;
@@ -142,6 +143,7 @@ public class ObjectValue extends Value implements Comparable
     public Builder builder;
     public TypeInfo type;
     private String value = "";
+    private NumberUsage numberUsage;
 
     private Names names;  // Names table
     public Slots slots;         // Slots table, null=empty
@@ -175,6 +177,7 @@ public class ObjectValue extends Value implements Comparable
         var_count = 0;
         method_count = 0;
         activation = null;
+        numberUsage = null;
         method_info = -1;
         initInstance(null, null);
     }
@@ -185,6 +188,7 @@ public class ObjectValue extends Value implements Comparable
         _proto_ = null;
         var_count = 0;
         method_count = 0;
+        numberUsage = null;
         activation = null;
         this.type = type != null ? type.getDefaultTypeInfo() : null ;
         method_info = -1;
@@ -198,6 +202,7 @@ public class ObjectValue extends Value implements Comparable
         _proto_ = null;
         var_count = 0;
         method_count = 0;
+        numberUsage = null;
         activation = null;
         this.type = type != null ? type.getDefaultTypeInfo() : null ;
         method_info = -1;
@@ -211,6 +216,7 @@ public class ObjectValue extends Value implements Comparable
         _proto_ = null;
         var_count = 0;
         method_count = 0;
+        numberUsage = null;
         activation = null;
         this.type = type;
         method_info = -1;
@@ -246,11 +252,12 @@ public class ObjectValue extends Value implements Comparable
         _proto_ = null;
         var_count = 0;
         method_count = 0;
+        numberUsage = null;
         activation = null;
         method_info = -1;
         initInstance(null, type);
         builder.build(cx, this);
-        this.name = name;
+        this.name = name.intern();
     }
 
     static Slot nullSlot = new MethodSlot((TypeValue)null, 0);
@@ -824,6 +831,14 @@ public class ObjectValue extends Value implements Comparable
     public Names getNames()
     {
         return names;
+    }
+    
+    public void setNumberUsage(NumberUsage usage) {
+    	numberUsage = usage;
+    }
+    
+    public NumberUsage getNumberUsage() {
+    	return numberUsage;
     }
 
     public String getValue()

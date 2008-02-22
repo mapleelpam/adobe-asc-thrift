@@ -80,8 +80,8 @@ public class RuntimeConstants
 	public static final int TYPE_type = 0x1 << 7;
     public static final int TYPE_int = 0x1 << 8;
  	/* cn: TYPE_uint == TYPE_int for internal purposes.  Compare against cx.uintType() if you really need to know the diff */
-	//public static final int TYPE_uint = 0x1 << 9;
-	public static final int TYPE_uint = TYPE_int;	  
+	public static final int TYPE_uint = 0x1 << 9;
+	//public static final int TYPE_uint = TYPE_int;	  
 	public static final int TYPE_uint_external = 0x1 << 9;  // for CodeGenerator to use.
 
     public static final int TYPE_void = 0x1 << 10;
@@ -90,6 +90,7 @@ public class RuntimeConstants
     public static final int TYPE_object = 0x1 << 13;
     public static final int TYPE_xml = 0x1 << 14;
     public static final int TYPE_none = 0x1 << 15;
+    public static final int TYPE_decimal = 0x1 << 16;
 
     public static final String typeToString(int type_id)
 	{
@@ -121,10 +122,12 @@ public class RuntimeConstants
 				return "function";
             case TYPE_array:
                 return "array";
-			/* cn: TYPE_uint == TYPE_int for internal purposes.  Compare against cx.uintType() if you really need to know the diff
+			case TYPE_decimal:
+				return "decimal";
+			///* cn: TYPE_uint == TYPE_int for internal purposes.  Compare against cx.uintType() if you really need to know the diff
 			case TYPE_uint:
                 return "uint";
-			*/
+			//*/
             default:
 				return "unknown type";
 		}
@@ -172,7 +175,8 @@ public class RuntimeConstants
 	public static final int SLOT_Global_DecrementLocalOp_I = SLOT_Global_DecrementLocalOp - 1;
 	public static final int SLOT_Global_UnaryPlusOp = SLOT_Global_DecrementLocalOp_I - 1;
 	public static final int SLOT_Global_UnaryPlusOp_I = SLOT_Global_UnaryPlusOp - 1;
-	public static final int SLOT_Global_BinaryPlusOp = SLOT_Global_UnaryPlusOp_I - 1;
+	public static final int SLOT_Global_UnaryPlusOp_M = SLOT_Global_UnaryPlusOp_I - 1;
+	public static final int SLOT_Global_BinaryPlusOp = SLOT_Global_UnaryPlusOp_M - 1;
 	//public static final int SLOT_Global_BinaryPlusOp_II = SLOT_Global_BinaryPlusOp - 1;
 	public static final int SLOT_Global_UnaryMinusOp = SLOT_Global_BinaryPlusOp - 1;
 	public static final int SLOT_Global_UnaryMinusOp_I = SLOT_Global_UnaryMinusOp - 1;
@@ -222,6 +226,8 @@ public class RuntimeConstants
 	public static final int SLOT_Global__cv = SLOT_Global_LogicalOrOp_II - 1;
     public static final int SLOT_Global_AsOp = SLOT_Global__cv - 1;
     public static final int SLOT_Global_AsLateOp = SLOT_Global_AsOp - 1;
+	public static final int SLOT_Global_TypeofOp_D = SLOT_Global_AsLateOp - 1;	
+	public static final int SLOT_Global_TypeofOp_M = SLOT_Global_TypeofOp_D - 1;	
 
 	// Unary indexes are unique for each unary operator and
 	// operand type.
@@ -254,7 +260,8 @@ public class RuntimeConstants
 	public static final int UNARY_DecrementLocalOp_I = UNARY_DecrementOp_I + 1;
 	public static final int UNARY_UnaryPlusOp = UNARY_DecrementLocalOp_I + 1;
 	public static final int UNARY_UnaryPlusOp_I = UNARY_UnaryPlusOp + 1;
-	public static final int UNARY_UnaryMinusOp = UNARY_UnaryPlusOp_I + 1;
+	public static final int UNARY_UnaryPlusOp_M = UNARY_UnaryPlusOp_I + 1;
+	public static final int UNARY_UnaryMinusOp = UNARY_UnaryPlusOp_M + 1;
 	public static final int UNARY_UnaryMinusOp_I = UNARY_UnaryMinusOp + 1;
 	public static final int UNARY_BitwiseNotOp = UNARY_UnaryMinusOp_I + 1;
 	public static final int UNARY_BitwiseNotOp_I = UNARY_BitwiseNotOp + 1;
@@ -264,7 +271,9 @@ public class RuntimeConstants
     public static final int UNARY_ToXMLString = UNARY_LogicalNotOp_I + 1;
     public static final int UNARY_ToXMLAttrString = UNARY_ToXMLString + 1;
     public static final int UNARY_CheckFilterOp = UNARY_ToXMLAttrString + 1;
-    public static final int UNARY_NumberOfOpCodes = UNARY_CheckFilterOp + 1;
+	public static final int UNARY_TypeofOp_D = UNARY_CheckFilterOp + 1;
+	public static final int UNARY_TypeofOp_M = UNARY_TypeofOp_D + 1;
+    public static final int UNARY_NumberOfOpCodes = UNARY_TypeofOp_M + 1;
 
 	// Binary indexes are unique for each binary operator and
 	// operand types.
@@ -329,8 +338,10 @@ public class RuntimeConstants
 				return UNARY_TypeofOp_B;
 			case SLOT_Global_TypeofOp_I:
 				return UNARY_TypeofOp_I;
-			case SLOT_Global_TypeofOp_N:
-				return UNARY_TypeofOp_N;
+			case SLOT_Global_TypeofOp_D:
+				return UNARY_TypeofOp_D;
+			case SLOT_Global_TypeofOp_M:
+				return UNARY_TypeofOp_M;
 			case SLOT_Global_TypeofOp_S:
 				return UNARY_TypeofOp_S;
 			case SLOT_Global_TypeofOp_U:
@@ -355,6 +366,8 @@ public class RuntimeConstants
 				return UNARY_UnaryPlusOp;
 			case SLOT_Global_UnaryPlusOp_I:
 				return UNARY_UnaryPlusOp_I;
+			case SLOT_Global_UnaryPlusOp_M:
+				return UNARY_UnaryPlusOp_M;
 			case SLOT_Global_UnaryMinusOp:
 				return UNARY_UnaryMinusOp;
 			case SLOT_Global_UnaryMinusOp_I:
