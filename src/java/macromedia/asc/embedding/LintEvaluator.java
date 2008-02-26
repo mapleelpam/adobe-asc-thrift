@@ -371,7 +371,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 			return evaluateGenericCallExpression(cx,node);
 		}
 
-		// check if this is a depricated function
+		// check if this is a deprecated function
 		if (node.is_new || node.ref == null )
 		{
 			// Evaluate args, check for change in "new" behavior, get the return type
@@ -413,6 +413,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 					warning(node.getPosition(), cx.input, kWarning_NumberFromStringChanges);
 				}
 			}
+            // TODO: toString is special-cased... unsure exactly why
 			else if ( ((baseType == cx.nullType()) && ("String".equals(node.ref.name)) && (numArgs == 1))
 					|| ((baseType != cx.nullType()) && ("toString".equals(node.ref.name)) && (numArgs == 0)) )
 			{
@@ -436,6 +437,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 				{
 					warning(node.getPosition(), cx.input, kWarning_ArrayToStringChanges);
 				}
+
                 final Slot s = node.ref.getSlot( cx, (node.is_new ? NEW_TOKEN : EMPTY_TOKEN));
                 checkDeprecatedSlot(cx, node, node.ref, s);
 			}
@@ -479,7 +481,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		}
 		else
 		{
-			assert(false); //  "should not get here";
+			assert(false) : node.name; //  "should not get here";
 		}
 		return result;
 	}
