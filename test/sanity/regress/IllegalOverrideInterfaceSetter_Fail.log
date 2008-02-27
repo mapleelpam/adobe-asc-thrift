@@ -1,6 +1,7 @@
 
 param 1 incompatible
    virt Object BaseInterfaceSetter/set BaseInterfaceSetter::interface_prop()
-   over String internal::IllegalInterfaceOverride/set interface_prop()
-VerifyError: Error #1053: Illegal override of IllegalInterfaceOverride in internal.IllegalInterfaceOverride.
+   over String IllegalInterfaceOverride/set interface_prop()
+VerifyError: Error #1053: Illegal override of IllegalInterfaceOverride in .IllegalInterfaceOverride.
+
 	at global$init()

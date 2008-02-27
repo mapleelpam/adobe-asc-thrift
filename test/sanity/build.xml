@@ -68,9 +68,9 @@ jdyer@macromedia.com
 <property name="reg.dir"  value="regress"/>
 
 <!-- look for global/shell.abc in player dir -->
-<property name="abc_lib.dir" value="../../../lib"/>
-<available file="${abc_lib.dir}/global.abc" property="global.abc" value="${abc_lib.dir}/global.abc"/>
-<available file="${abc_lib.dir}/shell.abc" property="shell.abc" value="${abc_lib.dir}/shell.abc"/>
+<property name="abc_lib.dir" value="../../abc"/>
+<available file="${abc_lib.dir}/builtin.abc" property="global.abc" value="${abc_lib.dir}/builtin.abc"/>
+<available file="${abc_lib.dir}/toplevel.abc" property="shell.abc" value="${abc_lib.dir}/toplevel.abc"/>
 
 <!-- look for global/shell.abc in qvm dir, if present -->
 <property name="qvm.dir" value="${root.dir}/../qvm"/>

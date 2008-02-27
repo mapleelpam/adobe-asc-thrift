@@ -1,19 +1,19 @@
 A$A 1
-verify class_ctor.as$1::B$iinit()
+verify B()
                         stack:
-                        scope: [global Object$ class_ctor.as$1::A$ class_ctor.as$1::B$] 
-                         locals: class_ctor.as$1::B * 
+                        scope: [global Object$ A$ B$] 
+                         locals: B * 
   0:getlocal0
-                        stack: class_ctor.as$1::B
-                        scope: [global Object$ class_ctor.as$1::A$ class_ctor.as$1::B$] 
-                         locals: class_ctor.as$1::B * 
+                        stack: B
+                        scope: [global Object$ A$ B$] 
+                         locals: B * 
   1:pushscope
                         stack:
-                        scope: [global Object$ class_ctor.as$1::A$ class_ctor.as$1::B$] class_ctor.as$1::B 
-                         locals: class_ctor.as$1::B * 
+                        scope: [global Object$ A$ B$] B 
+                         locals: B * 
   2:getlocal0
-                        stack: class_ctor.as$1::B
-                        scope: [global Object$ class_ctor.as$1::A$ class_ctor.as$1::B$] class_ctor.as$1::B 
-                         locals: class_ctor.as$1::B * 
+                        stack: B
+                        scope: [global Object$ A$ B$] B 
+                         locals: B * 
   3:constructsuper 0
-caught exception: VerifyError: Error #1063: Argument count mismatch on class_ctor.as$1::A$iinit(). Expected 1, got 0.
+caught exception: VerifyError: Error #1063: Argument count mismatch on A(). Expected 1, got 0.

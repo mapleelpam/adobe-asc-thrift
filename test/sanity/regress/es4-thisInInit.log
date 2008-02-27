@@ -1,8 +1,0 @@
-ERROR:   file = es4-thisInInit.as(6:17)
-         mesg = code=1207; arg1=; arg2=; arg3=
-         srce = var y = this.x;
-ERROR:   file = es4-thisInInit.as(7:33)
-         mesg = code=1207; arg1=; arg2=; arg3=
-         srce = public function C():x = this.y
-
-2 errors found

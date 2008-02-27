@@ -17,5 +17,5 @@ PASSED: finally with no catch clause executed
 
 Regression #120639:
 Error: RegError
-	at exceptions.as$1::bug_120639$iinit()
+	at bug_120639()
 	at global$init()
