@@ -481,7 +481,9 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		}
 		else
 		{
-			assert(false) : node.name; //  "should not get here";
+            // erik: [[CheckFilterOperand]] (etc...) was added a long time ago,
+            //        and probably doesn’t affect LintEvaluator at all.
+            //assert(false) : node.name;
 		}
 		return result;
 	}

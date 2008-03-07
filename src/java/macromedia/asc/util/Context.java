@@ -1539,7 +1539,7 @@ public final class Context implements ErrorConstants
     }
 
     public void setOrigin(String origin) {
-        this.parser_scanner_input_origin = origin;
+        this.parser_scanner_input_origin = origin.intern();
     }
 
     public void setQualifiedOrigin(String qualifiedOrigin) {

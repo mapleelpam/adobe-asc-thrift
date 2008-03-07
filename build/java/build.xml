@@ -97,7 +97,7 @@
     <target name="classes">
 	<mkdir dir="${lib.dir}" />
         <mkdir dir="${basedir}/classes"/>
-        <javac source="1.5" encoding="UTF-8" debug="${src.debug}" destdir="${basedir}/classes" srcdir="${java.src.dir}" includes="**/*.java">
+        <javac source="1.5" target="1.5" encoding="UTF-8" debug="${src.debug}" destdir="${basedir}/classes" srcdir="${java.src.dir}" includes="**/*.java">
 			<classpath>
 				<fileset dir="${lib.dir}" includes="*.jar"/>
 			</classpath>

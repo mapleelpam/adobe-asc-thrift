@@ -68,10 +68,10 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 
 		public KeyValuePair(String key, String value)
 		{
-			assert key == key.intern();
-			assert value == value.intern();
-			this.key = key;
-			this.obj = value;
+			//assert key == key.intern() : key;
+			//assert value == value.intern() : value;
+			this.key = key.intern();
+			this.obj = value.intern();
 		}
 	}
 
