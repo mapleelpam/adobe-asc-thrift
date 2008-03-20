@@ -48,8 +48,9 @@ public class ScriptCompiler
 	private static List<FlowAnalyzer> fa;
 	private static Set<Pair> inheritance;
 	private static Set<Pair> type;
+    private static Set<Pair> expr;
 
-	private static ContextStatics s;
+    private static ContextStatics s;
 
 	private static ActionBlockEmitter mainEmitter;
     private static Context mainContext;
@@ -85,18 +86,20 @@ public class ScriptCompiler
 			fa_part2();
 			resolveType();
 
-			start = end;
+
+            start = end;
 			end = file.size();
 
 			if (start < end) continue;
 
 			importType();
-			md();
+            // In theory, this should be in a second compile loop in order to reduce memory usage.
+            resolveExpression();
+            importExpr();
+            md();
 			ce();
 			cg();
 
-			// In theory, this should be in a second compile loop in order to reduce memory usage.
-			resolveExpression();
 
 			start = end;
 			end = file.size();
@@ -115,8 +118,9 @@ public class ScriptCompiler
 
 		boolean use_static_semantics = false;
 		boolean decimalFlag = false;
-		
-		for (int i = 0, length = args.length; i < length; i++)
+        boolean useas3 = false;
+
+        for (int i = 0, length = args.length; i < length; i++)
 		{
 			if (args[i].equals("-builtin"))
 			{
@@ -165,7 +169,11 @@ public class ScriptCompiler
                 else
                 	System.err.println("ERROR: couldn't parse config var "+temp);
             }
-			else
+            else if(args[i].equals("-AS3"))
+            {
+                useas3 = true;
+            }
+            else
 			{
 				filespecs.add(args[i]);
 				imported.add(new Boolean(false));
@@ -176,7 +184,9 @@ public class ScriptCompiler
 		ObjectValue.init();
 		s = new ContextStatics();
 		s.use_static_semantics = use_static_semantics;
-		s.es4_numerics = decimalFlag;	// to make decimal things work
+        if( useas3 )
+            s.dialect = Features.DIALECT_AS3;
+        s.es4_numerics = decimalFlag;	// to make decimal things work
 
 		file = new ArrayList<File>(filespecs.size());
         cx = new ArrayList<Context>(filespecs.size());
@@ -233,7 +243,8 @@ public class ScriptCompiler
 		fa = new ArrayList<FlowAnalyzer>(file.size());
 		inheritance = new HashSet<Pair>();
 		type = new HashSet<Pair>();
-	}
+        expr = new HashSet<Pair>();
+    }
 
 	private static void parse(int start, int end) throws Throwable
 	{
@@ -577,8 +588,24 @@ public class ScriptCompiler
 			}
 		}
 	}
-	
-	private static void md()
+
+    private static void importExpr() throws Throwable
+    {
+        for (Iterator<Pair> i = expr.iterator(); i.hasNext();)
+        {
+            Pair p = i.next();
+            if (!p.processed)
+            {
+                if (!inheritance.contains(p))
+                {
+                    fa.get(p.i).inheritSlots(node.get(p.where).frame, node.get(p.i).frame, node.get(p.i).frame.builder, cx.get(p.i));
+                }
+                p.processed = true;
+            }
+        }
+    }
+
+    private static void md()
 	{
 		for (int i = 0, length = file.size(); i < length; i++)
 		{
@@ -595,16 +622,28 @@ public class ScriptCompiler
 
 	private static void ce()
 	{
-		for (int i = 0, length = file.size(); i < length; i++)
+        ArrayList<ConstantEvaluator> ces = new ArrayList();
+        for (int i = 0, length = file.size(); i < length; i++)
 		{
 			if (cx.get(i).errorCount() == 0)
 			{
 				cx.get(i).pushScope(node.get(i).frame);
-				ConstantEvaluator analyzer = new ConstantEvaluator(cx.get(i));
-				node.get(i).evaluate(cx.get(i), analyzer);
+				ces.add(new ConstantEvaluator(cx.get(i)));
+                ces.get(i).PreprocessDefinitionTypeInfo(cx.get(i), node.get(i));
+                //node.get(i).evaluate(cx.get(i), analyzer);
 				cx.get(i).popScope();
 			}
 		}
+        for (int i = 0, length = file.size(); i < length; i++)
+        {
+            if (cx.get(i).errorCount() == 0)
+            {
+                cx.get(i).pushScope(node.get(i).frame);
+                ConstantEvaluator analyzer = ces.get(i);
+                node.get(i).evaluate(cx.get(i), analyzer);
+                cx.get(i).popScope();
+            }
+        }
 	}
 
 	private static void cg() throws Throwable
@@ -698,6 +737,11 @@ public class ScriptCompiler
 					int where = findDefinition(qname);
 					if (where != -1)
 					{
+                        Pair p = new Pair(i, where);
+                        if (!expr.contains(p))
+                        {
+                            expr.add(p);
+                        }
 						found = true;
 						break;
 					}
