@@ -756,15 +756,15 @@ public class ActionBlockEmitter extends Emitter
             TypeValue[] type = new TypeValue[1];
             value_index = ab.addIntConstant(bytecodeFactory.ConstantIntegerInfo(getValueOfNumberLiteral(value,type, numberUsage).intValue()));
         }
+        else if ((defaultValueType == cx.doubleType()) || (cx.abcVersion(Features.TARGET_AVM1) && (defaultValueType == cx.uintType())))
+        {
+            TypeValue[] type = new TypeValue[1];
+            value_index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(getValueOfNumberLiteral(value,type, numberUsage).doubleValue()));
+        }
         else if (defaultValueType == cx.uintType())
         {
             TypeValue[] type = new TypeValue[1];
             value_index = ab.addUintConstant(bytecodeFactory.ConstantUintInfo(getValueOfNumberLiteral(value,type, numberUsage).uintValue()));
-        }
-        else if (defaultValueType == cx.doubleType())
-        {
-            TypeValue[] type = new TypeValue[1];
-            value_index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(getValueOfNumberLiteral(value,type, numberUsage).doubleValue()));
         }
         else if (cx.statics.es4_numerics && (defaultValueType == cx.decimalType()))
         {
@@ -804,13 +804,13 @@ public class ActionBlockEmitter extends Emitter
         {
             value_kind = CONSTANT_Integer;
         }
+        else if (defaultValueType == cx.doubleType() || (cx.abcVersion(Features.TARGET_AVM1) && (defaultValueType == cx.uintType())))
+        {
+            value_kind = CONSTANT_Double;
+        }
         else if (defaultValueType == cx.uintType())
         {
             value_kind = CONSTANT_UInteger;
-        }
-        else if (defaultValueType == cx.doubleType())
-        {
-            value_kind = CONSTANT_Double;
         }
         else if (cx.statics.es4_numerics && (defaultValueType == cx.decimalType()))
         {
@@ -972,15 +972,15 @@ public class ActionBlockEmitter extends Emitter
                             value_index = ab.addIntConstant(bytecodeFactory.ConstantIntegerInfo(getValueOfNumberLiteral(value,new TypeValue[1], numberUsage).intValue()));
                             value_kind = CONSTANT_Integer;
                         }
+                        else if ((defaultValueType == cx.doubleType()) || (cx.abcVersion(Features.TARGET_AVM1) && (defaultValueType == cx.uintType())))
+                        {
+                            value_index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(getValueOfNumberLiteral(value,new TypeValue[1], numberUsage).doubleValue()));
+                            value_kind = CONSTANT_Double;
+                        }
                         else if (defaultValueType == cx.uintType())
                         {
                             value_index = ab.addUintConstant(bytecodeFactory.ConstantUintInfo(getValueOfNumberLiteral(value,new TypeValue[1], numberUsage).uintValue()));
                             value_kind = CONSTANT_UInteger;
-                        }
-                        else if (defaultValueType == cx.doubleType())
-                        {
-                            value_index = ab.addDoubleConstant(bytecodeFactory.ConstantDoubleInfo(getValueOfNumberLiteral(value,new TypeValue[1], numberUsage).doubleValue()));
-                            value_kind = CONSTANT_Double;
                         }
                         else if (cx.statics.es4_numerics && (defaultValueType == cx.decimalType()))
                         {
@@ -5529,7 +5529,7 @@ public class ActionBlockEmitter extends Emitter
         last_ip = getIP();
         last_in = IKIND_push;
 
-        if (type_id == TYPE_int) // || type_id == TYPE_uint_external)
+        if (type_id == TYPE_int || ((type_id == TYPE_uint) && cx.abcVersion(Features.TARGET_AVM1)))
         {
             int index;
             int ival = val.intValue();
