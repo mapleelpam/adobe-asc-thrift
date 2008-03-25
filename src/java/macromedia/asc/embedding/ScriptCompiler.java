@@ -478,6 +478,10 @@ public class ScriptCompiler
 			for (Iterator<ReferenceValue> k = node.get(i).ce_unresolved.iterator(); k.hasNext();)
 			{
 				ReferenceValue ref = k.next();
+
+                if(ref.isAttributeIdentifier())
+                    continue;
+
 				boolean found = false;
 				for (int j = 0, size = (ref.getImmutableNamespaces() != null) ? ref.getImmutableNamespaces().size() : 0; j < size; j++)
 				{
@@ -511,6 +515,10 @@ public class ScriptCompiler
 			for (Iterator<ReferenceValue> k = node.get(i).body_unresolved.iterator(); k.hasNext();)
 			{
 				ReferenceValue ref = k.next();
+
+                if(ref.isAttributeIdentifier())
+                    continue;
+
 				boolean found = false;
 				for (int j = 0, size = (ref.getImmutableNamespaces() != null) ? ref.getImmutableNamespaces().size() : 0; j < size; j++)
 				{
@@ -544,6 +552,10 @@ public class ScriptCompiler
 			for (Iterator<ReferenceValue> k = node.get(i).ns_unresolved.iterator(); k.hasNext();)
 			{
 				ReferenceValue ref = k.next();
+
+                if(ref.isAttributeIdentifier())
+                    continue;
+
 				boolean found = false;
 				for (int j = 0, size = (ref.getImmutableNamespaces() != null) ? ref.getImmutableNamespaces().size() : 0; j < size; j++)
 				{
@@ -725,11 +737,15 @@ public class ScriptCompiler
 			for (Iterator<ReferenceValue> k = node.get(i).rt_unresolved.iterator(); k.hasNext();)
 			{
 				ReferenceValue ref = k.next();
-				boolean found = false;
+
+                if(ref.isAttributeIdentifier())
+                    continue;
+
+                boolean found = false;
 				for (int j = 0, size = (ref.getImmutableNamespaces() != null) ? ref.getImmutableNamespaces().size() : 0; j < size; j++)
 				{
 					QName qname = new QName(ref.getImmutableNamespaces().get(j), ref.name);
-					if (qname.ns instanceof UnresolvedNamespace && ((UnresolvedNamespace) qname.ns).resolved)
+                    if (qname.ns instanceof UnresolvedNamespace && ((UnresolvedNamespace) qname.ns).resolved)
 					{
 						found = true;
 						break;
@@ -746,11 +762,13 @@ public class ScriptCompiler
 						break;
 					}
 				}
+/*              Expressions might not be resolved at CT for any number of valid reasons - strict mode will catch
+                the error cases if there are any.
 				if (!found)
 				{
 					System.err.println(ref.toMultiName() + " on line " + cx.get(i).getInputLine(ref.getPosition()) + " of file " + file.get(i) + " not resolved");
 				}
-			}
+*/			}
 
 			node.get(i).rt_unresolved.clear();
 		}
