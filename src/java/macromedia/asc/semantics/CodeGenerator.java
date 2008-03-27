@@ -3400,7 +3400,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                         {
                             //int reg_offset = basebui.reg_offset;
                             //setOrigin(cx.input.source());
-                            setPosition(cx.input.getLnNum(binding.pos()), cx.input.getColPos(binding.pos()), binding.pos());
+                            if (cx.input != null)
+                            {
+                                setPosition(cx.input.getLnNum(binding.pos()),
+                                            cx.input.getColPos(binding.pos()), binding.pos());
+                            }
                             DefineSlotVariable(cx, binding.ref.name, binding.debug_name, binding.pos(),
                                                 expr_type, (slot.getVarIndex()));
                         }
@@ -3474,7 +3478,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 	// naming conflicts in the debug info for authoring (i.e.,
 	// multiple scripts with the name "frame1"
         setOrigin(cx.getQualifiedErrorOrigin());
-        setPosition(cx.input.getLnNum(node.pos()),cx.input.getColPos(node.pos()),node.pos());
+
+        if (cx.input != null)
+        {
+            setPosition(cx.input.getLnNum(node.pos()),cx.input.getColPos(node.pos()),node.pos());
+        }
 
         if (doingMethod())
         {
@@ -3544,8 +3552,12 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         {
             def.evaluate(cx, this);
         }
+
         // reset debug position.  nested Function evaulation above will have updated it, we need to reset to top of this function.
-        setPosition(cx.input.getLnNum(node.pos()),cx.input.getColPos(node.pos()),node.pos());
+        if (cx.input != null)
+        {
+            setPosition(cx.input.getLnNum(node.pos()),cx.input.getColPos(node.pos()),node.pos());
+        }
 
         pushStackFrame();
 
@@ -3679,7 +3691,10 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             this.in_anonymous_function = old_in_anonymous_function;
         }
 
-        setPosition(cx.input.getLnNum(node.signature.pos()),cx.input.getColPos(node.signature.pos()),node.signature.pos());
+        if (cx.input != null)
+        {
+            setPosition(cx.input.getLnNum(node.signature.pos()),cx.input.getColPos(node.signature.pos()),node.signature.pos());
+        }
 
         // If there is a nested function, then pass the activation object so traits can be emitted
         if (!needs_activation)
@@ -3775,7 +3790,10 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
 		// reset the position to the beginning of the function, since the position may be left at the last instanceInit,
 		// which may not have generated any code (e.g., FunctionDefinitionNode)
-		setPosition(cx.input.getLnNum(node.signature.pos()),cx.input.getColPos(node.signature.pos()),node.signature.pos());
+        if (cx.input != null)
+        {
+            setPosition(cx.input.getLnNum(node.signature.pos()),cx.input.getColPos(node.signature.pos()),node.signature.pos());
+        }
 
 		if( node.signature.inits != null )
 		{
@@ -4102,7 +4120,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
     private String getProgramName(Context cx)
     {
-        return emitScriptNames ? new File(cx.input.origin).getName() : "";
+        return emitScriptNames && (cx.input != null) ? new File(cx.input.origin).getName() : "";
     }
 
     private int pushStaticScopesHelper(Context cx, TypeValue cframe)
@@ -4781,10 +4799,14 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
     public boolean checkFeature(Context cx, Node node)
     {
-        int pos = node.pos();
-        int line = cx.input.getLnNum(pos);
-        int col = cx.input.getColPos(pos, line);
-        setPosition(line,col,pos);
+        if (cx.input != null)
+        {
+            int pos = node.pos();
+            int line = cx.input.getLnNum(pos);
+            int col = cx.input.getColPos(pos, line);
+            setPosition(line,col,pos);
+        }
+
         return true; //Evaluator::checkFeature(cx,node);
     }
 

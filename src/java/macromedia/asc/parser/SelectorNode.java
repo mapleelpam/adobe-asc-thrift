@@ -25,7 +25,7 @@ import static macromedia.asc.parser.Tokens.DOT_TOKEN;
  *
  * @author Jeff Dyer
  */
-public class SelectorNode extends Node
+public abstract class SelectorNode extends Node
 {
 	public ObjectValue base;
 	private int flags;

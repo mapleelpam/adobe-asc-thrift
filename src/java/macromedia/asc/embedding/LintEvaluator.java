@@ -1998,7 +1998,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 	{
 		Context cx = node.cx;  // switch contexts so that the original one is used
 
-        if (ignorableFile(cx.input))
+        if ((cx.input == null) || ignorableFile(cx.input))
 		{
 			return null;
 		}

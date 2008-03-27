@@ -27,7 +27,7 @@ import macromedia.asc.semantics.*;
  */
 public class PackageIdentifiersNode extends Node
 {
-	protected static final int IS_DEFINITION_FLAG    = 1;
+	private static final int IS_DEFINITION_FLAG = 1;
 	
 	public ObjectList<IdentifierNode> list = new ObjectList<IdentifierNode>(5);
 	public String pkg_part;
@@ -65,6 +65,12 @@ public class PackageIdentifiersNode extends Node
 		return list.size() != 0 ? list.last().pos() : 0;
 	}
 
+	// Used externally by SyntaxTreeDumper
+	public boolean isDefinition()
+	{
+		return (flags & IS_DEFINITION_FLAG) != 0;
+	}
+
 	public String toString()
 	{
 		return "PackageIdentifiers";
@@ -86,8 +92,6 @@ public class PackageIdentifiersNode extends Node
     {
         if( pkg_part == null )
         {
-        	boolean isDefinition = (flags & IS_DEFINITION_FLAG) != 0;
-        	
             StringBuffer buf = new StringBuffer();
             //ListIterator<IdentifierNode> it = list.listIterator();            
             //while( it.hasNext() )
@@ -95,7 +99,7 @@ public class PackageIdentifiersNode extends Node
 			for(int x=0; x < len; x++)
             {
 				IdentifierNode item = list.get(x);
-				if (x == len - 1 && isDefinition)
+				if (x == len - 1 && isDefinition())
 				{
 					def_part = "";
 					if (!"*".equals(item.name))
