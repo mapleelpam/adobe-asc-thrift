@@ -12,7 +12,6 @@
 package macromedia.asc.util;
 
 import macromedia.asc.semantics.ObjectValue;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class NamespacesTable extends HashMap<Namespaces,Namespaces>  

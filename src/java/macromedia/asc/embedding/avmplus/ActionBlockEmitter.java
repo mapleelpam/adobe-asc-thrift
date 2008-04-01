@@ -40,7 +40,6 @@ import macromedia.asc.util.IntNumberConstant;
 import macromedia.asc.util.UintNumberConstant;
 
 import java.io.PrintWriter;
-import java.io.IOException;
 import java.util.*;
 
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.*;

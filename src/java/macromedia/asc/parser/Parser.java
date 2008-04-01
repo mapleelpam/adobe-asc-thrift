@@ -25,8 +25,6 @@ import macromedia.asc.util.*;
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.*;
 import static macromedia.asc.embedding.avmplus.Features.*;
-import macromedia.asc.embedding.avmplus.Features;
-import macromedia.asc.embedding.avmplus.InstanceBuilder;
 import static macromedia.asc.embedding.ErrorConstants.*;
 import macromedia.asc.embedding.CompilerHandler;
 import static macromedia.asc.parser.States.*;

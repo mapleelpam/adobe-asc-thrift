@@ -18,7 +18,6 @@
 package macromedia.asc.semantics;
 
 import macromedia.asc.embedding.ErrorConstants;
-import macromedia.asc.embedding.avmplus.Features;
 import macromedia.asc.embedding.avmplus.InstanceBuilder;
 import macromedia.asc.embedding.avmplus.ClassBuilder;
 import macromedia.asc.embedding.avmplus.GlobalBuilder;

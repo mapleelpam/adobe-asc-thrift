@@ -19,7 +19,6 @@ package macromedia.asc.embedding;
 
 import macromedia.asc.embedding.avmplus.ActionBlockEmitter;
 import macromedia.asc.embedding.avmplus.GlobalBuilder;
-import macromedia.asc.embedding.avmplus.Features;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.*;
 import macromedia.asc.util.*;

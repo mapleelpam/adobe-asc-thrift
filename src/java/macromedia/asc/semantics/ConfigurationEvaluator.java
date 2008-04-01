@@ -25,11 +25,9 @@ import java.util.HashSet;
 import macromedia.asc.embedding.ErrorConstants;
 import macromedia.asc.parser.*;
 import macromedia.asc.util.Context;
-import macromedia.asc.util.IntList;
 import macromedia.asc.util.IntegerPool;
 import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.ObjectList;
-import macromedia.asc.util.NumberUsage;
 import macromedia.asc.util.NumberConstant;
 
 public class ConfigurationEvaluator implements Evaluator, ErrorConstants {

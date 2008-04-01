@@ -17,15 +17,12 @@
 
 package macromedia.asc.parser;
 
-import static macromedia.asc.parser.Tokens.SET_TOKEN;
-import static macromedia.asc.parser.Tokens.GET_TOKEN;
 import macromedia.asc.semantics.Value;
 import macromedia.asc.semantics.ReferenceValue;
 import macromedia.asc.semantics.Slot;
 import macromedia.asc.util.Context;
 import macromedia.asc.util.ObjectList;
 import macromedia.asc.embedding.ErrorConstants;
-import macromedia.asc.embedding.avmplus.Features;
 import macromedia.asc.embedding.avmplus.InstanceBuilder;
 
 public class MetaDataEvaluator implements Evaluator, ErrorConstants

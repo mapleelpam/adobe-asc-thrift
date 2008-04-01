@@ -12,13 +12,6 @@
 package macromedia.asc.semantics;
 
 import macromedia.asc.util.*;
-import macromedia.asc.parser.ClassDefinitionNode;
-import macromedia.asc.parser.Node;
-import macromedia.asc.embedding.avmplus.ClassBuilder;
-import macromedia.asc.embedding.avmplus.InstanceBuilder;
-
-import java.util.HashMap;
-import java.util.Comparator;
 
 /**
  */

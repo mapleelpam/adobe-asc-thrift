@@ -14,8 +14,6 @@ package macromedia.asc.util;
 import java.util.Set;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Iterator;
-import java.util.AbstractSet;
 import macromedia.asc.semantics.ObjectValue;
 import static macromedia.asc.parser.Tokens.*;
 

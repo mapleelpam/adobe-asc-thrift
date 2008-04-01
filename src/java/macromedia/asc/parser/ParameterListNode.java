@@ -11,7 +11,6 @@
 
 package macromedia.asc.parser;
 
-import macromedia.asc.semantics.TypeValue;
 import macromedia.asc.semantics.Value;
 import macromedia.asc.util.ObjectList;
 import macromedia.asc.util.ByteList;

@@ -12,7 +12,6 @@
 package macromedia.asc.semantics;
 
 import macromedia.asc.util.Context;
-import macromedia.asc.embedding.avmplus.Features;
 
 public class TypeInfo
 {

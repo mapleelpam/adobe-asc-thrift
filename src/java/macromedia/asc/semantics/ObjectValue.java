@@ -24,7 +24,6 @@ import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.ObjectList;
 import macromedia.asc.util.Qualifiers;
 import macromedia.asc.util.Slots;
-import macromedia.asc.util.Values;
 import macromedia.asc.util.NumberUsage;
 import macromedia.asc.parser.ClassDefinitionNode;
 import macromedia.asc.parser.Node;
