@@ -261,7 +261,7 @@ public final class NodeFactory implements ErrorConstants
 	public Node callExpression(Node expr, ArgumentListNode args, int pos)
 	{
 		// if the omitTrace flag is on, don't generate trace statements
-		if(cx.statics.omitTrace && expr != null && expr instanceof MemberExpressionNode) {
+		if(ContextStatics.omitTrace && expr != null && expr instanceof MemberExpressionNode) {
 			MemberExpressionNode men = (MemberExpressionNode)expr;
 			if(men.base == null && men.selector != null &&
 					men.selector instanceof GetExpressionNode) {
