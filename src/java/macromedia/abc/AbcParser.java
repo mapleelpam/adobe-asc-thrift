@@ -156,7 +156,7 @@ public final class AbcParser
     void scanCpool(boolean hasDecimal)
     {
     	int size;
-        size = (int)buf.readU32();
+        size = buf.readU32();
         cPoolIntPositions = new int[size];
         if (debug) System.out.println("ints "+size);
         for (int i = 1; i < size; i++)
@@ -164,7 +164,7 @@ public final class AbcParser
             cPoolIntPositions[i] = buf.pos();
             buf.readU32();
         }
-        size = (int)buf.readU32();
+        size = buf.readU32();
         cPoolUIntPositions = new int[size];
         if (debug) System.out.println("uints "+size);
         for (int i = 1; i < size; i++)
@@ -172,7 +172,7 @@ public final class AbcParser
             cPoolUIntPositions[i] = buf.pos();
             buf.readU32();
         }
-        size = (int)buf.readU32();
+        size = buf.readU32();
         cPoolDoublePositions = new int[size];
         if (debug) System.out.println("doubles "+size);
         for (int i = 1; i < size; i++)
@@ -181,7 +181,7 @@ public final class AbcParser
             buf.readDouble();
         }
         if (hasDecimal) {
-        	size = (int)buf.readU32();
+        	size = buf.readU32();
             if (debug) System.out.println("decimals "+size);
         	cPoolDecimalPositions = new int[size];
         	for (int i = 1; i < size; i++) {
@@ -193,7 +193,7 @@ public final class AbcParser
         else {
         	cPoolDecimalPositions = new int[0];
         }
-        size = (int)buf.readU32();
+        size = buf.readU32();
         cPoolStrs = new String[size>0?size:1];
         if (debug) System.out.println("strings "+size);
         cPoolStrs[0] = "";
@@ -203,7 +203,7 @@ public final class AbcParser
         	cPoolStrs[i] = buf.readString((int)length).intern();
             buf.skip(length);
         }
-        size = (int)buf.readU32();
+        size = buf.readU32();
         cPoolNsPositions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -211,7 +211,7 @@ public final class AbcParser
             buf.readU8(); // kind byte
             buf.readU32();
         }
-        size = (int)buf.readU32();
+        size = buf.readU32();
         cPoolNsSetPositions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -222,7 +222,7 @@ public final class AbcParser
                 buf.readU32();
             }
         }
-        size = (int)buf.readU32();
+        size = buf.readU32();
         cPoolMnPositions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -364,7 +364,7 @@ public final class AbcParser
             case ActionBlockConstants.TRAIT_Var:
             case ActionBlockConstants.TRAIT_Const:
                 buf.skipEntries(2);
-                temp = (int)buf.readU32();
+                temp = buf.readU32();
                 if( temp > 0 )
                     buf.readU32(); //kind byte
                 break;
@@ -563,12 +563,12 @@ public final class AbcParser
         int original = buf.pos();
         buf.seek(methodPositions[methInfo] );
 
-        int paramCount = (int)buf.readU32();
-        int returnType = (int)buf.readU32(); //returnType
+        int paramCount = buf.readU32();
+        int returnType = buf.readU32(); //returnType
         int paramTypes[] = new int[paramCount];
         for( int i = 0; i < paramCount; ++i )
         {
-            paramTypes[i] = (int)buf.readU32();
+            paramTypes[i] = buf.readU32();
         }
 
         buf.readU32(); // skip the name
@@ -588,7 +588,7 @@ public final class AbcParser
         {
             for( int i = 0; i < paramCount; ++i )
             {
-                param_names[i] = getStringFromCPool((int)buf.readU32());
+                param_names[i] = getStringFromCPool(buf.readU32());
             }
         }
         buf.seek(original);
@@ -720,11 +720,11 @@ public final class AbcParser
 
     private ObjectList<Node> parseOptionalParams()
     {
-        int optional_count = (int)buf.readU32();
+        int optional_count = buf.readU32();
         ObjectList<Node> optionals = new ObjectList<Node>(optional_count);
         for( int i = 0; i < optional_count; ++i)
         {
-            int value_index = (int)buf.readU32();
+            int value_index = buf.readU32();
             int value_kind = buf.readU8();
             Node current_node = getInitValue(value_index,value_kind);
             optionals.push_back(current_node);
@@ -866,7 +866,7 @@ public final class AbcParser
         for( long i = 0; i < interfaces; ++i )
         {
 //            buf.skipEntries(interfaces);
-            int int_index = (int)buf.readU32();
+            int int_index = buf.readU32();
             QName intName = getMultinameFromCPool(int_index);
             String simpleIntName = getStringFromCPool(intName.name);
 
@@ -1152,12 +1152,12 @@ public final class AbcParser
             for(int i = 0; i < valueCount; ++i )
             {
                 // read keys
-                keys.add((int)buf.readU32());
+                keys.add(buf.readU32());
             }
             for(int j = 0; j < valueCount; ++j )
             {
                 // read keys
-                values.add((int)buf.readU32());
+                values.add(buf.readU32());
             }
             metaNode.values = new Value[(int)valueCount];
             for( int k = 0; k < valueCount; ++k )
@@ -1218,10 +1218,10 @@ public final class AbcParser
 			switch (kind)
 			{
             case ActionBlockConstants.CONSTANT_Integer:
-                ret = (int)buf.readU32();
+                ret = buf.readU32();
                 break;
             case ActionBlockConstants.CONSTANT_UInteger:
-				ret = ((long)buf.readU32()) & 0xFFFFFFFFL;
+				ret = buf.readU32() & 0xFFFFFFFFL;
                 break;
             case ActionBlockConstants.CONSTANT_Double:
                 ret = buf.readDouble();
@@ -1252,8 +1252,8 @@ public final class AbcParser
         {
         case ActionBlockConstants.CONSTANT_Qname:
         case ActionBlockConstants.CONSTANT_QnameA:
-            value.nameSpace = (int)buf.readU32();
-            value.name = (int)buf.readU32();
+            value.nameSpace = buf.readU32();
+            value.name = buf.readU32();
             break;
         default:
             break;
@@ -1276,8 +1276,8 @@ public final class AbcParser
         {
         case ActionBlockConstants.CONSTANT_Multiname:
         case ActionBlockConstants.CONSTANT_MultinameA:
-                value.name = (int)buf.readU32();
-                value.nameSpace = (int)buf.readU32();
+                value.name = buf.readU32();
+                value.nameSpace = buf.readU32();
             break;
         default:
             break;
@@ -1292,11 +1292,11 @@ public final class AbcParser
 
         buf.seek( cPoolNsSetPositions[namespaceSetID] );
 
-        int count = (int)buf.readU32();
+        int count = buf.readU32();
         Namespaces val = new Namespaces(count);
         for(int i = 0; i < count; ++i)
         {
-            val.add(getNamespace((int)buf.readU32()));
+            val.add(getNamespace(buf.readU32()));
         }
         buf.seek(orig);
         return val;
@@ -1320,26 +1320,26 @@ public final class AbcParser
             switch(kind)
             {
             case ActionBlockConstants.CONSTANT_Namespace:
-                ns = ctx.getNamespace(getStringFromCPool((int)buf.readU32()));
+                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()));
                 break;
             case ActionBlockConstants.CONSTANT_PackageNamespace:
-                ns = ctx.getNamespace(getStringFromCPool((int)buf.readU32()));
+                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()));
                 ns.setPackage(true);
                 break;
             case ActionBlockConstants.CONSTANT_ProtectedNamespace:
-                ns = ctx.getNamespace(getStringFromCPool((int)buf.readU32()), Context.NS_PROTECTED);
+                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_PROTECTED);
                 break;
             case ActionBlockConstants.CONSTANT_PackageInternalNs:
-                ns = ctx.getNamespace(getStringFromCPool((int)buf.readU32()), Context.NS_INTERNAL);
+                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_INTERNAL);
                 break;
             case ActionBlockConstants.CONSTANT_PrivateNamespace:
-                ns = ctx.getNamespace(getStringFromCPool((int)buf.readU32()), Context.NS_PRIVATE);
+                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_PRIVATE);
                 break;
             case ActionBlockConstants.CONSTANT_ExplicitNamespace:
-                ns = ctx.getNamespace(getStringFromCPool((int)buf.readU32()), Context.NS_EXPLICIT);
+                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_EXPLICIT);
                 break;
             case ActionBlockConstants.CONSTANT_StaticProtectedNs:
-                ns = ctx.getNamespace(getStringFromCPool((int)buf.readU32()), Context.NS_STATIC_PROTECTED);
+                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_STATIC_PROTECTED);
                 break;
 
             }

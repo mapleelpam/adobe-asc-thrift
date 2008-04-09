@@ -305,8 +305,8 @@ public class Decimal128 {
 		IEEERep(byte[] rep) { // use this constructor to take apart a representation
 			int ndx = 0;
 			for (int i = 0; i < 16; i+= 4) {
-				data[ndx++] = ((((int)rep[i]) & 0xFF)<<24) + ((((int)rep[i+1]) & 0xFF)<<16) + 
-				((((int)rep[i+2]) & 0xFF) <<8) + (((int)rep[i+3]) & 0xFF);
+				data[ndx++] = ((rep[i] & 0xFF)<<24) + ((rep[i+1] & 0xFF)<<16) + 
+				((rep[i+2] & 0xFF) <<8) + (rep[i+3] & 0xFF);
 			}
 			if ((data[0] & 0x80000000) != 0)
 				negative = true;
@@ -1099,6 +1099,6 @@ public class Decimal128 {
 
 	/* override method from Object */
 	public int hashCode() {
-		return value.hashCode() ^ ((int)flags);
+		return value.hashCode() ^ flags;
 	}
 }

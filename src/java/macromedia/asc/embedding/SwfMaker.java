@@ -176,7 +176,7 @@ public class SwfMaker
         if ( n <= 0 ) 
             return;
         for (;;) {
-            v &= (int)0xFFFFFFFF >> (32-n);	// mask off any extra bits, note this does not work for n == 0, hence check for zero above
+            v &= 0xFFFFFFFF >> (32-n);	// mask off any extra bits, note this does not work for n == 0, hence check for zero above
             int s = n - bitPos;	// The number of bits more than the buffer will hold
             if ( s <= 0 ) {
                 // This fits in the buffer, add it and finish

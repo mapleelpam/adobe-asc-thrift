@@ -36,7 +36,7 @@ public class DoubleNumberConstant extends NumberConstant {
 		// launder the value through long, we get the result we want.
 		long lval = (long)val;
 		int ival = (int)lval;
-		return (long)ival;
+		return ival;
 	}
 	
 	@Override

@@ -235,7 +235,7 @@ public class Shell
 	        List list = (List)getMemPoolMeth.invoke(null, emptyObj);
 	        for (Iterator iterator = list.iterator(); iterator.hasNext();)
 	        {
-	            Object memPoolObj = (Object)iterator.next();
+	            Object memPoolObj = iterator.next();
 	            Object memUsageObj = getPeakUsageMeth.invoke(memPoolObj, emptyObj);
 		        Object memTypeObj = getTypeMeth.invoke(memPoolObj, emptyObj);
 		        Long used = (Long)getUsedMeth.invoke(memUsageObj, emptyObj);

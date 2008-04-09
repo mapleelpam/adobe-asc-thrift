@@ -330,7 +330,7 @@ public final class InputBuffer
 					if(lastChar == '\r' && c == '\n') {
 						line_breaks.set(lnNum + 1, pos);
 					} else {
-						curr_line.append((char) '\n'); // normalize linebreaks to \n
+						curr_line.append('\n'); // normalize linebreaks to \n
 						line_breaks.resize(lnNum + 1); // resize the type vector, if needed
 						line_breaks.set(lnNum + 1, pos);
 					}

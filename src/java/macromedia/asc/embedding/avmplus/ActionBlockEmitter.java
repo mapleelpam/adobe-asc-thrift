@@ -8310,14 +8310,14 @@ protected void Setsuper(ByteList code,int index)
     	BytecodeBuffer bc = new BytecodeBuffer(bl.toByteArray(false));
     	if (bc.readU8() == CONSTANT_Qname)
     	{
-    		int ns_index = (int) bc.readU32();
+    		int ns_index = bc.readU32();
     		ByteList nsbl = ab.constant_ns_pool.get(ns_index-1);
     		BytecodeBuffer nsbc = new BytecodeBuffer(nsbl.toByteArray(false));
     		int nskind = nsbc.readU8();
     		if (nskind == CONSTANT_Namespace || nskind == CONSTANT_PackageNamespace)
     		{
-	    		int uri_index = (int) nsbc.readU32();
-	    		int name_index = (int) bc.readU32();
+	    		int uri_index = nsbc.readU32();
+	    		int name_index = bc.readU32();
 		    	return cleanupString(ab.constant_utf8_pool.get(uri_index-1))+"_"+cleanupString(ab.constant_utf8_pool.get(name_index-1));
     		}
     	}    	

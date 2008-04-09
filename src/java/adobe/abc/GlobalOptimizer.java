@@ -289,7 +289,7 @@ public class GlobalOptimizer
 		
 			uints = new long[p.readU30() + 1];
 			for (int i = 1, n = uints.length - 1; i < n; i++)
-				uints[i] = 0xffffffffL & (long)p.readU30();
+				uints[i] = 0xffffffffL & p.readU30();
 		
 			doubles = new double[p.readU30() + 1];
 			for (int i = 1, n = doubles.length - 1; i < n; i++)
@@ -1395,7 +1395,7 @@ public class GlobalOptimizer
 
 				case OP_pushbyte:
 				{
-					e = frame[sp++] = new Expr(m,op, new Integer((int)(byte)p.readU8()));
+					e = frame[sp++] = new Expr(m,op, new Integer((byte)p.readU8()));
 					b.add(e);
 					break;
 				}
@@ -2147,7 +2147,7 @@ public class GlobalOptimizer
 			ready.add(m);
 	}
 	
-	void optimize(InputAbc a) throws IOException
+	void optimize(InputAbc a)
 	{
  		for (Type t: a.scripts)
 			readyType(t);
@@ -2670,7 +2670,7 @@ public class GlobalOptimizer
 	}
 	
 	void emitSource(Abc abc, String name, byte[] data, List<Integer> initScripts,
-			PrintWriter out_h, IndentingPrintWriter out_c) throws IOException
+			PrintWriter out_h, IndentingPrintWriter out_c)
 	{
 		out_h.println("/* machine generated file -- do not edit */");
 
@@ -8737,7 +8737,7 @@ public class GlobalOptimizer
 		
 		double readDouble()
 		{
-			return Double.longBitsToDouble(((long)readU16()) | ((long)readU16())<<16 |
+			return Double.longBitsToDouble(readU16() | ((long)readU16())<<16 |
 					((long)readU16())<<32 | ((long)readU16())<<48);
 		}
 	}

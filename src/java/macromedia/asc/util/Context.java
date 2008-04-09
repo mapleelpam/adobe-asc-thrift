@@ -1285,7 +1285,7 @@ public final class Context implements ErrorConstants
 
     public TypeValue userDefined(String name)
     {
-        return (TypeValue)statics.userDefined.get(name);
+        return statics.userDefined.get(name);
     }
 
     public void setUserDefined(String name, TypeValue value)

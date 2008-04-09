@@ -116,7 +116,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 					{
 						KeylessValue val = (KeylessValue) call.expr.evaluate(cx, this);
 						//node.values.add(val);
-						current.id = (String) val.obj;
+						current.id = val.obj;
 					}
 
 					if (call.args != null)
@@ -560,7 +560,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 		if (node.list != null)
 			node.list.evaluate(cx,this);
 
-        VariableDefinitionNode vdn = (VariableDefinitionNode)node;
+        VariableDefinitionNode vdn = node;
 
         if( debugging )
             addPositionMetadata(cx, vdn);
@@ -740,7 +740,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
         cx.popStaticClassScopes(node);
 
 
-        ClassDefinitionNode cdn = (ClassDefinitionNode)node;
+        ClassDefinitionNode cdn = node;
         ReferenceValue ref = cdn.ref;
         Slot classSlot = null;
         if( ref != null )

@@ -19,7 +19,7 @@ public class UintNumberConstant extends NumberConstant {
 
 	@Override
 	public double doubleValue() {
-		return (double)val;
+		return val;
 	}
 
 	@Override

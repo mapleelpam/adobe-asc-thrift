@@ -34,7 +34,7 @@ public final class Scanner
 
     public static int[] scanIntConstants(BytecodeBuffer in)
     {
-        int size = (int)in.readU32();
+        int size = in.readU32();
         int[] positions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -46,7 +46,7 @@ public final class Scanner
 
     public static int[] scanUIntConstants(BytecodeBuffer in)
     {
-        int size = (int)in.readU32();
+        int size = in.readU32();
         int[] positions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -58,7 +58,7 @@ public final class Scanner
 
     public static int[] scanDoubleConstants(BytecodeBuffer in)
     {
-        int size = (int)in.readU32();
+        int size = in.readU32();
         int[] positions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -70,7 +70,7 @@ public final class Scanner
 
     public static int[] scanDecimalConstants(BytecodeBuffer in)
     {
-        int size = (int)in.readU32();
+        int size = in.readU32();
         int[] positions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -82,7 +82,7 @@ public final class Scanner
 
     public static int[] scanStrConstants(BytecodeBuffer in)
     {
-        int size = (int)in.readU32();
+        int size = in.readU32();
         int[] positions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -95,7 +95,7 @@ public final class Scanner
 
     public static int[] scanNsConstants(BytecodeBuffer in)
     {
-        int size = (int)in.readU32();
+        int size = in.readU32();
         int[] positions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -108,7 +108,7 @@ public final class Scanner
 
     public static int[] scanNsSetConstants(BytecodeBuffer in)
     {
-        int size = (int)in.readU32();
+        int size = in.readU32();
         int[] positions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -121,7 +121,7 @@ public final class Scanner
 
     public static int[] scanMultinameConstants(BytecodeBuffer in) throws DecoderException
     {
-        int size = (int)in.readU32();
+        int size = in.readU32();
         int[] positions = new int[size];
         for (int i = 1; i < size; i++)
         {
@@ -159,7 +159,7 @@ public final class Scanner
 
 	public static int[] scanMethods(BytecodeBuffer in)
 	{
-		int size = (int)in.readU32();
+		int size = in.readU32();
 		int[] positions = new int[size];
 
 		for (int i = 0; i < size; i++)
@@ -190,7 +190,7 @@ public final class Scanner
 
 	public static int[] scanMetadata(BytecodeBuffer in)
 	{
-	    int size = (int)in.readU32();
+	    int size = in.readU32();
 	    int[] positions = new int [size];
 
 	    for (int i = 0; i < size; i++)
@@ -246,7 +246,7 @@ public final class Scanner
 
 	public static int[] scanScripts(BytecodeBuffer in)
 	{
-	    int size = (int)in.readU32();
+	    int size = in.readU32();
 	    int[] positions = new int[size];
 
 	    for (int i = 0 ; i < size; i++)
@@ -261,7 +261,7 @@ public final class Scanner
 
 	public static int[] scanMethodBodies(BytecodeBuffer in)
 	{
-		int size = (int)in.readU32();
+		int size = in.readU32();
 		int[] positions = new int[size];
 
 		for (int i = 0; i < size; i++)
@@ -309,7 +309,7 @@ public final class Scanner
 			case TRAIT_Const:
             {
 				in.skipEntries(2);
-                int valueId = (int)in.readU32();
+                int valueId = in.readU32();
                 if( valueId > 0 )
                     in.readU8();
 				break;

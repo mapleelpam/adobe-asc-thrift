@@ -7729,7 +7729,7 @@ XMLElementContent
         if (ctx.scriptAssistParsing){//the parser comments are needed after the parser is gone
     		for (ListIterator<Node> it = comments.listIterator(); it.hasNext(); )
     		{
-    			ctx.comments.add((CommentNode)it.next());
+    			ctx.comments.add(it.next());
     		}
         }
         

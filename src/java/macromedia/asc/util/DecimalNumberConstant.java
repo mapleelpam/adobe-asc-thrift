@@ -32,7 +32,7 @@ public class DecimalNumberConstant extends NumberConstant {
 	public long uintValue() {
 		long lval = val.longValue();
 		int ival = (int)lval; // truncates to 32 bits
-		return (long)ival;
+		return ival;
 	}
 	
 	@Override

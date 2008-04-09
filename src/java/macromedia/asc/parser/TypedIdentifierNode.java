@@ -39,7 +39,7 @@ public class TypedIdentifierNode extends Node
 		this.identifier = (IdentifierNode) identifier;
 		// C: In ascap.exe, type could be MemberExpressionNode!
 		// this.type = (IdentifierNode) type;
-		this.type = (Node) type;
+		this.type = type;
         no_anno = false;
 	}
 

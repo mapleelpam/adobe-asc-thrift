@@ -1925,7 +1925,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     			dval = lval.doubleValue() * rval.doubleValue();
                     		}
                     		else
-                    			dval = (double)d;
+                    			dval = d;
                     		val = new ObjectValue(Double.toString(dval), cx.doubleType());
                     	}
                     	break;

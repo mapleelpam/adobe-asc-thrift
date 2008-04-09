@@ -385,7 +385,6 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     Namespaces hasNamespaces2 = obj.hasNames(cx,opposite_kind,name,namespaces);
                     if (hasNamespaces2 != null)
                     {
-                        localQualifier = null;
                         for( int i = 0; i < hasNamespaces2.size(); i++ )
                         {
                             localQualifier = hasNamespaces2.at(i);
@@ -617,7 +616,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
     public int getScopeIndex()
     {
         short i = (short)((flags&SCOPE_INDEX_Mask)>>SCOPE_INDEX_Shift);
-        return (int)i; 
+        return i; 
     }
 
     public void setKind(int kind)
@@ -629,7 +628,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
     public int getKind() 
     {
         byte b = (byte)((flags&KIND_Mask)>>KIND_Shift);
-        return (int)b; 
+        return b; 
     }
 
     private void setGetSlotIndex(int get_slot_index)

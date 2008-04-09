@@ -1392,7 +1392,7 @@ public static ByteList MethodBody(ByteList bytes,
 
 			for(int pos = 0; pos < 5; pos++)
 			{
-				val = val - (float)truncVal;  // cut off int val
+				val = val - truncVal;  // cut off int val
 				val *= 10; // pop next digit up above the .
 				truncVal = (int)val;
 				buff.append(truncVal);
@@ -1414,7 +1414,7 @@ public static ByteList MethodBody(ByteList bytes,
 
 			for(int pos = 0; pos < 5; pos++)
 			{
-				val = val - (float)truncVal;  // cut off int val
+				val = val - truncVal;  // cut off int val
 				val *= 10; // pop next digit up above the .
 				truncVal = (int)val;
 				buff.append(truncVal);

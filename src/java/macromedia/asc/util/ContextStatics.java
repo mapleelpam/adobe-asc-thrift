@@ -275,13 +275,13 @@ public class ContextStatics
 			TypeValue value = i.next();
 			for (int j = 0, length = (value.slots != null) ? value.slots.size() : 0; j < length; j++)
 			{
-				cleanSlot((Slot) value.slots.get(j));
+				cleanSlot(value.slots.get(j));
 			}
 
 			ObjectValue ov = value.prototype;
 			for (int j = 0, length = (ov != null && ov.slots != null) ? ov.slots.size() : 0; j < length; j++)
 			{
-				cleanSlot((Slot) ov.slots.get(j));
+				cleanSlot(ov.slots.get(j));
 			}
 		}
 	}

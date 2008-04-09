@@ -347,26 +347,12 @@ public class Printer
 
         private Object getConstantIntValue(int index)
         {
-            try
-            {
-                return decoder.constantPool.getInt(index);
-            }
-            catch (DecoderException ex)
-            {
-                return "decoder exception...";
-            }
+            return decoder.constantPool.getInt(index);
         }
 
         private Object getConstantUIntValue(int index)
         {
-            try
-            {
-                return decoder.constantPool.getLong(index);
-            }
-            catch (DecoderException ex)
-            {
-                return "decoder exception...";
-            }
+            return decoder.constantPool.getLong(index);
         }
 
         /*private Object getConstantDoubleValue(int index)

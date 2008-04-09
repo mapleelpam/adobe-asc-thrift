@@ -10,7 +10,7 @@ public class IntNumberConstant extends NumberConstant {
 	
 	@Override
 	public double doubleValue() {
-		return (double)ival;
+		return ival;
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class IntNumberConstant extends NumberConstant {
 	@Override
 	public long uintValue() {
 		// AS3 just returns the bits
-		return (long)ival;
+		return ival;
 	}
 
 	@Override

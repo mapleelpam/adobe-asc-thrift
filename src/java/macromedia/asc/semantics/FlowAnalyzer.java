@@ -3886,7 +3886,7 @@ else
 
             val     = node.fexpr.evaluate(cx,this);
             val = val != null ? val.getValue(cx) : null;
-            slot.setObjectValue((ObjectValue)(val instanceof ObjectValue ? (ObjectValue)val : null));
+            slot.setObjectValue((val instanceof ObjectValue ? (ObjectValue)val : null));
             // slot.objValue = dynamic_cast<ObjectValue>(val!=null?val.getValue(cx) : null);
 
 

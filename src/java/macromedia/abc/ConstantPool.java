@@ -189,7 +189,7 @@ public class ConstantPool
 		return size;
 	}
 
-	public int getInt(int index) throws DecoderException
+	public int getInt(int index)
 	{
 		if (index == 0)
 		{
@@ -200,13 +200,13 @@ public class ConstantPool
 		int originalPos = in.pos();
 		in.seek(pos);
 
-        int value = (int) in.readU32();
+        int value = in.readU32();
         in.seek(originalPos);
         return value;
 
 	}
 
-	public long getLong(int index) throws DecoderException
+	public long getLong(int index)
 	{
 		if (index == 0)
 		{
@@ -221,7 +221,7 @@ public class ConstantPool
         return value;
 	}
 
-	public double getDouble(int index) throws DecoderException
+	public double getDouble(int index)
 	{
 		if (index == 0)
 		{
@@ -236,7 +236,7 @@ public class ConstantPool
         return value;
 	}
 
-	public Decimal128 getDecimal(int index) throws DecoderException
+	public Decimal128 getDecimal(int index)
 	{
 		if (index == 0)
 		{
@@ -261,7 +261,7 @@ public class ConstantPool
 		int pos = strpositions[index];
 		int originalPos = in.pos();
 		in.seek(pos);
-        String value = in.readString((int) in.readU32());
+        String value = in.readString(in.readU32());
         in.seek(originalPos);
         if (value != null)
         {
@@ -293,7 +293,7 @@ public class ConstantPool
             case CONSTANT_ProtectedNamespace:
 		    case CONSTANT_ExplicitNamespace:
 		    case CONSTANT_StaticProtectedNs:
-                value = getString((int)in.readU32());
+                value = getString(in.readU32());
                 break;
             default:
                 throw new DecoderException("abc Decoder Error: constant pool index '" + index + "' is not a Namespace type. The actual type is '" + kind + "'");
@@ -312,11 +312,11 @@ public class ConstantPool
 		int pos = nsspositions[index];
 		int originalPos = in.pos();
 		in.seek(pos);
-        int count = (int) in.readU32();
+        int count = in.readU32();
         String[] value = new String[count];
         for (int j = 0; j < count; j++)
         {
-            value[j] = getNamespaceName((int) in.readU32());
+            value[j] = getNamespaceName(in.readU32());
         }
         in.seek(originalPos);
         if (value != null)
@@ -344,7 +344,7 @@ public class ConstantPool
 		{
 		case CONSTANT_Qname:
 		case CONSTANT_QnameA:
-			int namespaceIndex = (int) in.readU32();
+			int namespaceIndex = in.readU32();
 			in.seek(originalPos);
 			return namespaceIndex;
 		default:
@@ -381,8 +381,8 @@ public class ConstantPool
 		{
 		case CONSTANT_Qname:
 		case CONSTANT_QnameA:
-			int namespaceIndex = (int) in.readU32();
-			int nameIndex = (int) in.readU32();
+			int namespaceIndex = in.readU32();
+			int nameIndex = in.readU32();
 			QName value = createQName(getNamespaceName(namespaceIndex), getString(nameIndex));
 			in.seek(originalPos);
 			return value;
@@ -408,8 +408,8 @@ public class ConstantPool
 		{
 		case CONSTANT_Multiname:
 		case CONSTANT_MultinameA:
-			String name = getString((int) in.readU32());
-			int namespace_set = (int) in.readU32();
+			String name = getString(in.readU32());
+			int namespace_set = in.readU32();
 			String[] namespaces = getNamespaceSet(namespace_set);
 			MultiName value = createMultiName(name, namespaces);
 			in.seek(originalPos);
@@ -437,8 +437,8 @@ public class ConstantPool
         case CONSTANT_Qname:
         case CONSTANT_QnameA:
         {
-            int namespaceIndex = (int) in.readU32();
-            int nameIndex = (int) in.readU32();
+            int namespaceIndex = in.readU32();
+            int nameIndex = in.readU32();
             QName value = createQName(getNamespaceName(namespaceIndex), getString(nameIndex));
             in.seek(originalPos);
             return value;
@@ -446,8 +446,8 @@ public class ConstantPool
         case CONSTANT_Multiname:
         case CONSTANT_MultinameA:
         {
-            String name = getString((int) in.readU32());
-            int namespace_set = (int) in.readU32();
+            String name = getString(in.readU32());
+            int namespace_set = in.readU32();
             String[] namespaces = getNamespaceSet(namespace_set);
             MultiName value = createMultiName(name, namespaces);
             in.seek(originalPos);
@@ -462,7 +462,7 @@ public class ConstantPool
         case CONSTANT_MultinameL:
         case CONSTANT_MultinameLA:
         {
-	        int namespacesetIndex = (int) in.readU32();
+	        int namespacesetIndex = in.readU32();
 	        String[] value = getNamespaceSet(namespacesetIndex);
 	        ArrayList<String> a = new ArrayList<String>();
 	        for (int k = 0; k < value.length; k++)
@@ -475,7 +475,7 @@ public class ConstantPool
         case CONSTANT_RTQname:
         case CONSTANT_RTQnameA:
 	    {
-		    int idx = (int) in.readU32();
+		    int idx = in.readU32();
 		    String s = getString(idx);
 	        in.seek(originalPos);
             return s;
@@ -848,7 +848,7 @@ final class IndexHistory
             case CONSTANT_ProtectedNamespace:
             case CONSTANT_ExplicitNamespace:
             case CONSTANT_StaticProtectedNs:				
-			    int index = (int) poolIn.readU32();
+			    int index = poolIn.readU32();
 			    int newIndex = getIndex(poolIndex, cp_string, index);
 			    in_ns.writeU32(newIndex);
 			    break;
@@ -883,11 +883,11 @@ final class IndexHistory
 		    }
             */
 
-		    int count = (int) poolIn.readU32();
+		    int count = poolIn.readU32();
 		    in_nsset.writeU32(count);
 		    for (int k = 0; k < count; k++)
 		    {
-			    int index = (int) poolIn.readU32();
+			    int index = poolIn.readU32();
 			    int newIndex = getIndex(poolIndex, cp_ns, index);
 			    in_nsset.writeU32(newIndex);
 		    }
@@ -910,10 +910,10 @@ final class IndexHistory
 		    case CONSTANT_Qname:
 		    case CONSTANT_QnameA:
 		    {
-			    int namespaceIndex = (int) poolIn.readU32();
+			    int namespaceIndex = poolIn.readU32();
 			    int newNamespaceIndex = getIndex(poolIndex, cp_ns, namespaceIndex);
 			    in_mn.writeU32(newNamespaceIndex);
-			    int nameIndex = (int) poolIn.readU32();
+			    int nameIndex = poolIn.readU32();
 			    int newNameIndex = getIndex(poolIndex, cp_string, nameIndex);
 			    in_mn.writeU32(newNameIndex);
 			    break;
@@ -921,10 +921,10 @@ final class IndexHistory
 		    case CONSTANT_Multiname:
 		    case CONSTANT_MultinameA:
 		    {
-			    int nameIndex = (int) poolIn.readU32();
+			    int nameIndex = poolIn.readU32();
 			    int newNameIndex = getIndex(poolIndex, cp_string, nameIndex);
 			    in_mn.writeU32(newNameIndex);
-			    int namespace_set = (int) poolIn.readU32();
+			    int namespace_set = poolIn.readU32();
 			    int newNamespace_set = getIndex(poolIndex, cp_nsset, namespace_set);
 			    in_mn.writeU32(newNamespace_set);
 			    break;
@@ -932,7 +932,7 @@ final class IndexHistory
 		    case CONSTANT_RTQname:
 		    case CONSTANT_RTQnameA:
 		    {
-			    int index = (int) poolIn.readU32();
+			    int index = poolIn.readU32();
 			    int newIndex = getIndex(poolIndex, cp_string, index);
 			    in_mn.writeU32(newIndex);
 			    break;
@@ -943,7 +943,7 @@ final class IndexHistory
 		    case CONSTANT_MultinameL:
 		    case CONSTANT_MultinameLA:
 			{
-				int namespace_set = (int) poolIn.readU32();
+				int namespace_set = poolIn.readU32();
 				int newNamespace_set = getIndex(poolIndex, cp_nsset, namespace_set);
 				in_mn.writeU32(newNamespace_set);
 				break;
@@ -1011,7 +1011,7 @@ final class NS extends ByteArray
         case CONSTANT_ProtectedNamespace:
         case CONSTANT_ExplicitNamespace:
         case CONSTANT_StaticProtectedNs:				
-			index = (int) b.readU32();
+			index = b.readU32();
 			break;
 		default:
 			assert false; // can't possibly happen...
@@ -1075,7 +1075,7 @@ final class NSS extends ByteArray
 
 		int originalPos = b.pos();
 		b.seek(start);
-		int count = (int) b.readU32();
+		int count = b.readU32();
 
 		if (set == null || count > set.length)
 		{
@@ -1085,7 +1085,7 @@ final class NSS extends ByteArray
 
 		for (int k = 0; k < count; k++)
 		{
-			set[k] = (int) b.readU32();
+			set[k] = b.readU32();
 		}
 		b.seek(originalPos);
 
@@ -1161,8 +1161,8 @@ final class MN extends ByteArray
 		case CONSTANT_Qname:
 		case CONSTANT_QnameA:
 		{
-			index1 = (int) b.readU32();
-			index2 = (int) b.readU32();
+			index1 = b.readU32();
+			index2 = b.readU32();
 			long num = 1234 ^ constKind ^ index1 ^ index2;
 			hash = (int) ((num >> 32) ^ num);
 			break;
@@ -1170,8 +1170,8 @@ final class MN extends ByteArray
 		case CONSTANT_Multiname:
 		case CONSTANT_MultinameA:
 		{
-			index1 = (int) b.readU32();
-			index2 = (int) b.readU32();
+			index1 = b.readU32();
+			index2 = b.readU32();
 			long num = 1234 ^ constKind ^ index1 ^ index2;
 			hash = (int) ((num >> 32) ^ num);
 			break;
@@ -1179,7 +1179,7 @@ final class MN extends ByteArray
 		case CONSTANT_RTQname:
 		case CONSTANT_RTQnameA:
 		{
-			index1 = (int) b.readU32();
+			index1 = b.readU32();
 			long num = 1234 ^ constKind ^ index1;
 			hash = (int) ((num >> 32) ^ num);
 			break;
@@ -1194,7 +1194,7 @@ final class MN extends ByteArray
 		case CONSTANT_MultinameL:
 		case CONSTANT_MultinameLA:
 		{
-			index1 = (int) b.readU32();
+			index1 = b.readU32();
 			long num = 1234 ^ constKind ^ index1;
 			hash = (int) ((num >> 32) ^ num);
 			break;

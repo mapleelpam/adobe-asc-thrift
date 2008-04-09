@@ -79,7 +79,7 @@ public class Encoder implements Visitor
         keep_metadata.add(meta_name);
     }
 
-	public void addConstantPools(ConstantPool[] pools) throws DecoderException
+	public void addConstantPools(ConstantPool[] pools)
 	{
         this.pools = pools;
 		pool = ConstantPool.merge(pools);
@@ -87,7 +87,7 @@ public class Encoder implements Visitor
             pool.history.disableDebugging();
 	}
 	
-	public void test() throws DecoderException
+	public void test()
 	{
 		// C: testing only...
 		for (int i = 0, size = pools.length; i < size; i++)
@@ -2812,7 +2812,7 @@ public class Encoder implements Visitor
         int getIndex(int poolIndex, int oldIndex)
         {
             int newIndex = calcIndex(poolIndex, oldIndex);
-            Integer i = (Integer)indexes.get(IntegerPool.getNumber(newIndex));
+            Integer i = indexes.get(IntegerPool.getNumber(newIndex));
             return i != null ? i.intValue() : -1;
         }
 
@@ -2890,7 +2890,7 @@ public class Encoder implements Visitor
 		void mapOffsets(long offset)
 		{
 			Integer oldPos = IntegerPool.getNumber((int) offset);
-			Integer newPos = IntegerPool.getNumber((int) size());
+			Integer newPos = IntegerPool.getNumber(size());
 
 			offsets.put(IntegerPool.getNumber(oldPos), IntegerPool.getNumber(newPos));
 		}
