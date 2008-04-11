@@ -18,13 +18,18 @@
 package macromedia.asc.semantics;
 
 import macromedia.asc.parser.Node;
+import macromedia.asc.parser.Tokens;
 import macromedia.asc.util.BitSet;
 import macromedia.asc.util.Context;
 import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.ObjectList;
 import macromedia.asc.embedding.ErrorConstants;
+import macromedia.asc.embedding.avmplus.ClassBuilder;
+import macromedia.asc.embedding.avmplus.InstanceBuilder;
+import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_object;
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.util.BitSet.*;
+import static macromedia.asc.semantics.Slot.CALL_Method;
 
 /**
  * ReferenceValue
@@ -40,8 +45,9 @@ public final class ReferenceValue extends Value implements ErrorConstants
     private TypeInfo type;
     private int src_position;
     public Slot slot;
-    public String name;    
+    public String name;
     public Namespaces namespaces;
+    public ObjectList<ReferenceValue> type_params;
 
     public boolean is_nullable = true;
     public boolean has_nullable_anno = false;
@@ -64,9 +70,9 @@ public final class ReferenceValue extends Value implements ErrorConstants
         setGetSlotIndex(-1);
         setSetSlotIndex(-1);
         setScopeIndex(-1);
-        
+
         this.namespaces = cx.statics.internNamespaces.intern(qualifier);
-        
+
         /* Redundant
         slot = null;
         block = 0;
@@ -86,7 +92,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
         this.base = base;
         assert name.intern() == name;
         this.name = name;
-        
+
         this.namespaces = cx.statics.internNamespaces.intern(namespaces);
 
         slot = null;
@@ -193,8 +199,8 @@ public final class ReferenceValue extends Value implements ErrorConstants
     {
         return getSlot(cx, GET_TOKEN);
     }
-    
-    /** if you use the flag GET_SLOT_DONT_BIND, it will get the slot without rebinding */ 
+
+    /** if you use the flag GET_SLOT_DONT_BIND, it will get the slot without rebinding */
     public Slot getSlot(Context cx, int kind)
     {
         // this.kind is the directly referencable slot's kind.
@@ -208,7 +214,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
             {
                 return null;  // never bind attribute references at ct
             }
-            
+
             this.setKind(kind == SET_TOKEN ? SET_TOKEN : GET_TOKEN);
 
             if (lookup(cx, flags))
@@ -222,7 +228,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
                 }   // Otherwise, continue below
             }
             else if(Builder.removeBuilderNames && kind != GET_TOKEN)
-            {            
+            {
                 return null;
             }
         }
@@ -301,7 +307,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
             // and recurse.
 
             ObjectList<ObjectValue> scopes = cx.getScopes();
-            int lowestScope = isTypeAnnotation() ? 0 : (cx.statics.withDepth+1); 
+            int lowestScope = isTypeAnnotation() ? 0 : (cx.statics.withDepth+1);
             for(int i=scopes.size() - 1; i >= lowestScope; i--)
             {
                 this.base = scopes.at(i); // Set the base value
@@ -314,7 +320,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     break;
                 }
             }
-            
+
             this.base = null; // clear temporary base, in case of later lookup of differnt kind
         }
         else
@@ -352,16 +358,22 @@ public final class ReferenceValue extends Value implements ErrorConstants
             {
                 if (obj.hasName(cx,getKind(),name,qualifier))
                 {
-                    bindToSlot(cx, obj, qualifier);
+                    if( type_params != null ) {
+                        int index = obj.getSlotIndex(cx,getKind(),name,qualifier);
+                        Slot slot = obj.getSlot(cx,index);
+                        bindToTypeParamSlot(cx, obj, qualifier, slot);
+                    }
+                    else
+                        bindToSlot(cx, obj, qualifier);
                     return true;
                 }
             }
         }
-        
+
         return false;
     }
 
-        
+
     public boolean findUnqualified(Context cx, final int flags)
     {
         Namespaces hasNamespaces = null;
@@ -370,7 +382,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
         for (ObjectValue obj = this.base; obj != null; obj = obj.proto())
         {
             hasNamespaces = obj.hasNames(cx,getKind(),name,namespaces);
-            
+
             if (hasNamespaces != null)
             {
 
@@ -402,11 +414,12 @@ public final class ReferenceValue extends Value implements ErrorConstants
 
                 // Verify that all matched names point to a single slot.
                 int last_index = 0;
+                Slot slot = null;
                 for( int i = 0; i < hasNamespaces.size(); i++ )
                 {
                     localQualifier = hasNamespaces.at(i);
                     int index = obj.getSlotIndex(cx,getKind(),name,localQualifier);
-                    Slot slot = obj.getSlot(cx,index);
+                    slot = obj.getSlot(cx,index);
                     if( slot == null )
                     {
                         //cx.error("internal error: null reference to " + name,this.src_position);
@@ -424,30 +437,121 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     }
                 }
 
-                bindToSlot(cx, obj, localQualifier);
+                if( type_params != null )
+                {
+                    bindToTypeParamSlot(cx, obj, localQualifier, slot);
+                }
+                else
+                {
+                    bindToSlot(cx, obj, localQualifier);
+                }
                 hasNamespaces.clear();
                 return true;
             }
         }
-        
+
         return false;
     }
 
-        
+    private void bindToTypeParamSlot(Context cx, ObjectValue obj, ObjectValue qualifier, Slot s)
+    {
+        if( s.getValue() instanceof TypeValue )
+        {
+            TypeValue factory = (TypeValue)s.getValue();
+
+            ObjectList<TypeValue> types = new ObjectList<TypeValue>(type_params.size());
+            for( int i = 0, limit = type_params.size(); i < limit; ++i)
+            {
+                ReferenceValue r = type_params.at(i);
+                Slot type_slot = r.getSlot(cx);
+                if( type_slot != null )
+                {
+                    Value v = type_slot.getValue();
+                    if( v instanceof TypeValue )
+                    {
+                        types.add((TypeValue)v);
+                    }
+                }
+                else if( "*".equals(r.name) && r.namespaces.contains(cx.publicNamespace()))
+                {
+                    types.add(cx.noType());
+                }
+                if( types.size() != i+1 )
+                {
+                    // Couldn't resolve type parameter, so whole type is unkown
+                    this.slot = null;
+                    return;
+                    //cx.error(r.getPosition(), kError_UnknownType, r.name);
+                }
+            }
+
+            Slot slot;
+            if( factory.is_parameterized )
+            {
+                ParameterizedName fullname = new ParameterizedName(qualifier, name, types);
+
+                String name = fullname.getNamePart();
+                int slot_id;
+                if( !obj.hasName(cx, Tokens.GET_TOKEN, name, qualifier) )
+                {
+                    //int var_id = obj.builder.Variable(cx, obj);
+                    //slot_id = obj.builder.ExplicitVar(cx,obj,name,new Namespaces(qualifier),cx.typeType(),-1,-1,var_id);
+
+                    slot_id = obj.builder.ImplicitVar(cx,obj,name,qualifier,cx.typeType(),-1,-1,-1);
+
+                    ObjectValue prot_ns = cx.getNamespace(fullname.toString(), Context.NS_PROTECTED);
+                    ObjectValue static_prot_ns = cx.getNamespace(fullname.toString(), Context.NS_STATIC_PROTECTED);
+
+                    TypeValue cframe = new TypeValue(cx, new ClassBuilder(fullname, prot_ns, static_prot_ns), fullname, TYPE_object);
+                    ObjectValue iframe = new ObjectValue(cx,new InstanceBuilder(fullname),cframe);
+                    cframe.prototype = iframe;
+
+                    slot = obj.getSlot(cx, slot_id);
+                    slot.setValue(cframe);
+                    slot.setConst(true);
+                    slot.declaredBy = null;
+                    obj.builder.ImplicitCall(cx,obj,slot_id,cframe,CALL_Method,-1,-1);
+                    obj.builder.ImplicitConstruct(cx,obj,slot_id,cframe,CALL_Method,-1,-1);
+                    factory.addParameterizedTypeSlot(cx, slot);
+                    if( factory == cx.vectorType() )
+                    {
+                        cframe.indexed_type = types.at(0);
+                    }
+                }
+                else
+                {
+                    slot_id = obj.getSlotIndex(cx, Tokens.GET_TOKEN, name, qualifier);
+                    slot = obj.getSlot(cx, slot_id);
+                }
+
+                bindToSlot(cx, name, obj, fullname.ns);
+            }
+            else
+            {
+                cx.internalError("type parameters with a non-parameterized type");
+            }
+        }
+    }
+
     private void bindToSlot(Context cx, ObjectValue obj, ObjectValue qualifier)
+    {
+        bindToSlot(cx, name, obj, qualifier);
+    }
+
+    private void bindToSlot(Context cx, String name, ObjectValue obj, ObjectValue qualifier)
     {
         int set_slot_index    = obj.getSlotIndex(cx,SET_TOKEN,  name,qualifier);
         int get_slot_index    = obj.getSlotIndex(cx,GET_TOKEN,  name,qualifier);
         int method_slot_index = obj.getSlotIndex(cx,EMPTY_TOKEN,name,qualifier);
-        
+
         this.setGetSlotIndex(get_slot_index);
         if (method_slot_index != -1)
         {
-            this.setMethodSlotIndex(method_slot_index);            
+            this.setMethodSlotIndex(method_slot_index);
         }
         else
         {
-            this.setSetSlotIndex(set_slot_index);            
+            this.setSetSlotIndex(set_slot_index);
         }
         this.slot = obj.getSlot(cx,obj.getSlotIndex(cx,getKind(),name,qualifier));
 
@@ -457,7 +561,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
         boolean isXMLProperty = this.slot != null && this.slot.declaredBy != null &&
                                 (this.slot.declaredBy.type != null && (this.slot.declaredBy.type.getTypeValue() == cx.xmlType() || this.slot.declaredBy.type.getTypeValue() == cx.xmlListType()) );
 
-        if (cx.useStaticSemantics() && !isXMLProperty)
+        if (cx.useStaticSemantics() && !isXMLProperty && type_params == null)
         {
             this.setQualifier(cx, qualifier);
         }
@@ -576,17 +680,17 @@ public final class ReferenceValue extends Value implements ErrorConstants
     {
         return namespaces.toString() + "::" + name;
     }
-    
+
     public boolean isQualified()
     {
         return (flags&HAS_QUALIFIER_Flag)!=0;
     }
-    
+
     private void setQualified(boolean qualified)
     {
         flags = qualified ? (flags|HAS_QUALIFIER_Flag) : (flags&~HAS_QUALIFIER_Flag);
     }
-    
+
     public String toString()
     {
         if(Node.useDebugToStrings)
@@ -610,7 +714,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
     public void setScopeIndex(int scope_index)
     {
         flags &= ~SCOPE_INDEX_Mask;
-        flags |= ((scope_index<<SCOPE_INDEX_Shift)&SCOPE_INDEX_Mask);        
+        flags |= ((scope_index<<SCOPE_INDEX_Shift)&SCOPE_INDEX_Mask);
     }
 
     public int getScopeIndex()
@@ -622,10 +726,10 @@ public final class ReferenceValue extends Value implements ErrorConstants
     public void setKind(int kind)
     {
         flags &= ~KIND_Mask;
-        flags |= ((kind<<KIND_Shift)&KIND_Mask);        
+        flags |= ((kind<<KIND_Shift)&KIND_Mask);
     }
 
-    public int getKind() 
+    public int getKind()
     {
         byte b = (byte)((flags&KIND_Mask)>>KIND_Shift);
         return b; 
@@ -662,12 +766,12 @@ public final class ReferenceValue extends Value implements ErrorConstants
     {
         return ((flags&HAS_METHOD_INDEX_Flag)!=0) ? -1 : set_method_slot_index;
     }
-    
+
     public void setTypeAnnotation(boolean isTypeAnnotation)
     {
         flags = isTypeAnnotation ? (flags|TYPE_ANNOTATION_Flag) : (flags&~TYPE_ANNOTATION_Flag);
     }
-    
+
     public boolean isTypeAnnotation()
     {
         return (flags&TYPE_ANNOTATION_Flag) != 0;
@@ -678,10 +782,19 @@ public final class ReferenceValue extends Value implements ErrorConstants
         this.has_nullable_anno = is_explicit;
         this.is_nullable = is_nullable;
     }
-    
+
     public boolean isConfigRef()
     {
         return this.getImmutableNamespaces() != null && this.getImmutableNamespaces().size() == 1 &&
                 this.getImmutableNamespaces().at(0).isConfigNS();
+    }
+
+    public void addTypeParam(ReferenceValue type)
+    {
+        if( type_params == null )
+        {
+            type_params = new ObjectList<ReferenceValue>(1);
+        }
+        type_params.add(type);
     }
 }

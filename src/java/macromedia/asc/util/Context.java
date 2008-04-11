@@ -1272,6 +1272,37 @@ public final class Context implements ErrorConstants
         return statics._xmlListType;
     }
 
+    public TypeValue vectorType()
+    {
+        if (statics._vectorType == null)
+        {
+            String name = "Vector";
+            QName qname = new QName(getNamespace("__AS3__.vec"), name);
+            ObjectValue protected_namespace = getNamespace(qname.toString(), NS_PROTECTED);
+            ObjectValue static_protected_namespace = getNamespace(qname.toString(), NS_STATIC_PROTECTED);
+            statics._vectorType = new TypeValue(this, new ClassBuilder(qname,protected_namespace,static_protected_namespace), qname, TYPE_object);
+            statics._vectorType.prototype = new ObjectValue(this, new InstanceBuilder(qname), statics._vectorType);
+            statics._vectorType.is_parameterized = true;
+            statics.builtins.put(qname.toString(), statics._vectorType);
+        }
+        return statics._vectorType;
+    }
+
+    public TypeValue vectorObjType()
+    {
+        if (statics._vectorObjType == null)
+        {
+            String name = "Vector$object";
+            QName qname = new QName(getNamespace("__AS3__.vec", Context.NS_INTERNAL), name);
+            ObjectValue protected_namespace = getNamespace(qname.toString(), NS_PROTECTED);
+            ObjectValue static_protected_namespace = getNamespace(qname.toString(), NS_STATIC_PROTECTED);
+            statics._vectorObjType = new TypeValue(this, new ClassBuilder(qname,protected_namespace,static_protected_namespace), qname, TYPE_object);
+            statics._vectorObjType.prototype = new ObjectValue(this, new InstanceBuilder(qname), statics._vectorObjType);
+            statics.builtins.put(qname.toString(), statics._vectorObjType);
+        }
+        return statics._vectorObjType;
+    }
+
 
     public boolean isBuiltin(String name)
     {

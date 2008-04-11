@@ -196,6 +196,12 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 		return val;
 	}
 
+
+    public Value evaluate(Context cx, ApplyTypeExprNode node)
+    {
+        return null;
+    }
+
 	public Value evaluate(Context cx, GetExpressionNode node)
 	{
 		if (node.expr != null)

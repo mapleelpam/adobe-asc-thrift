@@ -793,27 +793,7 @@ public final class Parser
 //            result = nodeFactory.identifier(scanner.getTokenText(match(IDENTIFIER_TOKEN)),ctx.input.positionOfMark());
             int pos = ctx.input.positionOfMark();
             String id = scanner.getTokenText(match(IDENTIFIER_TOKEN));
-            if( lookahead(DOTLESSTHAN_TOKEN) )
-            {
-                match(DOTLESSTHAN_TOKEN);
-                result = nodeFactory.typeIdentifier(id,parseTypeExpressionList(),ctx.input.positionOfMark());
-                if( lookahead(UNSIGNEDRIGHTSHIFT_TOKEN) )
-                {
-                    // Transform >>> to >> and eat one >
-                    nexttoken = RIGHTSHIFT_TOKEN;
-                }
-                else if( lookahead( RIGHTSHIFT_TOKEN ) )
-                {
-                    // Transform >> to > and eat one >
-                    nexttoken = GREATERTHAN_TOKEN;
-                }
-                else
-                {
-                    match(GREATERTHAN_TOKEN);
-                }
-            }
-            else
-                result = nodeFactory.identifier(id,pos);
+            result = nodeFactory.identifier(id,pos);
         }
 
         if (debug)
@@ -2154,7 +2134,7 @@ XMLElementContent
 
         Node result;
 
-        if (lookahead(DOT_TOKEN) || lookahead(LEFTBRACKET_TOKEN) ||
+        if (lookahead(DOT_TOKEN) || lookahead(LEFTBRACKET_TOKEN) || lookahead(DOTLESSTHAN_TOKEN) ||
             (HAS_DESCENDOPERATORS && lookahead(DOUBLEDOT_TOKEN)))
         {
             first = parsePropertyOperator(first);
@@ -2254,7 +2234,8 @@ XMLElementContent
 
         if (lookahead(DOT_TOKEN) ||
             lookahead(DOUBLEDOT_TOKEN) ||
-            lookahead(LEFTBRACKET_TOKEN))  // PropertyOperator
+            lookahead(LEFTBRACKET_TOKEN) ||
+            lookahead(DOTLESSTHAN_TOKEN))  // PropertyOperator
         {
             result = parseAttributeExpressionPrime(parsePropertyOperator(first));
         }
@@ -2455,7 +2436,7 @@ XMLElementContent
 
         Node result;
 
-        if (lookahead(DOT_TOKEN) || lookahead(LEFTBRACKET_TOKEN) ||
+        if (lookahead(DOT_TOKEN) || lookahead(LEFTBRACKET_TOKEN) || lookahead(DOTLESSTHAN_TOKEN) ||
             (HAS_DESCENDOPERATORS && lookahead(DOUBLEDOT_TOKEN)) ||
             lookahead(AMPERSAND_TOKEN) )
         {
@@ -2557,6 +2538,9 @@ XMLElementContent
      *     .. QualifiedIdentifier
      *     . ( ListExpressionAllowIn )
      *     Brackets
+     *
+     *     TypeApplication
+     *         .<  TypeExpressionList  >
      */
 
     public Node parsePropertyOperator(Node first)
@@ -2595,6 +2579,25 @@ XMLElementContent
             SelectorNode selector = nodeFactory.getExpression(parseQualifiedIdentifier());
             selector.setMode(DOUBLEDOT_TOKEN);
             result = nodeFactory.memberExpression(first, selector);
+        }
+        else if (lookahead(DOTLESSTHAN_TOKEN))
+        {
+            match(DOTLESSTHAN_TOKEN);
+            result = nodeFactory.applyTypeExpr(first, parseTypeExpressionList(),ctx.input.positionOfMark());
+            if( lookahead(UNSIGNEDRIGHTSHIFT_TOKEN) )
+            {
+                // Transform >>> to >> and eat one >
+                nexttoken = RIGHTSHIFT_TOKEN;
+            }
+            else if( lookahead( RIGHTSHIFT_TOKEN ) )
+            {
+                // Transform >> to > and eat one >
+                nexttoken = GREATERTHAN_TOKEN;
+            }
+            else
+            {
+                match(GREATERTHAN_TOKEN);
+            }
         }
         else
         {
@@ -4001,6 +4004,25 @@ XMLElementContent
         Node first = parseSimpleTypeIdentifier();
 
         // TODO: parse <...> type expression list
+        if( lookahead(DOTLESSTHAN_TOKEN))
+        {
+            match(DOTLESSTHAN_TOKEN);
+            result = nodeFactory.applyTypeExpr(first, parseTypeExpressionList(),ctx.input.positionOfMark());
+            if( lookahead(UNSIGNEDRIGHTSHIFT_TOKEN) )
+            {
+                // Transform >>> to >> and eat one >
+                nexttoken = RIGHTSHIFT_TOKEN;
+            }
+            else if( lookahead( RIGHTSHIFT_TOKEN ) )
+            {
+                // Transform >> to > and eat one >
+                nexttoken = GREATERTHAN_TOKEN;
+            }
+            else
+            {
+                match(GREATERTHAN_TOKEN);
+            }
+        }
 
         result = first;
 
@@ -7544,21 +7566,46 @@ XMLElementContent
         {
             result = nodeFactory.startPackage(ctx, null, null);
             Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
+            Node idn = null;
+            if( ctx.statics.es4_vectors )
+            {
+                PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier("__AS3__"), true);
+                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("vec"), true);
+                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("Vector"), true);
+                idn = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
+            }
             result = nodeFactory.finishPackage(ctx, parseBlock());
             if ((ctx.dialect(10) /*|| ctx.dialect(11)*/) && result != null)
         	{
         		result.statements.items.add(1,udn);  // insert after the first statment, which is the starting package definition
         	}
+            if( ctx.statics.es4_vectors && result != null)
+            {
+                result.statements.items.add(1, idn);
+            }
+
         }
         else
         {
             PackageNameNode first = parsePackageName(false);
             result = nodeFactory.startPackage(ctx, null, first);
             Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
+            Node idn = null;
+            if( ctx.statics.es4_vectors )
+            {
+                PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier("__AS3__"), true);
+                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("vec"), true);
+                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("Vector"), true);
+                idn = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
+            }
             result = nodeFactory.finishPackage(ctx, parseBlock());
             if ((ctx.dialect(10) /*|| ctx.dialect(11)*/) && result != null)
             {
         		result.statements.items.add(1,udn);  // insert after the first statment, which is the starting package definition
+            }
+            if( ctx.statics.es4_vectors && result != null)
+            {
+                result.statements.items.add(1, idn);
             }
        }
 
@@ -7722,6 +7769,15 @@ XMLElementContent
         {
             Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
             second.items.add(0,udn);
+        }
+        if( ctx.statics.es4_vectors )
+        {
+            PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier("__AS3__"), true);
+            pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("vec"), true);
+            pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("Vector"), true);
+            Node idn = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
+            if( second != null )
+                second.items.add(0, idn);
         }
         ProgramNode result = nodeFactory.program(ctx,second,ctx.input.positionOfMark());
         match(EOS_TOKEN);

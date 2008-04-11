@@ -139,6 +139,11 @@ public class Node
 		return false;
 	}
 
+    public boolean isApplyTypeExpression()
+    {
+        return false;
+    }
+
 	public boolean isNewExpression()
 	{
 		return false;

@@ -269,7 +269,12 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 		return val;
 	}
 
-	public Value evaluate(Context cx, SetExpressionNode node) {
+    public Value evaluate(Context cx, ApplyTypeExprNode node)
+    {
+        return null;
+    }
+    
+    public Value evaluate(Context cx, SetExpressionNode node) {
 		node.args.evaluate(cx, this);
 		return null;
 	}

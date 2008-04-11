@@ -10,10 +10,12 @@ import macromedia.asc.util.Context;
  */
 public class TypeIdentifierNode extends IdentifierNode {
 
+    public Node base;
     public ListNode typeArgs;
 
-    public TypeIdentifierNode(String name, ListNode typeArgs, int pos) {
-        super(name, pos);
+    public TypeIdentifierNode(Node base, ListNode typeArgs, int pos) {
+        super("", pos);
+        this.base = base;
         this.typeArgs = typeArgs;
     }
     public Value evaluate(Context cx, Evaluator evaluator)

@@ -64,6 +64,8 @@ public class GlobalBuilder extends PackageBuilder
         cx.xmlType();
 		cx.xmlListType();
         cx.regExpType();
+        cx.vectorType();
+        cx.vectorObjType();
 
         if(useStaticBuiltins)
         {

@@ -293,7 +293,36 @@ public class ByteCodeFactory
         return bytes;
     }
 
-	public ByteList ConstantMultiname(ByteList bytes,
+    public ByteList ConstantTypeName(ByteList bytes,
+            int name_index,
+            IntList types )
+    {
+        if( show_bytecode )
+        {
+            cpool_out.write("\n     ConstantMultiname " +
+                    name_index + " {");
+            for( int i = 0; i < types.size(); ++i )
+            {
+                cpool_out.write(" " + types.at(i) );
+            }
+            cpool_out.write(" }");
+        }
+        bytes = Byte(bytes, CONSTANT_TypeName);
+        bytes = Int(bytes, name_index);
+        bytes = Int(bytes, types.size());
+        for( int i = 0; i < types.size(); ++i )
+            bytes = Int(bytes, types.at(i) );
+        return bytes;
+    }
+
+    public ByteList ConstantTypeName(
+            int name_index,
+            IntList types )
+    {
+        return ConstantTypeName(allocBytes(3+types.size()*2), name_index, types);
+    }
+
+    public ByteList ConstantMultiname(ByteList bytes,
 	        int name_index,
 	        int namespace_set_index,
 	        boolean isAttribute)

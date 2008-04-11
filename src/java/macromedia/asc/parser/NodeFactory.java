@@ -903,10 +903,47 @@ public final class NodeFactory implements ErrorConstants
 		return node;
 	}
 
-    public TypeIdentifierNode typeIdentifier(String name, ListNode typeArgs, int pos)
+    public Node applyTypeExpr(Node expr, ListNode typeArgs, int pos)
     {
-        TypeIdentifierNode node = new TypeIdentifierNode(name, typeArgs, pos);
-        node.setPositionTerminal(pos);
+        Node node;
+
+        // If it is a member expression, then extract the expression inside the selector
+        // and place it in the new call expression.
+
+        if (expr != null && expr.isMemberExpression())
+        {
+            // Put the apply expression in the slot of the member expr.
+            // ISSUE: generalize this code for converting one selector to another.
+
+            ApplyTypeExprNode apply;
+            MemberExpressionNode memb = (MemberExpressionNode) expr;
+            GetExpressionNode get = (memb.selector instanceof GetExpressionNode) ? (GetExpressionNode) memb.selector : null;
+            if (get != null)
+            {
+                apply = new ApplyTypeExprNode(get.expr, typeArgs);
+                apply.setMode(get.getMode());
+                apply.is_package = get.is_package;
+                apply.setPositionNonterminal(expr, pos);
+                memb.selector = apply;
+                node = memb;
+            }
+            else
+            {
+                apply = new ApplyTypeExprNode(expr, typeArgs);
+                apply.setRValue(true);
+                apply.setPositionNonterminal(expr, pos);
+                node = apply;
+            }
+        }
+        else
+        {
+            ApplyTypeExprNode apply;
+            apply = new ApplyTypeExprNode(expr, typeArgs);
+            apply.setRValue(true);
+            apply.setPositionNonterminal(expr, pos);
+            node = apply;
+        }
+
         return node;
     }
 

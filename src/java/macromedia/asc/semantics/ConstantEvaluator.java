@@ -24,17 +24,7 @@ import macromedia.asc.embedding.avmplus.GlobalBuilder;
 
 import macromedia.asc.parser.*;
 
-import macromedia.asc.util.BitSet;
-import macromedia.asc.util.Block;
-import macromedia.asc.util.Context;
-import macromedia.asc.util.IntList;
-import macromedia.asc.util.Names;
-import macromedia.asc.util.Namespaces;
-import macromedia.asc.util.ObjectList;
-import macromedia.asc.util.NumberUsage;
-import macromedia.asc.util.Decimal128Context;
-import macromedia.asc.util.Decimal128;
-import macromedia.asc.util.NumberConstant;
+import macromedia.asc.util.*;
 
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.*;
@@ -444,9 +434,33 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         return null;
     }
 
+    public Value evaluate(Context cx, ApplyTypeExprNode node)
+    {
+        TypeInfo type = cx.noType().getDefaultTypeInfo();
+        Slot slot;
+        int kind = EMPTY_TOKEN;
+        if( node.ref != null )
+        {
+            Value val = node.expr.evaluate(cx, this);
+            node.ref.calcUseDefinitions(cx, rch_bits);
+
+            slot = node.ref.getSlot(cx, kind);
+            type = node.ref.getType(cx, kind);
+
+            if( cx.useStaticSemantics() )
+            {
+                TypeValue t = val instanceof TypeValue ? (TypeValue)val : null;
+                if( t != cx.noType() && t != null && !t.is_parameterized )
+                    cx.internalError("Illegal use of parameterized type");
+            }
+        }
+        return type.getPrototype();
+    }
+
+
     /*
-         * CallExpression
-         */
+     * CallExpression
+     */
     public Value evaluate(Context cx, CallExpressionNode node)
     {
 
@@ -759,6 +773,16 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 }
             }
         }
+        else if( node.base != null && node.getMode()==LEFTBRACKET_TOKEN )
+        {
+            node.expr.evaluate(cx, this);
+            val = cx.noType().prototype;
+            if( node.base.type != null )
+            {
+                TypeValue tv = node.base.type.getTypeValue();
+                val = tv.indexed_type != null ? tv.indexed_type.prototype : cx.noType().prototype;
+            }
+        }
         else
         {
             // If there is no reference, then node.expr is a general
@@ -785,7 +809,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         {
             if (node.ref != null)
             {
-             	if(node.is_initializer)
+                if(node.is_initializer)
             	{
 	                node.ref.calcUseDefinitions(cx, rch_bits);
 	                if (!node.ref.usedBeforeInitialized())
@@ -832,6 +856,17 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 }
 
                
+            }
+            else if( node.base != null && node.getMode()==LEFTBRACKET_TOKEN )
+            {
+                node.expr.evaluate(cx, this);
+                TypeInfo t = cx.noType().getDefaultTypeInfo();
+                if( node.base.type != null )
+                {
+                    TypeValue tv = node.base.type.getTypeValue();
+                    t = tv.indexed_type != null ? tv.indexed_type.getDefaultTypeInfo() : cx.noType().getDefaultTypeInfo();
+                }
+                node.args.addType(t);
             }
             else
             {
@@ -1090,34 +1125,41 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             else
                 type = base.getType(cx);
 
-            if (base != null && node.ref != null)
+            if (base != null )
             {
-                if (type.getTypeValue() == cx.typeType())
+                if(node.ref != null )
                 {
-                    val = base.getValue(cx);
-                    ObjectValue obj = (val instanceof ObjectValue) ? (ObjectValue) val : null;
-                    node.ref.setBase(obj);
-                }
-                else
-                {
-                    node.ref.setBase(type.getPrototype());
-                }
-
-                if (type.isInterface())
-                {
-                    if (!node.ref.isQualified())
+                    if (type.getTypeValue() == cx.typeType())
                     {
-                        // If the base of the reference is an interface type,
-                        // add all the interface namespaces to the reference,
-                        // if the reference is unqualified.
-                        InterfaceWalker interfaceWalker = new InterfaceWalker(type.getTypeValue());
-                        Namespaces namespaces = new Namespaces();
-                        while (interfaceWalker.hasNext())
-                        {
-                            namespaces.add(interfaceWalker.next().type.getTypeValue());
-                        }
-                        node.ref.setImmutableNamespaces(cx.statics.internNamespaces.intern(namespaces));
+                        val = base.getValue(cx);
+                        ObjectValue obj = (val instanceof ObjectValue) ? (ObjectValue) val : null;
+                        node.ref.setBase(obj);
                     }
+                    else
+                    {
+                        node.ref.setBase(type.getPrototype());
+                    }
+
+                    if (type.isInterface())
+                    {
+                        if (!node.ref.isQualified())
+                        {
+                            // If the base of the reference is an interface type,
+                            // add all the interface namespaces to the reference,
+                            // if the reference is unqualified.
+                            InterfaceWalker interfaceWalker = new InterfaceWalker(type.getTypeValue());
+                            Namespaces namespaces = new Namespaces();
+                            while (interfaceWalker.hasNext())
+                            {
+                                namespaces.add(interfaceWalker.next().type.getTypeValue());
+                            }
+                            node.ref.setImmutableNamespaces(cx.statics.internNamespaces.intern(namespaces));
+                        }
+                    }
+                }
+                else if( node.selector.getMode() == LEFTBRACKET_TOKEN )
+                {
+                    node.selector.setBase(type.getPrototype());
                 }
             }
             // C: NullPointerException here?? It's weird that we call node.base.evaluate() again!
@@ -1208,7 +1250,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         {
             MemberExpressionNode m = (MemberExpressionNode)(node.base);
             Slot s = (m.ref != null) ? m.ref.getSlot(cx,GET_TOKEN) : null;
-            if (s != null && s.getType() != null && (s.getType().getTypeValue() == cx.xmlType() || s.getType().getTypeValue() == cx.xmlListType()) )
+            TypeInfo ti = s != null ? s.getType() : null;
+            TypeValue slot_type = ti != null ? ti.getTypeValue() : null;
+            if (slot_type == cx.xmlType() || slot_type == cx.xmlListType())
             {
                 return cx.noType().prototype; //  a property like .name may resolve to a method slot, but might actually be refering to a dynamically defined xml attribute or child
             }
@@ -3986,6 +4030,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             class_slot = node.ref.getSlot(cx, NEW_TOKEN);
         }
 
+        ObjectList<TypeInfo> ctor_types = null;
+        ByteList ctor_decls = null;
         cx.pushStaticClassScopes(node);
 
         node.statements.evaluate(cx, this);
@@ -4010,8 +4056,10 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                         Slot ctor_slot = func_def.fexpr.ref.getSlot(cx, func_def.fexpr.kind);
                         if( class_slot != null && ctor_slot != null )
                         {
-                            class_slot.setTypes(ctor_slot.getTypes());
-                            class_slot.setDeclStyles(ctor_slot.getDeclStyles());
+                            ctor_types = ctor_slot.getTypes();
+                            ctor_decls = ctor_slot.getDeclStyles();
+                            class_slot.setTypes(ctor_types);
+                            class_slot.setDeclStyles(ctor_decls);
                         }
                     }
                 }
@@ -4025,6 +4073,34 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
         cx.popScope(); //node.iframe
         cx.popStaticClassScopes(node);
+        if(node.cframe.types != null)
+        {
+            // When type parameters are fully implemented
+            // this should do something to resolve references to the type parameters to the actual
+            // types so all the signatures are correct instead of just blindly copying the slots
+            for(int i = 0, limit = node.cframe.types.size(); i < limit; ++i )
+            {
+                Slot s = node.cframe.types.at(i);
+                TypeValue t = (TypeValue)s.getValue();
+                int id = s.implies(cx, NEW_TOKEN);
+                ObjectValue base = node.ref.getBase();
+                if( base == null )
+                {
+                    if(node.ref.getScopeIndex() >= 0 )
+                        base = cx.scope(node.ref.getScopeIndex());
+                }
+                if( base != null )
+                {
+                    s = base.getSlot(cx, id);
+                    s.setTypes(ctor_types);
+                    s.setDeclStyles(ctor_decls);
+                }
+                ObjectValue p = node.cframe.prototype;
+                if(node.cframe == cx.vectorType() )
+                    p = cx.vectorObjType().prototype;
+                FlowAnalyzer.inheritSlots(p, t.prototype, t.prototype.builder, cx);
+            }
+        }
         doing_class = orig;
         return node.cframe;
     }

@@ -496,6 +496,17 @@ public class ActionBlockEmitter extends Emitter
         int name_index = ab.addUtf8Constant(bytecodeFactory.ConstantUtf8Info(classname_string));
         int qname_index = ab.addMultiNameConstant(bytecodeFactory.ConstantQualifiedName(name_index,namespace_index,false));
 
+        if( name instanceof ParameterizedName )
+        {
+            ParameterizedName pname = (ParameterizedName)name;
+            IntList params = new IntList(pname.type_params.size());
+            for(int i = 0, n = pname.type_params.size(); i < n; ++i )
+            {
+                params.add(addClassName(pname.type_params.at(i)));
+            }
+            qname_index = ab.addMultiNameConstant(bytecodeFactory.ConstantTypeName(qname_index, params));
+        }
+
         return qname_index;
     }
 
@@ -4270,6 +4281,36 @@ public class ActionBlockEmitter extends Emitter
         {
             code_out.write(" [" + cur_stack + "]");
         }
+    }
+
+    /*
+     * ApplyType
+     */
+    protected void ApplyType(int size)
+    {
+        showLineNumber();
+        if (show_instructions)
+        {
+            code_out.println();
+            code_out.print("ApplyType " + size);
+        }
+
+        flushDebugInfo();
+
+        ApplyType(ab.code, size);
+
+        if (show_instructions)
+        {
+            code_out.write(" [" + cur_stack + "]");
+        }
+
+    }
+
+    protected void ApplyType(ByteList code, int size)
+    {
+        stack(1 - size - 1/*implicit_args*/); // no scope chain for now
+        Byte(code, OP_applytype);
+        Int(code, size);
     }
 
     /*

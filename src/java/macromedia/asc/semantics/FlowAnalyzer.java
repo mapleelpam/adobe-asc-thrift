@@ -190,42 +190,6 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
         if( node.ref == null)
         {
-            if( node instanceof TypeIdentifierNode )
-            {
-                // Transform references to Vector.<T> to a concrete class
-                // this can be removed once type parameters are fully suported.
-                TypeIdentifierNode tin = (TypeIdentifierNode)node;
-                if("Vector".equals(tin.name) && tin.typeArgs.items.size() == 1)
-                {
-                    Value val2 = tin.typeArgs.evaluate(cx, this);
-                    ReferenceValue typeref = val2 instanceof ReferenceValue ? (ReferenceValue)val2 : null;
-                    if( typeref != null)
-                    {
-                        Value type = typeref.getValue(cx);
-                        NodeFactory nf = cx.getNodeFactory();
-                        if( type == cx.intType() )
-                        {
-                            node.name = "Vector$int";
-                        }
-                        else if ( type == cx.uintType() )
-                        {
-                            node.name = "Vector$uint";
-                        }
-                        else if ( type == cx.numberType() )
-                        {
-                            node.name = "Vector$double";
-                        }
-                        else
-                        {
-                            node.name = "Vector$object";
-                        }
-                    }
-                }
-                else
-                {
-                    // TODO: error
-                }
-            }
             Namespaces namespaces;
 
             // Add the namespaces associated with
@@ -687,7 +651,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         }
 
         // special case: if selector is not a get expr, then the result is not an lvalue
-        if( node.selector instanceof GetExpressionNode )
+        if( node.selector instanceof GetExpressionNode || node.selector instanceof ApplyTypeExprNode)
         {
             val = node.ref;
         }
@@ -707,6 +671,55 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         }
 
         return val;
+    }
+
+    public Value evaluate(Context cx, ApplyTypeExprNode node)
+    {
+        if( node.ref != null )
+        {
+            // Already evaluated this node
+            return node.ref;
+        }
+
+        if (debug)
+        {
+            System.out.print("\n// +ApplyTypeExpression");
+        }
+        getEmitter().AddStmtToBlock(node.toString());
+
+        if (node.typeArgs != null)
+        {
+            node.typeArgs.evaluate(cx, this);
+        }
+
+        Value value = node.expr.evaluate(cx,this);
+
+        if( node.expr instanceof IdentifierNode )
+        {
+            node.ref = ((value instanceof ReferenceValue) ? (ReferenceValue)value : null);
+            if( node.typeArgs != null && node.typeArgs.values != null )
+            {
+                ObjectList<ReferenceValue> typerefs = new ObjectList<ReferenceValue>();
+                for ( Value v : node.typeArgs.values )
+                {
+                    if( v instanceof ReferenceValue )
+                        typerefs.add((ReferenceValue)v);
+                }
+                if( typerefs.size() != node.typeArgs.values.size() )
+                    node.ref = null;  //Something didn't resolve to a reference
+                node.ref.addTypeParam(typerefs.at(0));
+            }
+        }
+        else
+        {
+            node.ref = null;
+        }
+
+        if (debug)
+        {
+            System.out.print("\n// -ApplyTypeExpression");
+        }
+        return node.ref;
     }
 
     public Value evaluate(Context cx, CallExpressionNode node)
@@ -5425,7 +5438,7 @@ else
                             }
                         }
                         else
-                        {
+                        {   
                             if( !(cx.scope().builder instanceof ClassBuilder || cx.scope().builder instanceof InstanceBuilder) )
                             {
                                 cx.error(node.pos()-1, kError_InvalidNamespace);
@@ -5517,19 +5530,19 @@ else
         return null;
     }
 
-    public void inheritSlots(ObjectValue baseobj, ObjectValue obj, Builder bui, Context cx)
+    public static void inheritSlots(ObjectValue baseobj, ObjectValue obj, Builder bui, Context cx)
     {
         inheritSlots(baseobj, obj, bui, cx, false);
     }
 
-    public void inheritContextSlots(ObjectValue baseobj, ObjectValue obj, Builder bui, Context cx)
+    public static void inheritContextSlots(ObjectValue baseobj, ObjectValue obj, Builder bui, Context cx)
     {
         inheritSlots(baseobj, obj, bui, cx, true);
     }
 
-    public void inheritSlots(ObjectValue baseobj, ObjectValue obj, Builder bui, Context cx, boolean limitToContext)
+    public static void inheritSlots(ObjectValue baseobj, ObjectValue obj, Builder bui, Context cx, boolean limitToContext)
     {
-        GlobalBuilder basebui = (GlobalBuilder)(baseobj.builder);
+        Builder basebui = (baseobj.builder);
 
         Names names = basebui.getNames();
         if (names != null)

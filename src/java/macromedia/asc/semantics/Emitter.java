@@ -608,6 +608,14 @@ public class Emitter
 		}
 	}
 
+    protected void ApplyType(int size)
+    {
+        if (impl != null)
+        {
+            impl.ApplyType(size);
+        }
+    }
+    
     protected void CallProperty(String name, ObjectList<ObjectValue> namespaces, int size, boolean is_qualified, boolean is_super, boolean is_attr, boolean is_lex )
     {
         if( impl != null)

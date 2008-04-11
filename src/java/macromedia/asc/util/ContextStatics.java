@@ -146,6 +146,8 @@ public class ContextStatics
     TypeValue _xmlType;
 	TypeValue _xmlListType;
     TypeValue _regExpType;
+    TypeValue _vectorType;
+    TypeValue _vectorObjType;
 
 	public int errCount = 0;
 
@@ -179,6 +181,8 @@ public class ContextStatics
         _xmlType = null;
 		_xmlListType = null;
         _regExpType = null;
+        _vectorType = null;
+        _vectorObjType = null;
 
         if (namespaces != null)
         {

@@ -448,7 +448,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             node.base.evaluate(cx, this);
             node.selector.setSuper((node.base instanceof SuperExpressionNode));
             node.selector.setThis((node.base instanceof ThisExpressionNode));
-            if (node.ref != null)
+            if (node.ref != null)       
             {
                 node.ref.setScopeIndex(-2);  // -2 means there is a base reference
             }
@@ -460,7 +460,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             // Special case for $cinit functions that reference the class
             // being initialized.  See bug #113887.
         }
-        else if( base_index == 0 && node.selector.isCallExpression() )
+        else if( base_index == 0 && (node.selector.isCallExpression() || node.selector.isApplyTypeExpression()))
         {
             // Find globals in case they are imported
             boolean is_qualified = node.selector.isQualified();
@@ -1546,6 +1546,85 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         if (debug)
         {
             System.out.print("\n// -DeleteExpression");
+        }
+        return null;
+    }
+
+    public Value evaluate(Context cx, ApplyTypeExprNode node)
+    {
+        if (debug)
+        {
+            System.out.print("\n// +ApplyTypeExpression");
+        }
+
+        boolean is_super = node.isSuper();
+        boolean is_qualified = node.isQualified();
+        boolean is_attribute = node.isAttributeIdentifier();
+
+        if( node.ref != null )
+        {
+            GetProperty(node.getIdentifier().name, node.ref.getImmutableNamespaces(), is_qualified, is_super, is_attribute);
+        }
+        else
+        {
+            if( node.getIdentifier() != null )
+            {
+                node.expr.evaluate(cx,this);  // if it is qualified, then eval the qualifier
+
+                QualifiedExpressionNode qen = node.getIdentifier() instanceof QualifiedExpressionNode? (QualifiedExpressionNode)node.getIdentifier() : null;
+                if( qen != null )
+                {
+                    qen.expr.evaluate(cx,this);
+
+                    if( qen.nss != null )
+                    {
+                        GetProperty(false/*is_qualified*/, is_super,is_attribute, qen.nss);
+                    }
+                    else
+                    if( qen.qualifier != null )
+                    {
+                        ToString();
+                        GetProperty(true/*is_qualified*/, is_super,is_attribute, used_def_namespaces_sets.back());
+                    }
+                    else
+                    {
+                        GetProperty(false/*is_qualified*/, is_super,is_attribute, used_def_namespaces_sets.back());
+                    }
+                }
+                else
+                {
+                    GetProperty(node.getIdentifier().name, is_super, is_attribute);
+                }
+            }
+            else
+            {
+                node.expr.evaluate(cx, this);
+            }
+        }
+        if( node.typeArgs!=null )
+        {
+            for (int i = 0, size = node.typeArgs.items.size(); i < size; i++)
+            {
+                Node item = node.typeArgs.items.get(i);
+                Value val = node.typeArgs.values.get(i);
+                ReferenceValue ref = val instanceof ReferenceValue ? (ReferenceValue)val : null;
+                if( ref != null && "*".equals(ref.name))
+                {
+                    // Use null for '*'
+                    PushNull();
+                }
+                else
+                {
+                    item.evaluate(cx, this);
+                }
+            }
+        }
+
+        ApplyType(node.typeArgs.size());
+
+        if (debug)
+        {
+            System.out.print("\n// -ApplyTypeExpression");
         }
         return null;
     }

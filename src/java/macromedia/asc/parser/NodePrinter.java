@@ -121,7 +121,12 @@ public class NodePrinter implements Evaluator
     public Value evaluate(Context cx, IdentifierNode node)
     {
         indent();
-        if (node.isAttr())
+
+        if(node instanceof TypeIdentifierNode)
+        {
+            out.print("typeidentifier ");
+        }
+        else if (node.isAttr())
         {
             out.print("attributeidentifier ");
         }
@@ -130,6 +135,13 @@ public class NodePrinter implements Evaluator
             out.print("identifier ");
         }
         out.print(node.name);
+        if(node instanceof TypeIdentifierNode)
+        {
+            out.print("types ");
+            push_in();
+            ((TypeIdentifierNode)node).typeArgs.evaluate(cx, this);
+            pop_out();
+        }
         return null;
     }
 
@@ -443,6 +455,16 @@ public class NodePrinter implements Evaluator
         {
             node.expr.evaluate(cx, this);
         }
+        pop_out();
+        return null;
+    }
+
+    public Value evaluate(Context cx, ApplyTypeExprNode node)
+    {
+        indent();
+        out.print("applytype");
+        push_in();
+        node.typeArgs.evaluate(cx, this);
         pop_out();
         return null;
     }

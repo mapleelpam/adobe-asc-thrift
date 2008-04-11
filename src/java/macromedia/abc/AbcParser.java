@@ -19,12 +19,7 @@ import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.IntList;
 import macromedia.asc.util.Decimal128;
 import macromedia.asc.parser.*;
-import macromedia.asc.semantics.ObjectValue;
-import macromedia.asc.semantics.TypeValue;
-import macromedia.asc.semantics.Slot;
-import macromedia.asc.semantics.Value;
-import macromedia.asc.semantics.ReferenceValue;
-import macromedia.asc.semantics.Builder;
+import macromedia.asc.semantics.*;
 import macromedia.asc.embedding.avmplus.ActionBlockConstants;
 import macromedia.asc.embedding.avmplus.ClassBuilder;
 import macromedia.asc.embedding.avmplus.InstanceBuilder;
@@ -248,6 +243,11 @@ public final class AbcParser
                 case ActionBlockConstants.CONSTANT_MultinameLA:
                     buf.readU32();
                     break;
+                case ActionBlockConstants.CONSTANT_TypeName:
+                    buf.readU32(); // name index
+                    long count = buf.readU32(); // param count;
+                    buf.skipEntries(count);
+                    break;
                 case ActionBlockConstants.CONSTANT_RTQnameL:
                 case ActionBlockConstants.CONSTANT_RTQnameLA:
                 default:
@@ -439,10 +439,7 @@ public final class AbcParser
         if( typeID != 0 )
         {
             QName t = getQNameFromCPool(typeID);
-            typeName = getFullName(t);
-            typeIdNode = identifierNode(typeName.name, typeName.ns);
-            GetExpressionNode getNode = ctx.getNodeFactory().getExpression(typeIdNode);
-            typeExpr = ctx.getNodeFactory().memberExpression(null, getNode);
+            typeExpr = memberExprFromName(t);
         }
         else
         {
@@ -456,9 +453,9 @@ public final class AbcParser
         VariableBindingNode bind = ctx.getNodeFactory().variableBinding(attr, tok, typedID, init);
 
         bind.ref = id.ref;
-        if( typeIdNode != null )
+        if( typeExpr != null )
         {
-            bind.typeref = typeIdNode.ref;
+            bind.typeref = typeExpr.ref;
         }
 
         ret.def = (DefinitionNode) ctx.getNodeFactory().variableDefinition(attr, tok, ctx.getNodeFactory().list(null, bind));
@@ -466,6 +463,39 @@ public final class AbcParser
                 // This is always a definition node. only while parsing prototype vars could it be a statement list
     }
 
+    private MemberExpressionNode memberExprFromName(QName q)
+    {
+        MemberExpressionNode typeExpr = null;
+        macromedia.asc.semantics.QName typeName = getFullName(q);
+        if( typeName instanceof ParameterizedName )
+        {
+            ParameterizedQName pqn = (ParameterizedQName)q;
+            ParameterizedName pn = (ParameterizedName)typeName;
+
+            NodeFactory nf = ctx.getNodeFactory();
+
+            Node apply;
+            IdentifierNode baseIdNode = identifierNode(pn.name, pn.ns);
+
+
+            ListNode list = null;
+            MemberExpressionNode param_node = memberExprFromName(getQNameFromCPool(pqn.params.at(0)));
+            list = nf.list(list, param_node);
+
+            apply = nf.applyTypeExpr(baseIdNode, list, -1);
+            typeExpr = nf.memberExpression(null, (SelectorNode)apply);
+            typeExpr.ref = baseIdNode.ref;
+            typeExpr.ref.addTypeParam(param_node.ref);
+        }
+        else
+        {
+            IdentifierNode typeIdNode = identifierNode(typeName.name, typeName.ns);
+            GetExpressionNode getNode = ctx.getNodeFactory().getExpression(typeIdNode);
+            typeExpr = ctx.getNodeFactory().memberExpression(null, getNode);
+            typeExpr.ref = typeIdNode.ref;
+        }
+        return typeExpr;
+    }
     // Creates an identifier node, and fills in the ref with the correct reference value
     private IdentifierNode identifierNode(String simpleName, ObjectValue ns)
     {
@@ -597,28 +627,31 @@ public final class AbcParser
         if( returnType != 0 )
         {
             QName retQName = getQNameFromCPool(returnType);
-            macromedia.asc.semantics.QName retName = getFullName(retQName);
+            //macromedia.asc.semantics.QName retName = getFullName(retQName);
 
-            IdentifierNode ident = identifierNode(retName.name, retName.ns);
+            retTypeNode = memberExprFromName(retQName);
+            /*IdentifierNode ident = identifierNode(retName.name, retName.ns);
 
             GetExpressionNode getNode = ctx.getNodeFactory().getExpression(ident);
             retTypeNode = ctx.getNodeFactory().memberExpression(null, getNode);
 
             retTypeNode.ref = ident.ref;
+            */
         }
         ParameterListNode paramList = null;
         funcObj.activation = new ObjectValue(ctx, new ActivationBuilder(),ctx.noType());
         for( int i = 0, cur_optional = 0; i < paramCount; ++i )
         {
             macromedia.asc.semantics.QName typeName = null;
+            QName typeQName = null;
             if( paramTypes[i] != 0 )
             {
-                QName typeQName = getQNameFromCPool(paramTypes[i]);
+                typeQName = getQNameFromCPool(paramTypes[i]);
                 typeName = getFullName(typeQName);
             }
 
             String simple_param_name = param_names[i] != null ? param_names[i] : ("param" + (i+1)).intern();
-            ParameterNode param = parameterNode(simple_param_name, typeName);
+            ParameterNode param = parameterNode(simple_param_name, typeQName);
 
             paramList = ctx.getNodeFactory().parameterList(paramList, param);
 
@@ -749,6 +782,25 @@ public final class AbcParser
         if( type_ident != null )
         {
             param.typeref = type_ident.ref;
+        }
+        param.ref = ident.ref;
+
+        return param;
+    }
+
+    private ParameterNode parameterNode(String simple_param_name, QName typeName)
+    {
+        IdentifierNode ident = identifierNode(simple_param_name, ctx.publicNamespace());
+
+        MemberExpressionNode paramTypeNode = null;
+        if( typeName != null )
+        {
+            paramTypeNode = memberExprFromName(typeName);
+        }
+        ParameterNode param = ctx.getNodeFactory().parameter(Tokens.VAR_TOKEN, ident, paramTypeNode);
+        if( paramTypeNode != null )
+        {
+            param.typeref = paramTypeNode.ref;
         }        
         param.ref = ident.ref;
 
@@ -801,9 +853,24 @@ public final class AbcParser
 // Utility to get the full name based on a qname (ns + "/" + name)
     macromedia.asc.semantics.QName getFullName(QName q)
     {
-        String fullName = getStringFromCPool(q.name);
-        ObjectValue ns = getNamespace(q.nameSpace);
-        return ctx.computeQualifiedName("", fullName, ns, EMPTY_TOKEN);
+        if( q instanceof ParameterizedQName )
+        {
+            ParameterizedQName p = (ParameterizedQName)q;
+            QName base = getQNameFromCPool(p.name);
+            macromedia.asc.semantics.QName base_qn = getFullName(base);
+            ObjectList<macromedia.asc.semantics.QName> params = new ObjectList();
+            for( int i = 0; i < p.params.size(); ++i) {
+                params.add(getFullName(getQNameFromCPool(p.params.at(i))));
+            }
+            ParameterizedName pn = new ParameterizedName(params, base_qn.ns, base_qn.name)    ;
+            return pn;
+        }
+        else
+        {
+            String fullName = getStringFromCPool(q.name);
+            ObjectValue ns = getNamespace(q.nameSpace);
+            return ctx.computeQualifiedName("", fullName, ns, EMPTY_TOKEN);
+        }
     }
 
     DefAndSlot classTrait(int nameID, int slotID, int classID)
@@ -1232,11 +1299,22 @@ public final class AbcParser
         return ret;
     }
 
-    static final class QName
+    static class QName
     {
         int name;
         int nameSpace;
     };
+
+    static class ParameterizedQName extends QName
+    {
+        IntList params;
+
+        ParameterizedQName(int name, IntList params)
+        {
+            this.name = name;
+            this.params = params;
+        }
+    }
 
     QName getQNameFromCPool(int index)
     {
@@ -1254,6 +1332,14 @@ public final class AbcParser
         case ActionBlockConstants.CONSTANT_QnameA:
             value.nameSpace = buf.readU32();
             value.name = buf.readU32();
+            break;
+        case ActionBlockConstants.CONSTANT_TypeName:
+            int name = buf.readU32();
+            int count = buf.readU32();
+            IntList params = new IntList(count);
+            for( int i = 0; i < count; ++i )
+                params.add(buf.readU32());
+            value = new ParameterizedQName(name, params);
             break;
         default:
             break;

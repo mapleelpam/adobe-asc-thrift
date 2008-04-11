@@ -502,7 +502,13 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		return (node.void_result ? cx.voidType() : cx.booleanType() );
 	}
 
-	public Value evaluate( Context cx, GetExpressionNode node )
+    public Value evaluate(Context cx, ApplyTypeExprNode node)
+    {
+        node.typeArgs.evaluate(cx, this);
+        return null;
+    }
+
+    public Value evaluate( Context cx, GetExpressionNode node )
 	{
 		Value  result = null;
 

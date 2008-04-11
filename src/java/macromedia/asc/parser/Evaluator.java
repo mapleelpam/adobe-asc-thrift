@@ -103,6 +103,8 @@ public interface Evaluator
 
 	Value evaluate(Context cx, SetExpressionNode node);
 
+    Value evaluate(Context cx, ApplyTypeExprNode node);
+
 	Value evaluate(Context cx, UnaryExpressionNode node);
 
 	Value evaluate(Context cx, BinaryExpressionNode node);

@@ -54,6 +54,7 @@ public interface ActionBlockConstants
     byte CONSTANT_StaticProtectedNs = 0x1A;
     byte CONSTANT_MultinameL = 0x1B;
     byte CONSTANT_MultinameLA = 0x1C;
+    byte CONSTANT_TypeName = 0x1D;
 
     /*
      * Trait tags
@@ -160,6 +161,7 @@ public interface ActionBlockConstants
     int OP_callproplex =  0x4C;
     int OP_callsupervoid = 0x4E;
     int OP_callpropvoid = 0x4F;
+    int OP_applytype = 0x50;
 
     int OP_newobject = 0x55;
     int OP_newarray = 0x56;

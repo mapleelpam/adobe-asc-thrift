@@ -18,6 +18,11 @@
 package macromedia.asc.semantics;
 
 import macromedia.asc.util.*;
+import macromedia.asc.parser.Tokens;
+import static macromedia.asc.semantics.Slot.CALL_Method;
+import macromedia.asc.embedding.avmplus.ClassBuilder;
+import macromedia.asc.embedding.avmplus.InstanceBuilder;
+import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_object;
 
 /**
  * The interface for all types.
@@ -69,8 +74,10 @@ public final class TypeValue extends ObjectValue
 		return type;
 	}
 
-	public ObjectValue prototype;
-	public TypeValue baseclass;
+    public ObjectValue prototype;
+    public TypeValue baseclass;
+    public boolean is_parameterized;
+    public TypeValue indexed_type;
 
 	public QName name;
 
@@ -192,5 +199,13 @@ public final class TypeValue extends ObjectValue
             ti.setPrototype(nullable_proto);
         }
         return ti;
+    }
+
+    public ObjectList<Slot> types;
+    public void addParameterizedTypeSlot(Context cx, Slot s)
+    {
+        if( types == null )
+            types = new ObjectList<Slot>();
+        types.add(s);
     }
 }
