@@ -122,10 +122,10 @@ public class ContextStatics
             break;
         }
     }
-    int abc_version = 0;
+    int abc_version = 1;
     public boolean es4_numerics = false;
     public boolean es4_nullability = false;
-    public boolean es4_vectors = false;
+    public boolean es4_vectors = true;
 
     ObjectValue _publicNamespace;
 	ObjectValue _anyNamespace;

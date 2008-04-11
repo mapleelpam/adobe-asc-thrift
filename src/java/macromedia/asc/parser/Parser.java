@@ -7770,14 +7770,13 @@ XMLElementContent
             Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
             second.items.add(0,udn);
         }
-        if( ctx.statics.es4_vectors )
+        if( ctx.statics.es4_vectors && !parsing_include && second != null)
         {
             PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier("__AS3__"), true);
             pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("vec"), true);
             pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("Vector"), true);
             Node idn = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
-            if( second != null )
-                second.items.add(0, idn);
+            second.items.add(0, idn);
         }
         ProgramNode result = nodeFactory.program(ctx,second,ctx.input.positionOfMark());
         match(EOS_TOKEN);

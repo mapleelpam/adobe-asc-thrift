@@ -5570,7 +5570,7 @@ else
                         int slot_id = baseobj.getSlotIndex(cx,GET_TOKEN,name,namespace);
                         Slot slot = baseobj.getSlot(cx,slot_id);
 
-                        if(slot == null || (limitToContext && slot.declaredBy.builder.contextId != basebui.contextId))
+                        if(slot == null || (limitToContext && slot.declaredBy != null && slot.declaredBy.builder.contextId != basebui.contextId))
                         	break;
 
                         int implicit_id = baseobj.getImplicitIndex(cx,slot_id,EMPTY_TOKEN);

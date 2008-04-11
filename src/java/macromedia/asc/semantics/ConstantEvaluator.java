@@ -4092,8 +4092,11 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 if( base != null )
                 {
                     s = base.getSlot(cx, id);
-                    s.setTypes(ctor_types);
-                    s.setDeclStyles(ctor_decls);
+                    if( s != null )
+                    {
+                        s.setTypes(ctor_types);
+                        s.setDeclStyles(ctor_decls);
+                    }
                 }
                 ObjectValue p = node.cframe.prototype;
                 if(node.cframe == cx.vectorType() )
