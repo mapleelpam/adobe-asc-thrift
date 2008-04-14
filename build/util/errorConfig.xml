@@ -15,13 +15,20 @@
   <Ifdef>__asc_ErrorConstants__</Ifdef>
   <InputFileBase>../../src/localized_strings/</InputFileBase>
   <Language>EN</Language>
+  <Language>CN</Language>
+  <Language>CS</Language>
   <Language>DE</Language>
   <Language>ES</Language>
   <Language>FR</Language>
   <Language>IT</Language>
   <Language>JP</Language>
   <Language>KR</Language>
-  <Language>CN</Language>
+  <Language>NL</Language>
+  <Language>PL</Language>
+  <Language>PT</Language>
+  <Language>RU</Language>
+  <Language>SV</Language>
+  <Language>TR</Language>
   <Language>TW</Language>
   <XmlInputFile>/ErrorConstants.xml</XmlInputFile>
   <OutputCppFile>../../src/cpp/embedding/ErrorConstants.cpp</OutputCppFile>
