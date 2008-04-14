@@ -1,31 +1,29 @@
 <?xml version='1.0' encoding='utf-8' standalone='no' ?>
-
-<!--
-
-	ADOBE SYSTEMS INCORPORATED
-	Copyright 2006-2007 Adobe Systems Incorporated
-	All Rights Reserved.
-
-	NOTICE: Adobe permits you to use, modify, and distribute this file
-	in accordance with the terms of the license agreement accompanying it.
-
--->
-
 <AS2LintWarnings>
 
-<!-- 
+<!-- ***Dont use ?? in these - use ? if you must; C++ translates ?? into a ^ symbol for some reason..***
    
-  Note: do not translate Actionscript keywords such as Package, Class, Interface, function, var, Number, String, 
-  Boolean, int, uint, Date, Array, XML, 
+  
+
+   In addition, the following words should not be translated:
+	AS2
+	AS3
+	SWF
+	Class
+	class
+	namespace
+	Namespace
+	
+	TODO:  XML 
 -->
 	
 <warnings>
 	<warning id="1008" hidden="true" label="kWarning_NoTypeDecl">Typdeklaration fehlt.</warning>
-	<warning id="1009"  label="kWarning_NoTypeDecl_specific">%s '%s' hat keine Typdeklaration.
+	<warning id="1009" label="kWarning_NoTypeDecl_specific">%s '%s' hat keine Typdeklaration.
 	
 	<description>
 		<![CDATA[
-		Not declaring a data type is a coding style preference. A function return type, parameter, or variable has no type declaration. 
+		Not declaring a data type is a coding style preference.  A function return type, parameter, or variable has no type declaration.  
 		However, using type declarations enables the compiler to write more efficient code, as well as detect more errors at compile time.
 		Enable this warning if you want to be reminded when you fail to use a type declaration.
 		]]>
@@ -34,7 +32,7 @@
 	<warning id="1013" label="kWarning_BadUndefinedComparision_specific">Variablen vom Typ %s dürfen nicht undefiniert sein. Der Typ des nicht definierten Werts wird vor dem Vergleich in %s umgewandelt.
 	<description>
 		<![CDATA[
-	Only variables of type * can be undefined. With a few exceptions, uninitialized variables have a default value of <code>null</code> rather than <code>undefined</code>. 
+	Only variables of type * can be undefined.  With a few exceptions, uninitialized variables have a default value of <code>null</code> rather than <code>undefined</code>.  
 	The exceptions include: Boolean variables, which have a default value of <code>false</code>. Number variables, which have a default value of <code>NaN</code>, and int or uint variables, which have a default value of <code>0</code>.
 			]]>
 	</description>
@@ -44,16 +42,16 @@
 	<warning id="1031" label="kWarning_ConstructorReturnsValue_specific">Migrationsfehler: Das Ergebnis der neuen %s ist der Rückgabewert von %s und nicht eine neue Instanz dieser Funktion.
 	<description>
 		<![CDATA[
-		This is a code migration warning. The detected code behaves differently in ActionScript 3.0 than in ActionScript 2.0, as shown in the following example:
+		This is a code migration warning.  The detected code behaves differently in ActionScript 3.0 than in ActionScript 2.0, as shown in the following example:
 <pre><code>function f(){
    this.b = 22;
-   this.a = new Array(2);  
+   this.a = new Array(2);  
    this.a[0] = 33;
    this.a[1] = 44;
    return a; 
    } 
    // returns a new instance of f in ActionScript 2.0 and a new 2 element array in ActionScript 3.0
-   var d = new f();  // Warning here
+   var d = new f();  // Warning here
    trace(d.a);       // undefined in ActionScript 3.0, [33,44] in ActionScript 2.0.
 </code></pre>
 ]]>
@@ -64,7 +62,7 @@
 	<warning id="1035" label="kWarning_BooleanConstructorWithNoArgs_specific">Verwendung von Boolean() ohne Argumente.
 	<description>
 		<![CDATA[
-		This is a code migration warning. The <code>Boolean()</code> function returns <code>false</code> in ActionScript 3.0, but <code>undefined</code> in ActionScript 2.0.
+		This is a code migration warning.  The <code>Boolean()</code> function returns <code>false</code> in ActionScript 3.0, but <code>undefined</code> in ActionScript 2.0.
 		]]>
 	</description>
 	</warning>
@@ -73,18 +71,18 @@
 	<warning id="1039" label="kWarning_NumberFromStringChanges_specific">Migrationsfehler: Wenn die Zahlenfunktion ('') mit einem Argument mit einem leeren String abgerufen wird, wird in ActionScript 3.0 der Wert 0 ausgegeben und in ActionScript 2.0 der Wert NaN.
 	<description>
 		<![CDATA[
-		This is a code migration warning. The <code>Number()</code> method called with a String argument skips over all white space in the string and return a default value of 0 if no digits are detected.
+		This is a code migration warning.  The <code>Number()</code> method called with a String argument skips over all white space in the string and return a default value of 0 if no digits are detected.
 In ActionScript 2.0, any white space in the string causes the result to be NaN.
 		]]>
 	</description>
 	</warning>
 
-	<warning id="1044" hidden="true"   label="kWarning_ArrayToStringChanges">Format von Array.toString() hat sich geändert.</warning>
+	<warning id="1044" hidden="true" label="kWarning_ArrayToStringChanges">Format von Array.toString() hat sich geändert.</warning>
 	<warning id="1045" label="kWarning_ArrayToStringChanges_specific">Migrationsfehler: Array.toString()-Behandlung der Null und undefinierter Elemente hat sich geändert.
 	<description>
 		<![CDATA[
-		This is a code migration warning. In ActionScript 2.0, <code>null</code> array elements convert to <code>null</code> and <code>undefined</code> elements convert to <code>undefined</code>. 
-In ActionScript 3.0, both <code>null</code> and <code>undefined</code> elements convert to the empty string ''. If you have code that parses the <code>toString()</code> output from an Array,
+		This is a code migration warning.  In ActionScript 2.0, <code>null</code> array elements convert to <code>null</code> and <code>undefined</code> elements convert to <code>undefined</code>.  
+In ActionScript 3.0, both <code>null</code> and <code>undefined</code> elements convert to the empty string ''.  If you have code that parses the <code>toString()</code> output from an Array,
 you may need to adjust your code for this difference.
 		]]>
 	</description>
@@ -94,7 +92,7 @@ you may need to adjust your code for this difference.
 	<warning id="1059" label="kWarning_DepricatedPropertyError_specific">Migrationsfehler: Die Eigenschaft %s wird nicht mehr unterstützt. %s.
 	<description>
 		<![CDATA[
-		This is a code migration warning. The property you are attempting to use does not exist in ActionScript 3.0.
+		This is a code migration warning.  The property you are attempting to use does not exist in ActionScript 3.0.
 				]]>
 	</description>
 	</warning>
@@ -103,7 +101,7 @@ you may need to adjust your code for this difference.
 	<warning id="1061" label="kWarning_DepricatedFunctionError_specific">Migrationsfehler: Die Methode %s wird nicht mehr unterstützt. %s.
 	<description>
 		<![CDATA[
-		This is a code migration warning. The method you are attempting to use does not exist in ActionScript 3.0.
+		This is a code migration warning.  The method you are attempting to use does not exist in ActionScript 3.0.
 		]]>
 	</description>
 	</warning>
@@ -112,15 +110,15 @@ you may need to adjust your code for this difference.
 	<warning id="1067" label="kWarning_ChangesInResolve_specific">Migrationsfehler: __resolve wird nicht mehr unterstützt. Verwenden Sie die neue Proxy-Klasse für ähnliche Funktionen.
 	<description>
 		<![CDATA[
-		This is a code migration warning. See Proxy in this language reference for more information on the replacement for <code>__resolve</code>.
+		This is a code migration warning.  See Proxy in this language reference for more information on the replacement for <code>__resolve</code>.
 		]]>
 	</description>
 	</warning>
-	<warning id="1070" hidden="true"   label="kWarning_LevelNotSupported">_level wird nicht mehr unterstützt. Weitere Informationen hierzu finden Sie im flash.display-Paket.</warning>
+	<warning id="1070" hidden="true" label="kWarning_LevelNotSupported">_level wird nicht mehr unterstützt. Weitere Informationen hierzu finden Sie im flash.display-Paket.</warning>
 	<warning id="1071" label="kWarning_LevelNotSupported_specific">Migrationsfehler: _level wird nicht mehr unterstützt. Weitere Informationen hierzu finden Sie im flash.display-Paket.
 	<description>
 		<![CDATA[
-		This is a code migration warning. The property you are attempting to use does not exist in ActionScript 3.0.
+		This is a code migration warning.  The property you are attempting to use does not exist in ActionScript 3.0.
 		]]>
 	</description>
 	</warning>
@@ -129,8 +127,8 @@ you may need to adjust your code for this difference.
 	<warning id="1073" label="kWarning_ClassIsSealed_specific">Migrationsfehler: %s ist keine dynamische Klasse. Instanzen können keine Mitglieder dynamisch hinzugefügt werden.
 	<description>
 		<![CDATA[
-		This is a code migration warning. In ActionScript 2.0, many classes such as Number are dynamic, which means that new properties can
-be added to instances of those classes at run time. This warning results from code that tries to add a property to an instance of a non-dynamic class.
+		This is a code migration warning.  In ActionScript 2.0, many classes such as Number are dynamic, which means that new properties can
+be added to instances of those classes at run time.  This warning results from code that tries to add a property to an instance of a non-dynamic class.
 		]]>
 	</description>
 	</warning>
@@ -138,9 +136,9 @@ be added to instances of those classes at run time. This warning results from co
 	<warning id="1083" label="kWarning_ScopingChangeInThis_specific">Migrationsfehler: Methode %s verhält sich in ActionScript 3.0 aufgrund einer Änderung beim Festlegen des Gültigkeitsbereichs für dieses Schlüsselwort anders. Weitere Informationen finden Sie in der Beschreibung für Warnung 1083.
 <description>
 		<![CDATA[
-		This is a code migration warning. This warning is generated when a method of an object is used as a value, usually as a callback function.
-		In ActionScript 2.0, functions are executed in the context they are called from. In ActionScript 3.0, functions are always
-		executed in the context where they were defined. Thus, variable and method names are resolved to the class that the callback is part of, rather
+		This is a code migration warning.  This warning is generated when a method of an object is used as a value, usually as a callback function.
+		In ActionScript 2.0, functions are executed in the context they are called from.  In ActionScript 3.0, functions are always
+		executed in the context where they were defined.  Thus, variable and method names are resolved to the class that the callback is part of, rather
 		than relative to the context it is called from, as in the following example:
 		
 <pre><code>class a 
@@ -157,13 +155,13 @@ f(); // prints 1 in ActionScript 3.0, 22 in ActionScript 2.0</code></pre>		]]>
 	</description>
 	</warning>
 	
-	<warning id="1084" hidden="true"  label="kWarning_MissingNamespaceDecl">Namespace-Deklaration fehlt (z. B. Variable ist nicht als 'public', 'private' usw. definiert).</warning>
-	<warning id="1085"  label="kWarning_MissingNamespaceDecl_specific">Der Gültigkeitsbereich von %s wird auf den Standard-Namespace festgelegt: %s intern. Der Namespace ist außerhalb dieses Pakets nicht sichtbar.
+	<warning id="1084" hidden="true" label="kWarning_MissingNamespaceDecl">Namespace-Deklaration fehlt (z. B. Variable ist nicht als 'public', 'private' usw. definiert).</warning>
+	<warning id="1085" label="kWarning_MissingNamespaceDecl_specific">Der Gültigkeitsbereich von %s wird auf den Standard-Namespace festgelegt: %s intern. Der Namespace ist außerhalb dieses Pakets nicht sichtbar.
 <description>
 	<![CDATA[
-	Not declaring a namespace is a coding style preference. Enable this warning if you want to be reminded when you forget to declare a namespace or access specifier for a definition.
-	Without one, the definition is not visible to code located outside of this file. To make it visible to code outside this file, declare it with the access specifier <code>public</code> or with
-	a namespace declaration. To keep the definition local to this file and avoid this warning, declare the definition as <code>private</code>.
+	Not declaring a namespace is a coding style preference.  Enable this warning if you want to be reminded when you forget to declare a namespace or access specifier for a definition.
+	Without one, the definition is not visible to code located outside of this file.  To make it visible to code outside this file, declare it with the access specifier <code>public</code> or with
+	a namespace declaration.  To keep the definition local to this file and avoid this warning, declare the definition as <code>private</code>.
 	]]>
 </description>
 	</warning>
@@ -172,8 +170,8 @@ f(); // prints 1 in ActionScript 3.0, 22 in ActionScript 2.0</code></pre>		]]>
 	<warning id="1087" label="kWarning_ForVarInChanges_specific">Migrationsfehler: ActionScript 3.0 durchläuft alle Objekteigenschaften innerhalb einer 'for x in target'-Anweisung in zufälliger Reihenfolge.
 	<description>
 		<![CDATA[
-		This is a code migration warning. In ActionScript 2.0, the order in which the properties of an object were processed was always the same. 
-In ActionScript 3.0, the order is random and can change from machine to machine. If unexpected ordering behavior occurs, inspect this loop to determine if this change in behavior may affect your code.
+		This is a code migration warning.  In ActionScript 2.0, the order in which the properties of an object were processed was always the same.  
+In ActionScript 3.0, the order is random and can change from machine to machine.  If unexpected ordering behavior occurs, inspect this loop to determine if this change in behavior may affect your code.
 		]]>
 	</description>
 	</warning>
@@ -182,7 +180,7 @@ In ActionScript 3.0, the order is random and can change from machine to machine.
 	<warning id="1089" label="kWarning_InternalError_specific">Fehlercode: %s.
 	<description>
 		<![CDATA[
-		This is due to either a corrupt source file or a bug in the compiler code. Please contact Adobe, Inc. to file a bug.
+		This is due to either a corrupt source file or a bug in the compiler code.  Please contact Adobe, Inc. to file a bug.
 		]]>
 	</description>
 	</warning>
@@ -190,9 +188,9 @@ In ActionScript 3.0, the order is random and can change from machine to machine.
 	<warning id="1091" label="kWarning_DepricatedEventHandlerError_specific">Migrationsfehler: %s
 	<description>
 		<![CDATA[
-		This is a code migration warning. In ActionScript 2.0 declaring a method by a special name (such as <code>onMouseDown</code>) would cause Flash to
-call that method when a certain event occurred. In ActionScript 3.0, you must call <code>addEventListener()</code> with a method in order to register it to 
-receive that event. See <code>addEventListener</code> in this language reference for details.
+		This is a code migration warning.  In ActionScript 2.0 declaring a method by a special name (such as <code>onMouseDown</code>) would cause Flash to
+call that method when a certain event occurred.  In ActionScript 3.0, you must call <code>addEventListener()</code> with a method in order to register it to 
+receive that event.  See <code>addEventListener</code> in this language reference for details.
 		]]>
 	</description>
 	</warning>
@@ -210,7 +208,7 @@ receive that event. See <code>addEventListener</code> in this language reference
 	<warning id="1097" label="kWarning_BadNullComparision_specific">Unlogischer Vergleich mit null. Variablen vom Typ %s dürfen nicht null sein.
 	<description>
 		<![CDATA[
-		Instances of Boolean, int, uint, and Number cannot be <code>null</code>. The comparison operator type converts <code>null</code> to <code>false</code> before
+		Instances of Boolean, int, uint, and Number cannot be <code>null</code>.  The comparison operator type converts <code>null</code> to <code>false</code> before
 comparing it to a Boolean, or to 0 before comparing it with a Number, int, or uint data type.
 		]]>
 	</description>
@@ -219,7 +217,7 @@ comparing it to a Boolean, or to 0 before comparing it with a Number, int, or ui
 	<warning id="1099" label="kWarning_BadNaNComparision_specific">Unlogischer Vergleich mit NaN. Diese Anweisung wird immer als 'false' ausgegeben.
 	<description>
 		<![CDATA[
-		<code>NaN</code> has the unique mathematical property that any comparison involving it evaluates to <code>false</code>. Use the global <code>isNaN()</code> function to detect a NaN value instead, as in the following example:
+		<code>NaN</code> has the unique mathematical property that any comparison involving it evaluates to <code>false</code>.  Use the global <code>isNaN()</code> function to detect a NaN value instead, as in the following example:
 <pre><code>trace(NaN == NaN); // false!
 trace(NaN != NaN); // false again!
 trace(isNaN(NaN)); // true
@@ -257,8 +255,8 @@ if (x = y) { trace("x is assigned y's value of true, making the conditional test
 	<warning id="1105" label="kWarning_NoConstructor_specific">Für Klasse %s wurde keine Konstruktorfunktion definiert.
 	<description>
 		<![CDATA[
-		Not specifying a constructor function is a coding style preference. Enable this warning if you want to always declare constructors for classes. 
-This warning is intended to help find cases where a class name is changed but its constructor's name is not. 
+		Not specifying a constructor function is a coding style preference.  Enable this warning if you want to always declare constructors for classes.  
+This warning is intended to help find cases where a class name is changed but its constructor's name is not.  
 Conditions such as this are not flagged as a problem without this warning, the former constructor appears to be a normal function.
 		]]>
 	</description>
@@ -272,37 +270,37 @@ Conditions such as this are not flagged as a problem without this warning, the f
 	<warning id="1115" label="kWarning_NoExplicitSuperCallInConstructor_specific">Die super()-Anweisung wird vor dem Aufrufen dieses Konstruktors ausgeführt. Fügen Sie innerhalb des Konstruktors einen super()-Aufruf hinzu, wenn Sie ausdrücklich steuern möchten, wann die Anweisung ausgeführt wird.
 	<description>
 		<![CDATA[
-		Adding a call to <code>super()</code> within the constructor is a coding style preference. Enable this warning if you want to always be explicit about when <code>super()</code> is called.
+		Adding a call to <code>super()</code> within the constructor is a coding style preference.  Enable this warning if you want to always be explicit about when <code>super()</code> is called.
 This can help catch cases where you meant to call <code>super()</code> after some local initialization code and forgot to add it.
 		]]>
 	</description></warning>
 
-	<warning id="2090" hidden="true"  label="kUnsupportedProp_version">Verwenden Sie stattdessen Capabilities.version.</warning>
-	<warning id="2091" hidden="true"  label="kUnsupportedProp_Focusrect">Weitere Informationen finden Sie unter InteractiveObject.focusRect.</warning>
+	<warning id="2090" hidden="true" label="kUnsupportedProp_version">Verwenden Sie stattdessen Capabilities.version.</warning>
+	<warning id="2091" hidden="true" label="kUnsupportedProp_Focusrect">Weitere Informationen finden Sie unter InteractiveObject.focusRect.</warning>
 	<warning id="2092" hidden="true" label="kUnsupportedProp_Highquality">Weitere Informationen finden Sie unter Stage.quality.</warning>
 	<warning id="2093" hidden="true" label="kUnsupportedProp_DisplayObj_HighQuality">Weitere Informationen finden Sie unter Stage.quality.</warning>
 	<warning id="2094" hidden="true" label="kUnsupportedProp_DisplayObj_Quality">Weitere Informationen finden Sie unter Stage.quality.</warning>
 	<warning id="2095" hidden="true" label="kUnsupportedProp_Quality">Weitere Informationen finden Sie unter Stage.quality.</warning>
 	<warning id="2096" hidden="true" label="kUnsupportedProp_TextField_Soundbuftime">Verwenden Sie stattdessen die statische Eigenschaft flash.media.SoundMixer.bufferTime.</warning>
 	<warning id="2097" hidden="true" label="kUnsupportedProp_TextField_Target">Diese Funktion wird nicht mehr unterstützt.</warning>
-	<warning id="2098" hidden="true"  label="kUnsupportedProp_TextField_Url">Weitere Informationen finden Sie unter LoaderInfo.url.</warning>
+	<warning id="2098" hidden="true" label="kUnsupportedProp_TextField_Url">Weitere Informationen finden Sie unter LoaderInfo.url.</warning>
 	<warning id="2099" hidden="true" label="kUnsupportedProp_TextField_Variable">Diese Funktion wird nicht mehr unterstützt.</warning>
 	<warning id="2102" hidden="true" label="kUnsupportedProp_NewLine">Verwenden Sie '\n' für 'newline'.</warning>
 	<warning id="2103" hidden="true" label="kUnsupportedProp_MaxScroll">Weitere Informationen finden Sie unter textField.maxScroll.</warning>
-	<warning id="2104" hidden="true"  label="kUnsupportedProp_Level">Das Stufenkonzept ist in ActionScript 3.0 nicht vorhanden; stattdessen ist der direkte Zugriff auf die Anzeigeliste möglich. Weitere Informationen finden Sie im flash.display-Paket.</warning>
+	<warning id="2104" hidden="true" label="kUnsupportedProp_Level">Das Stufenkonzept ist in ActionScript 3.0 nicht vorhanden; stattdessen ist der direkte Zugriff auf die Anzeigeliste möglich. Weitere Informationen finden Sie im flash.display-Paket.</warning>
 	<warning id="2105" hidden="true" label="kUnsupportedProp_Parent">Verwenden Sie stattdessen die übergeordnete Eigenschaft.</warning>
 	<warning id="2106" hidden="true" label="kUnsupportedProp_Root">Diese Eigenschaft wurde entfernt. Die nächstliegende Entsprechung ist Stage, die als Stammverzeichnis der ActionScript 3.0-Anzeigeliste dient.</warning>
 	<warning id="2107" hidden="true" label="kUnsupportedProp_Arguments_Caller">Deklarieren Sie stattdessen den Aufruf als ein Argument der Funktion.</warning>
 	<warning id="2108" hidden="true" label="kUnsupportedProp_Button_Target">Diese Funktion wird nicht mehr unterstützt.</warning>
 	<warning id="2109" hidden="true" label="kUnsupportedProp_MovieClip_Parent">Verwenden Sie stattdessen die übergeordnete Eigenschaft.</warning>
 	<warning id="2110" hidden="true" label="kUnsupportedProp_MovieClip_target">Diese Funktion wird nicht mehr unterstützt.</warning>
-	<warning id="2111" hidden="true"  label="kUnsupportedProp_MovieClip_hitArea">Weitere Informationen finden Sie unter Sprite.hitArea.</warning>
+	<warning id="2111" hidden="true" label="kUnsupportedProp_MovieClip_hitArea">Weitere Informationen finden Sie unter Sprite.hitArea.</warning>
 	<warning id="2112" hidden="true" label="kUnsupportedProp_Scroll">Weitere Informationen hierzu finden Sie in den Eigenschaften scrollH und scrollV der flash.text.TextField-Klasse.</warning>
 	<warning id="2113" hidden="true" label="kUnsupportedProp_TargetPath">Anstelle von Pfaden, verwenden Sie MovieClip-Objekte direkt als Argumente.</warning>
-	<warning id="2114" hidden="true"  label="kUnsupportedProp_Video_Height">Weitere Informationen finden Sie unter Video.videoHeight.</warning>
-	<warning id="2115" hidden="true"  label="kUnsupportedProp_Video_Width">Weitere Informationen finden Sie unter Video.videoWidth.</warning>
+	<warning id="2114" hidden="true" label="kUnsupportedProp_Video_Height">Weitere Informationen finden Sie unter Video.videoHeight.</warning>
+	<warning id="2115" hidden="true" label="kUnsupportedProp_Video_Width">Weitere Informationen finden Sie unter Video.videoWidth.</warning>
 	<warning id="2116" hidden="true" label="kUnsupportedProp__Proto__">Weitere Informationen finden Sie unter __proto__ (veraltet).</warning>
-	<warning id="2117" hidden="true"  label="kUnsupportedProp_Stage">Weitere Informationen finden Sie unter DisplayObject.stage.</warning>
+	<warning id="2117" hidden="true" label="kUnsupportedProp_Stage">Weitere Informationen finden Sie unter DisplayObject.stage.</warning>
 	<warning id="2118" hidden="true" label="kUnsupportedProp__remoteClass">Verwenden Sie stattdessen die Methode registerClass() im flash.net-Paket.</warning>
 	<warning id="2617" hidden="true" label="kUnsupportedMeth_random">Verwenden Sie stattdessen Math.random().</warning>
 	<warning id="2618" hidden="true" label="kUnsupportedMeth_chr">Verwenden Sie stattdessen String.fromCharCode().</warning>
@@ -310,7 +308,7 @@ This can help catch cases where you meant to call <code>super()</code> after som
 	<warning id="2621" hidden="true" label="kUnsupportedMeth_ord">Verwenden Sie stattdessen String.charCodeAt().</warning>
 	<warning id="2622" hidden="true" label="kUnsupportedMeth_mbord">Verwenden Sie stattdessen String.charCodeAt().</warning>
 	<warning id="2623" hidden="true" label="kUnsupportedMeth_substring">Verwenden Sie stattdessen die Methode String.substr.</warning>
-	<warning id="2624" hidden="true"  label="kUnsupportedMeth_mbsubstring">Verwenden Sie stattdessen die Methode String.substr.</warning>
+	<warning id="2624" hidden="true" label="kUnsupportedMeth_mbsubstring">Verwenden Sie stattdessen die Methode String.substr.</warning>
 	<warning id="2625" hidden="true" label="kUnsupportedMeth_length">Verwenden Sie stattdessen die Eigenschaft length des Arguments.</warning>
 	<warning id="2626" hidden="true" label="kUnsupportedMeth_mblength">Verwenden Sie stattdessen die Eigenschaft length des Arguments.</warning>
 	<warning id="2627" hidden="true" label="kUnsupportedMeth_ASNative">Weitere Informationen finden Sie in den Änderungen zu ASnative.</warning>
@@ -321,7 +319,7 @@ This can help catch cases where you meant to call <code>super()</code> after som
 	<warning id="2633" hidden="true" label="kUnsupportedMeth_clearInterval">Diese Methode wurde in das flash.utils-Paket verschoben.</warning>
 	<warning id="2634" hidden="true" label="kUnsupportedMeth_duplicateMovieClip">Ersetzt durch neue Konstruktorfunktion der MovieClip-Klasse.</warning>
 	<warning id="2636" hidden="true" label="kUnsupportedMeth_fscommand">Verschoben in das flash.system-Paket. Siehe auch flash.external.ExternalInterface-Klasse für JavaScript/ActionScript-Kommunikation.</warning>
-	<warning id="2638" hidden="true"  label="kUnsupportedMeth_getURL">Ähnliche Funktionen finden Sie unter flash.net.URLLoader. Das flash.net-Paket enthält außerdem die Paketfunktionen navigateToURL() und sendToURL().</warning>
+	<warning id="2638" hidden="true" label="kUnsupportedMeth_getURL">Ähnliche Funktionen finden Sie unter flash.net.URLLoader. Das flash.net-Paket enthält außerdem die Paketfunktionen navigateToURL() und sendToURL().</warning>
 	<warning id="2639" hidden="true" label="kUnsupportedMeth_gotoAndPlay">Weitere Informationen finden Sie unter MovieClip.gotoAndPlay().</warning>
 	<warning id="2640" hidden="true" label="kUnsupportedMeth_gotoAndStop">Weitere Informationen finden Sie unter MovieClip.gotoAndStop().</warning>
 	<warning id="2641" hidden="true" label="kUnsupportedMeth_play">Weitere Informationen finden Sie unter MovieClip.play().</warning>
@@ -329,7 +327,7 @@ This can help catch cases where you meant to call <code>super()</code> after som
 	<warning id="2643" hidden="true" label="kUnsupportedMeth_printAsBitmap">Weitere Informationen finden Sie unter PrintJob.</warning>
 	<warning id="2644" hidden="true" label="kUnsupportedMeth_printAsBitmapNum">Weitere Informationen finden Sie unter PrintJob.</warning>
 	<warning id="2645" hidden="true" label="kUnsupportedMeth_printNum">Weitere Informationen finden Sie unter PrintJob.</warning>
-	<warning id="2646" hidden="true"  label="kUnsupportedMeth_removeMovieClip">Verwenden Sie Container.removeChild(childName). Weitere Informationen finden Sie in der DisplayObjectContainer-Klasse.</warning>
+	<warning id="2646" hidden="true" label="kUnsupportedMeth_removeMovieClip">Verwenden Sie Container.removeChild(childName). Weitere Informationen finden Sie in der DisplayObjectContainer-Klasse.</warning>
 	<warning id="2647" hidden="true" label="kUnsupportedMeth_setInterval">Verschoben in das flash.utils-Paket. Sie können stattdessen die Timer-Klasse verwenden.</warning>
 	<warning id="2648" hidden="true" label="kUnsupportedMeth_nextFrame">Weitere Informationen finden Sie unter MovieClip.nextFrame().</warning>
 	<warning id="2649" hidden="true" label="kUnsupportedMeth_startDrag">Weitere Informationen finden Sie unter MovieClip.startDrag().</warning>
@@ -338,17 +336,17 @@ This can help catch cases where you meant to call <code>super()</code> after som
 	<warning id="2652" hidden="true" label="kUnsupportedMeth_stopDrag">Weitere Informationen finden Sie unter MovieClip.stopDrag().</warning>
 	<warning id="2653" hidden="true" label="kUnsupportedMeth_tellTarget">Verwenden Sie stattdessen den Punkt-Operator (.) für die with-Anweisung.</warning>
 	<warning id="2654" hidden="true" label="kUnsupportedMeth_toggleHighQuality">Weitere Informationen hierzu finden Sie unter DisplayObject.stage und Stage.quality.</warning>
-	<warning id="2656" hidden="true"  label="kUnsupportedMeth_unloadMovie">Verwenden Sie stattdessen DisplayObjectContainer.removeChild(childName). Weitere Informationen finden Sie in der DisplayObjectContainer-Klasse.</warning>
+	<warning id="2656" hidden="true" label="kUnsupportedMeth_unloadMovie">Verwenden Sie stattdessen DisplayObjectContainer.removeChild(childName). Weitere Informationen finden Sie in der DisplayObjectContainer-Klasse.</warning>
 	<warning id="2657" hidden="true" label="kUnsupportedMeth_unloadMovieNum">Verwenden Sie stattdessen DisplayObjectContainer.removeChild(childName). Weitere Informationen finden Sie in der DisplayObjectContainer-Klasse.</warning>
 	<warning id="2658" hidden="true" label="kUnsupportedMeth_updateAfterEvent">Diese Funktion ist keine globale Funktion mehr, sie ist jedoch weiterhin als eine Methode der TimerEvent-, MouseEvent- und KeyboardEvent-Klassen verfügbar.</warning>
 	<warning id="2659" hidden="true" label="kUnsupportedMeth_Video_attachVideo">Weitere Informationen finden Sie unter Video.attachNetStream, Video.attachCamera.</warning>
-	<warning id="2660" hidden="true"  label="kUnsupportedMeth_TextField_StyleSheet_load">Verwenden Sie die URLLoader-Klasse, um den Ladevorgang auszuführen und das Ergebnis an StyleSheet.parseCSS() weiterzuleiten.</warning>
-	<warning id="2663" hidden="true"  label="kUnsupportedMeth_Object_registerClass">In ActionScript 3.0 werden alle Klassen standardmäßig registriert. Wenn Sie AMF verwenden, erhalten Sie weitere Informationen unter flash.utils.registerClassAlias().</warning>
+	<warning id="2660" hidden="true" label="kUnsupportedMeth_TextField_StyleSheet_load">Verwenden Sie die URLLoader-Klasse, um den Ladevorgang auszuführen und das Ergebnis an StyleSheet.parseCSS() weiterzuleiten.</warning>
+	<warning id="2663" hidden="true" label="kUnsupportedMeth_Object_registerClass">In ActionScript 3.0 werden alle Klassen standardmäßig registriert. Wenn Sie AMF verwenden, erhalten Sie weitere Informationen unter flash.utils.registerClassAlias().</warning>
 	<warning id="2664" hidden="true" label="kUnsupportedMeth_Object_unwatch">Verwenden Sie Zugriffsfunktionen (get/set-Funktionen) oder die flash.utils.Proxy-Klasse für ähnliche Funktionen.</warning>
 	<warning id="2665" hidden="true" label="kUnsupportedMeth_Object_watch">Verwenden Sie Zugriffsfunktionen (get/set-Funktionen) oder die flash.utils.Proxy-Klasse für ähnliche Funktionen.</warning>
 	<warning id="2666" hidden="true" label="kUnsupportedMeth_loadMovie">Weitere Informationen finden Sie unter MovieClip.loadMovie().</warning>
 	<warning id="2667" hidden="true" label="kUnsupportedMeth_loadMovieNum">Weitere Informationen finden Sie unter MovieClip.loadMovieNum().</warning>
-	<warning id="2668" hidden="true"  label="kUnsupportedMeth_loadVariables">Weitere Informationen finden Sie unter Loader.load().</warning>
+	<warning id="2668" hidden="true" label="kUnsupportedMeth_loadVariables">Weitere Informationen finden Sie unter Loader.load().</warning>
 	<warning id="2669" hidden="true" label="kUnsupportedMeth_loadVariablesNum">Weitere Informationen finden Sie unter Loader.load().</warning>
 	<warning id="2678" hidden="true" label="kUnsupportedMeth_Stage_addListener">Weitere Informationen finden Sie unter addEventListener (eventName, listener, useCapture, priority).</warning>
 	<warning id="2679" hidden="true" label="kUnsupportedMeth_Stage_removeListener">Weitere Informationen finden Sie unter removeEventListener (eventName, listener, useCapture).</warning>
@@ -605,7 +603,7 @@ This can help catch cases where you meant to call <code>super()</code> after som
   <warning id="3459" hidden="true" label="kUnsupportedProp_XMLDocument_contentType">Verwenden Sie stattdessen die Eigenschaft URLRequest.contentType.</warning>
   <warning id="3460" hidden="true" label="kUnsupportedProp_XMLDocument_status">Überprüfen Sie die möglichen Ausnahmen, die vom XMLDocument-Konstruktor ausgegeben werden könnten, oder verwenden Sie stattdessen die Methode XMLDocument.parseXML. Weitere Informationen finden Sie unter XMLDocument.</warning>
 
-  <!-- renamed types could be detected with a prop access ala "Keyboard.DELETE" or as a function ala "a = Image(b)". The following kUnsupportedProp_ strings are duplicated below for catching the kUnsupportedMeth_ cases -->
+  <!-- renamed types could be detected with a prop access ala "Keyboard.DELETE" or as a function ala "a = Image(b)".  The following kUnsupportedProp_ strings are duplicated below for catching the kUnsupportedMeth_ cases -->
   <warning id="3461" hidden="true" label="kUnsupportedProp_Button">Die Button-Klasse wurde in SimpleButton umbenannt.</warning>
   <warning id="3462" hidden="true" label="kUnsupportedProp_Container">Die Container-Klasse wurde in DisplayObjectContainer umbenannt.</warning>
   <warning id="3463" hidden="true" label="kUnsupportedProp_Image">Die Image-Klasse wurde in BitmapData umbenannt.</warning>
@@ -707,7 +705,7 @@ This can help catch cases where you meant to call <code>super()</code> after som
   <warning id="3553" hidden="true" label="kWarning_UnlikelyFunctionValue">Möglicherweise fehlen Klammern.</warning>
   <warning id="3554" label="kWarning_UnlikelyFunctionValue_specific">Anstelle des erwarteten Werts %s wird der Funktionswert verwendet. Möglicherweise fehlen hinter dieser Funktionsreferenz die Klammern ().
 <description><![CDATA[
-You can use functions themselves as values in ActionScript. The code in question is using a value of type Function where a type other than Function, Object, or * is expected. Usually,
+You can use functions themselves as values in ActionScript.  The code in question is using a value of type Function where a type other than Function, Object, or * is expected.  Usually,
 this indicates a typo where the parentheses <code>()</code> were omitted after the function name.
 ]]></description>
   </warning>
@@ -734,7 +732,7 @@ this indicates a typo where the parentheses <code>()</code> were omitted after t
   <warning id="3574" label="kWarning_XML_ClassHasChanged_specific">Migrationsfehler: Die ActionScript 2.0-Klasse wurde in XMLDocument umbenannt.
 	<description>
 		<![CDATA[
-		This is a code migration warning. XML is a different class in ActionScript 3.0 than it was in ActionScript 2.0. In ActionScript 3.0, the XMLDocument class is the equivalent of the XML class in ActionScript 2.0.
+		This is a code migration warning.  XML is a different class in ActionScript 3.0 than it was in ActionScript 2.0.  In ActionScript 3.0, the XMLDocument class is the equivalent of the XML class in ActionScript 2.0.
 The ActionScript 3.0 XML class offers improved functionality with an easier and more powerful API. See XML in the ActionScript Language Reference for additional details.
 		]]>
 	</description>
@@ -758,9 +756,9 @@ The ActionScript 3.0 XML class offers improved functionality with an easier and 
   <warning id="3593" label="kWarning_BadES3TypeProp_specific">%s ist keine erkannte Eigenschaft der dynamischen Klasse %s.
 	<description>
 		<![CDATA[
-		The strict compilation mode does not check for undefined properties on instances of dynamic classes. The types Date, RegExp, and Error are
-dynamic for backwards compatibility with ECMAScript. This warning finds usages of undefined properties on instances of those classes.
-A common problem is attempting to get or set a non-existent <code>year</code> property on a Date value. The correct property name is <code>fullYear</code>. 
+		The strict compilation mode does not check for undefined properties on instances of dynamic classes.  The types Date, RegExp, and Error are
+dynamic for backwards compatibility with ECMAScript.  This warning finds usages of undefined properties on instances of those classes.
+A common problem is attempting to get or set a non-existent <code>year</code> property on a Date value.  The correct property name is <code>fullYear</code>.  
 		]]>
 	</description>  
   </warning>
@@ -769,8 +767,8 @@ A common problem is attempting to get or set a non-existent <code>year</code> pr
   <warning id="3595" label="kWarning_BadES3TypeMethodProp_specific">%s ist keine erkannte Methode der dynamischen Klasse %s.
 	<description>
 		<![CDATA[
-		The strict compilation mode does not check for undefined methods on instances of dynamic classes. The types Date, RegExp, and Error are
-dynamic for backwards compatibility with ECMAScript. This warning finds usages of undefined methods on instances of those classes. 
+		The strict compilation mode does not check for undefined methods on instances of dynamic classes.  The types Date, RegExp, and Error are
+dynamic for backwards compatibility with ECMAScript.  This warning finds usages of undefined methods on instances of those classes. 
 		]]>
 	</description>
   </warning>
@@ -779,8 +777,8 @@ dynamic for backwards compatibility with ECMAScript. This warning finds usages o
   <warning id="3597" label="kWarning_DuplicateVariableDef_specific">Doppelte Variablendefinition.
 	<description>
 		<![CDATA[
-		The compiler has detected a duplicate definition for a variable. This can lead to unexpected results. ActionScript does not support block level 
-		scoping of variables. All variables defined within a function body exist within the same scope, even if they are defined within an 
+		The compiler has detected a duplicate definition for a variable.  This can lead to unexpected results.  ActionScript does not support block level 
+		scoping of variables.  All variables defined within a function body exist within the same scope, even if they are defined within an 
 		<code>if</code> statement, <code>while</code> statement, <code>for</code> statement, and so on: for example, the following code redeclares the variable x twice:
 		
 		<pre><code>
@@ -790,7 +788,7 @@ function test() {
 	    for (var x=0; x &lt 5; x++)  // warning here, this is the second defintion of x
 	    trace(x);
 	}
-	trace(x); // 5, not 10. The last value set by the for loop above is the current value of x
+	trace(x); // 5, not 10.  The last value set by the for loop above is the current value of x
 }</pre></code>	
 		]]>
 	</description>
@@ -799,15 +797,17 @@ function test() {
   <warning id="3599" label="kWarning_DefinitionShadowedByPackageName_specific">Der Definitionsname ist identisch mit dem Namen eines importierten Pakets. Unzureichend definierte Verweise auf diesen Namen beziehen sich auf das Paket, nicht auf die Definition.
 	<description>
 		<![CDATA[
-        If a definition is named the same as a package that is in scope, then any unqualified references to that name will resolve to the package instead of the definition. This can
-        result in unexpected errors when attempting to reference the variable. Any references to the definition need to be qualified to resolve to the definition and not the package.
+        If a definition is named the same as a package that is in scope, then any unqualified references to that name will resolve to the package instead of the definition.  This can
+        result in unexpected errors when attempting to reference the variable.  Any references to the definition need to be qualified to resolve to the definition and not the package.
         ]]>
 	</description>
   </warning>
   <warning id="3600" label="kWarning_DeleteOfFixedProperty">Möglicherweise wird versucht, eine feste Eigenschaft zu löschen.</warning>
   <warning id="3601" label="kWarning_DeleteOfFixedProperty_specific">Die deklarierte Eigenschaft %s darf nicht gelöscht werden. Um zugewiesenen Speicherplatz verfügbar zu machen, setzen Sie ihren Wert auf null. 
-     <description>Durch den Löschvorgang werden dynamisch definierte Eigenschaften aus einem Objekt entfernt. Deklarierte Eigenschaften einer Klasse können nicht gelöscht werden; der Vorgang wird nicht ausgeführt und es wird keine Warnung angezeigt. Um den Speicherplatz verfügbar zu machen, der dieser Variable zugewiesen ist, setzen Sie ihren Wert auf null.</description>
+     <description>Delete removes dynamically defined properties from an object.  Declared properties of a class can not be deleted, the operation merely fails silently.  To free memory associated with this variable, set its value to null instead.</description>
   </warning>
+
+
 </warnings>
 
 <properties>

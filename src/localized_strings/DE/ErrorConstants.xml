@@ -1,29 +1,17 @@
 <?xml version='1.0' encoding='utf-8' standalone='no' ?>
-
-<!--
-
-	ADOBE SYSTEMS INCORPORATED
-	Copyright 2006-2007 Adobe Systems Incorporated
-	All Rights Reserved.
-
-	NOTICE: Adobe permits you to use, modify, and distribute this file
-	in accordance with the terms of the license agreement accompanying it.
-
--->
-
 <!--  
 
    Note that error id="1179" does not need to be translated, its for internal use only.
 -->
 
 <errors>
-	<error id="1000"  label="kError_AmbiguousReference">Unklarer Verweis auf %s.
+	<error id="1000" label="kError_AmbiguousReference">Unklarer Verweis auf %s.
 
 
 	<description><![CDATA[
 	A reference might be to more than one item. For example, the following uses the namespaces <code>rss</code> and <code>xml</code>, each of which defines a 
 	different value for the <code>hello()</code> function. The 		
-	<code>trace (hello())</code> statement returns this error because it cannot determine which namespace to use.<br>
+	<code>trace(hello())</code> statement returns this error because it cannot determine which namespace to use.<br>
 	
 <pre><code>private namespace rss;
 private namespace xml;
@@ -58,7 +46,7 @@ rss function hello():String {
 
 </error>
 	<error id="1003" label="kError_NamespaceAccessSpecifiers">Zugriffsspezifikatoren sind in Kombination mit Namespace-Attributen nicht zulässig.
-		<description>Eine Definition kann nicht gleichzeitig einen Zugriffsspezifikator (z. B. 'private' oder 'public') und ein Namespace-Attribut enthalten.</description></error>
+		<description>You can not use both an access specifier (such as private or public) and a namespace attribute on a definition.</description></error>
 	<error id="1004" label="kError_Unknown_Namespace">Namespace wurde nicht gefunden oder ist keine Kompilierungszeit-Konstante.
 	
 <description><![CDATA[
@@ -87,11 +75,11 @@ rss function hello():String {
 		(for example, when you declare a variable within a function block).
 	]]></description>
 </error>
-	<error id="1012"  label="kError_InvalidStatic">Das static-Attribut kann nur für Definitionen innerhalb einer Klasse verwendet werden.</error>
+	<error id="1012" label="kError_InvalidStatic">Das static-Attribut kann nur für Definitionen innerhalb einer Klasse verwendet werden.</error>
 	<error id="1013" label="kError_InvalidPrivate">Das private-Attribut kann nur für Klasseneigenschaftendefinitionen verwendet werden.</error>
 	<error id="1014" label="kError_Unsupported_Intrinsic">Das intrinsic-Attribut wird nicht mehr unterstützt.
 <description>
-		Das Schlüsselwort <code>intrinsic</code> wird von ActionScript 3.0 nicht unterstützt.
+		ActionScript 3.0 does not support the <code>intrinsic</code> keyword.
 	</description>
 
 </error>
@@ -102,20 +90,20 @@ rss function hello():String {
 	]]></description>
 
 </error>
-	<error id="1017"  label="kError_UnknownBaseClass">Die Definition der Basisklasse %s wurde nicht gefunden.</error>
+	<error id="1017" label="kError_UnknownBaseClass">Die Definition der Basisklasse %s wurde nicht gefunden.</error>
 	<error id="1018" label="kError_DuplicateClassDefinition">Doppelte Klassendefinition: %s.</error>
 	<error id="1020" label="kError_OverrideNotFound">Mit 'override' gekennzeichnete Methode muss eine andere Methode außer Kraft setzen.</error>
 	<error id="1021" label="kError_DuplicateFunction">Doppelte Funktionsdefinition.
 <description>
-		Sie dürfen innerhalb eines Gültigkeitsbereiches mit einem Bezeichnernamen jeweils nur eine Funktion belegen.
+		You cannot declare more than one function with the same identifier name within the same scope.
 	</description>
 
 </error>
 	<error id="1022" label="kError_OverrideFinalAccessor">Endgültiger Zugriff kann nicht außer Kraft gesetzt werden.</error>
 	<error id="1023" label="kError_IncompatibleOverride">Nicht zulässiges außer Kraft Setzen.
-<description> Eine mit 'override' gekennzeichnete Funktion muss genau zu dem Parameter und der Rückgabetypdeklaration der außer Kraft gesetzten Funktion passen. 
-Sie muss über die gleiche Anzahl von Parametern des jeweils gleichen Typs verfügen und den gleichen Rückgabetyp deklarieren. Wenn ein oder mehrere Parameter optional ist/sind, muss
-auch diese Eigenschaft übereinstimmen. Für beide Funktionen muss der gleiche Zugriffsspezifikator ('public', 'private' usw.) bzw. das gleiche Namespace-Attribut gelten.</description></error>
+<description> A function marked override must exactly match the parameter and return type declaration of the function it is overriding. 
+It must have the same number of parameters, each of the same type, and declare the same return type.  If any of the parameters are optional, that
+must match as well.  Both functions must use the same access specifier (public, private, and so on) or namespace attribute as well.</description></error>
 	<error id="1024" label="kError_OverrideOfFuncNotMarkedForOverride">Eine nicht für 'override' gekennzeichnete Funktion wird außer Kraft gesetzt.
 <description>
 		<![CDATA[
@@ -141,7 +129,7 @@ auch diese Eigenschaft übereinstimmen. Für beide Funktionen muss der gleiche Z
 <description>
 	<![CDATA[
 		The ...(rest) parameter definition specifies that all values supplied after ...(rest) 
-		are collected into any array. 
+		are collected into any array.  
 		You must specify a name for the array, as in the expression 
 		<code>function foo(x,...(rest))</code>.
 
@@ -168,8 +156,8 @@ auch diese Eigenschaft übereinstimmen. Für beide Funktionen muss der gleiche Z
 
 </error>
 	<error id="1043" label="kError_UndefinedNamespace">Nicht definierter Namespace.</error>
-	<error id="1044"  label="kError_UnknownInterfaceMethod">Schnittstellenmethode %s in Namespace %s nicht durch Klasse %s implementiert.</error>
-	<error id="1045"  label="kError_UnknownInterface">Schnittstelle %s wurde nicht gefunden.</error>
+	<error id="1044" label="kError_UnknownInterfaceMethod">Schnittstellenmethode %s in Namespace %s nicht durch Klasse %s implementiert.</error>
+	<error id="1045" label="kError_UnknownInterface">Schnittstelle %s wurde nicht gefunden.</error>
 	<error id="1046" label="kError_UnknownType">Typ wurde nicht gefunden oder war keine Kompilierungszeit-Konstante: %s.
 <description>
 		<![CDATA[
@@ -203,7 +191,7 @@ auch diese Eigenschaft übereinstimmen. Für beide Funktionen muss der gleiche Z
 	<error id="1048" label="kError_MethodIsNotAConstructor">Methode kann nicht als Konstruktor verwendet werden.
 	
 	<description><![CDATA[
-	It is not possible to create an instance of a method of a class. Only global functions can be used in <code>new</code> expressions.
+	It is not possible to create an instance of a method of a class.  Only global functions can be used in <code>new</code> expressions.
 	
 <pre>class D { function xx() { return 22; } }
 var d:D = new D();
@@ -213,7 +201,7 @@ var z = new yy(); // no error, global functions can be used as constructors.</pr
 
 	]]></description>	
 </error>
-	<error id="1049"  label="kError_AssignmentToConstVar">Unzulässige Zuweisung zu einer als Konstante angegebenen Variablen.</error>
+	<error id="1049" label="kError_AssignmentToConstVar">Unzulässige Zuweisung zu einer als Konstante angegebenen Variablen.</error>
 	<error id="1050" label="kError_AssignmentToNonRefVar">Zuweisung zu einem Wert ohne integrierte Verweisfunktion nicht möglich.</error>
 	<error id="1051" label="kError_ReturnTypeMustBeUndefined">Rückgabewert darf nicht definiert sein.
 <description><![CDATA[
@@ -258,7 +246,7 @@ d.xx = 44; // error, property is read-only</pre>
 	]]></description>
 
 </error>
-	<error id="1061"  label="kError_Strict_UndefinedMethod">Aufruf für eine möglicherweise nicht definierte Methode %s über einen Verweis mit statischem Typ %s.
+	<error id="1061" label="kError_Strict_UndefinedMethod">Aufruf für eine möglicherweise nicht definierte Methode %s über einen Verweis mit statischem Typ %s.
 
 	<description><![CDATA[
 	You are calling a method that is not defined.
@@ -274,7 +262,7 @@ d.xx = 44; // error, property is read-only</pre>
 
 </error>
 	<error id="1065" label="kError_MetaDataAttributesHasMoreThanOneElement">Metadaten-Attribute dürfen nur ein Element enthalten.</error>
-	<error id="1067"  label="kError_ImplicitCoercisionOfUnrelatedType">Implizite Umwandlung eines Werts des Typs %s in einen nicht verwandten Typ %s.
+	<error id="1067" label="kError_ImplicitCoercisionOfUnrelatedType">Implizite Umwandlung eines Werts des Typs %s in einen nicht verwandten Typ %s.
 <description><![CDATA[
 		You are attempting to cast an object to a type to which it cannot be converted. This can happen
 		if the class you are casting to is not in the inheritance chain of the object being cast.
@@ -287,11 +275,11 @@ d.xx = 44; // error, property is read-only</pre>
 	<error id="1069" label="kError_Parser_DefinitionOrDirectiveExpected">Syntaxfehler: Definition oder Direktive erforderlich.
 
 <description>
-		Überprüfen Sie die Syntax in der Zeile.
+		Check the syntax in the line.
 	</description>
 
 </error>
-	<error id="1071"  label="kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes">Syntaxfehler: Definitionsschlüsselwort (z. B. 'function') wurde nicht nach %s, sondern nach Attribut %s erwartet.
+	<error id="1071" label="kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes">Syntaxfehler: Definitionsschlüsselwort (z. B. 'function') wurde nicht nach %s, sondern nach Attribut %s erwartet.
 <description>
 	<![CDATA[
 		This error will occur if the author forgets to use the "var" or "function" keyword in a declaration.
@@ -301,8 +289,9 @@ d.xx = 44; // error, property is read-only</pre>
 		the following use of the <code>trace()</code> function is invalid, because of the missing
 		parentheses (the correct syntax is <code>trace("hello")</code>):
 
-<pre><code>import flash.utils.trace;
-trace "hello"</code></pre>
+<pre>
+trace "hello"
+</pre>
 	]]>
 	</description>
 
@@ -339,7 +328,7 @@ break
 	<error id="1079" label="kError_Parser_WrongNumberOfSuperArgs">Ein Super-Ausdruck muss über einen Operanden verfügen.</error>
 	<error id="1080" label="kError_Parser_ExpectingIncrOrDecrOperator">Inkrement- oder Dekrement-Operator erforderlich.</error>
 	<error id="1082" label="kError_Parser_ExpectingASingleExpressionWithinParenthesis">Einfacher Ausdruck in Klammern erforderlich.</error>
-	<error id="1083"  label="kError_Parser_ExpectedPrimaryExprBefore">Syntaxfehler: %s wurde nicht erwartet.
+	<error id="1083" label="kError_Parser_ExpectedPrimaryExprBefore">Syntaxfehler: %s wurde nicht erwartet.
 
 <description>
 	<![CDATA[
@@ -362,7 +351,7 @@ break
 		parenthesis from a conditional expression, as shown in the following example, which is intentionally incorrect: </p>
 
 		<pre><code>var fact:int = 1 * 2 * 3;
-if fact > 2 {
+if fact &gt; 2 {
 	var bigger:Boolean = true;
 }</code></pre>
 	]]>
@@ -372,7 +361,7 @@ if fact > 2 {
 </error>
 	<error id="1086" label="kError_Parser_ExpectedSemicolon">Syntaxfehler: Semikolon vor %s erforderlich.</error>
 	<error id="1087" label="kError_Parser_ExtraCharsAfterEndOfProgram">Syntaxfehler: zusätzliche Zeichen wurden nach Ende des Programms gefunden.</error>
-	<error id="1093"  label="kError_Lexical_General">Syntaxfehler.</error>
+	<error id="1093" label="kError_Lexical_General">Syntaxfehler.</error>
 	<error id="1094" label="kError_Lexical_LineTerminatorInSingleQuotedStringLiteral">Syntaxfehler: Ein Stringliteral muss vor dem Zeilenumbruch beendet werden.</error>
 	<error id="1095" label="kError_Lexical_LineTerminatorInDoubleQuotedStringLiteral">Syntaxfehler: Ein Stringliteral muss vor dem Zeilenumbruch beendet werden.</error>
 	<error id="1097" label="kError_Lexical_EndOfStreamInStringLiteral">Syntaxfehler: Eingabe wurde vor Erreichen der schließenden Anführungszeichen für ein Stringliteral beendet.</error>
@@ -417,16 +406,16 @@ if fact > 2 {
 		An expression is missing in a part of the code. For example, the following produces this
 		error (there is a condition missing from the <code>if</code> statement:
 
-<pre><code>var x = (5>2) ? 
+<pre><code>var x = (5 &gt; 2) ? 
 trace(x)</code></pre>
 	]]>
 	</description>
 
 
 </error>
-	<error id="1110"  label="kError_MissingXMLTagName">Fehlender XML-Tagname.</error>
-	<error id="1111" hidden="true"  label="kError_InvalidAbcFile">Die Datei %s ist keine gültige ABC-Datei.</error>
-    <error id="1112"  label="kError_Parser_FileIncludesItself">Mögliche infinite Rekursion aufgrund dieser Datei: %s.
+	<error id="1110" label="kError_MissingXMLTagName">Fehlender XML-Tagname.</error>
+	<error id="1111" hidden="true" label="kError_InvalidAbcFile">Die Datei %s ist keine gültige ABC-Datei.</error>
+    <error id="1112" label="kError_Parser_FileIncludesItself">Mögliche infinite Rekursion aufgrund dieser Datei: %s.
 
 	<description><![CDATA[
 	A file that is included in the source being compiled contains other <code>include</code> 	statements that would cause an infinite loop. For example, the following files. a.as and 	b.as, generate this error because each file tries to include the other.
@@ -441,7 +430,7 @@ trace(2);</pre>
 	]]></description>
 
 </error>
-	<error id="1113"  label="kError_CircularReference">Ringverweis wurde in %s gefunden.
+	<error id="1113" label="kError_CircularReference">Ringverweis wurde in %s gefunden.
 	<description><![CDATA[
 	A class is trying to extend a superclass. For example, class A cannot extend class B if B inherits from A:
 <pre><code>class a extends b { }
@@ -449,10 +438,10 @@ class b extends a { }</code></pre>
 	]]></description>
 
 </error>
-	<error id="1114"  label="kError_InvalidPublic">Das public-Attribut kann nur innerhalb eines Pakets verwendet werden.</error>
-	<error id="1115"  label="kError_InvalidInternal">Das internal-Attribut kann nur innerhalb eines Pakets verwendet werden.</error>
-	<error id="1116"  label="kError_InvalidNamespace">Ein benutzerdefiniertes Namespace-Attribut kann nur auf der obersten Ebene einer Klassendefinition verwendet werden.</error>
-	<error id="1118"  label="kError_ImplicitCoercionToSubtype">Implizite Umwandlung von einem Wert mit statischem Typ %s in einen möglicherweise nicht verwandten Typ %s.
+	<error id="1114" label="kError_InvalidPublic">Das public-Attribut kann nur innerhalb eines Pakets verwendet werden.</error>
+	<error id="1115" label="kError_InvalidInternal">Das internal-Attribut kann nur innerhalb eines Pakets verwendet werden.</error>
+	<error id="1116" label="kError_InvalidNamespace">Ein benutzerdefiniertes Namespace-Attribut kann nur auf der obersten Ebene einer Klassendefinition verwendet werden.</error>
+	<error id="1118" label="kError_ImplicitCoercionToSubtype">Implizite Umwandlung von einem Wert mit statischem Typ %s in einen möglicherweise nicht verwandten Typ %s.
 	<description><![CDATA[You are using a value that is not of the expected type and no implicit coercion exists to convert it to the expected type.
 	<p>Perhaps you are using a supertype where a subtype is expected. For example:
 <pre><code>class A {}
@@ -469,7 +458,7 @@ foo(a);</code></pre>
 	]]></description>
 
 </error>
-	<error id="1119"  label="kError_UndefinedProperty">Zugriff auf eine möglicherweise nicht definierte Eigenschaft %s über einen Verweis mit statischem Typ %s 
+	<error id="1119" label="kError_UndefinedProperty">Zugriff auf eine möglicherweise nicht definierte Eigenschaft %s über einen Verweis mit statischem Typ %s 
 
 
 <description>
@@ -487,7 +476,7 @@ var str:String = i.assortment;</code></pre>
 
 
 </error>
-	<error id="1120"  label="kError_UnfoundProperty">Zugriff auf eine nicht definierte Eigenschaft %s.
+	<error id="1120" label="kError_UnfoundProperty">Zugriff auf eine nicht definierte Eigenschaft %s.
 
 <description>
 	<![CDATA[
@@ -502,18 +491,18 @@ var str:String = i.assortment;</code></pre>
 
 
 </error>
-    <error id="1121"  label="kError_GetterCannotHaveParameters">Eine getter-Definition darf keine Parameter enthalten.</error>
-    <error id="1122"  label="kError_SetterMustHaveOneParameter">Eine setter-Definition muss genau einen Parameter enthalten.</error>
-    <error id="1123"  label="kError_SetterCannotHaveOptional">Eine setter-Definition darf nicht über optionale Parameter verfügen.</error>
-    <error id="1124"  label="kError_BadGetterReturnType">Rückgabetyp einer getter-Definition darf nicht 'void' sein.
+    <error id="1121" label="kError_GetterCannotHaveParameters">Eine getter-Definition darf keine Parameter enthalten.</error>
+    <error id="1122" label="kError_SetterMustHaveOneParameter">Eine setter-Definition muss genau einen Parameter enthalten.</error>
+    <error id="1123" label="kError_SetterCannotHaveOptional">Eine setter-Definition darf nicht über optionale Parameter verfügen.</error>
+    <error id="1124" label="kError_BadGetterReturnType">Rückgabetyp einer getter-Definition darf nicht 'void' sein.
 
 	<description><![CDATA[
 	A getter function simulates a variable. Because variables cannot be of type void, you cannot declare getter functions to return type void.
 	]]></description>
 </error>
-    <error id="1125"  label="kError_InterfaceMethodWithBody">In einer Schnittstelle definierte Methoden dürfen keinen Hauptteil haben.</error>
-    <error id="1126"  label="kError_FunctionWithoutBody">Funktion enthält keinen Hauptteil.</error>
-    <error id="1127"  label="kError_DuplicateAttribute">Das Attribut %s wurde mehrfach angegeben.
+    <error id="1125" label="kError_InterfaceMethodWithBody">In einer Schnittstelle definierte Methoden dürfen keinen Hauptteil haben.</error>
+    <error id="1126" label="kError_FunctionWithoutBody">Funktion enthält keinen Hauptteil.</error>
+    <error id="1127" label="kError_DuplicateAttribute">Das Attribut %s wurde mehrfach angegeben.
 
 	<description><![CDATA[
 	You specified an attribute more than once in the same statement. For example, the statement <code>public static public var x;</code> generates 
@@ -521,20 +510,20 @@ var str:String = i.assortment;</code></pre>
 	]]></description>
 
 </error>
-    <error id="1129"  label="kError_DuplicateInterfaceDefinition">Doppelte Schnittstellendefinition: %s.
+    <error id="1129" label="kError_DuplicateInterfaceDefinition">Doppelte Schnittstellendefinition: %s.
 
 	<description><![CDATA[
 	Change or delete the duplicate definitions.
 	]]></description>
 
 </error>
-    <error id="1130"  label="kError_CtorWithReturnType">Ein Konstruktor kann keinen Rückgabetyp angeben.</error>
-    <error id="1131"  label="kError_InvalidClassNesting">Klassen dürfen nicht verschachtelt werden.</error>
-    <error id="1132"  label="kError_InvalidFinalUsage">Das final-Attribut kann nur für eine in einer Klasse definierte Methode verwendet werden.</error>
-    <error id="1133"  label="kError_InvalidNative">Das native-Attribut kann nur mit Funktionsdefinitionen verwendet werden.</error>
-    <error id="1134"  label="kError_InvalidDynamic">Das dynamic-Attribut kann nur mit Klassendefinitionen verwendet werden.</error>
-    <error id="1135"  label="kError_Parser_keywordInsteadOfTypeExpr">Syntaxfehler: %s ist ein ungültiger Typ.</error>
-    <error id="1136"  label="kError_WrongNumberOfArguments">Falsche Anzahl von Argumenten. %s erforderlich.
+    <error id="1130" label="kError_CtorWithReturnType">Ein Konstruktor kann keinen Rückgabetyp angeben.</error>
+    <error id="1131" label="kError_InvalidClassNesting">Klassen dürfen nicht verschachtelt werden.</error>
+    <error id="1132" label="kError_InvalidFinalUsage">Das final-Attribut kann nur für eine in einer Klasse definierte Methode verwendet werden.</error>
+    <error id="1133" label="kError_InvalidNative">Das native-Attribut kann nur mit Funktionsdefinitionen verwendet werden.</error>
+    <error id="1134" label="kError_InvalidDynamic">Das dynamic-Attribut kann nur mit Klassendefinitionen verwendet werden.</error>
+    <error id="1135" label="kError_Parser_keywordInsteadOfTypeExpr">Syntaxfehler: %s ist ein ungültiger Typ.</error>
+    <error id="1136" label="kError_WrongNumberOfArguments">Falsche Anzahl von Argumenten. %s erforderlich.
 
 	<description><![CDATA[
 	The function expects a different number of arguments than those you provided. For example, the 	following defines function <code>goo</code>, which has two arguments:
@@ -544,36 +533,36 @@ var str:String = i.assortment;</code></pre>
 <pre>A.goo(1,2,3);</pre>
 	]]></description>
 </error>
-    <error id="1137"  label="kError_TooManyArguments">Falsche Anzahl von Argumenten. Nicht mehr als %s erwartet.</error>
-    <error id="1138"  label="kError_BadRequiredParameter">Erforderliche Parameter sind nach optionalen Parametern nicht zulässig.</error>
-    <error id="1139"  label="kError_VarInInterface">Variablendeklarationen sind in Schnittstellen nicht zulässig.</error>
-    <error id="1140"  label="kError_InvalidRestDecl">Nach dem Parameterdefinitionsschlüsselwort '...rest' angegebene Parameter können nur vom Array-Datentyp sein.</error>
-    <error id="1141"  label="kError_CannotExtendInterface">Eine Klasse kann nur eine andere Klasse, jedoch keine Schnittstelle erweitern.</error>
-    <error id="1142"  label="kError_CannotExtendClass">Eine Schnittstelle kann nur andere Schnittstellen erweitern, %s ist jedoch eine Klasse.
+    <error id="1137" label="kError_TooManyArguments">Falsche Anzahl von Argumenten. Nicht mehr als %s erwartet.</error>
+    <error id="1138" label="kError_BadRequiredParameter">Erforderliche Parameter sind nach optionalen Parametern nicht zulässig.</error>
+    <error id="1139" label="kError_VarInInterface">Variablendeklarationen sind in Schnittstellen nicht zulässig.</error>
+    <error id="1140" label="kError_InvalidRestDecl">Nach dem Parameterdefinitionsschlüsselwort '...rest' angegebene Parameter können nur vom Array-Datentyp sein.</error>
+    <error id="1141" label="kError_CannotExtendInterface">Eine Klasse kann nur eine andere Klasse, jedoch keine Schnittstelle erweitern.</error>
+    <error id="1142" label="kError_CannotExtendClass">Eine Schnittstelle kann nur andere Schnittstellen erweitern, %s ist jedoch eine Klasse.
 	<description><![CDATA[
 	You are attempting to have the interface extend a class. An interface can only extend another 	interface.
 	]]></description>
 
 </error>
-    <error id="1143"  label="kError_InvalidOverrideUsage">Das override-Attribut kann nur für eine in einer Klasse definierte Methode verwendet werden.</error>
-    <error id="1144"  label="kError_IncompatibleInterfaceMethod">Die Schnittstellenmethode %s in Namespace %s wird mit einer inkompatiblen Signatur in Klasse %s implementiert.
+    <error id="1143" label="kError_InvalidOverrideUsage">Das override-Attribut kann nur für eine in einer Klasse definierte Methode verwendet werden.</error>
+    <error id="1144" label="kError_IncompatibleInterfaceMethod">Die Schnittstellenmethode %s in Namespace %s wird mit einer inkompatiblen Signatur in Klasse %s implementiert.
 
 	<description><![CDATA[
 	Method signatures must match exactly.
 	]]></description>
 
 </error>
-    <error id="1145"  label="kError_NativeMethodWithBody">Native Methoden können nicht über einen Hauptteil verfügen.
+    <error id="1145" label="kError_NativeMethodWithBody">Native Methoden können nicht über einen Hauptteil verfügen.
 	<description><![CDATA[
 	You cannot use <code>native</code> because it is a reserved keyword.
 	]]></description>
 
 </error>
-    <error id="1146"  label="kError_ConstructorCannnotBeGetterSetter">Ein Konstruktor kann keine Get- oder Set-Methode sein.</error>
-    <error id="1147"  label="kError_MissingFilespec">Eine AS-Quelldatei wurde nicht definiert.</error>
-    <error id="1149"  label="kError_CannotReturnFromStaticInit">Die return-Anweisung kann im statischen Initialisierungscode verwendet werden.</error>
-	<error id="1150"  label="kError_InvalidProtected">Das protected-Attribut kann nur für Definitionen von  Klasseneigenschaften verwendet werden.</error>
-	<error id="1151"  label="kError_ConflictingNameInNamespace">In Definition %s im Namespace %s liegt ein Konflikt vor.
+    <error id="1146" label="kError_ConstructorCannnotBeGetterSetter">Ein Konstruktor kann keine Get- oder Set-Methode sein.</error>
+    <error id="1147" label="kError_MissingFilespec">Eine AS-Quelldatei wurde nicht definiert.</error>
+    <error id="1149" label="kError_CannotReturnFromStaticInit">Die return-Anweisung kann im statischen Initialisierungscode verwendet werden.</error>
+	<error id="1150" label="kError_InvalidProtected">Das protected-Attribut kann nur für Definitionen von  Klasseneigenschaften verwendet werden.</error>
+	<error id="1151" label="kError_ConflictingNameInNamespace">In Definition %s im Namespace %s liegt ein Konflikt vor.
 
 	<description><![CDATA[
 	You cannot declare more than one variable with the same identifier name within the same scope unless all such variables are declared to be of 
@@ -582,43 +571,43 @@ var str:String = i.assortment;</code></pre>
 <pre><code>function test()
 {
 	var x:int = 3;
-	for(var x:int = 33; x < 55; x++)
+	for(var x:int = 33; x &lt; 55; x++)
 	trace(x);
-	for(var x:int = 11; x < 33; x++)
+	for(var x:int = 11; x &lt; 33; x++)
 	trace(x)
 }</code></pre>
 	<p>The following code example generates an error because the type casting in the variable declaration and the <code>for</code> loops are different:
 <pre><code>function test()
 {
 	var x:String = "The answer is";
-	for(var x:int = 33; x < 55; x++) // error
+	for(var x:int = 33; x &lt; 55; x++) // error
 	trace(x);
-	for(var x:unit = 11; x < 33; x++) // error
+	for(var x:unit = 11; x &lt; 33; x++) // error
 	trace(x)
 }</code></pre>
 ]]></description>
 
 
 </error>
-	<error id="1152"  label="kError_ConflictingInheritedNameInNamespace"> In der übernommenen Definition %s im Namespace %s liegt ein Konflikt vor.</error>
-    <error id="1153"  label="kError_ConstructorMustBePublic">Ein Konstruktor kann nur als 'public' deklariert werden.</error>
-	<error id="1154"  label="kError_ConflictingAccessSpecifiers">In einer Definition kann nur eine Instanz von 'public', 'private', 'protected' oder 'internal' angegeben werden.</error>
-	<error id="1155"  label="kError_InvalidNestedAccessor">Zugriffsmodule dürfen nicht in anderen Funktionen verschachtelt sein.</error>
-	<error id="1156"  label="kError_CannotInstantiateInterface">Schnittstellen dürfen nicht mit dem neuen Operator instanziiert werden.</error>
-	<error id="1157"  label="kError_BadAccessInterfaceMember">Schnittstellenmitglieder dürfen nicht als 'public', 'private', 'protected' oder 'internal' deklariert werden.</error>
-	<error id="1158"  label="kError_Parser_ExpectedLeftBrace">Syntaxfehler: Vor dem Funktionstext fehlt die linke Klammer ({).</error>
-    <error id="1159"  label="kError_CannotReturnFromPackageInit">Die return-Anweisung kann im Initialisierungscode des Pakets nicht verwendet werden.</error>
-    <error id="1160"  label="kError_InvalidInterfaceNative">Das native-Attribut kann nicht in Schnittstellendefinitionen verwendet werden.
+	<error id="1152" label="kError_ConflictingInheritedNameInNamespace"> In der übernommenen Definition %s im Namespace %s liegt ein Konflikt vor.</error>
+    <error id="1153" label="kError_ConstructorMustBePublic">Ein Konstruktor kann nur als 'public' deklariert werden.</error>
+	<error id="1154" label="kError_ConflictingAccessSpecifiers">In einer Definition kann nur eine Instanz von 'public', 'private', 'protected' oder 'internal' angegeben werden.</error>
+	<error id="1155" label="kError_InvalidNestedAccessor">Zugriffsmodule dürfen nicht in anderen Funktionen verschachtelt sein.</error>
+	<error id="1156" label="kError_CannotInstantiateInterface">Schnittstellen dürfen nicht mit dem neuen Operator instanziiert werden.</error>
+	<error id="1157" label="kError_BadAccessInterfaceMember">Schnittstellenmitglieder dürfen nicht als 'public', 'private', 'protected' oder 'internal' deklariert werden.</error>
+	<error id="1158" label="kError_Parser_ExpectedLeftBrace">Syntaxfehler: Vor dem Funktionstext fehlt die linke Klammer ({).</error>
+    <error id="1159" label="kError_CannotReturnFromPackageInit">Die return-Anweisung kann im Initialisierungscode des Pakets nicht verwendet werden.</error>
+    <error id="1160" label="kError_InvalidInterfaceNative">Das native-Attribut kann nicht in Schnittstellendefinitionen verwendet werden.
 	<description><![CDATA[
 	You cannot use <code>native</code> because it is a reserved keyword.
 	]]></description>
 
 </error>
-    <error id="1162"  label="kError_MultipleNamespaceAttributes">Pro Definition darf nur ein Namespace-Attribut verwendet werden.</error>
-    <error id="1163"  label="kError_ConflictingInheritedNameInInterface">Methode %s steht in Konflikt mit der aus Schnittstelle %s übernommenen Definition.</error>
-    <error id="1165"  label="kError_InvalidInterfaceAttribute">Schnittstellenattribut %s ist ungültig.</error>
-    <error id="1166"  label="kError_NamespaceInInterface">Namespace-Deklarationen sind in Schnittstellen nicht zulässig.</error>
-    <error id="1167"  label="kError_DuplicateImplements">In Klasse %s ist die Schnittstelle %s mehrfach implementiert.
+    <error id="1162" label="kError_MultipleNamespaceAttributes">Pro Definition darf nur ein Namespace-Attribut verwendet werden.</error>
+    <error id="1163" label="kError_ConflictingInheritedNameInInterface">Methode %s steht in Konflikt mit der aus Schnittstelle %s übernommenen Definition.</error>
+    <error id="1165" label="kError_InvalidInterfaceAttribute">Schnittstellenattribut %s ist ungültig.</error>
+    <error id="1166" label="kError_NamespaceInInterface">Namespace-Deklarationen sind in Schnittstellen nicht zulässig.</error>
+    <error id="1167" label="kError_DuplicateImplements">In Klasse %s ist die Schnittstelle %s mehrfach implementiert.
 
 	<description><![CDATA[
 	The class implements the same interface more than once. For example, the following generates this error because 
@@ -633,7 +622,7 @@ public function f() { trace("f"); }
 	]]></description>
 
 </error>
-    <error id="1168"  label="kError_AssignmentToDefinedFunction">Unzulässige Zuweisung zu Funktion %s.
+    <error id="1168" label="kError_AssignmentToDefinedFunction">Unzulässige Zuweisung zu Funktion %s.
 
 	<description><![CDATA[
 	You are attempting to redefine a function. For example, the following defines the function 	<code>topLevel()</code> 
@@ -644,8 +633,8 @@ topLevel = function() { trace("replacement works in ~");} // error</code></pre>
 
 
 </error>
-    <error id="1169"  label="kError_InterfaceNamespaceAttribute">Namespace-Attribute sind für Schnittstellenmethoden nicht zulässig.</error>
-    <error id="1170"  label="kError_MustReturnValue">Funktion gibt keinen Wert zurück.
+    <error id="1169" label="kError_InterfaceNamespaceAttribute">Namespace-Attribute sind für Schnittstellenmethoden nicht zulässig.</error>
+    <error id="1170" label="kError_MustReturnValue">Funktion gibt keinen Wert zurück.
 
 	<description><![CDATA[
 	Every possible control flow in a function must return a value whenever the return type is 	something other than void. The following function 
@@ -674,39 +663,39 @@ switch(x)
 	<p>This checking is enabled only when the function declares a return type other than void. 
 	]]></description>
 </error>
-    <error id="1171"  label="kError_InvalidNamespaceInitializer">Eine Namespace-Initialisierung muss entweder ein Literalstring oder ein anderer Namespace sein.</error>
-    <error id="1172"  label="kError_DefinitionNotFound">Definition %s wurde nicht gefunden.</error>
-    <error id="1173"  label="kError_InvalidLabel">Bezeichnungsdefinition ist ungültig.</error>
-    <error id="1176"  label="kError_IncompatableValueComparison">Vergleich zwischen einem Wert mit statischem Typ %s und einem möglicherweise nicht verwandten Typ %s.
-<description>Dieser Fehler ist im Strict Mode aktiviert.</description></error>
-    <error id="1177"  label="kError_CannotReturnFromGlobalInit">Die return-Anweisung kann im globalen Initialisierungscode verwendet werden.</error>
-    <error id="1178"  label="kError_InaccessiblePropertyReference">Versuchter Aufruf einer nicht verfügbaren Eigenschaft %s über einen Verweis mit statischem Typ %s.</error>
-    <error id="1179"  hidden="true" label="kError_ColonObjectAnnoOutOfService">:Objekt ist vorübergehend nicht verfügbar. Verwenden Sie stattdessen :*.</error>
-	<error id="1180"  label="kError_Strict_PlainUndefinedMethod">Aufruf einer möglicherweise undefinierten Methode %s.
-<description>Dieser Fehler wird nur angezeigt, wenn der Compiler im Strict Mode ausgeführt wird.</description></error>
-	<error id="1181"  label="kError_ForwardReferenceToBaseClass">Verweis an Basisklasse %s weiterleiten.</error>
-	<error id="1182"  label="kError_IllegalPackageReference">Paket kann nicht als Wert verwendet werden: %s.</error>
-	<error id="1184"  label="kError_IncompatibleDefaultValue">Inkompatibler Standardwert vom Typ %s, bei dem %s erwartet wird.</error>
-	<error id="1185"  label="kError_MultipleSwitchDefaults">Für 'switch' sind mehrere Standardwerte vorhanden, es ist jedoch nur ein Standardwert zulässig.</error>
-    <error id="1188"  label="kError_AssignmentToDefinedClass">Unzulässige Zuweisung zu Klasse %s.</error>
-    <error id="1189"  label="kError_Strict_AttemptToDeleteFixedProperty">Es wird versucht, die feste Eigenschaft %s zu löschen. Nur dynamisch definierte Eigenschaften können gelöscht werden.
-<description>Durch den Löschvorgang werden dynamisch definierte Eigenschaften aus einem Objekt entfernt. Deklarierte Eigenschaften einer Klasse dürfen nicht gelöscht werden. Dieser Fehler wird nur angezeigt, wenn der Compiler im Strict Mode ausgeführt wird.</description></error>
-	<error id="1190"  label="kError_InvalidBaseTypeExpression">Basisklasse wurde nicht gefunden oder ist keine Kompilierungszeit-Konstante.</error>
-    <error id="1191"  label="kError_InvalidInterfaceTypeExpression">Schnittstelle wurde nicht gefunden oder ist keine Kompilierungszeit-Konstante.</error>
-    <error id="1192"  label="kError_StaticModifiedNamespace">Das static-Attribut ist in Namespace-Definitionen nicht zulässig.</error>
-    <error id="1193"  label="kError_InvalidInterfaceNesting">Schnittstellendefinitionen dürfen nicht in Klassen oder anderen Schnittstellendefinitionen verschachtelt werden.</error>
-	<error id="1194"  label="kError_PrototypeIsAnInvalidAttribute">Das prototype-Attribut ist ungültig.</error>
-	<error id="1195"  label="kError_InaccessibleMethodReference">Versuchter Aufruf der nicht verfügbaren Methode %s über einen Verweis mit statischem Typ %s.
-		<description><![CDATA[You are either calling a private method from another class, or calling a method defined in a namespace that is not in use. If you are calling a method defined in an unused namespace, add a <code>use</code> statement for the required namespace.
+    <error id="1171" label="kError_InvalidNamespaceInitializer">Eine Namespace-Initialisierung muss entweder ein Literalstring oder ein anderer Namespace sein.</error>
+    <error id="1172" label="kError_DefinitionNotFound">Definition %s wurde nicht gefunden.</error>
+    <error id="1173" label="kError_InvalidLabel">Bezeichnungsdefinition ist ungültig.</error>
+    <error id="1176" label="kError_IncompatableValueComparison">Vergleich zwischen einem Wert mit statischem Typ %s und einem möglicherweise nicht verwandten Typ %s.
+<description>This error is enabled in strict mode.</description></error>
+    <error id="1177" label="kError_CannotReturnFromGlobalInit">Die return-Anweisung kann im globalen Initialisierungscode verwendet werden.</error>
+    <error id="1178" label="kError_InaccessiblePropertyReference">Versuchter Aufruf einer nicht verfügbaren Eigenschaft %s über einen Verweis mit statischem Typ %s.</error>
+    <error id="1179" hidden="true" label="kError_ColonObjectAnnoOutOfService">:Objekt ist vorübergehend nicht verfügbar. Verwenden Sie stattdessen :*.</error>
+	<error id="1180" label="kError_Strict_PlainUndefinedMethod">Aufruf einer möglicherweise undefinierten Methode %s.
+<description>This error appears only when the compiler is running in strict mode.</description></error>
+	<error id="1181" label="kError_ForwardReferenceToBaseClass">Verweis an Basisklasse %s weiterleiten.</error>
+	<error id="1182" label="kError_IllegalPackageReference">Paket kann nicht als Wert verwendet werden: %s.</error>
+	<error id="1184" label="kError_IncompatibleDefaultValue">Inkompatibler Standardwert vom Typ %s, bei dem %s erwartet wird.</error>
+	<error id="1185" label="kError_MultipleSwitchDefaults">Für 'switch' sind mehrere Standardwerte vorhanden, es ist jedoch nur ein Standardwert zulässig.</error>
+    <error id="1188" label="kError_AssignmentToDefinedClass">Unzulässige Zuweisung zu Klasse %s.</error>
+    <error id="1189" label="kError_Strict_AttemptToDeleteFixedProperty">Es wird versucht, die feste Eigenschaft %s zu löschen. Nur dynamisch definierte Eigenschaften können gelöscht werden.
+<description>Delete removes dynamically defined properties from an object.  Declared properties of a class can not be deleted.  This error appears only when the compiler is running in strict mode.</description></error>
+	<error id="1190" label="kError_InvalidBaseTypeExpression">Basisklasse wurde nicht gefunden oder ist keine Kompilierungszeit-Konstante.</error>
+    <error id="1191" label="kError_InvalidInterfaceTypeExpression">Schnittstelle wurde nicht gefunden oder ist keine Kompilierungszeit-Konstante.</error>
+    <error id="1192" label="kError_StaticModifiedNamespace">Das static-Attribut ist in Namespace-Definitionen nicht zulässig.</error>
+    <error id="1193" label="kError_InvalidInterfaceNesting">Schnittstellendefinitionen dürfen nicht in Klassen oder anderen Schnittstellendefinitionen verschachtelt werden.</error>
+	<error id="1194" label="kError_PrototypeIsAnInvalidAttribute">Das prototype-Attribut ist ungültig.</error>
+	<error id="1195" label="kError_InaccessibleMethodReference">Versuchter Aufruf der nicht verfügbaren Methode %s über einen Verweis mit statischem Typ %s.
+		<description><![CDATA[You are either calling a private method from another class, or calling a method defined in a namespace that is not in use.  If you are calling a method defined in an unused namespace, add a <code>use</code> statement for the required namespace.
 	]]></description>
  	</error>
-	<error id="1196"  label="kError_Parser_ThrowWithoutExpression">Syntaxfehler: Nach dem Throw wird eine Ausdruck erwartet.</error>
-    <error id="1197"  label="kError_Authoring_SymbolClassInheritance">Die Klasse %s kann nicht mit %s erweitert werden, da beide Bibliothekssymbolen oder der Hauptzeitleiste zugewiesen sind.</error>
-    <error id="1198"  label="kError_AttributesOnPackage">Attribute sind in Definitionen von Paketen nicht zulässig.</error>
-    <error id="1199"  label="kError_InternalError">Interner Fehler: %s.</error>
-    <error id="1200"  label="kError_ParserInvalidForInInitializer">Syntaxfehler: Ungültige for-in-Initialisierung, nur 1 Ausdruck erwartet.</error>
-	<error id="1201"  label="kError_IllegalSuperStatement">Eine super-Anweisung darf nicht einer this-, super-, return- oder throw-Anweisung folgen.</error>
-	<error id="1202"  label="kError_UnfoundPackageProperty">Zugriff auf die undefinierte Eigenschaft %s in Paket %s.
+	<error id="1196" label="kError_Parser_ThrowWithoutExpression">Syntaxfehler: Nach dem Throw wird eine Ausdruck erwartet.</error>
+    <error id="1197" label="kError_Authoring_SymbolClassInheritance">Die Klasse %s kann nicht mit %s erweitert werden, da beide Bibliothekssymbolen oder der Hauptzeitleiste zugewiesen sind.</error>
+    <error id="1198" label="kError_AttributesOnPackage">Attribute sind in Definitionen von Paketen nicht zulässig.</error>
+    <error id="1199" label="kError_InternalError">Interner Fehler: %s.</error>
+    <error id="1200" label="kError_ParserInvalidForInInitializer">Syntaxfehler: Ungültige for-in-Initialisierung, nur 1 Ausdruck erwartet.</error>
+	<error id="1201" label="kError_IllegalSuperStatement">Eine super-Anweisung darf nicht einer this-, super-, return- oder throw-Anweisung folgen.</error>
+	<error id="1202" label="kError_UnfoundPackageProperty">Zugriff auf die undefinierte Eigenschaft %s in Paket %s.
 
 <description>
 	<![CDATA[
@@ -719,9 +708,9 @@ switch(x)
 	]]>
 </description>
     </error>
-    <error id="1203"  label="kError_NoDefaultBaseclassCtor">Kein Standardkonstruktor in Basisklasse %s gefunden.
-    <description>Sie müssen den Konstruktor der Basisklasse explizit mit einer super()-Anweisung aufrufen, wenn er über mindestens 1 erforderliches Argument verfügt.</description></error>
-	<error id="1204"  label="kError_BlockCommentNotTerminated">/* gefunden ohne Übereinstimmung mit */.
+    <error id="1203" label="kError_NoDefaultBaseclassCtor">Kein Standardkonstruktor in Basisklasse %s gefunden.
+    <description>You must explicitly call the constructor of the base class with a super() statement if it has 1 or more required arguments.</description></error>
+	<error id="1204" label="kError_BlockCommentNotTerminated">/* gefunden ohne Übereinstimmung mit */.
 <description>
 	<![CDATA[
 		The characters '/*' where found, which indicate the beginning of a comment, but the corresponding characters, '*/', which indicate the end of the comment block, were not found.

@@ -1,38 +1,39 @@
 <?xml version='1.0' encoding='utf-8' standalone='no' ?>
-
-<!--
-
-	ADOBE SYSTEMS INCORPORATED
-	Copyright 2006-2007 Adobe Systems Incorporated
-	All Rights Reserved.
-
-	NOTICE: Adobe permits you to use, modify, and distribute this file
-	in accordance with the terms of the license agreement accompanying it.
-
--->
-
 <AS2LintWarnings>
 
-<!-- 
+<!-- ***Dont use ?? in these - use ? if you must; C++ translates ?? into a ^ symbol for some reason..***
    
-  Note: do not translate Actionscript keywords such as Package, Class, Interface, function, var, Number, String, 
-  Boolean, int, uint, Date, Array, XML, 
+  
+
+   In addition, the following words should not be translated:
+	AS2
+	AS3
+	SWF
+	Class
+	class
+	namespace
+	Namespace
+	
+	TODO:  XML 
 -->
 	
 <warnings>
 	<warning id="1008" hidden="true" label="kWarning_NoTypeDecl">유형 선언이 없습니다.</warning>
-	<warning id="1009"  label="kWarning_NoTypeDecl_specific">%s '%s'에 유형 선언이 없습니다.
+	<warning id="1009" label="kWarning_NoTypeDecl_specific">%s '%s'에 유형 선언이 없습니다.
 	
 	<description>
 		<![CDATA[
-		Not declaring a data type is a coding style preference.  A function return type, parameter, or variable has no type declaration. However, using type declarations enables the compiler to write more efficient code, as well as detect more errors at compile time. Enable this warning if you want to be reminded when you fail to use a type declaration.
+		Not declaring a data type is a coding style preference.  A function return type, parameter, or variable has no type declaration.  
+		However, using type declarations enables the compiler to write more efficient code, as well as detect more errors at compile time.
+		Enable this warning if you want to be reminded when you fail to use a type declaration.
 		]]>
 	</description></warning>
 	<warning id="1012" hidden="true" label="kWarning_BadUndefinedComparision">undefined 비교가 비논리적입니다. 유형이 지정되지 않은 변수나 * 유형의 변수만 undefined일 수 있습니다.</warning>
 	<warning id="1013" label="kWarning_BadUndefinedComparision_specific">%s 유형의 변수는 undefined일 수 없습니다. 비교 전에 undefined 값의 유형은 %s(으)로 강제 변환됩니다.
 	<description>
 		<![CDATA[
-	Only variables of type * can be undefined.  With a few exceptions, uninitialized variables have a default value of <code>null</code> rather than <code>undefined</code>. The exceptions include: Boolean variables, which have a default value of <code>false</code>. Number variables, which have a default value of <code>NaN</code>, and int or uint variables, which have a default value of <code>0</code>.
+	Only variables of type * can be undefined.  With a few exceptions, uninitialized variables have a default value of <code>null</code> rather than <code>undefined</code>.  
+	The exceptions include: Boolean variables, which have a default value of <code>false</code>. Number variables, which have a default value of <code>NaN</code>, and int or uint variables, which have a default value of <code>0</code>.
 			]]>
 	</description>
 	</warning>
@@ -44,13 +45,13 @@
 		This is a code migration warning.  The detected code behaves differently in ActionScript 3.0 than in ActionScript 2.0, as shown in the following example:
 <pre><code>function f(){
    this.b = 22;
-   this.a = new Array(2);&#160; 
+   this.a = new Array(2);  
    this.a[0] = 33;
    this.a[1] = 44;
    return a; 
    } 
    // returns a new instance of f in ActionScript 2.0 and a new 2 element array in ActionScript 3.0
-   var d = new f();&#160; // Warning here
+   var d = new f();  // Warning here
    trace(d.a);       // undefined in ActionScript 3.0, [33,44] in ActionScript 2.0.
 </code></pre>
 ]]>
@@ -70,16 +71,19 @@
 	<warning id="1039" label="kWarning_NumberFromStringChanges_specific">마이그레이션 문제: 빈 문자열 인수로 Number('') 함수를 호출하면 ActionScript 3.0에서는 0이 반환되고 ActionScript 2.0에서는 NaN이 반환됩니다.
 	<description>
 		<![CDATA[
-		This is a code migration warning.  The <code>Number()</code> method called with a String argument skips over all white space in the string and return a default value of 0 if no digits are detected. In ActionScript 2.0, any white space in the string causes the result to be NaN.
+		This is a code migration warning.  The <code>Number()</code> method called with a String argument skips over all white space in the string and return a default value of 0 if no digits are detected.
+In ActionScript 2.0, any white space in the string causes the result to be NaN.
 		]]>
 	</description>
 	</warning>
 
-	<warning id="1044" hidden="true"   label="kWarning_ArrayToStringChanges">Array.toString() 형식이 변경되었습니다.</warning>
+	<warning id="1044" hidden="true" label="kWarning_ArrayToStringChanges">Array.toString() 형식이 변경되었습니다.</warning>
 	<warning id="1045" label="kWarning_ArrayToStringChanges_specific">마이그레이션 문제: Array.toString()의 null 및 undefined 요소 처리가 변경되었습니다.
 	<description>
 		<![CDATA[
-		This is a code migration warning.  In ActionScript 2.0, <code>null</code> array elements convert to <code>null</code> and <code>undefined</code> elements convert to <code>undefined</code>. In ActionScript 3.0, both <code>null</code> and <code>undefined</code> elements convert to the empty string ''.  If you have code that parses the <code>toString()</code> output from an Array, you may need to adjust your code for this difference.
+		This is a code migration warning.  In ActionScript 2.0, <code>null</code> array elements convert to <code>null</code> and <code>undefined</code> elements convert to <code>undefined</code>.  
+In ActionScript 3.0, both <code>null</code> and <code>undefined</code> elements convert to the empty string ''.  If you have code that parses the <code>toString()</code> output from an Array,
+you may need to adjust your code for this difference.
 		]]>
 	</description>
 	</warning>
@@ -110,7 +114,7 @@
 		]]>
 	</description>
 	</warning>
-	<warning id="1070" hidden="true"   label="kWarning_LevelNotSupported">이제 _level은 지원되지 않습니다. 자세한 내용은 flash.display 패키지를 참조하십시오.</warning>
+	<warning id="1070" hidden="true" label="kWarning_LevelNotSupported">이제 _level은 지원되지 않습니다. 자세한 내용은 flash.display 패키지를 참조하십시오.</warning>
 	<warning id="1071" label="kWarning_LevelNotSupported_specific">마이그레이션 문제: 이제 _level은 지원되지 않습니다. 자세한 내용은 flash.display 패키지를 참조하십시오.
 	<description>
 		<![CDATA[
@@ -123,7 +127,8 @@
 	<warning id="1073" label="kWarning_ClassIsSealed_specific">마이그레이션 문제: %s은(는) 동적 클래스가 아닙니다. 인스턴스에 멤버가 동적으로 추가될 수 없습니다.
 	<description>
 		<![CDATA[
-		This is a code migration warning.  In ActionScript 2.0, many classes such as Number are dynamic, which means that new properties can be added to instances of those classes at run time.  This warning results from code that tries to add a property to an instance of a non-dynamic class.
+		This is a code migration warning.  In ActionScript 2.0, many classes such as Number are dynamic, which means that new properties can
+be added to instances of those classes at run time.  This warning results from code that tries to add a property to an instance of a non-dynamic class.
 		]]>
 	</description>
 	</warning>
@@ -131,7 +136,10 @@
 	<warning id="1083" label="kWarning_ScopingChangeInThis_specific">마이그레이션 문제: this 키워드에 대한 범위 지정이 변경되어 ActionScript 3.0에서 %s 메서드가 다르게 동작합니다. 자세한 내용은 경고 항목 1083을 참조하십시오.
 <description>
 		<![CDATA[
-		This is a code migration warning.  This warning is generated when a method of an object is used as a value, usually as a callback function. In ActionScript 2.0, functions are executed in the context they are called from.  In ActionScript 3.0, functions are always executed in the context where they were defined.  Thus, variable and method names are resolved to the class that the callback is part of, rather than relative to the context it is called from, as in the following example:
+		This is a code migration warning.  This warning is generated when a method of an object is used as a value, usually as a callback function.
+		In ActionScript 2.0, functions are executed in the context they are called from.  In ActionScript 3.0, functions are always
+		executed in the context where they were defined.  Thus, variable and method names are resolved to the class that the callback is part of, rather
+		than relative to the context it is called from, as in the following example:
 		
 <pre><code>class a 
 { 
@@ -147,11 +155,13 @@ f(); // prints 1 in ActionScript 3.0, 22 in ActionScript 2.0</code></pre>		]]>
 	</description>
 	</warning>
 	
-	<warning id="1084" hidden="true"  label="kWarning_MissingNamespaceDecl">네임스페이스 선언이 없습니다. 예를 들어 변수가 public, private 등으로 정의되지 않았습니다.</warning>
-	<warning id="1085"  label="kWarning_MissingNamespaceDecl_specific">%s의 범위가 기본 네임스페이스인 %s internal로 지정됩니다. 이에 따라 이 패키지 외부에서는 보이지 않습니다.
+	<warning id="1084" hidden="true" label="kWarning_MissingNamespaceDecl">네임스페이스 선언이 없습니다. 예를 들어 변수가 public, private 등으로 정의되지 않았습니다.</warning>
+	<warning id="1085" label="kWarning_MissingNamespaceDecl_specific">%s의 범위가 기본 네임스페이스인 %s internal로 지정됩니다. 이에 따라 이 패키지 외부에서는 보이지 않습니다.
 <description>
 	<![CDATA[
-	Not declaring a namespace is a coding style preference.  Enable this warning if you want to be reminded when you forget to declare a namespace or access specifier for a definition. Without one, the definition is not visible to code located outside of this file.  To make it visible to code outside this file, declare it with the access specifier <code>public</code> or with a namespace declaration.  To keep the definition local to this file and avoid this warning, declare the definition as <code>private</code>.
+	Not declaring a namespace is a coding style preference.  Enable this warning if you want to be reminded when you forget to declare a namespace or access specifier for a definition.
+	Without one, the definition is not visible to code located outside of this file.  To make it visible to code outside this file, declare it with the access specifier <code>public</code> or with
+	a namespace declaration.  To keep the definition local to this file and avoid this warning, declare the definition as <code>private</code>.
 	]]>
 </description>
 	</warning>
@@ -160,7 +170,8 @@ f(); // prints 1 in ActionScript 3.0, 22 in ActionScript 2.0</code></pre>		]]>
 	<warning id="1087" label="kWarning_ForVarInChanges_specific">마이그레이션 문제: ActionScript 3.0에서는 "for x in target" 문 내에서 객체의 속성이 임의의 순서로 반복 실행됩니다.
 	<description>
 		<![CDATA[
-		This is a code migration warning.  In ActionScript 2.0, the order in which the properties of an object were processed was always the same. In ActionScript 3.0, the order is random and can change from machine to machine.  If unexpected ordering behavior occurs, inspect this loop to determine if this change in behavior may affect your code.
+		This is a code migration warning.  In ActionScript 2.0, the order in which the properties of an object were processed was always the same.  
+In ActionScript 3.0, the order is random and can change from machine to machine.  If unexpected ordering behavior occurs, inspect this loop to determine if this change in behavior may affect your code.
 		]]>
 	</description>
 	</warning>
@@ -177,7 +188,9 @@ f(); // prints 1 in ActionScript 3.0, 22 in ActionScript 2.0</code></pre>		]]>
 	<warning id="1091" label="kWarning_DepricatedEventHandlerError_specific">마이그레이션 문제: %s
 	<description>
 		<![CDATA[
-		This is a code migration warning.  In ActionScript 2.0 declaring a method by a special name (such as <code>onMouseDown</code>) would cause Flash to call that method when a certain event occurred.  In ActionScript 3.0, you must call <code>addEventListener()</code> with a method in order to register it to receive that event.  See <code>addEventListener</code> in this language reference for details.
+		This is a code migration warning.  In ActionScript 2.0 declaring a method by a special name (such as <code>onMouseDown</code>) would cause Flash to
+call that method when a certain event occurred.  In ActionScript 3.0, you must call <code>addEventListener()</code> with a method in order to register it to 
+receive that event.  See <code>addEventListener</code> in this language reference for details.
 		]]>
 	</description>
 	</warning>
@@ -195,7 +208,8 @@ f(); // prints 1 in ActionScript 3.0, 22 in ActionScript 2.0</code></pre>		]]>
 	<warning id="1097" label="kWarning_BadNullComparision_specific">null 비교가 비논리적입니다. %s 유형의 변수는 null일 수 없습니다.
 	<description>
 		<![CDATA[
-		Instances of Boolean, int, uint, and Number cannot be <code>null</code>.  The comparison operator type converts <code>null</code> to <code>false</code> before comparing it to a Boolean, or to 0 before comparing it with a Number, int, or uint data type.
+		Instances of Boolean, int, uint, and Number cannot be <code>null</code>.  The comparison operator type converts <code>null</code> to <code>false</code> before
+comparing it to a Boolean, or to 0 before comparing it with a Number, int, or uint data type.
 		]]>
 	</description>
     </warning>
@@ -216,7 +230,9 @@ trace(isNaN(NaN)); // true
 
 <description>
 		<![CDATA[
-		The result of an = assignment statement is the value of the right-hand side of the = statement. You can use an assignment statement as a conditional test, but it is not recommended. It usually is the result of a typo where a == equality test was intended, as the following example shows: 
+		The result of an = assignment statement is the value of the right-hand side of the = statement.
+	    You can use an assignment statement as a conditional test, but it is not recommended. 
+	    It usually is the result of a typo where a == equality test was intended, as the following example shows: 
 <pre><code>var x:Boolean = false;
 var y:Boolean = true;
 // it is hard to determine if the line below intentionally sets x's value to y's or if its a typo
@@ -239,7 +255,9 @@ if (x = y) { trace("x is assigned y's value of true, making the conditional test
 	<warning id="1105" label="kWarning_NoConstructor_specific">%s 클래스에 대한 생성자 함수가 지정되지 않았습니다.
 	<description>
 		<![CDATA[
-		Not specifying a constructor function is a coding style preference.  Enable this warning if you want to always declare constructors for classes. This warning is intended to help find cases where a class name is changed but its constructor's name is not. Conditions such as this are not flagged as a problem without this warning, the former constructor appears to be a normal function.
+		Not specifying a constructor function is a coding style preference.  Enable this warning if you want to always declare constructors for classes.  
+This warning is intended to help find cases where a class name is changed but its constructor's name is not.  
+Conditions such as this are not flagged as a problem without this warning, the former constructor appears to be a normal function.
 		]]>
 	</description>
     </warning>
@@ -252,36 +270,37 @@ if (x = y) { trace("x is assigned y's value of true, making the conditional test
 	<warning id="1115" label="kWarning_NoExplicitSuperCallInConstructor_specific">이 생성자가 시작되기 전에 super() 문이 실행됩니다. super() 문의 실행 시기를 명시적으로 제어하려면 생성자 내에 super()에 대한 호출을 추가하십시오.
 	<description>
 		<![CDATA[
-		Adding a call to <code>super()</code> within the constructor is a coding style preference.  Enable this warning if you want to always be explicit about when <code>super()</code> is called. This can help catch cases where you meant to call <code>super()</code> after some local initialization code and forgot to add it.
+		Adding a call to <code>super()</code> within the constructor is a coding style preference.  Enable this warning if you want to always be explicit about when <code>super()</code> is called.
+This can help catch cases where you meant to call <code>super()</code> after some local initialization code and forgot to add it.
 		]]>
 	</description></warning>
 
-	<warning id="2090" hidden="true"  label="kUnsupportedProp_version">Capabilities.version을 대신 사용하십시오.</warning>
-	<warning id="2091" hidden="true"  label="kUnsupportedProp_Focusrect">자세한 내용은 InteractiveObject.focusRect를 참조하십시오.</warning>
+	<warning id="2090" hidden="true" label="kUnsupportedProp_version">Capabilities.version을 대신 사용하십시오.</warning>
+	<warning id="2091" hidden="true" label="kUnsupportedProp_Focusrect">자세한 내용은 InteractiveObject.focusRect를 참조하십시오.</warning>
 	<warning id="2092" hidden="true" label="kUnsupportedProp_Highquality">자세한 내용은 Stage.quality를 참조하십시오.</warning>
 	<warning id="2093" hidden="true" label="kUnsupportedProp_DisplayObj_HighQuality">자세한 내용은 Stage.quality를 참조하십시오.</warning>
 	<warning id="2094" hidden="true" label="kUnsupportedProp_DisplayObj_Quality">자세한 내용은 Stage.quality를 참조하십시오.</warning>
 	<warning id="2095" hidden="true" label="kUnsupportedProp_Quality">자세한 내용은 Stage.quality를 참조하십시오.</warning>
 	<warning id="2096" hidden="true" label="kUnsupportedProp_TextField_Soundbuftime">정적 속성 flash.media.SoundMixer.bufferTime을 대신 사용하십시오.</warning>
 	<warning id="2097" hidden="true" label="kUnsupportedProp_TextField_Target">이제 이 기능은 지원되지 않습니다.</warning>
-	<warning id="2098" hidden="true"  label="kUnsupportedProp_TextField_Url">자세한 내용은 LoaderInfo.url을 참조하십시오.</warning>
+	<warning id="2098" hidden="true" label="kUnsupportedProp_TextField_Url">자세한 내용은 LoaderInfo.url을 참조하십시오.</warning>
 	<warning id="2099" hidden="true" label="kUnsupportedProp_TextField_Variable">이제 이 기능은 지원되지 않습니다.</warning>
 	<warning id="2102" hidden="true" label="kUnsupportedProp_NewLine">개행을 표시하려면 '\n'을 사용하십시오.</warning>
 	<warning id="2103" hidden="true" label="kUnsupportedProp_MaxScroll">자세한 내용은 textField.maxScroll을 참조하십시오.</warning>
-	<warning id="2104" hidden="true"  label="kUnsupportedProp_Level">ActionScript 3.0에는 레벨의 개념이 없으며, 대신 표시 목록에 대한 직접 액세스를 제공합니다. 자세한 내용은 flash.display 패키지를 참조하십시오.</warning>
+	<warning id="2104" hidden="true" label="kUnsupportedProp_Level">ActionScript 3.0에는 레벨의 개념이 없으며, 대신 표시 목록에 대한 직접 액세스를 제공합니다. 자세한 내용은 flash.display 패키지를 참조하십시오.</warning>
 	<warning id="2105" hidden="true" label="kUnsupportedProp_Parent">parent 속성을 대신 사용하십시오.</warning>
 	<warning id="2106" hidden="true" label="kUnsupportedProp_Root">이 속성은 제거되었습니다. 가장 비슷한 속성은 ActionScript 3.0 표시 목록의 루트 역할을 하는 Stage입니다.</warning>
 	<warning id="2107" hidden="true" label="kUnsupportedProp_Arguments_Caller">호출자를 대신 함수의 인수로 선언해 보십시오.</warning>
 	<warning id="2108" hidden="true" label="kUnsupportedProp_Button_Target">이제 이 기능은 지원되지 않습니다.</warning>
 	<warning id="2109" hidden="true" label="kUnsupportedProp_MovieClip_Parent">parent 속성을 대신 사용하십시오.</warning>
 	<warning id="2110" hidden="true" label="kUnsupportedProp_MovieClip_target">이제 이 기능은 지원되지 않습니다.</warning>
-	<warning id="2111" hidden="true"  label="kUnsupportedProp_MovieClip_hitArea">자세한 내용은 Sprite.hitArea를 참조하십시오.</warning>
+	<warning id="2111" hidden="true" label="kUnsupportedProp_MovieClip_hitArea">자세한 내용은 Sprite.hitArea를 참조하십시오.</warning>
 	<warning id="2112" hidden="true" label="kUnsupportedProp_Scroll">자세한 내용은 flash.text.TextField 클래스의 scrollH 및 scrollV 속성을 참조하십시오.</warning>
 	<warning id="2113" hidden="true" label="kUnsupportedProp_TargetPath">경로 대신 MovieClip 객체를 인수로 직접 사용하십시오.</warning>
-	<warning id="2114" hidden="true"  label="kUnsupportedProp_Video_Height">자세한 내용은 Video.videoHeight를 참조하십시오.</warning>
-	<warning id="2115" hidden="true"  label="kUnsupportedProp_Video_Width">자세한 내용은 Video.videoWidth를 참조하십시오.</warning>
+	<warning id="2114" hidden="true" label="kUnsupportedProp_Video_Height">자세한 내용은 Video.videoHeight를 참조하십시오.</warning>
+	<warning id="2115" hidden="true" label="kUnsupportedProp_Video_Width">자세한 내용은 Video.videoWidth를 참조하십시오.</warning>
 	<warning id="2116" hidden="true" label="kUnsupportedProp__Proto__">자세한 내용은 이제 사용되지 않는 __proto__를 참조하십시오.</warning>
-	<warning id="2117" hidden="true"  label="kUnsupportedProp_Stage">자세한 내용은 DisplayObject.stage를 참조하십시오.</warning>
+	<warning id="2117" hidden="true" label="kUnsupportedProp_Stage">자세한 내용은 DisplayObject.stage를 참조하십시오.</warning>
 	<warning id="2118" hidden="true" label="kUnsupportedProp__remoteClass">flash.net 패키지에 있는 registerClass() 메서드를 대신 사용하십시오.</warning>
 	<warning id="2617" hidden="true" label="kUnsupportedMeth_random">Math.random()을 대신 사용하십시오.</warning>
 	<warning id="2618" hidden="true" label="kUnsupportedMeth_chr">String.fromCharCode()를 대신 사용하십시오.</warning>
@@ -289,7 +308,7 @@ if (x = y) { trace("x is assigned y's value of true, making the conditional test
 	<warning id="2621" hidden="true" label="kUnsupportedMeth_ord">String.charCodeAt()을 대신 사용하십시오.</warning>
 	<warning id="2622" hidden="true" label="kUnsupportedMeth_mbord">String.charCodeAt()을 대신 사용하십시오.</warning>
 	<warning id="2623" hidden="true" label="kUnsupportedMeth_substring">String.substr 메서드를 대신 사용하십시오.</warning>
-	<warning id="2624" hidden="true"  label="kUnsupportedMeth_mbsubstring">String.substr 메서드를 대신 사용하십시오.</warning>
+	<warning id="2624" hidden="true" label="kUnsupportedMeth_mbsubstring">String.substr 메서드를 대신 사용하십시오.</warning>
 	<warning id="2625" hidden="true" label="kUnsupportedMeth_length">인수의 length 속성을 대신 사용하십시오.</warning>
 	<warning id="2626" hidden="true" label="kUnsupportedMeth_mblength">인수의 length 속성을 대신 사용하십시오.</warning>
 	<warning id="2627" hidden="true" label="kUnsupportedMeth_ASNative">자세한 내용은 ASnative의 변경 사항을 참조하십시오.</warning>
@@ -300,7 +319,7 @@ if (x = y) { trace("x is assigned y's value of true, making the conditional test
 	<warning id="2633" hidden="true" label="kUnsupportedMeth_clearInterval">이 메서드는 flash.utils 패키지로 옮겨졌습니다.</warning>
 	<warning id="2634" hidden="true" label="kUnsupportedMeth_duplicateMovieClip">새 MovieClip 클래스 생성자 함수로 대체되었습니다.</warning>
 	<warning id="2636" hidden="true" label="kUnsupportedMeth_fscommand">flash.system 패키지로 옮겨졌습니다. Javascript/ActionScript 통신을 위한 flash.external.ExternalInterface 클래스도 참조하십시오.</warning>
-	<warning id="2638" hidden="true"  label="kUnsupportedMeth_getURL">동일한 기능은 flash.net.URLLoader를 참조하십시오.  flash.net 패키지에도 패키지 레벨 함수인 navigateToURL()과 sendToURL()이 포함되어 있습니다.</warning>
+	<warning id="2638" hidden="true" label="kUnsupportedMeth_getURL">동일한 기능은 flash.net.URLLoader를 참조하십시오.  flash.net 패키지에도 패키지 레벨 함수인 navigateToURL()과 sendToURL()이 포함되어 있습니다.</warning>
 	<warning id="2639" hidden="true" label="kUnsupportedMeth_gotoAndPlay">자세한 내용은 MovieClip.gotoAndPlay()를 참조하십시오.</warning>
 	<warning id="2640" hidden="true" label="kUnsupportedMeth_gotoAndStop">자세한 내용은 MovieClip.gotoAndStop()을 참조하십시오.</warning>
 	<warning id="2641" hidden="true" label="kUnsupportedMeth_play">자세한 내용은 MovieClip.play()를 참조하십시오.</warning>
@@ -308,7 +327,7 @@ if (x = y) { trace("x is assigned y's value of true, making the conditional test
 	<warning id="2643" hidden="true" label="kUnsupportedMeth_printAsBitmap">자세한 내용은 PrintJob을 참조하십시오.</warning>
 	<warning id="2644" hidden="true" label="kUnsupportedMeth_printAsBitmapNum">자세한 내용은 PrintJob을 참조하십시오.</warning>
 	<warning id="2645" hidden="true" label="kUnsupportedMeth_printNum">자세한 내용은 PrintJob을 참조하십시오.</warning>
-	<warning id="2646" hidden="true"  label="kUnsupportedMeth_removeMovieClip">Container.removeChild(childName)을 사용하십시오. 자세한 내용은 DisplayObjectContainer 클래스를 참조하십시오.</warning>
+	<warning id="2646" hidden="true" label="kUnsupportedMeth_removeMovieClip">Container.removeChild(childName)을 사용하십시오. 자세한 내용은 DisplayObjectContainer 클래스를 참조하십시오.</warning>
 	<warning id="2647" hidden="true" label="kUnsupportedMeth_setInterval">flash.utils 패키지로 옮겨졌습니다. Timer 클래스를 대신 사용해 보십시오.</warning>
 	<warning id="2648" hidden="true" label="kUnsupportedMeth_nextFrame">자세한 내용은 MovieClip.nextFrame()을 참조하십시오.</warning>
 	<warning id="2649" hidden="true" label="kUnsupportedMeth_startDrag">자세한 내용은 MovieClip.startDrag()를 참조하십시오.</warning>
@@ -317,17 +336,17 @@ if (x = y) { trace("x is assigned y's value of true, making the conditional test
 	<warning id="2652" hidden="true" label="kUnsupportedMeth_stopDrag">자세한 내용은 MovieClip.stopDrag()를 참조하십시오.</warning>
 	<warning id="2653" hidden="true" label="kUnsupportedMeth_tellTarget">도트(.) 연산자나 with 문을 대신 사용하십시오.</warning>
 	<warning id="2654" hidden="true" label="kUnsupportedMeth_toggleHighQuality">자세한 내용은 DisplayObject.stage와 Stage.quality를 참조하십시오.</warning>
-	<warning id="2656" hidden="true"  label="kUnsupportedMeth_unloadMovie">DisplayObjectContainer.removeChild(childName)을 대신 사용하십시오. 자세한 내용은 DisplayObjectContainer 클래스를 참조하십시오.</warning>
+	<warning id="2656" hidden="true" label="kUnsupportedMeth_unloadMovie">DisplayObjectContainer.removeChild(childName)을 대신 사용하십시오. 자세한 내용은 DisplayObjectContainer 클래스를 참조하십시오.</warning>
 	<warning id="2657" hidden="true" label="kUnsupportedMeth_unloadMovieNum">DisplayObjectContainer.removeChild(childName)을 대신 사용하십시오. 자세한 내용은 DisplayObjectContainer 클래스를 참조하십시오.</warning>
 	<warning id="2658" hidden="true" label="kUnsupportedMeth_updateAfterEvent">이제 이 함수는 전역 함수가 아니지만 TimerEvent, MouseEvent 및 KeyboardEvent 클래스의 메서드로 계속 사용할 수 있습니다.</warning>
 	<warning id="2659" hidden="true" label="kUnsupportedMeth_Video_attachVideo">자세한 내용은 Video.attachNetStream과 Video.attachCamera를 참조하십시오.</warning>
-	<warning id="2660" hidden="true"  label="kUnsupportedMeth_TextField_StyleSheet_load">로드를 수행하고 StyleSheet.parseCSS()로 결과를 전달하려면 URLLoader 클래스를 사용하십시오.</warning>
-	<warning id="2663" hidden="true"  label="kUnsupportedMeth_Object_registerClass">ActionScript 3.0에서는 기본적으로 모든 클래스가 등록됩니다. AMF를 사용할 경우 자세한 내용은 flash.utils.registerClassAlias()를 참조하십시오.</warning>
+	<warning id="2660" hidden="true" label="kUnsupportedMeth_TextField_StyleSheet_load">로드를 수행하고 StyleSheet.parseCSS()로 결과를 전달하려면 URLLoader 클래스를 사용하십시오.</warning>
+	<warning id="2663" hidden="true" label="kUnsupportedMeth_Object_registerClass">ActionScript 3.0에서는 기본적으로 모든 클래스가 등록됩니다. AMF를 사용할 경우 자세한 내용은 flash.utils.registerClassAlias()를 참조하십시오.</warning>
 	<warning id="2664" hidden="true" label="kUnsupportedMeth_Object_unwatch">비슷한 기능을 구현하려면 접근자 속성(get/set 함수)이나 flash.utils.Proxy 클래스를 사용하십시오.</warning>
 	<warning id="2665" hidden="true" label="kUnsupportedMeth_Object_watch">비슷한 기능을 구현하려면 접근자 속성(get/set 함수)이나 flash.utils.Proxy 클래스를 사용하십시오.</warning>
 	<warning id="2666" hidden="true" label="kUnsupportedMeth_loadMovie">자세한 내용은 MovieClip.loadMovie()를 참조하십시오.</warning>
 	<warning id="2667" hidden="true" label="kUnsupportedMeth_loadMovieNum">자세한 내용은 MovieClip.loadMovieNum()을 참조하십시오.</warning>
-	<warning id="2668" hidden="true"  label="kUnsupportedMeth_loadVariables">자세한 내용은 Loader.load()를 참조하십시오.</warning>
+	<warning id="2668" hidden="true" label="kUnsupportedMeth_loadVariables">자세한 내용은 Loader.load()를 참조하십시오.</warning>
 	<warning id="2669" hidden="true" label="kUnsupportedMeth_loadVariablesNum">자세한 내용은 Loader.load()를 참조하십시오.</warning>
 	<warning id="2678" hidden="true" label="kUnsupportedMeth_Stage_addListener">자세한 내용은 addEventListener ( eventName, listener, useCapture, priority )를 참조하십시오.</warning>
 	<warning id="2679" hidden="true" label="kUnsupportedMeth_Stage_removeListener">자세한 내용은 removeEventListener ( eventName, listener, useCapture)를 참조하십시오.</warning>
@@ -686,7 +705,8 @@ if (x = y) { trace("x is assigned y's value of true, making the conditional test
   <warning id="3553" hidden="true" label="kWarning_UnlikelyFunctionValue">괄호가 누락된 것 같습니다.</warning>
   <warning id="3554" label="kWarning_UnlikelyFunctionValue_specific">%s 유형이 필요한 곳에 함수 값이 사용되었습니다. 이 함수 참조 다음에 괄호 ()가 누락된 것 같습니다.
 <description><![CDATA[
-You can use functions themselves as values in ActionScript.  The code in question is using a value of type Function where a type other than Function, Object, or * is expected.  Usually, this indicates a typo where the parentheses <code>()</code> were omitted after the function name.
+You can use functions themselves as values in ActionScript.  The code in question is using a value of type Function where a type other than Function, Object, or * is expected.  Usually,
+this indicates a typo where the parentheses <code>()</code> were omitted after the function name.
 ]]></description>
   </warning>
   
@@ -712,7 +732,8 @@ You can use functions themselves as values in ActionScript.  The code in questio
   <warning id="3574" label="kWarning_XML_ClassHasChanged_specific">마이그레이션 문제: ActionScript 2.0 XML 클래스의 이름이 XMLDocument로 변경되었습니다.
 	<description>
 		<![CDATA[
-		This is a code migration warning.  XML is a different class in ActionScript 3.0 than it was in ActionScript 2.0.  In ActionScript 3.0, the XMLDocument class is the equivalent of the XML class in ActionScript 2.0. The ActionScript 3.0 XML class offers improved functionality with an easier and more powerful API. See XML in the ActionScript Language Reference for additional details.
+		This is a code migration warning.  XML is a different class in ActionScript 3.0 than it was in ActionScript 2.0.  In ActionScript 3.0, the XMLDocument class is the equivalent of the XML class in ActionScript 2.0.
+The ActionScript 3.0 XML class offers improved functionality with an easier and more powerful API. See XML in the ActionScript Language Reference for additional details.
 		]]>
 	</description>
   </warning>
@@ -735,7 +756,9 @@ You can use functions themselves as values in ActionScript.  The code in questio
   <warning id="3593" label="kWarning_BadES3TypeProp_specific">%s은(는) 동적 클래스 %s의 인식되는 속성이 아닙니다.
 	<description>
 		<![CDATA[
-		The strict compilation mode does not check for undefined properties on instances of dynamic classes.  The types Date, RegExp, and Error are dynamic for backwards compatibility with ECMAScript.  This warning finds usages of undefined properties on instances of those classes. A common problem is attempting to get or set a non-existent <code>year</code> property on a Date value.  The correct property name is <code>fullYear</code>.  
+		The strict compilation mode does not check for undefined properties on instances of dynamic classes.  The types Date, RegExp, and Error are
+dynamic for backwards compatibility with ECMAScript.  This warning finds usages of undefined properties on instances of those classes.
+A common problem is attempting to get or set a non-existent <code>year</code> property on a Date value.  The correct property name is <code>fullYear</code>.  
 		]]>
 	</description>  
   </warning>
@@ -744,7 +767,8 @@ You can use functions themselves as values in ActionScript.  The code in questio
   <warning id="3595" label="kWarning_BadES3TypeMethodProp_specific">%s은(는) 동적 클래스 %s의 인식되는 메서드가 아닙니다.
 	<description>
 		<![CDATA[
-		The strict compilation mode does not check for undefined methods on instances of dynamic classes.  The types Date, RegExp, and Error are dynamic for backwards compatibility with ECMAScript.  This warning finds usages of undefined methods on instances of those classes. 
+		The strict compilation mode does not check for undefined methods on instances of dynamic classes.  The types Date, RegExp, and Error are
+dynamic for backwards compatibility with ECMAScript.  This warning finds usages of undefined methods on instances of those classes. 
 		]]>
 	</description>
   </warning>
@@ -753,7 +777,9 @@ You can use functions themselves as values in ActionScript.  The code in questio
   <warning id="3597" label="kWarning_DuplicateVariableDef_specific">변수 정의가 중복되었습니다.
 	<description>
 		<![CDATA[
-		The compiler has detected a duplicate definition for a variable.  This can lead to unexpected results.  ActionScript does not support block level scoping of variables.  All variables defined within a function body exist within the same scope, even if they are defined within an <code>if</code> statement, <code>while</code> statement, <code>for</code> statement, and so on: for example, the following code redeclares the variable x twice:
+		The compiler has detected a duplicate definition for a variable.  This can lead to unexpected results.  ActionScript does not support block level 
+		scoping of variables.  All variables defined within a function body exist within the same scope, even if they are defined within an 
+		<code>if</code> statement, <code>while</code> statement, <code>for</code> statement, and so on: for example, the following code redeclares the variable x twice:
 		
 		<pre><code>
 function test() {
@@ -771,14 +797,17 @@ function test() {
   <warning id="3599" label="kWarning_DefinitionShadowedByPackageName_specific">정의 이름이 가져온 패키지 이름과 같습니다. 해당 이름에 대한 정규화되지 않은 참조는 정의가 아닌 패키지로 결정됩니다.
 	<description>
 		<![CDATA[
-        If a definition is named the same as a package that is in scope, then any unqualified references to that name will resolve to the package instead of the definition.  This can result in unexpected errors when attempting to reference the variable.  Any references to the definition need to be qualified to resolve to the definition and not the package.
+        If a definition is named the same as a package that is in scope, then any unqualified references to that name will resolve to the package instead of the definition.  This can
+        result in unexpected errors when attempting to reference the variable.  Any references to the definition need to be qualified to resolve to the definition and not the package.
         ]]>
 	</description>
   </warning>
   <warning id="3600" label="kWarning_DeleteOfFixedProperty">고정된 속성을 삭제하려 한 것 같습니다.</warning>
   <warning id="3601" label="kWarning_DeleteOfFixedProperty_specific">선언된 속성 %s은(는) 삭제할 수 없습니다. 관련된 메모리를 비우려면 값을 null로 설정해야 합니다. 
-     <description>삭제를 수행하면 동적으로 정의된 속성이 객체에서 제거됩니다. 클래스의 선언된 속성은 삭제할 수 없습니다. 연산이 실패합니다. 이 변수와 관련된 메모리를 비우려면 값을 null로 설정해야 합니다.</description>
+     <description>Delete removes dynamically defined properties from an object.  Declared properties of a class can not be deleted, the operation merely fails silently.  To free memory associated with this variable, set its value to null instead.</description>
   </warning>
+
+
 </warnings>
 
 <properties>

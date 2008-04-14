@@ -1,27 +1,25 @@
 <?xml version='1.0' encoding='utf-8' standalone='no' ?>
-
-<!--
-
-	ADOBE SYSTEMS INCORPORATED
-	Copyright 2006-2007 Adobe Systems Incorporated
-	All Rights Reserved.
-
-	NOTICE: Adobe permits you to use, modify, and distribute this file
-	in accordance with the terms of the license agreement accompanying it.
-
--->
-
 <AS2LintWarnings>
 
-<!-- 
+<!-- ***Dont use ?? in these - use ? if you must; C++ translates ?? into a ^ symbol for some reason..***
    
-  Note: do not translate Actionscript keywords such as Package, Class, Interface, function, var, Number, String, 
-  Boolean, int, uint, Date, Array, XML, 
+  
+
+   In addition, the following words should not be translated:
+	AS2
+	AS3
+	SWF
+	Class
+	class
+	namespace
+	Namespace
+	
+	TODO:  XML 
 -->
 	
 <warnings>
 	<warning id="1008" hidden="true" label="kWarning_NoTypeDecl">Déclaration de type absente.</warning>
-	<warning id="1009"  label="kWarning_NoTypeDecl_specific">%s Pas de déclaration de type pour %s.
+	<warning id="1009" label="kWarning_NoTypeDecl_specific">%s Pas de déclaration de type pour %s.
 	
 	<description>
 		<![CDATA[
@@ -47,13 +45,13 @@
 		This is a code migration warning.  The detected code behaves differently in ActionScript 3.0 than in ActionScript 2.0, as shown in the following example:
 <pre><code>function f(){
    this.b = 22;
-   this.a = new Array(2);  
+   this.a = new Array(2);  
    this.a[0] = 33;
    this.a[1] = 44;
    return a; 
    } 
    // returns a new instance of f in ActionScript 2.0 and a new 2 element array in ActionScript 3.0
-   var d = new f();  // Warning here
+   var d = new f();  // Warning here
    trace(d.a);       // undefined in ActionScript 3.0, [33,44] in ActionScript 2.0.
 </code></pre>
 ]]>
@@ -79,7 +77,7 @@ In ActionScript 2.0, any white space in the string causes the result to be NaN.
 	</description>
 	</warning>
 
-	<warning id="1044" hidden="true"   label="kWarning_ArrayToStringChanges">Le format de Array.toString() a changé.</warning>
+	<warning id="1044" hidden="true" label="kWarning_ArrayToStringChanges">Le format de Array.toString() a changé.</warning>
 	<warning id="1045" label="kWarning_ArrayToStringChanges_specific">Problème de migration : La gestion par Array.toString() des éléments null et undefined a changé.
 	<description>
 		<![CDATA[
@@ -116,7 +114,7 @@ you may need to adjust your code for this difference.
 		]]>
 	</description>
 	</warning>
-	<warning id="1070" hidden="true"   label="kWarning_LevelNotSupported">'_level' n'est plus prise en charge. Pour plus d'informations, consultez le package flash.display.</warning>
+	<warning id="1070" hidden="true" label="kWarning_LevelNotSupported">'_level' n'est plus prise en charge. Pour plus d'informations, consultez le package flash.display.</warning>
 	<warning id="1071" label="kWarning_LevelNotSupported_specific">Problème de migration : '_level' n'est plus prise en charge. Pour plus d'informations, consultez le package flash.display.
 	<description>
 		<![CDATA[
@@ -157,8 +155,8 @@ f(); // prints 1 in ActionScript 3.0, 22 in ActionScript 2.0</code></pre>		]]>
 	</description>
 	</warning>
 	
-	<warning id="1084" hidden="true"  label="kWarning_MissingNamespaceDecl">Déclaration d'espace de nom absente (par ex. variable non définie comme public, private, etc.).</warning>
-	<warning id="1085"  label="kWarning_MissingNamespaceDecl_specific">La portée de %s sera limitée à l'espace de nom par défaut : %s internal.  Elle ne sera pas visible à l'extérieur de ce package.
+	<warning id="1084" hidden="true" label="kWarning_MissingNamespaceDecl">Déclaration d'espace de nom absente (par ex. variable non définie comme public, private, etc.).</warning>
+	<warning id="1085" label="kWarning_MissingNamespaceDecl_specific">La portée de %s sera limitée à l'espace de nom par défaut : %s internal.  Elle ne sera pas visible à l'extérieur de ce package.
 <description>
 	<![CDATA[
 	Not declaring a namespace is a coding style preference.  Enable this warning if you want to be reminded when you forget to declare a namespace or access specifier for a definition.
@@ -277,32 +275,32 @@ This can help catch cases where you meant to call <code>super()</code> after som
 		]]>
 	</description></warning>
 
-	<warning id="2090" hidden="true"  label="kUnsupportedProp_version">Utilisez plutôt Capabilities.version.</warning>
-	<warning id="2091" hidden="true"  label="kUnsupportedProp_Focusrect">Pour plus d'informations, consultez la section InteractiveObject.focusRect.</warning>
+	<warning id="2090" hidden="true" label="kUnsupportedProp_version">Utilisez plutôt Capabilities.version.</warning>
+	<warning id="2091" hidden="true" label="kUnsupportedProp_Focusrect">Pour plus d'informations, consultez la section InteractiveObject.focusRect.</warning>
 	<warning id="2092" hidden="true" label="kUnsupportedProp_Highquality">Pour plus d'informations, consultez la section Stage.quality.</warning>
 	<warning id="2093" hidden="true" label="kUnsupportedProp_DisplayObj_HighQuality">Pour plus d'informations, consultez la section Stage.quality.</warning>
 	<warning id="2094" hidden="true" label="kUnsupportedProp_DisplayObj_Quality">Pour plus d'informations, consultez la section Stage.quality.</warning>
 	<warning id="2095" hidden="true" label="kUnsupportedProp_Quality">Pour plus d'informations, consultez la section Stage.quality.</warning>
 	<warning id="2096" hidden="true" label="kUnsupportedProp_TextField_Soundbuftime">Utilisez plutôt la propriété statique flash.media.SoundMixer.bufferTime.</warning>
 	<warning id="2097" hidden="true" label="kUnsupportedProp_TextField_Target">Cette fonctionnalité n'est plus prise en charge.</warning>
-	<warning id="2098" hidden="true"  label="kUnsupportedProp_TextField_Url">Pour plus d'informations, consultez la section LoaderInfo.url.</warning>
+	<warning id="2098" hidden="true" label="kUnsupportedProp_TextField_Url">Pour plus d'informations, consultez la section LoaderInfo.url.</warning>
 	<warning id="2099" hidden="true" label="kUnsupportedProp_TextField_Variable">Cette fonctionnalité n'est plus prise en charge.</warning>
 	<warning id="2102" hidden="true" label="kUnsupportedProp_NewLine">Pour un saut de ligne, utilisez '\n'.</warning>
 	<warning id="2103" hidden="true" label="kUnsupportedProp_MaxScroll">Pour plus d'informations, consultez la section textField.maxScroll.</warning>
-	<warning id="2104" hidden="true"  label="kUnsupportedProp_Level">Le concept de niveaux n'existe pas en ActionScript 3.0, par contre ce langage permet d'accéder directement à la liste d'affichage. Pour plus d'informations, consultez le package flash.display.</warning>
+	<warning id="2104" hidden="true" label="kUnsupportedProp_Level">Le concept de niveaux n'existe pas en ActionScript 3.0, par contre ce langage permet d'accéder directement à la liste d'affichage. Pour plus d'informations, consultez le package flash.display.</warning>
 	<warning id="2105" hidden="true" label="kUnsupportedProp_Parent">Utilisez plutôt la propriété parent.</warning>
 	<warning id="2106" hidden="true" label="kUnsupportedProp_Root">Cette propriété a été supprimée. L'équivalent le plus proche est Stage, qui représente la racine de la liste d'affichage en ActionScript 3.0.</warning>
 	<warning id="2107" hidden="true" label="kUnsupportedProp_Arguments_Caller">Essayez plutôt de déclarer l'appelant comme argument de la fonction.</warning>
 	<warning id="2108" hidden="true" label="kUnsupportedProp_Button_Target">Cette fonctionnalité n'est plus prise en charge.</warning>
 	<warning id="2109" hidden="true" label="kUnsupportedProp_MovieClip_Parent">Utilisez plutôt la propriété parent.</warning>
 	<warning id="2110" hidden="true" label="kUnsupportedProp_MovieClip_target">Cette fonctionnalité n'est plus prise en charge.</warning>
-	<warning id="2111" hidden="true"  label="kUnsupportedProp_MovieClip_hitArea">Pour plus d'informations, consultez la section Sprite.hitArea.</warning>
+	<warning id="2111" hidden="true" label="kUnsupportedProp_MovieClip_hitArea">Pour plus d'informations, consultez la section Sprite.hitArea.</warning>
 	<warning id="2112" hidden="true" label="kUnsupportedProp_Scroll">Pour plus d'informations, consultez les propriétés scrollH et scrollV de la classe flash.text.TextField.</warning>
 	<warning id="2113" hidden="true" label="kUnsupportedProp_TargetPath">Utilisez les objets MovieClip directement comme arguments au lieu de chemins.</warning>
-	<warning id="2114" hidden="true"  label="kUnsupportedProp_Video_Height">Pour plus d'informations, consultez la section Video.videoHeight.</warning>
-	<warning id="2115" hidden="true"  label="kUnsupportedProp_Video_Width">Pour plus d'informations, consultez la section Video.videoWidth.</warning>
+	<warning id="2114" hidden="true" label="kUnsupportedProp_Video_Height">Pour plus d'informations, consultez la section Video.videoHeight.</warning>
+	<warning id="2115" hidden="true" label="kUnsupportedProp_Video_Width">Pour plus d'informations, consultez la section Video.videoWidth.</warning>
 	<warning id="2116" hidden="true" label="kUnsupportedProp__Proto__">Pour plus d'informations, consultez le mot-clé obsolète __proto__.</warning>
-	<warning id="2117" hidden="true"  label="kUnsupportedProp_Stage">Pour plus d'informations, consultez la section DisplayObject.stage.</warning>
+	<warning id="2117" hidden="true" label="kUnsupportedProp_Stage">Pour plus d'informations, consultez la section DisplayObject.stage.</warning>
 	<warning id="2118" hidden="true" label="kUnsupportedProp__remoteClass">Utilisez plutôt la méthode registerClass() du package flash.net.</warning>
 	<warning id="2617" hidden="true" label="kUnsupportedMeth_random">Utilisez plutôt Math.random().</warning>
 	<warning id="2618" hidden="true" label="kUnsupportedMeth_chr">Utilisez plutôt String.fromCharCode().</warning>
@@ -310,7 +308,7 @@ This can help catch cases where you meant to call <code>super()</code> after som
 	<warning id="2621" hidden="true" label="kUnsupportedMeth_ord">Utilisez plutôt String.charCodeAt().</warning>
 	<warning id="2622" hidden="true" label="kUnsupportedMeth_mbord">Utilisez plutôt String.charCodeAt().</warning>
 	<warning id="2623" hidden="true" label="kUnsupportedMeth_substring">Utilisez plutôt la méthode String.substr.</warning>
-	<warning id="2624" hidden="true"  label="kUnsupportedMeth_mbsubstring">Utilisez plutôt la méthode String.substr.</warning>
+	<warning id="2624" hidden="true" label="kUnsupportedMeth_mbsubstring">Utilisez plutôt la méthode String.substr.</warning>
 	<warning id="2625" hidden="true" label="kUnsupportedMeth_length">Utilisez plutôt la propriété length de l'argument.</warning>
 	<warning id="2626" hidden="true" label="kUnsupportedMeth_mblength">Utilisez plutôt la propriété length de l'argument.</warning>
 	<warning id="2627" hidden="true" label="kUnsupportedMeth_ASNative">Pour plus d'informations, consultez les modifications de ASnative.</warning>
@@ -321,7 +319,7 @@ This can help catch cases where you meant to call <code>super()</code> after som
 	<warning id="2633" hidden="true" label="kUnsupportedMeth_clearInterval">Cette méthode a été déplacée dans le package flash.utils.</warning>
 	<warning id="2634" hidden="true" label="kUnsupportedMeth_duplicateMovieClip">Remplacée par la nouvelle fonction constructeur de classe MovieClip.</warning>
 	<warning id="2636" hidden="true" label="kUnsupportedMeth_fscommand">Déplacée dans le package flash.system. Consultez la classe flash.external.ExternalInterface pour les communications Javascript/ActionScript.</warning>
-	<warning id="2638" hidden="true"  label="kUnsupportedMeth_getURL">Pour une fonctionnalité équivalente, consultez flash.net.URLLoader. Le package flash.net contient aussi les fonctions de niveau package navigateToURL() et sendToURL().</warning>
+	<warning id="2638" hidden="true" label="kUnsupportedMeth_getURL">Pour une fonctionnalité équivalente, consultez flash.net.URLLoader. Le package flash.net contient aussi les fonctions de niveau package navigateToURL() et sendToURL().</warning>
 	<warning id="2639" hidden="true" label="kUnsupportedMeth_gotoAndPlay">Pour plus d'informations, consultez la section MovieClip.gotoAndPlay().</warning>
 	<warning id="2640" hidden="true" label="kUnsupportedMeth_gotoAndStop">Pour plus d'informations, consultez la section MovieClip.gotoAndStop().</warning>
 	<warning id="2641" hidden="true" label="kUnsupportedMeth_play">Pour plus d'informations, consultez la section MovieClip.play().</warning>
@@ -329,7 +327,7 @@ This can help catch cases where you meant to call <code>super()</code> after som
 	<warning id="2643" hidden="true" label="kUnsupportedMeth_printAsBitmap">Pour plus d'informations, consultez la section PrintJob.</warning>
 	<warning id="2644" hidden="true" label="kUnsupportedMeth_printAsBitmapNum">Pour plus d'informations, consultez la section PrintJob.</warning>
 	<warning id="2645" hidden="true" label="kUnsupportedMeth_printNum">Pour plus d'informations, consultez la section PrintJob.</warning>
-	<warning id="2646" hidden="true"  label="kUnsupportedMeth_removeMovieClip">Utilisez Container.removeChild(Nom_de_l'enfant). Pour plus d'informations, consultez la classe DisplayObjectContainer.</warning>
+	<warning id="2646" hidden="true" label="kUnsupportedMeth_removeMovieClip">Utilisez Container.removeChild(Nom_de_l'enfant). Pour plus d'informations, consultez la classe DisplayObjectContainer.</warning>
 	<warning id="2647" hidden="true" label="kUnsupportedMeth_setInterval">Déplacée dans le package flash.utils.  Utilisez plutôt la classe Timer.</warning>
 	<warning id="2648" hidden="true" label="kUnsupportedMeth_nextFrame">Pour plus d'informations, consultez la section MovieClip.nextFrame().</warning>
 	<warning id="2649" hidden="true" label="kUnsupportedMeth_startDrag">Pour plus d'informations, consultez la section MovieClip.startDrag().</warning>
@@ -338,17 +336,17 @@ This can help catch cases where you meant to call <code>super()</code> after som
 	<warning id="2652" hidden="true" label="kUnsupportedMeth_stopDrag">Pour plus d'informations, consultez la section MovieClip.stopDrag().</warning>
 	<warning id="2653" hidden="true" label="kUnsupportedMeth_tellTarget">Utilisez plutôt l'opérateur point (.) ou l'instruction with.</warning>
 	<warning id="2654" hidden="true" label="kUnsupportedMeth_toggleHighQuality">Pour plus d'informations, consultez les sections DisplayObject.stage et Stage.quality.</warning>
-	<warning id="2656" hidden="true"  label="kUnsupportedMeth_unloadMovie">Utilisez plutôt DisplayObjectContainer.removeChild(nom_de_l'enfant). Pour plus d'informations, consultez la classe DisplayObjectContainer.</warning>
+	<warning id="2656" hidden="true" label="kUnsupportedMeth_unloadMovie">Utilisez plutôt DisplayObjectContainer.removeChild(nom_de_l'enfant). Pour plus d'informations, consultez la classe DisplayObjectContainer.</warning>
 	<warning id="2657" hidden="true" label="kUnsupportedMeth_unloadMovieNum">Utilisez plutôt DisplayObjectContainer.removeChild(nom_de_l'enfant). Pour plus d'informations, consultez la classe DisplayObjectContainer.</warning>
 	<warning id="2658" hidden="true" label="kUnsupportedMeth_updateAfterEvent">Cette fonction n'est plus une fonction globale, mais elle reste disponible comme méthode des classes TimerEvent, MouseEvent et KeyboardEvent.</warning>
 	<warning id="2659" hidden="true" label="kUnsupportedMeth_Video_attachVideo">Pour plus d'informations, consultez Video.attachNetStream, Video.attachCamera.</warning>
-	<warning id="2660" hidden="true"  label="kUnsupportedMeth_TextField_StyleSheet_load">Utilisez la classe URLLoader pour le chargement et le passage du résultat à StyleSheet.parseCSS()</warning>
-	<warning id="2663" hidden="true"  label="kUnsupportedMeth_Object_registerClass">En ActionScript 3.0, toutes les classes sont enregistrées par défaut.  Si vous utilisez le format AMF, reportez-vous à la section flash.utils.registerClassAlias().</warning>
+	<warning id="2660" hidden="true" label="kUnsupportedMeth_TextField_StyleSheet_load">Utilisez la classe URLLoader pour le chargement et le passage du résultat à StyleSheet.parseCSS()</warning>
+	<warning id="2663" hidden="true" label="kUnsupportedMeth_Object_registerClass">En ActionScript 3.0, toutes les classes sont enregistrées par défaut.  Si vous utilisez le format AMF, reportez-vous à la section flash.utils.registerClassAlias().</warning>
 	<warning id="2664" hidden="true" label="kUnsupportedMeth_Object_unwatch">Utilisez les propriétés d'accès (fonctions get/set) ou la classe flash.utils.Proxy pour obtenir des fonctionnalités similaires.</warning>
 	<warning id="2665" hidden="true" label="kUnsupportedMeth_Object_watch">Utilisez les propriétés d'accès (fonctions get/set) ou la classe flash.utils.Proxy pour obtenir des fonctionnalités similaires.</warning>
 	<warning id="2666" hidden="true" label="kUnsupportedMeth_loadMovie">Pour plus d'informations, consultez la section MovieClip.loadMovie().</warning>
 	<warning id="2667" hidden="true" label="kUnsupportedMeth_loadMovieNum">Pour plus d'informations, consultez la section MovieClip.loadMovieNum().</warning>
-	<warning id="2668" hidden="true"  label="kUnsupportedMeth_loadVariables">Pour plus d'informations, consultez la section Loader.load().</warning>
+	<warning id="2668" hidden="true" label="kUnsupportedMeth_loadVariables">Pour plus d'informations, consultez la section Loader.load().</warning>
 	<warning id="2669" hidden="true" label="kUnsupportedMeth_loadVariablesNum">Pour plus d'informations, consultez la section Loader.load().</warning>
 	<warning id="2678" hidden="true" label="kUnsupportedMeth_Stage_addListener">Pour plus d'informations, voir addEventListener ( nomEvenement, écouteur, utiliserCapture, priorité ).</warning>
 	<warning id="2679" hidden="true" label="kUnsupportedMeth_Stage_removeListener">Pour plus d'informations, voir removeEventListener ( nomEvenement, écouteur, utiliserCapture).</warning>
@@ -806,8 +804,10 @@ function test() {
   </warning>
   <warning id="3600" label="kWarning_DeleteOfFixedProperty">Tentative de suppression d'une propriété fixe.</warning>
   <warning id="3601" label="kWarning_DeleteOfFixedProperty_specific">Impossible de supprimer la propriété déclarée %s. Pour libérer la mémoire qui lui est réservée, définissez sa valeur comme null. 
-     <description>La suppression annule dynamiquement les propriétés définies d'un objet.  Les propriétés déclarées d'une classe ne peuvent pas être supprimées. Cette opération échoue sans indication.  Pour libérer la mémoire associée à cette variable, définissez plutôt sa valeur comme null.</description>
+     <description>Delete removes dynamically defined properties from an object.  Declared properties of a class can not be deleted, the operation merely fails silently.  To free memory associated with this variable, set its value to null instead.</description>
   </warning>
+
+
 </warnings>
 
 <properties>
