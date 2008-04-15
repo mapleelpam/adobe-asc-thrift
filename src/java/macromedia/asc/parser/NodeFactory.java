@@ -2520,7 +2520,10 @@ public final class NodeFactory implements ErrorConstants
     	 }
     }
 
-
+    public Context getContext()
+    {
+        return cx;
+    }
 
     public static void main(String[] args)
 	{
