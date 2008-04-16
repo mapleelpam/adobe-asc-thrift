@@ -136,7 +136,7 @@ public class BatchCompiler
 
 			if (file.get(i).getName().endsWith(".as"))
 			{
-				node.add((new Parser(cx.get(i), new FileInputStream(file.get(i)), file.get(i).getPath(), null)).parseProgram());
+				node.add((new Parser(cx.get(i), new FileInputStream(file.get(i)), file.get(i).getPath(), null, null)).parseProgram());
 			}
 			else
 			{

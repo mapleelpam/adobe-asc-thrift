@@ -85,7 +85,8 @@ public class Compiler implements ErrorConstants
 		String avmplus_exe,
 	ObjectList<CompilerPlug> plugs,
 	boolean emit_doc_info, boolean show_parsetrees, boolean show_bytes, boolean show_flow, 
-    boolean lint_mode, boolean emit_metadata, boolean save_comment_nodes, boolean emit_debug_info, ObjectList<String> import_filespecs)
+    boolean lint_mode, boolean emit_metadata, boolean save_comment_nodes, boolean emit_debug_info, ObjectList<String> import_filespecs,
+    ObjectList<String> use_namespaces)
     {
         ProgramNode second = null;
 	    
@@ -109,7 +110,7 @@ public class Compiler implements ErrorConstants
                 {
                 	import_in = new BufferedInputStream(new FileInputStream(filespec));
 	                cx2.setPath(new File(filespec).getAbsoluteFile().getParent());
-                    second = (new Parser(cx2, import_in, filespec, null, emit_doc_info, save_comment_nodes)).parseProgram();
+                    second = (new Parser(cx2, import_in, filespec, null, emit_doc_info, save_comment_nodes, use_namespaces)).parseProgram();
                 }
             }
             catch (IOException ex) { cx.error(-1, kError_UnableToOpenFile, filespec); }
@@ -136,7 +137,7 @@ public class Compiler implements ErrorConstants
         // Parse
 
 	    cx.setPath(new File(filename).getAbsoluteFile().getParent());
-        ProgramNode node = (new Parser(cx, in, filename, file_encoding, emit_doc_info, save_comment_nodes)).parseProgram();
+        ProgramNode node = (new Parser(cx, in, filename, file_encoding, emit_doc_info, save_comment_nodes, use_namespaces)).parseProgram();
         node.imports = imports; // add the imports
 
         // test error strings:
@@ -175,7 +176,7 @@ public class Compiler implements ErrorConstants
 					{
 						IncludeInfo iinfo = in_it.next();
 						Context cx2 = new Context(cx.statics);
-						node2 = (new Parser(cx2,iinfo.script,iinfo.name, iinfo.encoding, emit_doc_info, save_comment_nodes)).parseProgram();
+						node2 = (new Parser(cx2,iinfo.script,iinfo.name, iinfo.encoding, emit_doc_info, save_comment_nodes, use_namespaces)).parseProgram();
 						nodes.add(node2);
 					}
 				}
@@ -325,6 +326,7 @@ public class Compiler implements ErrorConstants
 		String avmplus_exe,
         ObjectList<IncludeInfo> includes,
     ObjectList<String> import_filespecs,
+    ObjectList<String> use_namespaces,
 	String language,
     ObjectList<ConfigVar> configs,
     ObjectList<CompilerPlug> plugs,
@@ -392,7 +394,7 @@ public class Compiler implements ErrorConstants
 
         // Compiler something
         compile(cx, global, in, filename, encoding, includes, swf_options, avmplus_exe, plugs, emit_doc_info, show_parsetrees, show_bytes,
-                show_flow, lint_mode, emit_metadata, save_comment_nodes, emit_debug_info, import_filespecs);
+                show_flow, lint_mode, emit_metadata, save_comment_nodes, emit_debug_info, import_filespecs, use_namespaces);
 
         int error_count = status(cx);
 
@@ -584,6 +586,7 @@ public class Compiler implements ErrorConstants
 			mainplug.avmplus_exe,
 			mainplug.includes,
 			mainplug.import_filespecs,
+			mainplug.use_namespaces,
 			mainplug.language,
             mainplug.configs,
 			plugs,
@@ -619,6 +622,7 @@ public class Compiler implements ErrorConstants
             mainplug.avmplus_exe,
             mainplug.includes,
             mainplug.import_filespecs,
+            mainplug.use_namespaces,
 		    mainplug.language,
             mainplug.configs,
             new ObjectList<CompilerPlug>(),

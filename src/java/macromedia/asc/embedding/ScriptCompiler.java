@@ -111,7 +111,8 @@ public class ScriptCompiler
 	}
 
     static ObjectList<ConfigVar> config_vars = new ObjectList<ConfigVar>();
-	private static void init(String[] args) throws Throwable
+    static ObjectList<String> use_namespaces;
+    private static void init(String[] args) throws Throwable
 	{
 		ObjectList<String> filespecs = new ObjectList<String>();
 		ObjectList<Boolean> imported = new ObjectList<Boolean>();
@@ -172,6 +173,12 @@ public class ScriptCompiler
             else if(args[i].equals("-AS3"))
             {
                 useas3 = true;
+            }
+            else if (args[i].equals("-use")) // -use <namespace>
+            {
+                if (use_namespaces == null)
+                    use_namespaces = new ObjectList<String>();
+                use_namespaces.add(args[++i]);
             }
             else
 			{
@@ -258,7 +265,7 @@ public class ScriptCompiler
 			ProgramNode program;
 			if (file.get(i).getName().endsWith(".as"))
 			{
-				program = new Parser(cxi, new FileInputStream(file.get(i)), file.get(i).getPath(), null).parseProgram();
+				program = new Parser(cxi, new FileInputStream(file.get(i)), file.get(i).getPath(), null, use_namespaces).parseProgram();
 			}
 			else
 			{

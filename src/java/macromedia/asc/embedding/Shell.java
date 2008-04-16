@@ -463,6 +463,7 @@ public class Shell
 
             macromedia.asc.embedding.Main.include_filespecs = new ObjectList<String>();
 			macromedia.asc.embedding.Main.import_filespecs = new ObjectList<String>();
+			macromedia.asc.embedding.Main.use_namespaces = new ObjectList<String>();
 			macromedia.asc.embedding.Main.swf_options = "";
 			macromedia.asc.embedding.Main.language = "EN";
 

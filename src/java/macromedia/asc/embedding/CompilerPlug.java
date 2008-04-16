@@ -34,6 +34,7 @@ public class CompilerPlug
     public InputStream initScript;
     public String initScript_encoding;
     public ObjectList<String> import_filespecs;
+    public ObjectList<String> use_namespaces;
 	public String language;
 	public CompilerHandler handler;
 	public boolean emit_debug_info;
@@ -64,6 +65,7 @@ public class CompilerPlug
 	    includes = null;
 	    initScript = null;
 	    import_filespecs = null;
+	    use_namespaces = null;
 		language = "EN";
 	    handler = new CompilerHandler();
         dialect = 7;

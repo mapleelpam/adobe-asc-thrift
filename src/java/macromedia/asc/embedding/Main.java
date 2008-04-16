@@ -61,6 +61,8 @@ public class Main
 
 	static ObjectList<String> include_filespecs = new ObjectList<String>();
 	static ObjectList<String> import_filespecs = new ObjectList<String>();
+	static ObjectList<String> use_namespaces;
+	
 	static String swf_options = "";
 	static String language = "EN";
 	static String avmplus_exe = null;
@@ -272,6 +274,16 @@ public class Main
                     		dialect = 11;
                     	}
                     	break;
+                    case 'u':
+						if (flag.length() == 4 && "-use".equals(flag)) // -use <namespace>
+						{
+							++i;
+                            if (use_namespaces == null)
+                                use_namespaces = new ObjectList<String>();
+                            use_namespaces.add(args[i].trim());
+						}
+						break;
+						
 					default:
 						try
 						{
@@ -368,6 +380,7 @@ public class Main
 			System.out.println("  -language = set the language for output strings {EN|FR|DE|IT|ES|JP|KR|CN|TW}");
             System.out.println("  -optimize = produced an optimized abc file");
             System.out.println("  -config ns::name=value = define a configuration value in the namespace ns");
+            System.out.println("  -use <namespace> = automatically use a namespace when compiling this code");
             System.out.println("  -avmtarget <vm version number> = emit bytecode for a specific VM version, 1 is AVM1, 2 is AVM2, etc");
             System.out.println("");
 			System.exit(1);
@@ -440,6 +453,7 @@ public class Main
 			plug.emit_doc_info = emit_doc_info;
 			plug.make_movieclip = make_movieclip;
 			plug.import_filespecs = import_filespecs;
+			plug.use_namespaces = use_namespaces;
 			plug.lint_mode = lint_mode;
 			plug.use_static_semantics = use_static_semantics;
 			plug.emit_metadata = emit_metadata;
