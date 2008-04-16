@@ -929,6 +929,10 @@ public final class Context implements ErrorConstants
         {
             statics.nodeFactory = new NodeFactory(this);
         }
+        else
+        {
+            statics.nodeFactory.setContext(this);
+        }
 
         return statics.nodeFactory;
     }

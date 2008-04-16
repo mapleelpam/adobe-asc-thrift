@@ -2525,6 +2525,11 @@ public final class NodeFactory implements ErrorConstants
         return cx;
     }
 
+    public void setContext(Context cx)
+    {
+        this.cx = cx;
+    }
+
     public static void main(String[] args)
 	{
 		ContextStatics statics = new ContextStatics();
