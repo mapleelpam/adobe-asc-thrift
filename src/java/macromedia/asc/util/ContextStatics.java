@@ -115,8 +115,21 @@ public class ContextStatics
 	public boolean use_static_semantics = false;
     public int dialect = 9;
 
-    public void setAbcVersion(int n) {
-        switch(n) {
+    /**
+     * Returns the Features.TARGET_AVM* for a given SWF version. 
+     */
+    public static int getTargetAVM(int swfVersion)
+    {
+        if (swfVersion > 9)
+        {
+            return Features.TARGET_AVM2; 
+        }
+        
+        return Features.TARGET_AVM1;
+    }
+    
+    public void setAbcVersion(int targetAVM) {
+        switch(targetAVM) {
         case Features.TARGET_AVM1:
             es4_numerics = false;
             es4_nullability = false;
@@ -127,7 +140,10 @@ public class ContextStatics
             es4_nullability = false;  // Nullability support not in VM yet
             es4_vectors = true;  // Will be supporting vectors for FP10
             break;
+        default:
+            assert false;
         }
+        abc_version = targetAVM;
     }
     int abc_version = 1;
     public boolean es4_numerics = false;
