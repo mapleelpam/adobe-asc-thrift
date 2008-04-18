@@ -127,7 +127,7 @@ public final class Context implements ErrorConstants
         this.input = origCtx.input;
         this.parser = origCtx.parser;
         this.parser_scanner_input_origin = origCtx.parser_scanner_input_origin;
-	this.qualified_origin = origCtx.qualified_origin;
+        this.qualified_origin = origCtx.qualified_origin;
         this.decimal_ctx = origCtx.decimal_ctx;
         this.decimalParams = origCtx.decimalParams;
     }

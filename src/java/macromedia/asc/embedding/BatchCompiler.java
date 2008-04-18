@@ -95,7 +95,7 @@ public class BatchCompiler
 		TypeValue.init();
 		ObjectValue.init();
 		s = new ContextStatics();
-		
+		//s.use_namespaces.addAll(null) // no automatic use_namespaces
 		//s.es4_numerics = ...
 
 		file = new ArrayList<File>(args.length);
@@ -136,11 +136,11 @@ public class BatchCompiler
 
 			if (file.get(i).getName().endsWith(".as"))
 			{
-				node.add((new Parser(cx.get(i), new FileInputStream(file.get(i)), file.get(i).getPath(), null, null)).parseProgram());
+				node.add(new Parser(cx.get(i), new FileInputStream(file.get(i)), file.get(i).getPath(), null).parseProgram());
 			}
 			else
 			{
-				node.add((new AbcParser(cx.get(i), file.get(i).getPath())).parseAbc());
+				node.add(new AbcParser(cx.get(i), file.get(i).getPath()).parseAbc());
 			}
 
 			cx.get(i).getNodeFactory().pkg_defs.clear();

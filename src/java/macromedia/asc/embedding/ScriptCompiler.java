@@ -192,8 +192,15 @@ public class ScriptCompiler
 		s = new ContextStatics();
 		s.use_static_semantics = use_static_semantics;
         if( useas3 )
+        {
             s.dialect = Features.DIALECT_AS3;
+        }
         s.es4_numerics = decimalFlag;	// to make decimal things work
+        // set up use_namespaces anytime before parsing begins
+        if (use_namespaces != null)
+        {
+            s.use_namespaces.addAll(use_namespaces);
+        }
 
 		file = new ArrayList<File>(filespecs.size());
         cx = new ArrayList<Context>(filespecs.size());
@@ -265,7 +272,7 @@ public class ScriptCompiler
 			ProgramNode program;
 			if (file.get(i).getName().endsWith(".as"))
 			{
-				program = new Parser(cxi, new FileInputStream(file.get(i)), file.get(i).getPath(), null, use_namespaces).parseProgram();
+				program = new Parser(cxi, new FileInputStream(file.get(i)), file.get(i).getPath(), null).parseProgram();
 			}
 			else
 			{
@@ -641,7 +648,7 @@ public class ScriptCompiler
 
 	private static void ce()
 	{
-        ArrayList<ConstantEvaluator> ces = new ArrayList();
+        ArrayList<ConstantEvaluator> ces = new ArrayList<ConstantEvaluator>();
         for (int i = 0, length = file.size(); i < length; i++)
 		{
 			if (cx.get(i).errorCount() == 0)

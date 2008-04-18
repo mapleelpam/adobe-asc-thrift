@@ -39,20 +39,20 @@ public final class Parser
     private static final boolean debug = false;
 
 
-    private static final int abbrevIfElse_mode    = ELSE_TOKEN;  // lookahead uses this value. don't change.
-    private static final int abbrevDoWhile_mode = WHILE_TOKEN; // ditto.
-    private static final int abbrevFunction_mode = FUNCTION_TOKEN;
-    private static final int abbrev_mode        = LAST_TOKEN - 1;
-    private static final int full_mode            = abbrev_mode - 1;
+    private static final int abbrevIfElse_mode       = ELSE_TOKEN;  // lookahead uses this value. don't change.
+    private static final int abbrevDoWhile_mode      = WHILE_TOKEN; // ditto.
+    private static final int abbrevFunction_mode     = FUNCTION_TOKEN;
+    private static final int abbrev_mode             = LAST_TOKEN - 1;
+    private static final int full_mode               = abbrev_mode - 1;
 
     private static final int allowIn_mode            = full_mode - 1;
-    private static final int noIn_mode                = allowIn_mode - 1;
-    private static final int catch_parameter_error        = 1;
-    private static final int syntax_xml_error            = 2;
+    private static final int noIn_mode               = allowIn_mode - 1;
+    private static final int catch_parameter_error   = 1;
+    private static final int syntax_xml_error        = 2;
 
-    private static final int syntax_error                = 7;
-    private static final int expression_syntax_error    = 8;
-    private static final int syntax_eos_error            = 9;
+    private static final int syntax_error            = 7;
+    private static final int expression_syntax_error = 8;
+    private static final int syntax_eos_error        = 9;
 
     private static final int xmlid_tokens[] = 
               { // include all keyword tokens and the identifier token
@@ -134,9 +134,6 @@ public final class Parser
     public ObjectList<Node>    comments = new ObjectList<Node>(); // all comments encountered while parsing are placed here, rather than in the parse tree
     public IntList block_kind_stack = new IntList();
     public String current_class_name = null;
-
-    // cn: for use with auto-using namespaces during compilation.
-     public ObjectList<String> use_namespaces;
     
     private boolean within_package;
 
@@ -306,7 +303,7 @@ public final class Parser
         lastToken = ERROR_TOKEN;
     }
 
-	private void init(Context cx, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack,  ObjectList<String> use_namespaces)
+	private void init(Context cx, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack)
 	{
 		ctx = cx;
 		lastToken = EMPTY_TOKEN;
@@ -315,8 +312,7 @@ public final class Parser
 		create_doc_info = emit_doc_info;
         within_package = false;
 		this.save_comment_nodes = save_comment_nodes;
-        this.use_namespaces = use_namespaces;
-        nodeFactory = cx.getNodeFactory();
+		nodeFactory = cx.getNodeFactory();
 		nodeFactory.createDefaultDocComments(emit_doc_info); // for now, always create defualt comments for uncommented nodes in -doc
 		if( block_kind_stack != null )
 		{
@@ -332,79 +328,59 @@ public final class Parser
 
     public Parser(Context cx, InputStream in, String origin)
     {
-        this(cx, in, origin, null, null);
+        this(cx, in, origin, null);
     }
 
     public Parser(Context cx, InputStream in, String origin, String encoding)
     {
-        this(cx, in, origin, encoding, null);
-    }
-
-    public Parser(Context cx, InputStream in, String origin, String encoding, ObjectList<String> use_namespaces)
-    {
-        init(cx, origin, false, false, null, use_namespaces);
+        init(cx, origin, false, false, null);
         scanner = new Scanner(cx, in, encoding, origin);
         this.encoding = encoding;
     }
 
     public Parser(Context cx, InputStream in, String origin, boolean emit_doc_info, boolean save_comment_nodes)
     {
-        this(cx, in, origin, emit_doc_info, save_comment_nodes, null);
-    }
-
-    public Parser(Context cx, InputStream in, String origin, boolean emit_doc_info, boolean save_comment_nodes,  ObjectList<String> use_namespaces)
-    {
-        this(cx, in, origin, null, emit_doc_info, save_comment_nodes, null, use_namespaces);
+        this(cx, in, origin, null, emit_doc_info, save_comment_nodes,null);
     }
 
     public Parser(Context cx, InputStream in, String origin, String encoding, boolean emit_doc_info, boolean save_comment_nodes)
     {
-        this(cx, in, origin, encoding, emit_doc_info, save_comment_nodes, null);
+        this(cx, in, origin, encoding, emit_doc_info, save_comment_nodes,null);
     }
 
-    public Parser(Context cx, InputStream in, String origin, String encoding, boolean emit_doc_info, boolean save_comment_nodes,  ObjectList<String> use_namespaces)
+    public Parser(Context cx, InputStream in, String origin, String encoding, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack)
     {
-        this(cx, in, origin, encoding, emit_doc_info, save_comment_nodes, null, use_namespaces);
-    }
-
-    public Parser(Context cx, InputStream in, String origin, String encoding, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack,  ObjectList<String> use_namespaces)
-    {
-	    init(cx, origin, emit_doc_info, save_comment_nodes, block_kind_stack, use_namespaces);
+	    init(cx, origin, emit_doc_info, save_comment_nodes, block_kind_stack);
         scanner = new Scanner(cx, in, encoding, origin);
         this.encoding = encoding;
     }
 
-    public Parser(Context cx, InputStream in, String origin, String encoding, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack,  ObjectList<String> use_namespaces, boolean is_include)
+    public Parser(Context cx, InputStream in, String origin, String encoding, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack, boolean is_include)
     {
-        this(cx, in, origin,encoding, emit_doc_info, save_comment_nodes, block_kind_stack, use_namespaces);
+        this(cx, in, origin,encoding, emit_doc_info, save_comment_nodes, block_kind_stack);
         this.parsing_include = is_include;
     }
 
 	public Parser(Context cx, String in, String origin)
 	{
-		init(cx, origin, false, false, null, null);
+		init(cx, origin, false, false, null);
 	    scanner = new Scanner(cx, in, origin);
 	}
 
-    public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes)
-    {
-        this(cx, in, origin, emit_doc_info, save_comment_nodes,null);
-    }
-
-	public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes,  ObjectList<String> use_namespaces)
+	public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes)
 	{
-	    this(cx, in, origin, emit_doc_info, save_comment_nodes,null, use_namespaces);
+	    this(cx, in, origin, emit_doc_info, save_comment_nodes,null);
 	}
 
-	public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack,  ObjectList<String> use_namespaces)
+	public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack)
 	{
-		init(cx, origin, emit_doc_info, save_comment_nodes, block_kind_stack, use_namespaces);
+		init(cx, origin, emit_doc_info, save_comment_nodes, block_kind_stack);
 	    scanner = new Scanner(cx, in, origin);
 	}
 
-    public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack,  ObjectList<String> use_namespaces, boolean is_include)
+    public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack, boolean is_include)
     {
-        this(cx, in, origin, emit_doc_info, save_comment_nodes, block_kind_stack, use_namespaces);
+        this(cx, in, origin, emit_doc_info, save_comment_nodes, block_kind_stack);
         this.parsing_include = is_include;
 
     }
@@ -5919,13 +5895,13 @@ XMLElementContent
             Parser p = null;
 		        if (in != null)
 		        {
-                p = new Parser(cx, in, fixed_filespec, encoding, create_doc_info, save_comment_nodes,block_kind_stack, use_namespaces, true);
+                p = new Parser(cx, in, fixed_filespec, encoding, create_doc_info, save_comment_nodes,block_kind_stack, true);
                 p.config_namespaces = this.config_namespaces;
                 second = p.parseProgram();
 		        }
 		        else
 		        {
-                p = new Parser(cx, text, fixed_filespec, create_doc_info, save_comment_nodes,block_kind_stack, use_namespaces, true);
+                p = new Parser(cx, text, fixed_filespec, create_doc_info, save_comment_nodes,block_kind_stack, true);
                 p.config_namespaces = this.config_namespaces;
 	            second = p.parseProgram();
 		        }
@@ -7603,12 +7579,12 @@ XMLElementContent
         	{
         		result.statements.items.add(1,udn);  // insert after the first statment, which is the starting package definition
         	}
-            if ( this.use_namespaces != null  && result != null)
+            if ( !ctx.statics.use_namespaces.isEmpty() && result != null)
             {
-                for (String useName : this.use_namespaces )
+                for (String useName : ctx.statics.use_namespaces )
                 {
-                       Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName))));
-                       result.statements.items.add(1,udn2);
+                    Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("flash10"))));
+                    result.statements.items.add(1,udn2);
                 }
             }
             if( ctx.statics.es4_vectors && result != null)
@@ -7635,12 +7611,12 @@ XMLElementContent
             {
         		result.statements.items.add(1,udn);  // insert after the first statment, which is the starting package definition
             }
-            if ( this.use_namespaces != null  && result != null)
+            if ( !ctx.statics.use_namespaces.isEmpty() && result != null)
             {
-                for (String useName : this.use_namespaces )
+                for (String useName : ctx.statics.use_namespaces )
                 {
-                       Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName))));
-                       result.statements.items.add(1,udn2);
+                    Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("flash10"))));
+                    result.statements.items.add(1,udn2);
                 }
             }
             if( ctx.statics.es4_vectors && result != null)
@@ -7810,12 +7786,12 @@ XMLElementContent
             Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
             second.items.add(0,udn);
         }
-        if ( this.use_namespaces != null && !parsing_include && second != null)
+        if ( !ctx.statics.use_namespaces.isEmpty() && !parsing_include && second != null)
         {
-            for (String useName : this.use_namespaces )
+            for (String useName : ctx.statics.use_namespaces )
             {
-                   Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName))));
-                   second.items.add(0,udn2);
+                Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("flash10"))));
+                second.items.add(0,udn2);
             }
         }
         if( ctx.statics.es4_vectors && !parsing_include && second != null)

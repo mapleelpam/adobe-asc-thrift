@@ -116,32 +116,62 @@ public class ContextStatics
     public int dialect = 9;
 
     /**
+     * For use with auto-using namespaces during compilation.
+     * You must populate this before Parser.parse() for the side-effect to occur.
+     * 
+     * Never null, you are always free to clear it.
+     */
+    public final ObjectList<String> use_namespaces = new ObjectList<String>();
+    
+    /**
+     * Returns an ObjectList filled with the correct namespaces that need to be
+     * automatically opened for the current target player, e.g. flash10.
+     * 
+     * You would add these to ContextStatics.use_namespaces before Parse.parse().
+     * 
+     * @see macromedia.asc.util.ContextStatics.use_namespaces
+     */
+    public static ObjectList<String> getRequiredUseNamespaces(int targetPlayerMajorVersion)
+    {
+        final ObjectList<String> use_namespaces = new ObjectList<String>();
+        
+        if (targetPlayerMajorVersion >= 10)
+        {
+            use_namespaces.add("flash10");
+        }
+        
+        return use_namespaces;
+    }
+    
+    /**
      * Returns the Features.TARGET_AVM* for a given SWF version. 
      */
     public static int getTargetAVM(int swfVersion)
     {
         if (swfVersion > 9)
         {
-            return Features.TARGET_AVM2; 
+            return Features.TARGET_AVM2;
         }
         
         return Features.TARGET_AVM1;
     }
     
-    public void setAbcVersion(int targetAVM) {
-        switch(targetAVM) {
-        case Features.TARGET_AVM1:
-            es4_numerics = false;
-            es4_nullability = false;
-            es4_vectors = false;
-            break;
-        case Features.TARGET_AVM2:
-            es4_numerics = false; // Are we supporting decimal for FP10?
-            es4_nullability = false;  // Nullability support not in VM yet
-            es4_vectors = true;  // Will be supporting vectors for FP10
-            break;
-        default:
-            assert false;
+    public void setAbcVersion(int targetAVM)
+    {
+        switch(targetAVM)
+        {
+            case Features.TARGET_AVM1:
+                es4_numerics = false;
+                es4_nullability = false;
+                es4_vectors = false;
+                break;
+            case Features.TARGET_AVM2:
+                es4_numerics = false; // Are we supporting decimal for FP10?
+                es4_nullability = false;  // Nullability support not in VM yet
+                es4_vectors = true;  // Will be supporting vectors for FP10
+                break;
+            default:
+                assert false;
         }
         abc_version = targetAVM;
     }
