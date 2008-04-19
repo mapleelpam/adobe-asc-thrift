@@ -7583,7 +7583,7 @@ XMLElementContent
             {
                 for (String useName : ctx.statics.use_namespaces )
                 {
-                    Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("flash10"))));
+                    Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName))));
                     result.statements.items.add(1,udn2);
                 }
             }
@@ -7615,7 +7615,7 @@ XMLElementContent
             {
                 for (String useName : ctx.statics.use_namespaces )
                 {
-                    Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("flash10"))));
+                    Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName))));
                     result.statements.items.add(1,udn2);
                 }
             }
@@ -7790,7 +7790,7 @@ XMLElementContent
         {
             for (String useName : ctx.statics.use_namespaces )
             {
-                Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("flash10"))));
+                Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName))));
                 second.items.add(0,udn2);
             }
         }
