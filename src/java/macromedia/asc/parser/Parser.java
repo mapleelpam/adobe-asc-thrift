@@ -7566,6 +7566,15 @@ XMLElementContent
         {
             result = nodeFactory.startPackage(ctx, null, null);
             Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
+            ObjectList<UseDirectiveNode> udns = null;
+            if ( !ctx.statics.use_namespaces.isEmpty() )
+            {
+                udns = new ObjectList<UseDirectiveNode>();
+                for (String useName : ctx.statics.use_namespaces )
+                {
+                    udns.add(nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName)))));
+                }
+            }
             Node idn = null;
             if( ctx.statics.es4_vectors )
             {
@@ -7579,17 +7588,16 @@ XMLElementContent
         	{
         		result.statements.items.add(1,udn);  // insert after the first statment, which is the starting package definition
         	}
-            if ( !ctx.statics.use_namespaces.isEmpty() && result != null)
-            {
-                for (String useName : ctx.statics.use_namespaces )
-                {
-                    Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName))));
-                    result.statements.items.add(1,udn2);
-                }
-            }
             if( ctx.statics.es4_vectors && result != null)
             {
                 result.statements.items.add(1, idn);
+            }
+            if( udns != null && result != null)
+            {
+                for( UseDirectiveNode usenode : udns )
+                {
+                    result.statements.items.add(1,usenode);
+                }
             }
 
         }
@@ -7598,6 +7606,15 @@ XMLElementContent
             PackageNameNode first = parsePackageName(false);
             result = nodeFactory.startPackage(ctx, null, first);
             Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
+            ObjectList<UseDirectiveNode> udns = null;
+            if ( !ctx.statics.use_namespaces.isEmpty() )
+            {
+                udns = new ObjectList<UseDirectiveNode>();
+                for (String useName : ctx.statics.use_namespaces )
+                {
+                    udns.add(nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName)))));
+                }
+            }
             Node idn = null;
             if( ctx.statics.es4_vectors )
             {
@@ -7611,12 +7628,11 @@ XMLElementContent
             {
         		result.statements.items.add(1,udn);  // insert after the first statment, which is the starting package definition
             }
-            if ( !ctx.statics.use_namespaces.isEmpty() && result != null)
+            if( udns != null && result != null)
             {
-                for (String useName : ctx.statics.use_namespaces )
+                for( UseDirectiveNode usenode : udns )
                 {
-                    Node udn2 = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName))));
-                    result.statements.items.add(1,udn2);
+                    result.statements.items.add(1,usenode);
                 }
             }
             if( ctx.statics.es4_vectors && result != null)
