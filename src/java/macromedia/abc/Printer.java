@@ -949,6 +949,11 @@ public class Printer
 			printOpcode(opNames[OP_construct] + " size=" + size);
 		}
 
+        public void OP_applytype(int size)
+        {
+            printOpcode(opNames[OP_applytype] + " size=" + size);
+        }
+
 		public void OP_newfunction(int id)
 		{
 			printOpcode(opNames[OP_newfunction] + " function=" + id);

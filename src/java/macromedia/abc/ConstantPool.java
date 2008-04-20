@@ -20,6 +20,7 @@ import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Mul
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_MultinameA;
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_MultinameL;
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_MultinameLA;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_TypeName;
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Namespace;
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Namespace_Set;
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Null;
@@ -44,6 +45,7 @@ import java.util.ArrayList;
 
 import macromedia.asc.util.Decimal128;
 import macromedia.asc.util.IntegerPool;
+import macromedia.asc.util.IntList;
 
 
 /**
@@ -92,79 +94,79 @@ import macromedia.asc.util.IntegerPool;
  */
 public class ConstantPool
 {
-	public static final Object NULL = new Object();
-	
-	public boolean poolHasDecimal;
+    public static final Object NULL = new Object();
 
-	public static ConstantPool merge(ConstantPool[] pools)
-	{
-		// create a new ConstantPool big enough for the combined pools.
-		int preferredSize = 0;
-		boolean hasDecimal = false;
+    public boolean poolHasDecimal;
 
-		for (int i = 0, size = pools.length; i < size; i++)
-		{
-			if (pools[i].decimalpositions.length > 0)
-				hasDecimal = true;
-			preferredSize += pools[i].mnEnd;
-		}
+    public static ConstantPool merge(ConstantPool[] pools)
+    {
+        // create a new ConstantPool big enough for the combined pools.
+        int preferredSize = 0;
+        boolean hasDecimal = false;
 
-		ConstantPool newPool = new ConstantPool(hasDecimal); // make room for decimal in the one we create
-		newPool.in = new BytecodeBuffer(preferredSize);
-		newPool.history = new IndexHistory(pools, hasDecimal);
+        for (int i = 0, size = pools.length; i < size; i++)
+        {
+            if (pools[i].decimalpositions.length > 0)
+                hasDecimal = true;
+            preferredSize += pools[i].mnEnd;
+        }
 
-		return newPool;
-	}
+        ConstantPool newPool = new ConstantPool(hasDecimal); // make room for decimal in the one we create
+        newPool.in = new BytecodeBuffer(preferredSize);
+        newPool.history = new IndexHistory(pools, hasDecimal);
 
-	ConstantPool(boolean hasDecimal)
-	{
-		poolHasDecimal = hasDecimal;
-	}
+        return newPool;
+    }
 
-	public ConstantPool(BytecodeBuffer in, boolean hasDecimal) throws DecoderException
-	{
-		this.in = in;
-		poolHasDecimal = hasDecimal;
-		scan();
-	}
+    ConstantPool(boolean hasDecimal)
+    {
+        poolHasDecimal = hasDecimal;
+    }
 
-	private void scan() throws DecoderException
-	{
-		intpositions = Scanner.scanIntConstants(in);
-		intEnd = in.pos();
-		uintpositions = Scanner.scanUIntConstants(in);
-		uintEnd = in.pos();
-		doublepositions = Scanner.scanDoubleConstants(in);
-		doubleEnd = in.pos();
-		if (poolHasDecimal) {
-			decimalpositions = Scanner.scanDecimalConstants(in);
-			decimalEnd = in.pos();
-		} else {
-			decimalpositions = new int[0];
-			decimalEnd = in.pos();
-		}
-		strpositions = Scanner.scanStrConstants(in);
-		strEnd = in.pos();
-		nspositions = Scanner.scanNsConstants(in);
-		nsEnd = in.pos();
-		nsspositions = Scanner.scanNsSetConstants(in);
-		nssEnd = in.pos();
-		mnpositions = Scanner.scanMultinameConstants(in);
-		mnEnd = in.pos();
+    public ConstantPool(BytecodeBuffer in, boolean hasDecimal) throws DecoderException
+    {
+        this.in = in;
+        poolHasDecimal = hasDecimal;
+        scan();
+    }
 
-		size = ((intpositions.length == 0) ? 0 : (intpositions.length - 1)) +
-			   ((uintpositions.length == 0) ? 0: (uintpositions.length - 1)) +
-			   ((doublepositions.length == 0) ? 0 : (doublepositions.length - 1)) +
-			   ((decimalpositions.length == 0) ? 0 : (decimalpositions.length - 1)) +
-			   ((strpositions.length == 0) ? 0 : (strpositions.length - 1)) +
-			   ((nspositions.length == 0) ? 0 : (nspositions.length - 1)) +
-			   ((nsspositions.length == 0) ? 0 : (nsspositions.length - 1)) +
-			   ((mnpositions.length == 0) ? 0 : (mnpositions.length - 1));
-	}
+    private void scan() throws DecoderException
+    {
+        intpositions = Scanner.scanIntConstants(in);
+        intEnd = in.pos();
+        uintpositions = Scanner.scanUIntConstants(in);
+        uintEnd = in.pos();
+        doublepositions = Scanner.scanDoubleConstants(in);
+        doubleEnd = in.pos();
+        if (poolHasDecimal) {
+            decimalpositions = Scanner.scanDecimalConstants(in);
+            decimalEnd = in.pos();
+        } else {
+            decimalpositions = new int[0];
+            decimalEnd = in.pos();
+        }
+        strpositions = Scanner.scanStrConstants(in);
+        strEnd = in.pos();
+        nspositions = Scanner.scanNsConstants(in);
+        nsEnd = in.pos();
+        nsspositions = Scanner.scanNsSetConstants(in);
+        nssEnd = in.pos();
+        mnpositions = Scanner.scanMultinameConstants(in);
+        mnEnd = in.pos();
 
-	BytecodeBuffer in;
-	IndexHistory history;
-	private int size;
+        size = ((intpositions.length == 0) ? 0 : (intpositions.length - 1)) +
+               ((uintpositions.length == 0) ? 0: (uintpositions.length - 1)) +
+               ((doublepositions.length == 0) ? 0 : (doublepositions.length - 1)) +
+               ((decimalpositions.length == 0) ? 0 : (decimalpositions.length - 1)) +
+               ((strpositions.length == 0) ? 0 : (strpositions.length - 1)) +
+               ((nspositions.length == 0) ? 0 : (nspositions.length - 1)) +
+               ((nsspositions.length == 0) ? 0 : (nsspositions.length - 1)) +
+               ((mnpositions.length == 0) ? 0 : (mnpositions.length - 1));
+    }
+
+    BytecodeBuffer in;
+    IndexHistory history;
+    private int size;
 
     int[] intpositions;
     int[] uintpositions;
@@ -175,92 +177,92 @@ public class ConstantPool
     int[] nsspositions;
     int[] mnpositions;
 
-	int intEnd;
-	int uintEnd;
-	int doubleEnd;
-	int decimalEnd;
-	int strEnd;
-	int nsEnd;
-	int nssEnd;
-	int mnEnd;
+    int intEnd;
+    int uintEnd;
+    int doubleEnd;
+    int decimalEnd;
+    int strEnd;
+    int nsEnd;
+    int nssEnd;
+    int mnEnd;
 
-	public int size()
-	{
-		return size;
-	}
+    public int size()
+    {
+        return size;
+    }
 
-	public int getInt(int index)
-	{
-		if (index == 0)
-		{
-			return 0;
-		}
+    public int getInt(int index)
+    {
+        if (index == 0)
+        {
+            return 0;
+        }
 
-		int pos = intpositions[index];
-		int originalPos = in.pos();
-		in.seek(pos);
+        int pos = intpositions[index];
+        int originalPos = in.pos();
+        in.seek(pos);
 
         int value = in.readU32();
         in.seek(originalPos);
         return value;
 
-	}
+    }
 
-	public long getLong(int index)
-	{
-		if (index == 0)
-		{
-			return 0;
-		}
+    public long getLong(int index)
+    {
+        if (index == 0)
+        {
+            return 0;
+        }
 
-		int pos = uintpositions[index];
-		int originalPos = in.pos();
-		in.seek(pos);
+        int pos = uintpositions[index];
+        int originalPos = in.pos();
+        in.seek(pos);
         long value = in.readU32();
         in.seek(originalPos);
         return value;
-	}
+    }
 
-	public double getDouble(int index)
-	{
-		if (index == 0)
-		{
-			return 0;
-		}
+    public double getDouble(int index)
+    {
+        if (index == 0)
+        {
+            return 0;
+        }
 
-		int pos = doublepositions[index];
-		int originalPos = in.pos();
-		in.seek(pos);
+        int pos = doublepositions[index];
+        int originalPos = in.pos();
+        in.seek(pos);
         double value = in.readDouble();
         in.seek(originalPos);
         return value;
-	}
+    }
 
-	public Decimal128 getDecimal(int index)
-	{
-		if (index == 0)
-		{
-			return Decimal128.ZERO;
-		}
+    public Decimal128 getDecimal(int index)
+    {
+        if (index == 0)
+        {
+            return Decimal128.ZERO;
+        }
 
-		int pos = decimalpositions[index];
-		int originalPos = in.pos();
-		in.seek(pos);
+        int pos = decimalpositions[index];
+        int originalPos = in.pos();
+        in.seek(pos);
         byte[] valbytes = in.readBytes(16);
         in.seek(originalPos);
         return new Decimal128(valbytes); // perhaps need to change endian
-	}
+    }
 
-	public String getString(int index) throws DecoderException
-	{
-		if (index == 0)
-		{
-			return null;
-		}
+    public String getString(int index) throws DecoderException
+    {
+        if (index == 0)
+        {
+            return null;
+        }
 
-		int pos = strpositions[index];
-		int originalPos = in.pos();
-		in.seek(pos);
+        int pos = strpositions[index];
+        int originalPos = in.pos();
+        in.seek(pos);
         String value = in.readString(in.readU32());
         in.seek(originalPos);
         if (value != null)
@@ -271,7 +273,7 @@ public class ConstantPool
         {
             throw new DecoderException("abc Decoder Erro: problem reading UTF-8 encoded strings.");
         }
-	}
+    }
 
     public String getNamespaceName(int index) throws DecoderException
     {
@@ -291,8 +293,8 @@ public class ConstantPool
             case CONSTANT_PackageNamespace:
             case CONSTANT_PackageInternalNs:
             case CONSTANT_ProtectedNamespace:
-		    case CONSTANT_ExplicitNamespace:
-		    case CONSTANT_StaticProtectedNs:
+            case CONSTANT_ExplicitNamespace:
+            case CONSTANT_StaticProtectedNs:
                 value = getString(in.readU32());
                 break;
             default:
@@ -302,16 +304,16 @@ public class ConstantPool
         return value;
     }
 
-	public String[] getNamespaceSet(int index) throws DecoderException
-	{
-		if (index == 0)
-		{
-			return null;
-		}
+    public String[] getNamespaceSet(int index) throws DecoderException
+    {
+        if (index == 0)
+        {
+            return null;
+        }
 
-		int pos = nsspositions[index];
-		int originalPos = in.pos();
-		in.seek(pos);
+        int pos = nsspositions[index];
+        int originalPos = in.pos();
+        in.seek(pos);
         int count = in.readU32();
         String[] value = new String[count];
         for (int j = 0; j < count; j++)
@@ -327,98 +329,98 @@ public class ConstantPool
         {
             throw new DecoderException("abc Decoder Erro: problem reading namespace set.");
         }
-	}
-	
-	public int getNamespaceIndexForQName(int index) throws DecoderException {
-		if (index == 0)
-		{
-			return 0;
-		}
+    }
 
-		int pos = mnpositions[index];
-		int originalPos = in.pos();
-		in.seek(pos);
-		int kind = in.readU8();
+    public int getNamespaceIndexForQName(int index) throws DecoderException {
+        if (index == 0)
+        {
+            return 0;
+        }
 
-		switch (kind)
-		{
-		case CONSTANT_Qname:
-		case CONSTANT_QnameA:
-			int namespaceIndex = in.readU32();
-			in.seek(originalPos);
-			return namespaceIndex;
-		default:
-			in.seek(originalPos);
-			throw new DecoderException("abc Decoder Error: constant pool index '" + index + "' is not a QName type. The actual type is '" + kind + "'");
-		}
-	}
-	
-	public int getNamespaceKind(int namespaceIndex) {
-		if(namespaceIndex == 0)
-			return -1;
-		
-		int pos = nspositions[namespaceIndex];
+        int pos = mnpositions[index];
+        int originalPos = in.pos();
+        in.seek(pos);
+        int kind = in.readU8();
+
+        switch (kind)
+        {
+        case CONSTANT_Qname:
+        case CONSTANT_QnameA:
+            int namespaceIndex = in.readU32();
+            in.seek(originalPos);
+            return namespaceIndex;
+        default:
+            in.seek(originalPos);
+            throw new DecoderException("abc Decoder Error: constant pool index '" + index + "' is not a QName type. The actual type is '" + kind + "'");
+        }
+    }
+
+    public int getNamespaceKind(int namespaceIndex) {
+        if(namespaceIndex == 0)
+            return -1;
+
+        int pos = nspositions[namespaceIndex];
         int originalPos = in.pos();
         in.seek(pos);
         int kind = in.readU8();
         in.seek(originalPos);
         return kind;
-	}
+    }
 
-	public QName getQName(int index) throws DecoderException
-	{
-		if (index == 0)
-		{
-			return null;
-		}
+    public QName getQName(int index) throws DecoderException
+    {
+        if (index == 0)
+        {
+            return null;
+        }
 
-		int pos = mnpositions[index];
-		int originalPos = in.pos();
-		in.seek(pos);
-		int kind = in.readU8();
+        int pos = mnpositions[index];
+        int originalPos = in.pos();
+        in.seek(pos);
+        int kind = in.readU8();
 
-		switch (kind)
-		{
-		case CONSTANT_Qname:
-		case CONSTANT_QnameA:
-			int namespaceIndex = in.readU32();
-			int nameIndex = in.readU32();
-			QName value = createQName(getNamespaceName(namespaceIndex), getString(nameIndex));
-			in.seek(originalPos);
-			return value;
-		default:
-			in.seek(originalPos);
-			throw new DecoderException("abc Decoder Error: constant pool index '" + index + "' is not a QName type. The actual type is '" + kind + "'");
-		}
-	}
+        switch (kind)
+        {
+        case CONSTANT_Qname:
+        case CONSTANT_QnameA:
+            int namespaceIndex = in.readU32();
+            int nameIndex = in.readU32();
+            QName value = createQName(getNamespaceName(namespaceIndex), getString(nameIndex));
+            in.seek(originalPos);
+            return value;
+        default:
+            in.seek(originalPos);
+            throw new DecoderException("abc Decoder Error: constant pool index '" + index + "' is not a QName type. The actual type is '" + kind + "'");
+        }
+    }
 
-	public MultiName getMultiName(int index) throws DecoderException
-	{
-		if (index == 0)
-		{
-			return null;
-		}
+    public MultiName getMultiName(int index) throws DecoderException
+    {
+        if (index == 0)
+        {
+            return null;
+        }
 
-		int pos = mnpositions[index];
-		int originalPos = in.pos();
-		in.seek(pos);
-		int kind = in.readU8();
+        int pos = mnpositions[index];
+        int originalPos = in.pos();
+        in.seek(pos);
+        int kind = in.readU8();
 
-		switch (kind)
-		{
-		case CONSTANT_Multiname:
-		case CONSTANT_MultinameA:
-			String name = getString(in.readU32());
-			int namespace_set = in.readU32();
-			String[] namespaces = getNamespaceSet(namespace_set);
-			MultiName value = createMultiName(name, namespaces);
-			in.seek(originalPos);
-			return value;
-		default:
-			in.seek(originalPos);
-			throw new DecoderException("abc Decoder Error: constant constantPool index '" + index + "' is not a MultiName type. The actual type is '" + kind + "'");
-		}
-	}
+        switch (kind)
+        {
+        case CONSTANT_Multiname:
+        case CONSTANT_MultinameA:
+            String name = getString(in.readU32());
+            int namespace_set = in.readU32();
+            String[] namespaces = getNamespaceSet(namespace_set);
+            MultiName value = createMultiName(name, namespaces);
+            in.seek(originalPos);
+            return value;
+        default:
+            in.seek(originalPos);
+            throw new DecoderException("abc Decoder Error: constant constantPool index '" + index + "' is not a MultiName type. The actual type is '" + kind + "'");
+        }
+    }
 
     public Object getGeneralMultiname(int index) throws DecoderException
     {
@@ -454,44 +456,44 @@ public class ConstantPool
             return value;
         }
         case CONSTANT_RTQnameL:
-	        in.seek(originalPos);
+            in.seek(originalPos);
             return "CONSTANT_RTQnameL"; // Boolean.FALSE;
         case CONSTANT_RTQnameLA:
-	        in.seek(originalPos);
+            in.seek(originalPos);
             return "CONSTANT_RTQnameLA"; // Boolean.TRUE;
         case CONSTANT_MultinameL:
         case CONSTANT_MultinameLA:
         {
-	        int namespacesetIndex = in.readU32();
-	        String[] value = getNamespaceSet(namespacesetIndex);
-	        ArrayList<String> a = new ArrayList<String>();
-	        for (int k = 0; k < value.length; k++)
-	        {
-		        a.add(value[k]);
-	        }
-	        in.seek(originalPos);
+            int namespacesetIndex = in.readU32();
+            String[] value = getNamespaceSet(namespacesetIndex);
+            ArrayList<String> a = new ArrayList<String>();
+            for (int k = 0; k < value.length; k++)
+            {
+                a.add(value[k]);
+            }
+            in.seek(originalPos);
             return a;
         }
         case CONSTANT_RTQname:
         case CONSTANT_RTQnameA:
-	    {
-		    int idx = in.readU32();
-		    String s = getString(idx);
-	        in.seek(originalPos);
+        {
+            int idx = in.readU32();
+            String s = getString(idx);
+            in.seek(originalPos);
             return s;
-	    }
+        }
         default:
             in.seek(originalPos);
             throw new DecoderException("abc Decoder Error: constant pool index '" + index + "' is not a QName type. The actual type is '" + kind + "'");
         }
     }
 
-	public Object get(int index, int kind) throws DecoderException
-	{
-		if (index == 0)
-		{
-			return null;
-		}
+    public Object get(int index, int kind) throws DecoderException
+    {
+        if (index == 0)
+        {
+            return null;
+        }
 
         Object value;
         switch(kind)
@@ -539,7 +541,7 @@ public class ConstantPool
                 return value;
             case CONSTANT_RTQname:
             case CONSTANT_RTQnameA:
-				value = getGeneralMultiname(index);
+                value = getGeneralMultiname(index);
                 return value;
             case CONSTANT_RTQnameL:
                 value = "CONSTANT_RTQnameL"; // Boolean.FALSE;
@@ -548,10 +550,10 @@ public class ConstantPool
                 value = "CONSTANT_RTQnameLA"; // Boolean.TRUE;
                 return value;
             case CONSTANT_MultinameL:
-	            value = getNamespaceSet(getInt(index));
+                value = getNamespaceSet(getInt(index));
                 return value;
             case CONSTANT_MultinameLA:
-	            value = getNamespaceSet(getInt(index));
+                value = getNamespaceSet(getInt(index));
                 return value;
             case CONSTANT_Namespace_Set:
                 value = getNamespaceSet(index);
@@ -559,38 +561,38 @@ public class ConstantPool
             default:
                 throw new DecoderException("Error: Unhandled constant type - " + kind);
         }
-	}
+    }
 
-	private Integer createInteger(int number)
-	{
-		return IntegerPool.getNumber(number);
-	}
+    private Integer createInteger(int number)
+    {
+        return IntegerPool.getNumber(number);
+    }
 
-	private Long createLong(long number)
-	{
-		return new Long(number);
-	}
+    private Long createLong(long number)
+    {
+        return new Long(number);
+    }
 
-	private Double createDouble(double number)
-	{
-		return new Double(number);
-	}
+    private Double createDouble(double number)
+    {
+        return new Double(number);
+    }
 
-	private QName createQName(String ns, String name)
-	{
-		return new QName(ns, name);
-	}
+    private QName createQName(String ns, String name)
+    {
+        return new QName(ns, name);
+    }
 
-	private MultiName createMultiName(String name, String[] ns)
-	{
-		return new MultiName(name, ns);
-	}
+    private MultiName createMultiName(String name, String[] ns)
+    {
+        return new MultiName(name, ns);
+    }
 
-	public void writeTo(OutputStream out) throws IOException
-	{
-		history.writeTo(in);
-		in.writeTo(out);
-	}
+    public void writeTo(OutputStream out) throws IOException
+    {
+        history.writeTo(in);
+        in.writeTo(out);
+    }
 }
 
 final class IndexHistory
@@ -903,7 +905,8 @@ final class IndexHistory
 		    poolIn.seek(pos);
 		    start = in_mn.size();
 		    int constKind = poolIn.readU8();
-		    in_mn.writeU8(constKind);
+            if( !(constKind==CONSTANT_TypeName))
+                in_mn.writeU8(constKind);
 
 		    switch (constKind)
 		    {
@@ -948,7 +951,26 @@ final class IndexHistory
 				in_mn.writeU32(newNamespace_set);
 				break;
 			}
-		    default:
+            case CONSTANT_TypeName:
+            {
+                int nameIndex = poolIn.readU32();
+                int newNameIndex = getIndex(poolIndex, cp_mn, nameIndex);
+                int count = poolIn.readU32();
+                IntList newParams = new IntList();
+                for( int i = 0; i<count;++i) {
+                    newParams.add(getIndex(poolIndex, cp_mn, poolIn.readU32()));
+                }
+                start = in_mn.size();
+                in_mn.writeU8(constKind);
+                in_mn.writeU32(newNameIndex);
+                in_mn.writeU32(count);
+                for( int i =0; i < count; ++i ) {
+                    in_mn.writeU32(newParams.at(i));
+                }
+				break;
+            }
+
+            default:
 			    assert false; // can't possibly happen...
 		    }
 
@@ -1199,7 +1221,17 @@ final class MN extends ByteArray
 			hash = (int) ((num >> 32) ^ num);
 			break;
 		}
-		default:
+        case CONSTANT_TypeName:
+        {
+            index1 = b.readU32();
+            int count = b.readU32();
+            // Only 1 typeparam for now.
+            index2 = b.readU32();
+            long num = 1234 ^ constKind ^ index1 ^ index2;
+            hash = (int) ((num >> 32) ^ num);
+            break;
+        }
+        default:
 			assert false; // can't possibly happen...
 		}
 
@@ -1242,7 +1274,11 @@ final class MN extends ByteArray
 			{
 				return (constKind == mn.constKind) && (index1 == mn.index1);
 			}
-			default:
+            case CONSTANT_TypeName:
+            {
+                return ( constKind == mn.constKind && index1 == mn.index1 && index2 == mn.index2 );
+            }
+            default:
 				return false;
 			}
 		}

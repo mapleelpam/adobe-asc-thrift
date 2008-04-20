@@ -5069,7 +5069,12 @@ else
     }
 
 
+
     private void inheritClassSlots(TypeValue cframe, ObjectValue iframe, TypeValue baseType, Context ctx)
+    {
+        inheritClassSlotsStatic(cframe, iframe, baseType, ctx);
+    }
+    static void inheritClassSlotsStatic(TypeValue cframe, ObjectValue iframe, TypeValue baseType, Context ctx)
     {
         TypeValue superType = baseType;
         cframe.baseclass = superType;

@@ -284,6 +284,8 @@ public interface Visitor
 
 	void OP_construct(int size);
 
+    void OP_applytype(int size);
+
 	void OP_newfunction(int id);
 
 	void OP_newclass(int id);

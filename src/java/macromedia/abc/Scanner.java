@@ -150,6 +150,11 @@ public final class Scanner
                 case CONSTANT_MultinameLA:
 					in.readU32();
                     break;
+                case CONSTANT_TypeName:
+                    in.readU32(); // name index
+                    long count = in.readU32(); // param count;
+                    in.skipEntries(count);
+                    break;
                 default:
                     throw new DecoderException("Invalid constant type: " + kind);
             }

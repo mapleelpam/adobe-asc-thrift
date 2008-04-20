@@ -151,6 +151,7 @@ public class OpcodeVisitor implements Visitor
 	public void OP_getglobalslot(int index) {}
 	public void OP_call(int size) {}
 	public void OP_construct(int size) {}
+    public void OP_applytype(int size) {}
 	public void OP_newfunction(int id) {}
 	public void OP_newclass(int id) {}
 	public void OP_callstatic(int id, int argc) {}

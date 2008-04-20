@@ -7565,6 +7565,9 @@ XMLElementContent
         if (lookahead(LEFTBRACE_TOKEN))
         {
             result = nodeFactory.startPackage(ctx, null, null);
+            // Careful, when adding synthetic UseDirectiveNodes they must be created
+            // in between calls to start/finishPackage.  Otherwise they won't have their
+            // pkgdef ptr set up correctly, and things will go mysteriously awry later.
             Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
             ObjectList<UseDirectiveNode> udns = null;
             if ( !ctx.statics.use_namespaces.isEmpty() )
@@ -7605,6 +7608,9 @@ XMLElementContent
         {
             PackageNameNode first = parsePackageName(false);
             result = nodeFactory.startPackage(ctx, null, first);
+            // Careful, when adding synthetic UseDirectiveNodes they must be created
+            // in between calls to start/finishPackage.  Otherwise they won't have their
+            // pkgdef ptr set up correctly, and things will go mysteriously awry later.
             Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
             ObjectList<UseDirectiveNode> udns = null;
             if ( !ctx.statics.use_namespaces.isEmpty() )

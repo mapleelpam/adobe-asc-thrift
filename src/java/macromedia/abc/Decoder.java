@@ -1448,6 +1448,12 @@ public final class Decoder
 					v.OP_construct(size);
 			        continue;
 				}
+                case OP_applytype:
+                {
+                    int size = in.readU32();
+                    v.OP_applytype(size);
+                    continue;
+                }
 			    case OP_newfunction:
 				{
 					int id = in.readU32(); // method info...

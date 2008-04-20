@@ -513,6 +513,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     obj.builder.ImplicitCall(cx,obj,slot_id,cframe,CALL_Method,-1,-1);
                     obj.builder.ImplicitConstruct(cx,obj,slot_id,cframe,CALL_Method,-1,-1);
                     factory.addParameterizedTypeSlot(cx, slot);
+                    FlowAnalyzer.inheritClassSlotsStatic(cframe, iframe, cx.vectorObjType(), cx);
                     if( factory == cx.vectorType() )
                     {
                         cframe.indexed_type = types.at(0);

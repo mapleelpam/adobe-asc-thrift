@@ -98,7 +98,7 @@ public interface Opcodes
     "OP_0x50",
     "OP_0x51",
     "OP_0x52",
-    "OP_0x53",
+    "applytype",
     "OP_0x54",
     "newobject",
     "newarray",

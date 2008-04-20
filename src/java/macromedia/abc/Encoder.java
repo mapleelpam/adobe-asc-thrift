@@ -377,7 +377,8 @@ public class Encoder implements Visitor
 			case CONSTANT_QnameA:
 		    case CONSTANT_Multiname:
 		    case CONSTANT_MultinameA:
-				kind = IndexHistory.cp_mn;
+            case CONSTANT_TypeName:
+                kind = IndexHistory.cp_mn;
 				break;
 		    case CONSTANT_Namespace_Set:
 				kind = IndexHistory.cp_nsset;
@@ -701,7 +702,8 @@ public class Encoder implements Visitor
 		case CONSTANT_QnameA:
 		case CONSTANT_Multiname:
 		case CONSTANT_MultinameA:
-			kind = IndexHistory.cp_mn;
+        case CONSTANT_TypeName:
+            kind = IndexHistory.cp_mn;
 			break;
 		case CONSTANT_Namespace_Set:
 			kind = IndexHistory.cp_nsset;
@@ -2129,6 +2131,15 @@ public class Encoder implements Visitor
 			opcodes.writeU32(size);
 		}
 	}
+
+    public void OP_applytype(int size)
+    {
+        if (opcodePass == 1)
+        {
+            beginop(OP_applytype);
+            opcodes.writeU32(size);
+        }
+    }
 
 	public void OP_newfunction(int id)
 	{

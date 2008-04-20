@@ -312,6 +312,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         if (node.instanceinits != null)
             PreprocessDefinitionTypeInfo(cx,node.instanceinits, false);
 
+        ObjectList<TypeInfo> ctor_types = null;
+        ByteList ctor_decls = null;
         // need to look for the constructor and record it's signature.  It needs to be recorded in the class slot, not the function slot
         Slot class_slot = (node.ref != null ?  node.ref.getSlot(cx, NEW_TOKEN) : null);
         if (class_slot != null)
@@ -328,6 +330,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                         Slot ctor_slot = func_def.fexpr.ref.getSlot(cx, func_def.fexpr.kind);
                         if (ctor_slot != null)
                         {
+                            ctor_types = ctor_slot.getTypes();
+                            ctor_decls = ctor_slot.getDeclStyles();
                             class_slot.setTypes(ctor_slot.getTypes());
                             class_slot.setDeclStyles(ctor_slot.getDeclStyles());
                         }
@@ -335,8 +339,45 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 }
             }
         }
+
         cx.popScope();
         cx.popStaticClassScopes(node);
+
+/*        System.out.println("CE preprocess for " + node.cframe.name.toString());
+
+        if(node.cframe.types != null)
+        {
+            // When type parameters are fully implemented
+            // this should do something to resolve references to the type parameters to the actual
+            // types so all the signatures are correct instead of just blindly copying the slots
+            System.out.println("Copying slots from " + node.cframe.name.toString());
+            for(int i = 0, limit = node.cframe.types.size(); i < limit; ++i )
+            {
+                Slot s = node.cframe.types.at(i);
+                TypeValue t = (TypeValue)s.getValue();
+                int id = s.implies(cx, NEW_TOKEN);
+                ObjectValue base = node.ref.getBase();
+                if( base == null )
+                {
+                    if(node.ref.getScopeIndex() >= 0 )
+                        base = cx.scope(node.ref.getScopeIndex());
+                }
+                if( base != null )
+                {
+                    s = base.getSlot(cx, id);
+                    if( s != null )
+                    {
+                        s.setTypes(ctor_types);
+                        s.setDeclStyles(ctor_decls);
+                    }
+                }
+                ObjectValue p = node.cframe.prototype;
+                if(node.cframe == cx.vectorType() )
+                    p = cx.vectorObjType().prototype;
+                FlowAnalyzer.inheritSlots(p, t.prototype, t.prototype.builder, cx);
+            }
+        }
+ */
     }
 
 
@@ -4073,11 +4114,13 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
         cx.popScope(); //node.iframe
         cx.popStaticClassScopes(node);
+/*        System.out.println("CE for class " + node.cframe.name.toString());
         if(node.cframe.types != null)
         {
             // When type parameters are fully implemented
             // this should do something to resolve references to the type parameters to the actual
             // types so all the signatures are correct instead of just blindly copying the slots
+            System.out.println("Copying slots from " + node.cframe.name.toString());
             for(int i = 0, limit = node.cframe.types.size(); i < limit; ++i )
             {
                 Slot s = node.cframe.types.at(i);
@@ -4104,7 +4147,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 FlowAnalyzer.inheritSlots(p, t.prototype, t.prototype.builder, cx);
             }
         }
-        doing_class = orig;
+ */       doing_class = orig;
         return node.cframe;
     }
 
