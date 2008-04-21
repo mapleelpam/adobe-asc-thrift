@@ -499,21 +499,32 @@ public final class ReferenceValue extends Value implements ErrorConstants
 
                     slot_id = obj.builder.ImplicitVar(cx,obj,name,qualifier,cx.typeType(),-1,-1,-1);
 
-                    ObjectValue prot_ns = cx.getNamespace(fullname.toString(), Context.NS_PROTECTED);
-                    ObjectValue static_prot_ns = cx.getNamespace(fullname.toString(), Context.NS_STATIC_PROTECTED);
+                    TypeValue cframe = null;
+                    if( factory.types != null && factory.types.containsKey(name) )
+                    {
+                        Slot instaniated = factory.types.get(name);
+                        cframe = (TypeValue)instaniated.getValue();
+                    }
+                    else
+                    {
+                        ObjectValue prot_ns = cx.getNamespace(fullname.toString(), Context.NS_PROTECTED);
+                        ObjectValue static_prot_ns = cx.getNamespace(fullname.toString(), Context.NS_STATIC_PROTECTED);
 
-                    TypeValue cframe = new TypeValue(cx, new ClassBuilder(fullname, prot_ns, static_prot_ns), fullname, TYPE_object);
-                    ObjectValue iframe = new ObjectValue(cx,new InstanceBuilder(fullname),cframe);
-                    cframe.prototype = iframe;
+                        cframe = new TypeValue(cx, new ClassBuilder(fullname, prot_ns, static_prot_ns), fullname, TYPE_object);
+                        ObjectValue iframe = new ObjectValue(cx,new InstanceBuilder(fullname),cframe);
+                        cframe.prototype = iframe;
 
+                        FlowAnalyzer.inheritClassSlotsStatic(cframe, iframe, cx.vectorObjType(), cx);
+                    }
                     slot = obj.getSlot(cx, slot_id);
                     slot.setValue(cframe);
                     slot.setConst(true);
                     slot.declaredBy = null;
                     obj.builder.ImplicitCall(cx,obj,slot_id,cframe,CALL_Method,-1,-1);
                     obj.builder.ImplicitConstruct(cx,obj,slot_id,cframe,CALL_Method,-1,-1);
-                    factory.addParameterizedTypeSlot(cx, slot);
-                    FlowAnalyzer.inheritClassSlotsStatic(cframe, iframe, cx.vectorObjType(), cx);
+
+                    factory.addParameterizedTypeSlot(cx, name, slot);
+
                     if( factory == cx.vectorType() )
                     {
                         cframe.indexed_type = types.at(0);
