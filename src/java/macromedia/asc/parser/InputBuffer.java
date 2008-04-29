@@ -37,7 +37,7 @@ import static macromedia.asc.embedding.avmplus.Features.*;
  *
  * @author Jeff Dyer
  */
-public final class InputBuffer
+public class InputBuffer
 {
 	private StringBuffer text;
 	private IntList line_breaks;
@@ -77,6 +77,13 @@ public final class InputBuffer
 		this.text = new StringBuffer(in.length() + 10);
 
 		init(origin, 0);
+	}
+
+	/**
+	 * No arg constructor for subclasses that aren't InputStream or String based.
+	 */
+	public InputBuffer()
+	{
 	}
 
 	private void init(String origin, int pos)
