@@ -124,8 +124,8 @@ public class ContextStatics
     public final ObjectList<String> use_namespaces = new ObjectList<String>();
     
     /**
-     * Returns an ObjectList filled with the correct namespaces that need to be
-     * automatically opened for the current target player, e.g. flash10.
+     * Returns a list filled with namespaces that should be automatically
+     * opened, based on the current target player, e.g. flash10, AS3.
      * 
      * You would add these to ContextStatics.use_namespaces before Parse.parse().
      * 
@@ -351,7 +351,7 @@ public class ContextStatics
             if (list != null)
             {
                 MetaDataNode dep = null;
-                for (int i = 0, size = list != null ? list.size() : 0; i < size; i++)
+                for (int i = 0, size = list.size(); i < size; i++)
                 {
                     if( "Deprecated".equals(list.get(i).id) )
                     {

@@ -483,8 +483,6 @@ public final class Parser
         return result;
     }
 
-    private boolean seen_it = false;
-
     /*
      * Match the current input with an expected token. lookahead is managed by
      * setting the state of this.nextToken to EMPTY_TOKEN after an match is

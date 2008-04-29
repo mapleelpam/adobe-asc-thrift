@@ -18,11 +18,6 @@
 package macromedia.asc.semantics;
 
 import macromedia.asc.util.*;
-import macromedia.asc.parser.Tokens;
-import static macromedia.asc.semantics.Slot.CALL_Method;
-import macromedia.asc.embedding.avmplus.ClassBuilder;
-import macromedia.asc.embedding.avmplus.InstanceBuilder;
-import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_object;
 
 import java.util.HashMap;
 
