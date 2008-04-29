@@ -82,7 +82,7 @@ public class InputBuffer
 	/**
 	 * No arg constructor for subclasses that aren't InputStream or String based.
 	 */
-	public InputBuffer()
+	protected InputBuffer()
 	{
 	}
 
