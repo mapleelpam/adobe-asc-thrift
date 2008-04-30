@@ -88,6 +88,7 @@ public final class Context implements ErrorConstants
     private TreeMap<UnresolvedNamespace, ObjectList<ObjectValue>> unresolved_namespaces;
 	public ObjectList<Node>    comments = new ObjectList<Node>();
 	public boolean scriptAssistParsing = false;
+	public boolean spaceOperators = false;
 	
     public Context(ContextStatics statics)
     {
