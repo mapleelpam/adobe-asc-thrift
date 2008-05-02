@@ -53,6 +53,7 @@ public class SwfMaker
 	int		tagPos;
 	int		tagLen;
 	boolean	tagIsBig;
+    int     swf_version;
 
     SwfMaker()
     {
@@ -61,6 +62,7 @@ public class SwfMaker
 	    tagPos			= 0;
 	    tagLen			= 0;
 	    tagIsBig		= false;
+        swf_version     = 9;
     }
 
 	void SetPos(int pos)
@@ -258,7 +260,7 @@ public class SwfMaker
         PutByte((byte)'F');
         PutByte((byte)'W');
         PutByte((byte)'S');
-        PutByte((byte)9);
+        PutByte((byte)swf_version);
         PutDWord(0);
 
 		SRECT bounds = new SRECT();

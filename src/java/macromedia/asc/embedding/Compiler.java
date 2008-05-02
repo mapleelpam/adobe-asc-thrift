@@ -19,6 +19,7 @@ package macromedia.asc.embedding;
 
 import macromedia.asc.embedding.avmplus.ActionBlockEmitter;
 import macromedia.asc.embedding.avmplus.GlobalBuilder;
+import macromedia.asc.embedding.avmplus.Features;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.*;
 import macromedia.asc.util.*;
@@ -472,7 +473,9 @@ public class Compiler implements ErrorConstants
 					if (swf_options.length() != 0)
 					{
 						SwfMaker swfMaker = new SwfMaker();
-						if (!swfMaker.EncodeABC(bytes, swf_options))
+                        if( cx.abcVersion(Features.TARGET_AVM2) )
+                            swfMaker.swf_version = 10;
+                        if (!swfMaker.EncodeABC(bytes, swf_options))
 						{
 							System.err.println("ERROR: invalid -swf options, should be classname,width,height");
 						}
