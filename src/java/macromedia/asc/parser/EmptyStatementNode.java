@@ -39,14 +39,7 @@ public class EmptyStatementNode extends Node
 	
 	public Value evaluate(Context cx, Evaluator evaluator)
 	{
-		if (evaluator.checkFeature(cx, this))
-		{
-			return evaluator.evaluate(cx, this);
-		}
-		else
-		{
-			return null;
-		}
+		return null;
 	}
 	
 	// don't let anyone get a different position (since it's a singleton)
