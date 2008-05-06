@@ -15,3 +15,4 @@ trace\(Event.DEACTIVATE_TYPE\);
 
 DeactivateTypeWarn.abc, [0-9]+ bytes written
 ReferenceError: Error #1065
+

@@ -15,3 +15,4 @@ if\(str.__proto__ == String.prototype\) {}
 
 UnsupportedAS2PropertyWarn.abc, [0-9]+ bytes written
 ReferenceError: Error #1069
+

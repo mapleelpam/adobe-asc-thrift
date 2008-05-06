@@ -15,3 +15,4 @@ trace\(Event.MOUSE_LEAVE_TYPE\);
 
 MouseLeaveTypeWarn.abc, [0-9]+ bytes written
 .*Error.*
+

@@ -15,3 +15,4 @@ stopAllSounds();
 
 StopAllSoundsWarn.abc, [0-9]+ bytes written
 .*Error.*
+

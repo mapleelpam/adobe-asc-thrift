@@ -16,3 +16,4 @@ var s2:String = substring\(str,3,7\)
 CMsubstring.abc, [0-9]+ bytes written
 ngst
 ReferenceError: Error #1065
+

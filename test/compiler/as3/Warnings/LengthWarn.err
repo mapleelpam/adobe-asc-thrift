@@ -15,3 +15,4 @@ length\("String"\);
 
 LengthWarn.abc, [0-9]+ bytes written
 .*Error.*
+

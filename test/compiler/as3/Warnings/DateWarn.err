@@ -23,3 +23,4 @@ date.setYear\(1969\);
 
 DateWarn.abc, [0-9]+ bytes written
 TypeError: Error #1006
+

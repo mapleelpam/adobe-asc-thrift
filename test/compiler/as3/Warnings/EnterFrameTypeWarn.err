@@ -15,3 +15,4 @@ trace\(Event.ENTER_FRAME_TYPE\);
 
 EnterFrameTypeWarn.abc, [0-9]+ bytes written
 .*Error.*
+

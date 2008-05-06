@@ -83,3 +83,4 @@ a_mc.onUnload = function\(\):void  { trace\("onUnload"\); };
 
 MovieClipEvents.abc, [0-9]+ bytes written
 .*Error.*
+

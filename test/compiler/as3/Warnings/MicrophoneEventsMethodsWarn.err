@@ -47,3 +47,4 @@ my_mc.onStatus = function():void{
 
 MicrophoneEventsMethodsWarn.abc, [0-9]+ bytes written
 .*Error.*
+

@@ -27,3 +27,4 @@ styl.onLoad = function():void{}
 
 CMstylesheet.abc, [0-9]+ bytes written
 VerifyError: Error #1014
+

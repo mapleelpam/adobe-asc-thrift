@@ -15,3 +15,4 @@ trace\(Event.TAB_CHILDREN_CHANGE_TYPE\);
 
 TabChildrenChangeTypeWarn.abc, [0-9]+ bytes written
 ReferenceError: Error #1065
+

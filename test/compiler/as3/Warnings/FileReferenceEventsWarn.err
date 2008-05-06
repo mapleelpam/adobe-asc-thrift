@@ -43,3 +43,4 @@ fileRef.onSelect = function():void{}
 
 FileReferenceEventsWarn.abc, [0-9]+ bytes written
 .*Error.*
+

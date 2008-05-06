@@ -1,3 +1,4 @@
+	
 #!/usr/bin/env python
 #
 # ***** BEGIN LICENSE BLOCK ***** 
@@ -101,7 +102,7 @@ def usage(c):
 	exit(c)
 
 try:
-	opts, args = getopt(argv[1:], "vE:a:g:x:htc:p:", ["verbose","avm=","asc=","globalabc=","exclude=","help","notime","config","playerglobal="])
+	opts, args = getopt(argv[1:], "vE:a:g:x:htc:p:", ["verbose","avm=","asc=","globalabc=","exclude=","help","notime","config=","playerglobalabc="])
 except:
 	usage(2)
 
@@ -124,8 +125,8 @@ for o, v in opts:
 		timestamps = False
 	elif o in ("-c", "--config"):
 		globs['config'] = v
-	elif o in ("-p", "--playerglobal"):
-		globs['playerglobal'] = v
+	elif o in ("-p", "--playerglobalabc"):
+		globs['playerglobalabc'] = v
 
 exclude = globs['exclude']
 
@@ -334,6 +335,7 @@ for ast in tests:
 	else:
 		expected=["","%s.abc, [\d]+ bytes written" % tname]
 	if len(expected) != len(actual):
+		fail_print("[[KEY]]: %s" % ast)
 		if settings.has_key('expectedfailure'):
 			expectFail=True
 			globs['allexpfails'] += 1
@@ -420,6 +422,13 @@ js_print("passes               : %d" % globs['allpasses'], "<br>", "")
 js_print("failures             : %d" % globs['allfails'], "<br>", "")
 js_print("unexpected passes    : %d" % globs['allunpass'], "<br>", "")
 js_print("expected failures    : %d" % globs['allexpfails'], "<br>", "")
+
+logfile = open('result.properties', 'w')
+if globs['allfails']>0:
+	logfile.write("failures=%d" % globs['allfails'])
+else:
+	logfile.write("no failures")
+
 if globs['allskips']>0:
 	js_print("skips                : %d" % globs['allskips'], "<br>", "")
 

@@ -15,3 +15,4 @@ dispMov.addEventListener\(FocusEvent.KEY_FOCUS_CHANGE_TYPE, keyFocListener\);
 
 KeyFocusChangeTypeWarn.abc, [0-9]+ bytes written
 .*Error.*
+

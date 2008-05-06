@@ -15,3 +15,4 @@ a._visible = 1;
 
 DisplayObjectVisibleWarn.abc, [0-9]+ bytes written
 VerifyError: Error #1014
+

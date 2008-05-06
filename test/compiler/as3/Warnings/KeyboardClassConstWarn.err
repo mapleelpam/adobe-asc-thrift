@@ -47,3 +47,4 @@ public class KeyboardExample extends Sprite{
 
 KeyboardClassConstWarn.abc, [0-9]+ bytes written
 .*Error.*
+

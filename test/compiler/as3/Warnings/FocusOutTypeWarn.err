@@ -15,3 +15,4 @@ trace\(FocusEvent.FOCUS_OUT_TYPE\);
 
 FocusOutTypeWarn.abc, 214 bytes written
 ReferenceError: Error #1065
+

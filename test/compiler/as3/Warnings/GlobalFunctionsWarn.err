@@ -47,3 +47,4 @@ tellTarget();
 
 GlobalFunctionsWarn.abc, [0-9]+ bytes written
 .*Error.*
+

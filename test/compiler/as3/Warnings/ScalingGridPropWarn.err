@@ -15,3 +15,4 @@ a.setScalingGrid();
 
 ScalingGridPropWarn.abc, [0-9]+ bytes written
 .*Error.*
+

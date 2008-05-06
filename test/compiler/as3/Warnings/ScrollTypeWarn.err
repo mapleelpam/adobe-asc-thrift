@@ -15,3 +15,4 @@ trace\(Event.SCROLL_TYPE\);
 
 ScrollTypeWarn.abc, [0-9]+ bytes written
 .*Error.*
+

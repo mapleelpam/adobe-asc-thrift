@@ -15,3 +15,4 @@ public var str:String = SystemCapabilities;
 
 SystemCapabilitiesPropWarn.abc, [0-9]+ bytes written
 .*Error.*
+

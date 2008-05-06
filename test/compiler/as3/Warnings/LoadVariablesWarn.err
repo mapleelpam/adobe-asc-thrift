@@ -15,3 +15,4 @@ a.loadVariables\("test.txt"\);
 
 LoadVariablesWarn.abc, [0-9]+ bytes written
 .*Error.*
+

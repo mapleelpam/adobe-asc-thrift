@@ -15,3 +15,4 @@ Event.CHANGE_TYPE;
 
 ChangeTypeWarn.abc, [0-9]+ bytes written
 ReferenceError: Error #1065
+

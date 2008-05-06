@@ -23,3 +23,4 @@ Keyboard.getAscii();
 
 CharCodeWarn.abc, 180 bytes written
 ReferenceError: Error #1065
+

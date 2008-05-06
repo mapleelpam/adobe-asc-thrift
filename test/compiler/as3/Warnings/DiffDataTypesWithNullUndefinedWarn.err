@@ -267,3 +267,4 @@ if \(n < null\)
 
 DiffDataTypesWithNullUndefinedWarn.abc, [0-9]+ bytes written
 TypeError: Error #1034 
+

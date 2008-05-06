@@ -15,3 +15,4 @@ trace\(Event.COMPLETE_TYPE\);
 
 CompleteTypeWarn.abc, [0-9]+ bytes written
 ReferenceError: Error #1065
+

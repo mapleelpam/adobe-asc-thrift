@@ -35,3 +35,4 @@ stg.onResize = function():void{}
 
 CMstage.abc, [0-9]+ bytes written
 VerifyError: Error #1014
+

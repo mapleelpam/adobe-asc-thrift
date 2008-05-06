@@ -15,3 +15,4 @@ setProperty\(a,"_x",50\);
 
 SetPropertyWarn.abc, [0-9]+ bytes written
 .*Error.*
+

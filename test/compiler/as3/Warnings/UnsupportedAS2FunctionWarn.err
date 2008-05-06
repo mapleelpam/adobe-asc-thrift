@@ -15,3 +15,4 @@ var num:Number = random\(3\);
 
 UnsupportedAS2FunctionWarn.abc, [0-9]+ bytes written
 ReferenceError: Error #1065
+

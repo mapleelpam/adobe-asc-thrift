@@ -19,3 +19,4 @@ clearInterval\(intervalId\);
 
 ClearIntervalWarn.abc, 209 bytes written
 ReferenceError: Error #1065
+

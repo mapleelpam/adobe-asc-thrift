@@ -51,3 +51,4 @@ IME.onIMEComposition = function():void{}
 
 IMEMethodsWarn.abc, [0-9]+ bytes written
 .*Error.*
+

@@ -15,3 +15,4 @@ mbsubstring\('String',2,5\);
 
 MbSubStringWarn.abc, [0-9]+ bytes written
 .*Error.*
+

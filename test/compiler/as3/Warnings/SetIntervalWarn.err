@@ -15,3 +15,4 @@ setInterval\(2000\);
 
 SetIntervalWarn.abc, [0-9]+ bytes written
 .*Error.*
+

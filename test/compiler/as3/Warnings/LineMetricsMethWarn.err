@@ -15,3 +15,4 @@ var ln:TextLineMetrics = new LineMetrics();
 
 LineMetricsMethWarn.abc, [0-9]+ bytes written
 .*Error.*
+

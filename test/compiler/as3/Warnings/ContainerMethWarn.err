@@ -15,3 +15,4 @@ Container();
 
 ContainerMethWarn.abc, [0-9]+ bytes written
 ReferenceError: Error #1065
+

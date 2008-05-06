@@ -15,3 +15,4 @@ trace\(Event.SOUND_COMPLETE_TYPE\);
 
 SoundCompleteTypeWarn.abc, [0-9]+ bytes written
 .*Error.*
+
