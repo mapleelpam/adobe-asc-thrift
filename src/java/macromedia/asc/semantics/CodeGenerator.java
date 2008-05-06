@@ -79,7 +79,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
     private ClassDefinitionNode currentClass;
 
-    private ObjectList<Namespaces> used_def_namespaces_sets = new ObjectList<Namespaces>();
+    private ObjectList<Namespaces> used_namespaces_sets = new ObjectList<Namespaces>();
 
     private int temp_cv_reg = -1;
     private boolean in_with = false;
@@ -531,7 +531,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     else
                     {
                         // Qualify with our currently open namespaces
-                        FindProperty(ident.name,used_def_namespaces_sets.back(),true/*is_strict*/,false/*is_qualified*/,is_attribute);
+                        FindProperty(ident.name,used_namespaces_sets.back(),true/*is_strict*/,false/*is_qualified*/,is_attribute);
                     }
                 }
 
@@ -940,11 +940,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                         if( qen.qualifier != null )
                         {
                             ToString();
-                            GetProperty(true/*is_qualified*/, is_super,is_attribute, used_def_namespaces_sets.back());
+                            GetProperty(true/*is_qualified*/, is_super,is_attribute, used_namespaces_sets.back());
                         }
                         else
                         {
-                            GetProperty(false/*is_qualified*/, is_super,is_attribute, used_def_namespaces_sets.back());
+                            GetProperty(false/*is_qualified*/, is_super,is_attribute, used_namespaces_sets.back());
                         }
                     }
                     else
@@ -958,7 +958,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     // x = o['foo']()
 
                     node.expr.evaluate(cx,this);
-                    GetProperty(is_qualified,is_super,is_attribute,used_def_namespaces_sets.back());
+                    GetProperty(is_qualified,is_super,is_attribute,used_namespaces_sets.back());
                 }
             }
             else
@@ -1088,7 +1088,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         }
 
         // Call the operator
-        InvokeUnary(node.index, size - 1, -1, used_def_namespaces_sets.back(), null);
+        InvokeUnary(node.index, size - 1, -1, used_namespaces_sets.back(), null);
         if (debug)
         {
             System.out.print("\n// -Invoke");
@@ -1137,7 +1137,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     Dup();
                     StoreRegister(reg_offset+temp_val_reg,cx.noType().getTypeId());
                 }
-                SetProperty(is_qualified, is_super, is_attribute, used_def_namespaces_sets.back(),is_constinit);
+                SetProperty(is_qualified, is_super, is_attribute, used_namespaces_sets.back(),is_constinit);
             }
             else
             if( node.getIdentifier() != null )
@@ -1168,11 +1168,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     else
                     if( qen.qualifier != null )
                     {
-                        SetProperty(true/*is_qualified*/, is_super, is_attribute, used_def_namespaces_sets.back(),is_constinit);
+                        SetProperty(true/*is_qualified*/, is_super, is_attribute, used_namespaces_sets.back(),is_constinit);
                     }
                     else
                     {
-                        SetProperty(false/*is_qualified*/, is_super, is_attribute, used_def_namespaces_sets.back(),is_constinit);
+                        SetProperty(false/*is_qualified*/, is_super, is_attribute, used_namespaces_sets.back(),is_constinit);
                     }
                 }
                 else
@@ -1439,7 +1439,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             if( node.getMode() == LEFTBRACKET_TOKEN )
             {
                 node.expr.evaluate(cx, this);
-                DeleteProperty(is_qualified, is_super,is_attribute, used_def_namespaces_sets.back());
+                DeleteProperty(is_qualified, is_super,is_attribute, used_namespaces_sets.back());
                 if( node.void_result )
                 {
                     Pop();
@@ -1461,11 +1461,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     if( qen.qualifier != null )
                     {
                         ToString();
-                        DeleteProperty(true/*is_qualified*/, is_super ,is_attribute,used_def_namespaces_sets.back());
+                        DeleteProperty(true/*is_qualified*/, is_super ,is_attribute,used_namespaces_sets.back());
                     }
                     else
                     {
-                        DeleteProperty(false/*is_qualified*/, is_super,is_attribute,used_def_namespaces_sets.back());
+                        DeleteProperty(false/*is_qualified*/, is_super,is_attribute,used_namespaces_sets.back());
                     }
                 }
                 else
@@ -1503,7 +1503,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     GetGlobalScope();
                 }
                 node.expr.evaluate(cx, this);
-                DeleteProperty(is_qualified, is_super, is_attribute, used_def_namespaces_sets.back());
+                DeleteProperty(is_qualified, is_super, is_attribute, used_namespaces_sets.back());
                 if( node.void_result )
                 {
                     Pop();
@@ -1584,11 +1584,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     if( qen.qualifier != null )
                     {
                         ToString();
-                        GetProperty(true/*is_qualified*/, is_super,is_attribute, used_def_namespaces_sets.back());
+                        GetProperty(true/*is_qualified*/, is_super,is_attribute, used_namespaces_sets.back());
                     }
                     else
                     {
-                        GetProperty(false/*is_qualified*/, is_super,is_attribute, used_def_namespaces_sets.back());
+                        GetProperty(false/*is_qualified*/, is_super,is_attribute, used_namespaces_sets.back());
                     }
                 }
                 else
@@ -1665,11 +1665,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     if( qen.qualifier != null )
                     {
                         ToString();
-                        GetDescendants(true/*is_qualified*/, is_attribute, used_def_namespaces_sets.back());
+                        GetDescendants(true/*is_qualified*/, is_attribute, used_namespaces_sets.back());
                     }
                     else
                     {
-                        GetDescendants(false/*is_qualified*/, is_attribute, used_def_namespaces_sets.back());
+                        GetDescendants(false/*is_qualified*/, is_attribute, used_namespaces_sets.back());
                     }
                 }
                 else
@@ -1689,7 +1689,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             if( node.getMode()==LEFTBRACKET_TOKEN ) // o[expr]
             {
                 node.expr.evaluate(cx,this);
-                GetProperty(is_qualified, is_super, is_attribute,used_def_namespaces_sets.back());
+                GetProperty(is_qualified, is_super, is_attribute,used_namespaces_sets.back());
             }
             else   // runtime qualified identifier  // o.ns::[expr]
             {
@@ -1707,11 +1707,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     if( qen.qualifier != null )
                     {
                         ToString();
-                        GetProperty(true/*is_qualified*/, is_super ,is_attribute,used_def_namespaces_sets.back());
+                        GetProperty(true/*is_qualified*/, is_super ,is_attribute,used_namespaces_sets.back());
                     }
                     else
                     {
-                        GetProperty(false/*is_qualified*/, is_super,is_attribute,used_def_namespaces_sets.back());
+                        GetProperty(false/*is_qualified*/, is_super,is_attribute,used_namespaces_sets.back());
                     }
                 }
                 else
@@ -1931,7 +1931,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             Dup();
             StoreRegister(reg_offset+temp_name_reg.get(), TYPE_none);
 
-            InvokeUnary(UNARY_Get,0,-1,used_def_namespaces_sets.back(), node.numberUsage);
+            InvokeUnary(UNARY_Get,0,-1,used_namespaces_sets.back(), node.numberUsage);
 
             if (node.isPostfix && !node.void_result)
             {
@@ -2030,7 +2030,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         // Increment the value
 
-        InvokeUnary(node.slot.getMethodID(), 0, reg_offset+reg, used_def_namespaces_sets.back(), node.numberUsage);
+        InvokeUnary(node.slot.getMethodID(), 0, reg_offset+reg, used_namespaces_sets.back(), node.numberUsage);
 
         // Put the new value back
 
@@ -2049,7 +2049,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             LoadRegister(reg_offset+temp_base_reg.get(), TYPE_none);    // Base object
             LoadRegister(reg_offset+temp_name_reg.get(), TYPE_none);
             LoadRegister(reg_offset+temp_val_reg.get(), TYPE_none);        // Value
-            InvokeUnary(UNARY_Put, 1, -1, used_def_namespaces_sets.back(), node.numberUsage);
+            InvokeUnary(UNARY_Put, 1, -1, used_namespaces_sets.back(), node.numberUsage);
         }
         else
         {
@@ -2184,7 +2184,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                         node.expr.evaluate(cx,this);
                     }
                 }
-                InvokeUnary(node.slot.getMethodID(), 0, -1, used_def_namespaces_sets.back(), node.numberUsage);
+                InvokeUnary(node.slot.getMethodID(), 0, -1, used_namespaces_sets.back(), node.numberUsage);
                 if (node.void_result)
                 {
                     Pop();
@@ -3442,7 +3442,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         if( node.pkgdef != null && cx.getScopes().size() == 1 )
         {
-            used_def_namespaces_sets.push_back(node.pkgdef.used_def_namespaces);
+            used_namespaces_sets.push_back(node.pkgdef.used_namespaces);
         }
 
         for(Node it : node.list.items)
@@ -3494,7 +3494,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         if( node.pkgdef != null && cx.getScopes().size() == 1 )
         {
-            used_def_namespaces_sets.pop_back();
+            used_namespaces_sets.pop_back();
         }
 
         if (debug)
@@ -3518,7 +3518,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         if( node.pkgdef != null && cx.getScopes().size() == 1 )
         {
-            used_def_namespaces_sets.push_back(node.pkgdef.used_def_namespaces);
+            used_namespaces_sets.push_back(node.pkgdef.used_namespaces);
         }
 
         Builder builder = cx.scope().builder;
@@ -3533,7 +3533,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         if( node.pkgdef != null && cx.getScopes().size() == 1 )
         {
-            used_def_namespaces_sets.pop_back();
+            used_namespaces_sets.pop_back();
         }
 
         if (debug)
@@ -3627,6 +3627,9 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             fexpr.evaluate(cx, this);
         }
 */
+
+        used_namespaces_sets.push_back(node.used_namespaces);
+
         for (FunctionCommonNode def : node.fexprs)
         {
             def.evaluate(cx, this);
@@ -3812,6 +3815,8 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         // args array, and registers 2 through 2+n-1 (where n is the
         // count of formal parameters) are the formal parameters.
 
+        used_namespaces_sets.pop_back();
+
         if (debug)
         {
             System.out.print("\n// -FunctionCommonNode");
@@ -3905,7 +3910,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             System.out.print("\n// +ProgramNode");
         }
 
-        used_def_namespaces_sets.push_back(node.used_def_namespaces);
+        used_namespaces_sets.push_back(node.used_def_namespaces);
 
         setOrigin(cx.getErrorOrigin());
 
@@ -3985,7 +3990,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         FinishProgram(cx,getProgramName(cx),init_info);
 
-        used_def_namespaces_sets.pop_back();
+        used_namespaces_sets.pop_back();
 
         popStackFrame();
 
@@ -4303,10 +4308,10 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         if( node.pkgdef != null && cx.getScopes().size() == 1 )
         {
-            used_def_namespaces_sets.push_back(node.pkgdef.used_def_namespaces);
+            used_namespaces_sets.push_back(node.pkgdef.used_namespaces);
         }
 
-        used_def_namespaces_sets.push_back(node.used_def_namespaces);
+        used_namespaces_sets.push_back(node.used_namespaces);
 
         /*
          * Interface initializer
@@ -4451,11 +4456,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         cx.popScope();  // iframe
         cx.popStaticClassScopes(node);
 
-        used_def_namespaces_sets.pop_back();
+        used_namespaces_sets.pop_back();
 
         if( node.pkgdef != null && cx.getScopes().size() == 1 )
         {
-            used_def_namespaces_sets.pop_back();
+            used_namespaces_sets.pop_back();
         }
 
         if (debug)

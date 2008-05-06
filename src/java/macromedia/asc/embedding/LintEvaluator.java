@@ -83,7 +83,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		{
 			return node.ref.getType(cx).getTypeValue(); //  getDerivedType(cx);
 		}
-		return ObjectValue.undefinedValue;
+		return cx.noType();
 	}
 	
 
