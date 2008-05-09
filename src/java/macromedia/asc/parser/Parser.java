@@ -382,7 +382,16 @@ public final class Parser
     {
         this(cx, in, origin, emit_doc_info, save_comment_nodes, block_kind_stack);
         this.parsing_include = is_include;
+    }
 
+    /**
+     * This contructor is used by Flex direct AST generation.  It
+     * allows Flex to pass in a specialized InputBuffer.
+     */
+    public Parser(Context cx, InputBuffer inputBuffer, String origin)
+    {
+        init(cx, origin, false, false, null);
+        scanner = new Scanner(cx, inputBuffer);
     }
 
     public boolean newline()

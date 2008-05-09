@@ -876,14 +876,24 @@ public final class NodeFactory implements ErrorConstants
 		return identifier(name, -1);
 	}
 
+	public IdentifierNode identifier(String name, boolean intern)
+	{
+		IdentifierNode node = new IdentifierNode(name, intern);
+		return node;
+	}
+
+	private static final String ARGUMENTS = "arguments".intern();
+
 	public IdentifierNode identifier(String name, int pos)
 	{
-		if ("arguments".equals(name))
+		IdentifierNode node = new IdentifierNode(name, pos);
+		node.setPositionTerminal(pos);
+
+		if (ARGUMENTS == node.name)
 		{
 			this.has_arguments = true;
 		}
-		IdentifierNode node = new IdentifierNode(name, pos);
-		node.setPositionTerminal(pos);
+
 		return node;
 	}
 
@@ -1222,10 +1232,15 @@ public final class NodeFactory implements ErrorConstants
         return node;
     }
 
-
 	public LiteralStringNode literalString(String value)
 	{
 		return literalString(value, 0);
+	}
+
+	public LiteralStringNode literalString(String value, boolean intern)
+	{
+		LiteralStringNode node = new LiteralStringNode(value, false, intern);
+		return node;
 	}
 
 	public LiteralStringNode literalString(String value, int pos)

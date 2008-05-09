@@ -33,13 +33,42 @@ public class IdentifierNode extends Node
 	public IdentifierNode(String name, int pos)
 	{
 		super(pos);
+		setName(name);
+	}
+
+	/**
+	 * This constructor is used by Flex direct AST generation.
+	 *
+	 * @param intern Controls whether value will be interned.  If
+	 *				 <code>name</code> is an interned constant,
+	 *				 <code>intern</code> should be false.  Otherwise,
+	 *				 it should be true.
+	 */
+	public IdentifierNode(String name, boolean intern)
+	{
+		if (intern)
+		{
+			setName(name);
+		}
+		else
+		{
+			this.name = name;
+		}
+	}
+
+	private static final String ASTERISK = "*".intern();
+
+	private void setName(String name)
+	{
 		this.name = name.intern();
-        
-        if (name.equals("*"))
-        {
-            setAny(true);
-        }
-    }
+	   
+		// It's safe to use == here, because name is interned above
+		// and ASTERISK is interned.
+		if (name == ASTERISK)
+		{
+			setAny(true);
+		}
+	}
 
 	int authOrigTypeToken = -1;
 	

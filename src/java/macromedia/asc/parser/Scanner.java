@@ -78,6 +78,17 @@ public final class Scanner implements ErrorConstants
         cx.input = this.input;
     }
 
+    /**
+     * This contructor is used by Flex direct AST generation.  It
+     * allows Flex to pass in a specialized InputBuffer.
+     */
+    public Scanner(Context cx, InputBuffer input)
+    {
+        init(cx);
+        this.input = input;
+        cx.input = input;
+    }
+
     /*
      * nextchar() --
      * Get the next character that has lexical significance. If get_unnormalized == false,
