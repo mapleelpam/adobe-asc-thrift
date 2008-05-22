@@ -88,6 +88,8 @@ public class PackageIdentifiersNode extends Node
         }
     }
 
+    private static final String ASTERISK = "*".intern();
+
     public String toIdentifierString()
     {
         if( pkg_part == null )
@@ -102,7 +104,7 @@ public class PackageIdentifiersNode extends Node
 				if (x == len - 1 && isDefinition())
 				{
 					def_part = "";
-					if (!"*".equals(item.name))
+					if (ASTERISK != item.name)
 						def_part = item.name;
 				}
 				else

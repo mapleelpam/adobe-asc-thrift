@@ -76,6 +76,7 @@ public class LiteralStringNode extends Node
 		}
 		else
 		{
+			assert value.intern() == value;
 			this.value = value;
 		}
 

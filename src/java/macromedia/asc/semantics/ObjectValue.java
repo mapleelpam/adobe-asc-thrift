@@ -60,6 +60,8 @@ import java.util.Comparator;
 
 public class ObjectValue extends Value implements Comparable
 {
+    static final String EMPTY_STRING = "".intern();
+
     public static void NamespacesFromQualifiers(Qualifiers quals,Namespaces namespaces)
     {
         namespaces.clear();
@@ -141,16 +143,16 @@ public class ObjectValue extends Value implements Comparable
 
     public Builder builder;
     public TypeInfo type;
-    private String value = "";
+    private String value = EMPTY_STRING;
     private NumberUsage numberUsage;
 
     private Names names;  // Names table
     public Slots slots;         // Slots table, null=empty
 //    private Values values;       // Values table, null=empty
     public ObjectValue _proto_;
-    public String name = "";
-    public String classname = "";
-    public String debug_name = "";
+    public String name = EMPTY_STRING;
+    public String classname = EMPTY_STRING;
+    public String debug_name = EMPTY_STRING;
     
     ObjectList<ObjectValue> base_objs; // can be interfaces, or base class
     private ObjectValue protected_ns;
@@ -224,13 +226,13 @@ public class ObjectValue extends Value implements Comparable
 
     public ObjectValue(Context cx, Builder builder, TypeValue type)
     {
-        clearInstance(cx, builder, type, "", false);
+        clearInstance(cx, builder, type, EMPTY_STRING, false);
     }
 
     public void clearInstance(Context cx, Builder builder, TypeValue type, String name, boolean save_slot_ids)
     {
         flags = 0;
-        value = "";
+        value = EMPTY_STRING;
         names = null;
         if( save_slot_ids && slots != null && slots.size() > 0)
         {
@@ -238,8 +240,8 @@ public class ObjectValue extends Value implements Comparable
         }
         slots = null;
 //        values = null;
-        classname = "";
-        debug_name = "";
+        classname = EMPTY_STRING;
+        debug_name = EMPTY_STRING;
 //        baseMethodNames = null;
         deferredClassMap = null;
         base_objs = null;
@@ -256,7 +258,8 @@ public class ObjectValue extends Value implements Comparable
         method_info = -1;
         initInstance(null, type);
         builder.build(cx, this);
-        this.name = name.intern();
+        assert name.intern() == name;
+        this.name = name;
     }
 
     static Slot nullSlot = new MethodSlot((TypeValue)null, 0);
@@ -806,8 +809,8 @@ public class ObjectValue extends Value implements Comparable
 
     public String toString() {
        if(Node.useDebugToStrings)
-          return ("ObjVal: <" + type + "> " + (name != null ? name.toString() : "")
-              + ((names != null && names.size()>0) ? "\nmethods: " + names.toString() : ""));
+          return ("ObjVal: <" + type + "> " + (name != null ? name.toString() : EMPTY_STRING)
+              + ((names != null && names.size()>0) ? "\nmethods: " + names.toString() : EMPTY_STRING));
        else
           return getValue();
     }

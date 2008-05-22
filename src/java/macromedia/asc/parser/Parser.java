@@ -21,6 +21,8 @@ import java.io.*;
 import java.util.HashSet;
 import java.util.ListIterator;
 
+import macromedia.asc.semantics.NamespaceValue;
+import macromedia.asc.semantics.ReferenceValue;
 import macromedia.asc.util.*;
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.*;
@@ -38,6 +40,19 @@ public final class Parser
 {
     private static final boolean debug = false;
 
+    private static final String PUBLIC = "public".intern();
+    private static final String PRIVATE = "private".intern();
+    private static final String PROTECTED = "protected".intern();
+    private static final String ASTERISK = "*".intern();
+    private static final String DEFAULT = "default".intern();
+    private static final String AS3 = "AS3".intern();
+    private static final String CONFIG = "CONFIG".intern();
+    private static final String GET = "get".intern();
+    private static final String NAMESPACE = "namespace".intern();
+    private static final String SET = "set".intern();
+    private static final String VEC = "vec".intern();
+    private static final String VECTOR = "Vector".intern();
+    private static final String __AS3__ = "__AS3__".intern();
 
     private static final int abbrevIfElse_mode       = ELSE_TOKEN;  // lookahead uses this value. don't change.
     private static final int abbrevDoWhile_mode      = WHILE_TOKEN; // ditto.
@@ -730,17 +745,17 @@ public final class Parser
         if (lookahead(GET_TOKEN))
         {
             match(GET_TOKEN);
-            result = nodeFactory.identifier("get",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(GET,false,ctx.input.positionOfMark());
         }
         else if (lookahead(SET_TOKEN))
         {
             match(SET_TOKEN);
-            result = nodeFactory.identifier("set",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(SET,false,ctx.input.positionOfMark());
         }
         else if (lookahead(NAMESPACE_TOKEN))
         {
             match(NAMESPACE_TOKEN);
-            result = nodeFactory.identifier("namespace",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(NAMESPACE,false,ctx.input.positionOfMark());
         }
         else
         {
@@ -773,27 +788,27 @@ public final class Parser
         if (lookahead(DEFAULT_TOKEN))
         {
             match(DEFAULT_TOKEN);
-            result = nodeFactory.identifier("default",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(DEFAULT,false,ctx.input.positionOfMark());
         }
         else if (lookahead(GET_TOKEN))
         {
             match(GET_TOKEN);
-            result = nodeFactory.identifier("get",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(GET,false,ctx.input.positionOfMark());
         }
         else if (lookahead(SET_TOKEN))
         {
             match(SET_TOKEN);
-            result = nodeFactory.identifier("set",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(SET,false,ctx.input.positionOfMark());
         }
         else if (lookahead(NAMESPACE_TOKEN))
         {
             match(NAMESPACE_TOKEN);
-            result = nodeFactory.identifier("namespace",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(NAMESPACE,false,ctx.input.positionOfMark());
         }
         else if (HAS_WILDCARDSELECTOR && lookahead(MULT_TOKEN))
         {
             match(MULT_TOKEN);
-            result = nodeFactory.identifier("*",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(ASTERISK,false,ctx.input.positionOfMark());
         }
         else
         {
@@ -829,17 +844,17 @@ public final class Parser
         if (lookahead(PUBLIC_TOKEN))
         {
             match(PUBLIC_TOKEN);
-            result = nodeFactory.identifier("public",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PUBLIC,false,ctx.input.positionOfMark());
         }
         else if (lookahead(PRIVATE_TOKEN))
         {
             match(PRIVATE_TOKEN);
-            result = nodeFactory.identifier("private",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PRIVATE,false,ctx.input.positionOfMark());
         }
         else if (lookahead(PROTECTED_TOKEN))
         {
             match(PROTECTED_TOKEN);
-            result = nodeFactory.identifier("protected",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PROTECTED,false,ctx.input.positionOfMark());
         }
         else
         {
@@ -1026,17 +1041,17 @@ public final class Parser
         else if (lookahead(PRIVATE_TOKEN))
         {
             match(PRIVATE_TOKEN);
-            result = nodeFactory.identifier("private",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PRIVATE,false,ctx.input.positionOfMark());
         }
         else if (lookahead(PUBLIC_TOKEN))
         {
             match(PUBLIC_TOKEN);
-            result = nodeFactory.identifier("public",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PUBLIC,false,ctx.input.positionOfMark());
         }
         else if (lookahead(PROTECTED_TOKEN))
         {
             match(PROTECTED_TOKEN);
-            result = nodeFactory.identifier("protected",ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PROTECTED,false,ctx.input.positionOfMark());
         }
         else if (lookahead(NUMBERLITERAL_TOKEN))
         {
@@ -6055,7 +6070,7 @@ XMLElementContent
         else if (lookahead(PRIVATE_TOKEN))
         {
             match(PRIVATE_TOKEN);
-            result = nodeFactory.identifier("private", ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PRIVATE, false, ctx.input.positionOfMark());
             if (lookahead(DOUBLECOLON_TOKEN))
             {
                 match(DOUBLECOLON_TOKEN);
@@ -6065,7 +6080,7 @@ XMLElementContent
         else if (lookahead(PROTECTED_TOKEN))
         {
             match(PROTECTED_TOKEN);
-            result = nodeFactory.identifier("protected", ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PROTECTED, false, ctx.input.positionOfMark());
             if (lookahead(DOUBLECOLON_TOKEN))
             {
                 match(DOUBLECOLON_TOKEN);
@@ -6075,7 +6090,7 @@ XMLElementContent
         else if (lookahead(PUBLIC_TOKEN))
         {
             match(PUBLIC_TOKEN);
-            result = nodeFactory.identifier("public", ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PUBLIC, false, ctx.input.positionOfMark());
             if (lookahead(DOUBLECOLON_TOKEN))
             {
                 match(DOUBLECOLON_TOKEN);
@@ -6341,7 +6356,7 @@ XMLElementContent
             {
                 match(MULT_TOKEN);
                 if (ctx.scriptAssistParsing){
-                	second = nodeFactory.identifier("*");
+                	second = nodeFactory.identifier(ASTERISK, false);
                 }
                 else
                 	second = null;
@@ -6529,7 +6544,7 @@ XMLElementContent
             match(GET_TOKEN);
             if (lookahead(LEFTPAREN_TOKEN))  // function get(...) {...}
             {
-                result = nodeFactory.functionName(EMPTY_TOKEN, nodeFactory.identifier("get",ctx.input.positionOfMark()));
+                result = nodeFactory.functionName(EMPTY_TOKEN, nodeFactory.identifier(GET,false,ctx.input.positionOfMark()));
             }
             else
             {
@@ -6541,7 +6556,7 @@ XMLElementContent
             match(SET_TOKEN);
             if (lookahead(LEFTPAREN_TOKEN))  // function set(...) {...}
             {
-                result = nodeFactory.functionName(EMPTY_TOKEN, nodeFactory.identifier("set",ctx.input.positionOfMark()));
+                result = nodeFactory.functionName(EMPTY_TOKEN, nodeFactory.identifier(SET,false,ctx.input.positionOfMark()));
             }
             else
             {
@@ -7031,7 +7046,7 @@ XMLElementContent
             {
                 match(MULT_TOKEN);
                 if (ctx.scriptAssistParsing)
-                	result = nodeFactory.identifier("*",ctx.input.positionOfMark());
+                	result = nodeFactory.identifier(ASTERISK,false,ctx.input.positionOfMark());
                 else
                 	result = null;
             }
@@ -7536,12 +7551,23 @@ XMLElementContent
         return result;
     }
     
+    private UseDirectiveNode generateAs3UseDirective(Context ctx)
+    {
+        IdentifierNode as3Identifier = nodeFactory.identifier(AS3, false);
+        Namespaces namespaces = new Namespaces();
+        NamespaceValue namespaceValue = new NamespaceValue();
+        namespaces.add(namespaceValue);
+        ReferenceValue referenceValue = new ReferenceValue(ctx, null, AS3, namespaces);
+        referenceValue.setIsAttributeIdentifier(false);
+        as3Identifier.ref = referenceValue;
+        return nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(as3Identifier)));
+    }
+
     /*
      * PackageDefinition
      *     package Block
      *     package PackageName Block
      */
-
     public PackageDefinitionNode parsePackageDefinition()
     {
 
@@ -7575,7 +7601,8 @@ XMLElementContent
             // Careful, when adding synthetic UseDirectiveNodes they must be created
             // in between calls to start/finishPackage.  Otherwise they won't have their
             // pkgdef ptr set up correctly, and things will go mysteriously awry later.
-            Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
+            Node udn = generateAs3UseDirective(ctx);
+
             ObjectList<UseDirectiveNode> udns = null;
             if ( !ctx.statics.use_namespaces.isEmpty() )
             {
@@ -7588,9 +7615,9 @@ XMLElementContent
             Node idn = null;
             if( ctx.statics.es4_vectors )
             {
-                PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier("__AS3__"), true);
-                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("vec"), true);
-                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("Vector"), true);
+                PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier(__AS3__, false), true);
+                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VEC, false), true);
+                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VECTOR, false), true);
                 idn = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
             }
             result = nodeFactory.finishPackage(ctx, parseBlock());
@@ -7618,7 +7645,7 @@ XMLElementContent
             // Careful, when adding synthetic UseDirectiveNodes they must be created
             // in between calls to start/finishPackage.  Otherwise they won't have their
             // pkgdef ptr set up correctly, and things will go mysteriously awry later.
-            Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
+            Node udn = generateAs3UseDirective(ctx);
             ObjectList<UseDirectiveNode> udns = null;
             if ( !ctx.statics.use_namespaces.isEmpty() )
             {
@@ -7631,9 +7658,9 @@ XMLElementContent
             Node idn = null;
             if( ctx.statics.es4_vectors )
             {
-                PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier("__AS3__"), true);
-                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("vec"), true);
-                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("Vector"), true);
+                PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier(__AS3__, false), true);
+                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VEC, false), true);
+                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VECTOR, false), true);
                 idn = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
             }
             result = nodeFactory.finishPackage(ctx, parseBlock());
@@ -7774,7 +7801,7 @@ XMLElementContent
         if( !parsing_include )
         {
             config_namespaces.push_back(new HashSet<String>());
-            config_namespaces.last().add("CONFIG");
+            config_namespaces.last().add(CONFIG);
             configs = parseConfigValues();
         }
 
@@ -7812,7 +7839,7 @@ XMLElementContent
 
         if( (ctx.dialect(10) /*|| ctx.dialect(11)*/) && !parsing_include && second != null )  // don't insert a statement for includes because will screw up metadata parsing
         {
-            Node udn = nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier("AS3"))));
+            Node udn = generateAs3UseDirective(ctx);
             second.items.add(0,udn);
         }
         if ( !ctx.statics.use_namespaces.isEmpty() && !parsing_include && second != null)
@@ -7825,9 +7852,9 @@ XMLElementContent
         }
         if( ctx.statics.es4_vectors && !parsing_include && second != null)
         {
-            PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier("__AS3__"), true);
-            pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("vec"), true);
-            pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier("Vector"), true);
+            PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier(__AS3__, false), true);
+            pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VEC, false), true);
+            pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VECTOR, false), true);
             Node idn = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
             second.items.add(0, idn);
         }
@@ -7851,7 +7878,7 @@ XMLElementContent
             	// Add tool chain added values
             	if( configs != null )
             		result.statements.items.addAll(0, configs.items);
-            	NamespaceDefinitionNode configdef = nodeFactory.configNamespaceDefinition(null, nodeFactory.identifier("CONFIG"), -1);
+            	NamespaceDefinitionNode configdef = nodeFactory.configNamespaceDefinition(null, nodeFactory.identifier(CONFIG, false), -1);
             	// Add the default CONFIG namespace
             	result.statements.items.add(0, configdef);
             }

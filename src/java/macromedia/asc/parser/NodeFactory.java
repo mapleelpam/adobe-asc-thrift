@@ -878,7 +878,13 @@ public final class NodeFactory implements ErrorConstants
 
 	public IdentifierNode identifier(String name, boolean intern)
 	{
-		IdentifierNode node = new IdentifierNode(name, intern);
+		IdentifierNode node = new IdentifierNode(name, intern, -1);
+		return node;
+	}
+
+	public IdentifierNode identifier(String name, boolean intern, int pos)
+	{
+		IdentifierNode node = new IdentifierNode(name, intern, pos);
 		return node;
 	}
 

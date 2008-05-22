@@ -38,6 +38,14 @@ import static macromedia.asc.embedding.avmplus.ActionBlockConstants.*;
  */
 public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConstants
 {
+    private static final String INTRINSIC = "intrinsic".intern();
+    private static final String INTERNAL = "internal".intern();
+    private static final String PUBLIC = "public".intern();
+    private static final String PRIVATE = "private".intern();
+    private static final String PROTECTED = "protected".intern();
+    private static final String PROTOTYPE = "prototype".intern();
+    private static final String STATIC = "static".intern();
+
     private Names interfaceMethods = null;
     private boolean define_cv;
     private boolean errorNodeSeen = false;
@@ -255,12 +263,12 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                         else
                         {
                             IdentifierNode id = memb.selector.getIdentifier();
-                            if( id != null && id.name.equals("internal") )
+                            if( id != null && (id.name == INTERNAL) )
                             {
                                 ns = default_namespaces.back();
                             }
                             else
-                            if( id != null && id.name.equals("private") )
+                            if( id != null && (id.name == PRIVATE) )
                             {
                                 if( private_namespaces.size() == 0 )
                                 {
@@ -272,7 +280,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                                 }
                             }
                             else
-                            if( id != null && id.name.equals("protected") )
+                            if( id != null && (id.name == PROTECTED) )
                             {
                                 if( static_protected_namespaces.size() == 0 )
                                 {
@@ -296,7 +304,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                                 }
                             }
                             else
-                            if( id != null && id.name.equals("public") )
+                            if( id != null && (id.name == PUBLIC) )
                             {
                                 ns = public_namespaces.back();
                             }
@@ -321,7 +329,8 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                     }
                     else if( ref != null )
                     {
-                        ns = ((ref.getValue(cx) instanceof ObjectValue) ? (ObjectValue)ref.getValue(cx) : null);
+                        Value value = ref.getValue(cx);
+                        ns = ((value instanceof ObjectValue) ? (ObjectValue) value : null);
                         if( ns == null )
                         {
                             return null;
@@ -541,8 +550,24 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
         if (node.name != null)
         {
-            Value value = node.name.evaluate(cx,this);
-            node.ref = ((value instanceof ReferenceValue) ? (ReferenceValue)value : null);
+            // For LiteralFieldNode's with a name of type
+            // IdentifierNode, ReferenceValue.findUnqualified() always
+            // returns false, so speed up the process by creating a
+            // ReferenceValue with no namespaces.
+            if (node.name instanceof IdentifierNode)
+            {
+                IdentifierNode identifier = (IdentifierNode) node.name;
+                Namespaces namespaces = new Namespaces();
+                ReferenceValue referenceValue = new ReferenceValue(cx, null, identifier.name, namespaces);
+                referenceValue.setIsAttributeIdentifier(false);
+                referenceValue.setPosition(node.pos());
+                node.ref = referenceValue;
+            }
+            else
+            {
+                Value value = node.name.evaluate(cx,this);
+                node.ref = ((value instanceof ReferenceValue) ? (ReferenceValue)value : null);
+            }
         }
         node.value.evaluate(cx, this);
 
@@ -1164,7 +1189,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                             // value at the beginning of the block.
 
                             hoisted_defs.push_back(def);
-                            if( def.attrs != null && def.attrs.hasAttribute("intrinsic") )
+                            if( def.attrs != null && def.attrs.hasAttribute(INTRINSIC) )
                             {
                                 if (label == null)
                                     node.items.set(i, nodeFactory.emptyStatement());
@@ -3039,22 +3064,22 @@ else
     {
         if( attrs != null )
         {
-            if( attrs.hasAttribute("private") )
+            if( attrs.hasPrivate )
             {
                 if( private_namespaces.size() == 0 )
                 {
                     cx.error(attrs.pos()-1, kError_InvalidPrivate);
                     attrs.namespaces.push_back(cx.publicNamespace()); // for graceful failure
-                    attrs.namespace_ids.push_back("private");
+                    attrs.namespace_ids.push_back(PRIVATE);
                 }
                 else
                 {
                     attrs.namespaces.push_back(private_namespaces.back());
-                    attrs.namespace_ids.push_back("private");
+                    attrs.namespace_ids.push_back(PRIVATE);
                 }
             }
             else
-            if( attrs.hasAttribute("protected") )
+            if( attrs.hasProtected )
             {
                 if (cx.scope().builder instanceof InstanceBuilder)
                 {
@@ -3062,12 +3087,12 @@ else
                     {
                         cx.error(attrs.pos()-1, kError_InvalidProtected);
                         attrs.namespaces.push_back(cx.publicNamespace());
-                        attrs.namespace_ids.push_back("protected");
+                        attrs.namespace_ids.push_back(PROTECTED);
                     }
                     else
                     {
                         attrs.namespaces.push_back(protected_namespaces.back());
-                        attrs.namespace_ids.push_back("protected");
+                        attrs.namespace_ids.push_back(PROTECTED);
                     }
                 }
                 else
@@ -3076,17 +3101,17 @@ else
                     {
                         cx.error(attrs.pos()-1, kError_InvalidProtected);
                         attrs.namespaces.push_back(cx.publicNamespace());
-                        attrs.namespace_ids.push_back("protected");
+                        attrs.namespace_ids.push_back(PROTECTED);
                     }
                     else
                     {
                         attrs.namespaces.push_back(static_protected_namespaces.back());
-                        attrs.namespace_ids.push_back("protected");
+                        attrs.namespace_ids.push_back(PROTECTED);
                     }
                 }
             }
             else
-            if( attrs.hasAttribute("public") )
+            if( attrs.hasPublic )
             {
                 if( public_namespaces.size() == 0 )
                 {
@@ -3101,7 +3126,7 @@ else
                 }
             }
             else
-            if( attrs.hasAttribute("internal") )
+            if( attrs.hasInternal )
             {
                 if( public_namespaces.size() == 0 ) // use public namespaces to determine if we are in a valid context for internal
                 {
@@ -3170,7 +3195,7 @@ else
             namespace_ids.push_back(ns.name);
             NodeFactory nf = cx.getNodeFactory();
             boolean isPublic = ns == cx.publicNamespace();
-            AttributeListNode aln = nf.attributeList(nf.identifier(isPublic?"public":"internal",node.variable.pos()),null);
+            AttributeListNode aln = nf.attributeList(nf.identifier(isPublic?PUBLIC:INTERNAL,false,node.variable.pos()),null);
             if (isPublic)
             {
                 aln.hasPublic = true;
@@ -3199,7 +3224,7 @@ else
 
             if (node.inPackage() == false && cx.getScopes().size() == 1 && node.attrs != null)
             {
-                if( node.attrs.hasAttribute("public") )
+                if( node.attrs.hasAttribute(PUBLIC) )
                     cx.error(node.attrs.pos()-1, kError_InvalidPublic);
             }
         }
@@ -3329,20 +3354,20 @@ else
 
                 if (ns.name.length() == 0)
                 {
-                    nsstr += "public";
+                    nsstr += PUBLIC;
                 }
                 else
                 {
                     switch( ns.getNamespaceKind() )
                     {
                         case Context.NS_PRIVATE:
-                            nsstr += "private";
+                            nsstr += PRIVATE;
                             break;
                         case Context.NS_INTERNAL:
-                            nsstr += "internal";
+                            nsstr += INTERNAL;
                             break;
                         case Context.NS_PROTECTED:
-                            nsstr += "protected";
+                            nsstr += PROTECTED;
                             break;
                         default:
                             nsstr += ns.name;
@@ -3525,7 +3550,7 @@ else
         computeNamespaces(cx,node.attrs,namespaces,namespace_ids);
         if (node.pkgdef == null && cx.getScopes().size() == 1 && node.attrs != null )
         {
-            if( node.attrs.hasAttribute("public") )
+            if( node.attrs.hasAttribute(PUBLIC) )
                 cx.error(node.attrs.pos()-1, kError_InvalidPublic);
         }
 
@@ -4332,7 +4357,7 @@ else
                 computeNamespaces(cx,node.attrs,node.namespaces,namespace_ids);
                 if (node.pkgdef == null && cx.getScopes().size() == 1 && node.attrs != null)
                 {
-                    if( node.attrs.hasAttribute("public") )
+                    if( node.attrs.hasAttribute(PUBLIC) )
                         cx.error(node.attrs.pos()-1, kError_InvalidPublic);
                 }
 
@@ -4360,7 +4385,7 @@ else
                     node.cframe.type = cx.typeType().getDefaultTypeInfo();
                     if( node.cframe.prototype != null )
                     {
-                    	node.cframe.prototype.clearInstance(cx,new InstanceBuilder(fullname),node.cframe, "", true);
+                    	node.cframe.prototype.clearInstance(cx,new InstanceBuilder(fullname),node.cframe, ObjectValue.EMPTY_STRING, true);
                     	node.iframe = node.cframe.prototype;
                     }
                     else
@@ -4831,7 +4856,7 @@ else
                 nf.has_arguments = false;
 
                 FunctionCommonNode fexpr = nf.functionCommon(cx, fname.identifier, nf.functionSignature(null, null, 0), null, 0);
-                AttributeListNode attrs = nf.attributeList(nf.identifier("public",0),null);
+                AttributeListNode attrs = nf.attributeList(nf.identifier(PUBLIC,false,0),null);
                 attrs.evaluate(cx,this);
                 FunctionDefinitionNode fdef = nf.functionDefinition(cx, attrs, fname, fexpr);
                 fdef.pkgdef = node.pkgdef;
@@ -5230,11 +5255,11 @@ else
             }
             if (node.attrs.hasPrivate)
             {
-                cx.error(node.pos()-1,kError_InvalidInterfaceAttribute, "private");
+                cx.error(node.pos()-1,kError_InvalidInterfaceAttribute, PRIVATE);
             }
             if (node.attrs.hasProtected)
             {
-                cx.error(node.pos()-1,kError_InvalidInterfaceAttribute, "protected");
+                cx.error(node.pos()-1,kError_InvalidInterfaceAttribute, PROTECTED);
             }
         }
 
@@ -5297,48 +5322,48 @@ else
             Node n = node.items.get(i);
             if( n != null )
             {
-                if( n.hasAttribute("private") )
+                if( n.hasAttribute(PRIVATE) )
                 {
                     if( setPrivate )
                     {
-                        cx.error(n.pos()-1, kError_DuplicateAttribute, "private");
+                        cx.error(n.pos()-1, kError_DuplicateAttribute, PRIVATE);
                     }
                     setPrivate = node.hasPrivate = true;
                 }
                 else
-                if( n.hasAttribute("protected") )
+                if( n.hasAttribute(PROTECTED) )
                 {
                     if( setProtected )
                     {
-                        cx.error(n.pos()-1, kError_DuplicateAttribute, "protected");
+                        cx.error(n.pos()-1, kError_DuplicateAttribute, PROTECTED);
                     }
                     setProtected = node.hasProtected = true;
                 }
                 else
-                if( n.hasAttribute("public") )
+                if( n.hasAttribute(PUBLIC) )
                 {
                     if( setPublic )
                     {
-                        cx.error(n.pos()-1, kError_DuplicateAttribute, "public");
+                        cx.error(n.pos()-1, kError_DuplicateAttribute, PUBLIC);
                     }
                     setPublic = node.hasPublic = true;
                 }
                 else
-                if( n.hasAttribute("internal") )
+                if( n.hasAttribute(INTERNAL) )
                 {
                     if( setInternal )
                     {
-                        cx.error(n.pos()-1, kError_DuplicateAttribute, "internal");
+                        cx.error(n.pos()-1, kError_DuplicateAttribute, INTERNAL);
                     }
                     setInternal = node.hasInternal = true;
                 }
                 else
                 {
-                    if( n.hasAttribute("prototype") )
+                    if( n.hasAttribute(PROTOTYPE) )
                     {
                         if( setPrototype )
                         {
-                            cx.error(n.pos()-1, kError_DuplicateAttribute, "prototype");
+                            cx.error(n.pos()-1, kError_DuplicateAttribute, PROTOTYPE);
                         }
                         setPrototype = node.hasPrototype = true;
                     }
@@ -5366,7 +5391,7 @@ else
                             if( obj == ObjectValue.staticAttribute ) {
                                 if( setStatic )
                                 {
-                                    cx.error(n.pos()-1, kError_DuplicateAttribute, "static");
+                                    cx.error(n.pos()-1, kError_DuplicateAttribute, STATIC);
                                 }
                                 setStatic = node.hasStatic = true;
                                 if( !(cx.scope().builder instanceof InstanceBuilder) && !(cx.scope().builder instanceof ClassBuilder))
@@ -5839,7 +5864,7 @@ else
 
         // If this is a toplevel definition (pkgdef!=null), then set up access namespaces
 
-        if( node.attrs != null && node.attrs.hasAttribute("static") )
+        if( node.attrs != null && node.attrs.hasAttribute(STATIC) )
         {
             cx.error(node.attrs.pos()-1, kError_StaticModifiedNamespace);
         }
@@ -5974,7 +5999,8 @@ else
             unresolved.clear();
 
             node.ref = (ReferenceValue)node.expr.evaluate(cx,this);
-            obj = ((node.ref.getValue(cx) instanceof ObjectValue) ? (ObjectValue)node.ref.getValue(cx) : null);
+            Value value = node.ref.getValue(cx);
+            obj = ((value instanceof ObjectValue) ? (ObjectValue) value : null);
 
             ns_unresolved_sets.last().addAll(unresolved);
             unresolved.clear();

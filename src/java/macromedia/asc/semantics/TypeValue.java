@@ -47,7 +47,7 @@ public final class TypeValue extends ObjectValue
         }
         else
         {
-            type.clearInstance(cx, builder, null, name.toString(), false);
+            type.clearInstance(cx, builder, null, fullname.intern(), false);
             type.type_id = type_id;
             // Don't clear the prototype, we can reuse the object value
 //			type.prototype.clearInstance() = null;

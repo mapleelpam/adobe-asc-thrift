@@ -27,13 +27,14 @@ import macromedia.asc.util.*;
  */
 public class IdentifierNode extends Node
 {
+	private static final String ASTERISK = "*".intern();
+
 	public String name;
     public ReferenceValue ref;
 
 	public IdentifierNode(String name, int pos)
 	{
-		super(pos);
-		setName(name);
+        this(name, true, pos);
 	}
 
 	/**
@@ -44,24 +45,20 @@ public class IdentifierNode extends Node
 	 *				 <code>intern</code> should be false.  Otherwise,
 	 *				 it should be true.
 	 */
-	public IdentifierNode(String name, boolean intern)
+	public IdentifierNode(String name, boolean intern, int pos)
 	{
+		super(pos);
+
 		if (intern)
 		{
-			setName(name);
+            this.name = name.intern();
 		}
 		else
 		{
+            assert name.intern() == name;
 			this.name = name;
 		}
-	}
 
-	private static final String ASTERISK = "*".intern();
-
-	private void setName(String name)
-	{
-		this.name = name.intern();
-	   
 		// It's safe to use == here, because name is interned above
 		// and ASTERISK is interned.
 		if (name == ASTERISK)
@@ -103,7 +100,8 @@ public class IdentifierNode extends Node
 
 	public boolean hasAttribute(String name)
 	{
-		if (this.name.equals(name))
+		assert name.intern() == name;
+		if (this.name == name)
 		{
 			return true;
 		}
