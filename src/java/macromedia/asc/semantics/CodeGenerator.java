@@ -3872,6 +3872,9 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 		    }
 		}
 
+		// This should fix the cases when there is stale line number.
+		clearPositionInfo();
+		
 		// reset the position to the beginning of the function, since the position may be left at the last instanceInit,
 		// which may not have generated any code (e.g., FunctionDefinitionNode)
         if (cx.input != null)
