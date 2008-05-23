@@ -158,6 +158,7 @@
 	-->
 	<target name="clean">
 		<delete failonerror="false" >
+			<fileset file="${basedir}/lib/asc.jar"/>
 			<fileset file="${root.dir}/lib/asc.jar"/>
 			<fileset file="${root.dir}/lib/asc_authoring.jar"/>
 			<fileset file="${root.dir}/lib/global.abc"/>
