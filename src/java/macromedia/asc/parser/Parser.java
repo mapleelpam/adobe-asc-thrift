@@ -403,9 +403,9 @@ public final class Parser
      * This contructor is used by Flex direct AST generation.  It
      * allows Flex to pass in a specialized InputBuffer.
      */
-    public Parser(Context cx, InputBuffer inputBuffer, String origin)
+    public Parser(Context cx, InputBuffer inputBuffer, String origin, boolean emit_doc_info)
     {
-        init(cx, origin, false, false, null);
+        init(cx, origin, emit_doc_info, false, null);
         scanner = new Scanner(cx, inputBuffer);
     }
 
