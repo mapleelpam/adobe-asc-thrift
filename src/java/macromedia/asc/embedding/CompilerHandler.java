@@ -11,18 +11,21 @@
 
 package macromedia.asc.embedding;
 
+import java.io.InputStream;
+import java.io.PrintStream;
+
 import macromedia.asc.parser.InputBuffer;
 import macromedia.asc.parser.PackageDefinitionNode;
-import macromedia.asc.util.ObjectList;
 import macromedia.asc.util.ByteList;
-
-import java.io.InputStream;
+import macromedia.asc.util.ObjectList;
 
 /**
  * Extend CompilerHandler and override error to get custom error notification
  */
 public class CompilerHandler
 {
+	public PrintStream err = System.err;
+
     public void warning(final String filename, int ln, int col, String msg, String source, int code) {
 
           warning(filename, ln, col, msg, source);
@@ -57,23 +60,23 @@ public class CompilerHandler
 			source = source.substring(0, size) + "...";
 		}
 
-		System.err.println();
+		err.println();
 		/* CN: Uncomment when Flex/Flash are ready for the new paramenter *
         if (code > 0)
-            System.err.print("Error #" + code +": ");
+            err.print("Error #" + code +": ");
         else
-            System.err.print("Warning #" + (-code) + ": ");
+            err.print("Warning #" + (-code) + ": ");
         */
-        System.err.println(msg);
+        err.println(msg);
 
 		// only print position info if ln is a real val (e.g. -1 is used so only 'msg' is printed)
 		if(ln >= 0) {
-			System.err.println("   " + filename + ", Ln " + ln + ", Col " + col + ": ");
+			err.println("   " + filename + ", Ln " + ln + ", Col " + col + ": ");
 		}
 
 		if (source.length() > 0) {
-			System.err.println("   " + source);
-			System.err.println("   " + InputBuffer.getLinePointer(col));
+			err.println("   " + source);
+			err.println("   " + InputBuffer.getLinePointer(col));
 		}
 	}
 
