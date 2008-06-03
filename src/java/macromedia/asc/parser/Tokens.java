@@ -421,7 +421,7 @@ public interface Tokens
 			"include",//"include"
 			"instanceof",//"instanceof"
 			"interface",//"interface"
-			"is",//"is"
+			" is ",//"is"
 			"namespace",//"namespace"
 			"config",//"config"
 			"native",//"native"
