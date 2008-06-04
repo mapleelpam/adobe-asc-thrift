@@ -92,9 +92,8 @@ public class ParameterListNode extends Node
 					buf.append("restParam");
 				else if ( item.typeref != null)			
 				{
-					Slot s = item.typeref.getSlot(cx, GET_TOKEN);
-					buf.append( (s == null || s.getDebugName().length() == 0) ? item.typeref.name : s.getDebugName() );
-				}
+                    buf.append(DocCommentNode.getRefName(cx, item.typeref));
+                }
 			}
 			buf.append("'");
 		}

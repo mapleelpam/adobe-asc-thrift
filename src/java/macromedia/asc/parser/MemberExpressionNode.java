@@ -129,8 +129,7 @@ public class MemberExpressionNode extends Node
 
     public StringBuffer toCanonicalString(Context cx, StringBuffer buf)
     {
-        Slot s = ref.getSlot(cx, GET_TOKEN);
-        buf.append( (s == null || s.getDebugName().length() == 0) ? ref.name : s.getDebugName() );
+        buf.append(DocCommentNode.getRefName(cx, ref));
         return buf;
     }
 

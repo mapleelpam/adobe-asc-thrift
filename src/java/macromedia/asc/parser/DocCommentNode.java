@@ -11,11 +11,8 @@
 
 package macromedia.asc.parser;
 
-import macromedia.asc.semantics.Value;
-import macromedia.asc.semantics.ReferenceValue;
 import macromedia.asc.util.Context;
-import macromedia.asc.semantics.Slot;
-import macromedia.asc.semantics.ObjectValue;
+import macromedia.asc.semantics.*;
 import static macromedia.asc.parser.Tokens.*;
 
 /**
@@ -179,9 +176,8 @@ public class DocCommentNode extends MetaDataNode
 			buf.append("' type='");
 			if (vb.typeref != null)
 			{
-				Slot s = vb.typeref.getSlot(cx, GET_TOKEN);
-				buf.append( (s == null || s.getDebugName().length() == 0) ? vb.typeref.name : s.getDebugName() );
-			}			
+                buf.append(getRefName(cx, vb.typeref));
+            }
 			buf.append("' ");
 
 			AttributeListNode attrs = vd.attrs;
@@ -524,6 +520,28 @@ public class DocCommentNode extends MetaDataNode
                 break;
         }
         return access_specifier;
+    }
+
+    // Helper method to print types in a way asdoc wants.
+    // This is mostly for Vectors, which need to print as Vector$basetype.
+    public static String getRefName(Context cx, ReferenceValue ref)
+    {
+        Slot s = ref.getSlot(cx, GET_TOKEN);
+        if( s == null || s.getDebugName().length() == 0 )
+        {
+            String name = ref.name;
+            if( ref.type_params != null && s != null && s.getValue() instanceof TypeValue)
+            {
+                // Vector
+                TypeValue t = (TypeValue)s.getValue();
+                name += "$" + t.indexed_type;
+            }
+            return name;
+        }
+        else
+        {
+            return s.getDebugName();
+        }
     }
 
     public static String escapeXml(String s)
