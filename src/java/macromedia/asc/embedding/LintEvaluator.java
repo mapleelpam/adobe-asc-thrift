@@ -2833,7 +2833,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		{
 			for(WarningRecord pRec : locMap.values())
 			{
-				StringBuffer sb = new StringBuffer();
+				StringBuilder sb = new StringBuilder();
 				InputBuffer input = pRec.loc.input;
 				
 				createErrorMessage(pRec, sb, pRec.code);
@@ -2865,7 +2865,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		}
 		else
 		{
-			StringBuffer        out = new StringBuffer();
+			StringBuilder        out = new StringBuilder();
 			out.append(newline).append("Warning Report:").append(newline);
 			out.append("---------------").append(newline).append(newline);
 	
@@ -2914,7 +2914,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		}
 	}
 
-	private void createWarning(WarningRecord pRec, StringBuffer out, Integer code)
+	private void createWarning(WarningRecord pRec, StringBuilder out, Integer code)
 	{
 		InputBuffer input = pRec.loc.input;
 
@@ -2927,7 +2927,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		out.append("    ").append(InputBuffer.getLinePointer(pRec.colNum)).append(newline);
 	}
 	
-	private void createErrorMessage(WarningRecord pRec, StringBuffer out, Integer code)
+	private void createErrorMessage(WarningRecord pRec, StringBuilder out, Integer code)
 	{
 		// Just the arguments for sanities, no message (since they chang often)
 		if(ContextStatics.useSanityStyleErrors) {

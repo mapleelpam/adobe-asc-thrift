@@ -67,7 +67,7 @@ public class ParameterListNode extends Node
         return "ParameterList";
     }
 
-	public StringBuffer toCanonicalString(Context cx, StringBuffer buf)
+	public StringBuilder toCanonicalString(Context cx, StringBuilder buf)
 	{       
 		{			        
 			buf.append(" param_names='");

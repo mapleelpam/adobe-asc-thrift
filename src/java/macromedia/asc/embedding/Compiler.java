@@ -248,7 +248,7 @@ public class Compiler implements ErrorConstants
 			MetaDataEvaluator printer = new MetaDataEvaluator();
 			node.evaluate(cx,printer);
 
-			StringBuffer out = new StringBuffer();
+			StringBuilder out = new StringBuilder();
 			out.append("<asdoc>").append(newline);
 
 			ObjectList<DocCommentNode> comments = printer.doccomments;

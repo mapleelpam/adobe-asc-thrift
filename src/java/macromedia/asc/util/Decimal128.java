@@ -602,7 +602,7 @@ public class Decimal128 {
 	}
 	
 	public String toString() {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		if (((flags & DEC_SPECIAL) != 0) && ((flags & DEC_NEG) != 0))
 			result.append('-');
 		if ((flags & (DEC_NAN | DEC_SNAN)) != 0) {

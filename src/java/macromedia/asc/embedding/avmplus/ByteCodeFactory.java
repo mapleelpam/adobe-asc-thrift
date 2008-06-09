@@ -470,7 +470,7 @@ public class ByteCodeFactory
 	{
 		if (show_bytecode)
 		{
-			StringBuffer numStr = new StringBuffer();
+			StringBuilder numStr = new StringBuilder();
 			IL_FormatDoubleAsString(value,numStr);
             cpool_out.write("\n      ConstantDoubleInfo "+numStr.toString());
 		}
@@ -1378,7 +1378,7 @@ public static ByteList MethodBody(ByteList bytes,
 	//  be consistent between the c++ and java based compilers.  (which allows diffing
 	//  of a java produced .il file vs a c++ produced .il).
 	// Only used by PushNumber() when show_instructions is true.
-	public static StringBuffer IL_FormatDoubleAsString(double val, StringBuffer buff)
+	public static StringBuilder IL_FormatDoubleAsString(double val, StringBuilder buff)
 	{
 		if (val == 0.0)
 		{

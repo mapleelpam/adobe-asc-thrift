@@ -166,7 +166,7 @@ public final class Parser
     private Node error(int kind, int errCode, String arg1, String arg2,int pos)
     {
         String origin = this.scanner.input.origin;
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
         
         if(debug) out.append("[Parser] ");
         

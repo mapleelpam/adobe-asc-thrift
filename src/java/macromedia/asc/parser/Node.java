@@ -124,7 +124,7 @@ public class Node
          return "Node";
 	}
 
-	public StringBuffer toCanonicalString(Context cx, StringBuffer buf)    
+	public StringBuilder toCanonicalString(Context cx, StringBuilder buf)    
 	{
 		return buf;
 	}

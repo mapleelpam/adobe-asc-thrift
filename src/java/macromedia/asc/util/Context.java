@@ -220,7 +220,7 @@ public final class Context implements ErrorConstants
 
     // This method implements sprintf-like functionality for %s string argument insertions.  Using sprintf would
     //  be easier, but java doesn't have an equivalent.  c++ matches java implementation to make it easier to keep both in sync.
-    public static int replaceStringArg(StringBuffer out, String templateStr, int startLoc, String arg)
+    public static int replaceStringArg(StringBuilder out, String templateStr, int startLoc, String arg)
     {
         if (startLoc == -1) // there are no more %'s to replace in templateStr
             return -1;
@@ -255,7 +255,7 @@ public final class Context implements ErrorConstants
     public void error(int pos, int error, String arg1, String arg2) { error(pos, error, arg1, arg2, ""); }
     public void error(int pos, int error, String arg1, String arg2, String arg3)
     {
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
 
         // Just the arguments for sanities, no message (since they change often)
         if(ContextStatics.useSanityStyleErrors)
@@ -1526,7 +1526,7 @@ public final class Context implements ErrorConstants
     public String debugName(String region_part, String name, ObjectList<String> namespace_ids, int kind )
     {
         String kind_part = kind==GET_TOKEN?"/get":(kind==SET_TOKEN?"/set":"");
-        StringBuffer namespace_part = new StringBuffer(region_part.length() + name.length() + kind_part.length() + ((namespace_ids != null ? namespace_ids.size() * 8 : 0)));
+        StringBuilder namespace_part = new StringBuilder(region_part.length() + name.length() + kind_part.length() + ((namespace_ids != null ? namespace_ids.size() * 8 : 0)));
         namespace_part.append(region_part);
         int region_part_length = region_part.length();
         if (region_part_length > 0)
@@ -1591,12 +1591,12 @@ public final class Context implements ErrorConstants
     
     public String getConfigVarCode() {
         String code = null;
-        StringBuffer code_buffer;
+        StringBuilder code_buffer;
         if( config_vars != null && config_vars.size() > 0)
         {
         	HashSet<String> namespaces = new HashSet<String>();
         	// guesstimate.  Should avoid resizing too many times.
-            code_buffer = new StringBuffer(config_vars.size()*10);
+            code_buffer = new StringBuilder(config_vars.size()*10);
             for( int i = 0, size = config_vars.size(); i < size; ++i )
             {
                 ConfigVar cv = config_vars.at(i);

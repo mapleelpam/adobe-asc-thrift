@@ -42,7 +42,7 @@ import java.util.Iterator;
  * make JDK 1.5 classfiles (version 49.0) compatible with JDK 1.3 (version 47.0)
  * by making the following changes:
  *
- * 1. replace references to java.lang.StringBuilder with java.lang.StringBuffer
+ * 1. replace references to java.lang.StringBuilder with java.lang.StringBuilder
  * 2. replace Integer.valueOf(int) with macromedia.asc.util.Boxing.valueOf(int)
  * 3. reorder this$outer and super() code snippets in inner class constructors,
  *    to please the 1.3 verifier.
@@ -65,15 +65,15 @@ public class Downgrader implements Constants
 
     static
     {
-        // replace StringBuilder with StringBuffer
-        strings.put("java/lang/StringBuilder", "java/lang/StringBuffer");
-        strings.put("(Ljava/lang/String;)Ljava/lang/StringBuilder;", "(Ljava/lang/String;)Ljava/lang/StringBuffer;");
-        strings.put("(Ljava/lang/Object;)Ljava/lang/StringBuilder;", "(Ljava/lang/Object;)Ljava/lang/StringBuffer;");
-        strings.put("(I)Ljava/lang/StringBuilder;", "(I)Ljava/lang/StringBuffer;");
-        strings.put("(C)Ljava/lang/StringBuilder;", "(C)Ljava/lang/StringBuffer;");
-        strings.put("(Z)Ljava/lang/StringBuilder;", "(Z)Ljava/lang/StringBuffer;");
-        strings.put("(D)Ljava/lang/StringBuilder;", "(D)Ljava/lang/StringBuffer;");
-        strings.put("(J)Ljava/lang/StringBuilder;", "(J)Ljava/lang/StringBuffer;");
+        // replace StringBuilder with StringBuilder
+        strings.put("java/lang/StringBuilder", "java/lang/StringBuilder");
+        strings.put("(Ljava/lang/String;)Ljava/lang/StringBuilder;", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
+        strings.put("(Ljava/lang/Object;)Ljava/lang/StringBuilder;", "(Ljava/lang/Object;)Ljava/lang/StringBuilder;");
+        strings.put("(I)Ljava/lang/StringBuilder;", "(I)Ljava/lang/StringBuilder;");
+        strings.put("(C)Ljava/lang/StringBuilder;", "(C)Ljava/lang/StringBuilder;");
+        strings.put("(Z)Ljava/lang/StringBuilder;", "(Z)Ljava/lang/StringBuilder;");
+        strings.put("(D)Ljava/lang/StringBuilder;", "(D)Ljava/lang/StringBuilder;");
+        strings.put("(J)Ljava/lang/StringBuilder;", "(J)Ljava/lang/StringBuilder;");
 
         // replace java.lang.AssertionError with java/lang/Error
         strings.put("java/lang/AssertionError", "java/lang/Error");

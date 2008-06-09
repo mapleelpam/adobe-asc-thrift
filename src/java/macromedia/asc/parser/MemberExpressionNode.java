@@ -127,7 +127,7 @@ public class MemberExpressionNode extends Node
         return false;
     }
 
-    public StringBuffer toCanonicalString(Context cx, StringBuffer buf)
+    public StringBuilder toCanonicalString(Context cx, StringBuilder buf)
     {
         buf.append(DocCommentNode.getRefName(cx, ref));
         return buf;

@@ -80,7 +80,7 @@ public class TypeExpressionNode extends Node
         return this.expr.isLValue();
     }
 
-    public StringBuffer toCanonicalString(Context cx, StringBuffer buf)
+    public StringBuilder toCanonicalString(Context cx, StringBuilder buf)
     {
         return this.expr != null ? this.expr.toCanonicalString(cx, buf) : buf;
     }

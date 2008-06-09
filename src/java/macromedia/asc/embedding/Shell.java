@@ -327,7 +327,7 @@ public class Shell
 	{
 		Target s = (Target) targets.get(target);
 		System.out.println("id: " + s.id);
-		StringBuffer b = new StringBuffer();
+		StringBuilder b = new StringBuilder();
 		for (int i = 0, size = s.args.length; i < size; i++)
 		{
 			b.append(s.args[i]);
@@ -484,7 +484,7 @@ public class Shell
 	public static String readFile(File f)
 	{
 		BufferedReader file = null;
-		StringBuffer buffer = new StringBuffer((int) f.length());
+		StringBuilder buffer = new StringBuilder((int) f.length());
 		String lineSep = System.getProperty("line.separator");
 
 		try

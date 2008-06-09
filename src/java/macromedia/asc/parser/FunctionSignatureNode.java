@@ -79,7 +79,7 @@ public class FunctionSignatureNode extends Node
 		return "FunctionSignature";
 	}
 
-	public StringBuffer toCanonicalString(Context cx, StringBuffer buff)
+	public StringBuilder toCanonicalString(Context cx, StringBuilder buff)
 	{
 		if (parameter != null)
 			parameter.toCanonicalString(cx, buff);

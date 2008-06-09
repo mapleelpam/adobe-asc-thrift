@@ -5557,7 +5557,7 @@ public class ActionBlockEmitter extends Emitter
             	nn = val.decimalValue().toString();
             }
             else {
-                StringBuffer numStr = new StringBuffer();
+                StringBuilder numStr = new StringBuilder();
                 IL_FormatDoubleAsString(val.doubleValue(),numStr);
                 nn = numStr.toString();
             }
@@ -8318,7 +8318,7 @@ protected void Setsuper(ByteList code,int index)
 
     public String il_str()
     {
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
 
         if (bytecodeFactory.show_bytecode)
         {
@@ -8336,7 +8336,7 @@ protected void Setsuper(ByteList code,int index)
     
     private static String cleanupString(ByteList bl)
     {
-    	StringBuffer b = new StringBuffer();
+    	StringBuilder b = new StringBuilder();
     	for (int i=0, n=bl.size(); i < n; i++)
     	{
     		char c = (char) bl.get(i);

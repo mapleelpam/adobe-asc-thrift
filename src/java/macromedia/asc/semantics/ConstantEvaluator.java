@@ -651,7 +651,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                      if (slot.getDeclStyles().at(expected_num_args-1) == PARAM_Required)
                          break;
                  }
-                StringBuffer err_arg_buf = new StringBuffer();
+                StringBuilder err_arg_buf = new StringBuilder();
                 err_arg_buf.append(expected_num_args);
                 cx.error(node.pos(), kError_WrongNumberOfArguments, err_arg_buf.toString());
             }
@@ -2111,7 +2111,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
                 if ( tooManyArgs || tooFewArgs)
                 {
-                    StringBuffer err_arg_buf = new StringBuffer();
+                    StringBuilder err_arg_buf = new StringBuilder();
                     int expected_num_args = node.decl_styles.at(0) == PARAM_Void?0:types_size;
                     if (tooFewArgs)
                     {
@@ -3820,7 +3820,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
 	        if (definitionName != null && definitionName.length() > 0)
 	        {
-                StringBuffer b = new StringBuffer(packageName == null ? 0 : packageName.length() +
+                StringBuilder b = new StringBuilder(packageName == null ? 0 : packageName.length() +
                                                   definitionName.length() + 1);
                 if (packageName != null && packageName.length() > 0)
                 {
@@ -3919,7 +3919,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         }
         else if (cx.useStaticSemantics() && slot != null && size(slot.getDeclStyles()) != 0 && slot.getDeclStyles().at(0) == PARAM_Required)
         {
-            StringBuffer err_arg_buf = new StringBuffer();
+            StringBuilder err_arg_buf = new StringBuilder();
             int expected_num_args = slot.getDeclStyles().size();
             for(; expected_num_args > 0; expected_num_args--)
             {

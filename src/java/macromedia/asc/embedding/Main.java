@@ -413,7 +413,7 @@ public class Main
 			if (!f.exists())
 			{
                 Context cx = new Context(new ContextStatics());
-				StringBuffer error_msg = new StringBuffer();
+				StringBuilder error_msg = new StringBuilder();
 				Context.replaceStringArg(error_msg, cx
 						.errorString(ErrorConstants.kError_UnableToOpenFile),
 						0, filename);

@@ -39,7 +39,7 @@ import static macromedia.asc.embedding.avmplus.Features.*;
  */
 public class InputBuffer
 {
-	private StringBuffer text;
+	private StringBuilder text;
 	private IntList line_breaks;
 	private boolean atEOF = false;
 	
@@ -47,9 +47,9 @@ public class InputBuffer
 	private int pushBackChar = -1;
 	public String origin;
 
-	public StringBuffer curr_line;
-	public StringBuffer prev_line;
-	public StringBuffer raw_curr_line; // un-normalized verison of curr_line
+	public StringBuilder curr_line;
+	public StringBuilder prev_line;
+	public StringBuilder raw_curr_line; // un-normalized verison of curr_line
 
 	public int curr_line_offset;
 	public int prev_line_offset;
@@ -66,7 +66,7 @@ public class InputBuffer
 	public InputBuffer(InputStream in, String encoding, String origin) // Init lineA to make distinct from curr_line (see nextchar)
 	{
 		this.in = createReader(in, encoding);
-		this.text = new StringBuffer(8192);
+		this.text = new StringBuilder(8192);
 
 		init(origin, 0);
 	}
@@ -74,7 +74,7 @@ public class InputBuffer
 	public InputBuffer(String in, String origin)
 	{
 		this.in = new StringReader(in);
-		this.text = new StringBuffer(in.length() + 10);
+		this.text = new StringBuilder(in.length() + 10);
 
 		init(origin, 0);
 	}
@@ -89,13 +89,13 @@ public class InputBuffer
 	private void init(String origin, int pos)
 	{
 		this.origin = origin;
-		curr_line = new StringBuffer(80);
-		prev_line = new StringBuffer(80);
+		curr_line = new StringBuilder(80);
+		prev_line = new StringBuilder(80);
 		prev_line_offset = -1;
 		this.pos = pos;
 		lnNum = -1;
 		colPos = 0;
-		raw_curr_line = new StringBuffer(80);
+		raw_curr_line = new StringBuilder(80);
 
 		has_unixnewlines = false;
 
@@ -262,7 +262,7 @@ public class InputBuffer
 			// If the current character is a newline, then read
 			// the next line of input into the other input buffer.
 
-			StringBuffer prevSave = prev_line;
+			StringBuilder prevSave = prev_line;
 			prev_line = curr_line;
 			prev_line_offset = curr_line_offset;
 
@@ -391,7 +391,7 @@ public class InputBuffer
 	{
 		if ((--colPos) < 0)
 		{
-			StringBuffer currSave = curr_line;
+			StringBuilder currSave = curr_line;
 			curr_line = prev_line;
 			prev_line = currSave;
 			prev_line.setLength(0);
@@ -567,10 +567,10 @@ public class InputBuffer
   		  Functionality split off from copy() so that we can call it on Parser's
   		  string_literal_buffer as well
   	 */
-	public String escapeString(StringBuffer source, int from, int to)
+	public String escapeString(StringBuilder source, int from, int to)
 	{
 		// C: only 1 string in 1000 needs escaping and the lengths of these strings are usually small,
-		//    so we can cut StringBuffer usage if we check '\\' up front.
+		//    so we can cut StringBuilder usage if we check '\\' up front.
 		int stop = to+1;
 		boolean required = false;
 
@@ -588,7 +588,7 @@ public class InputBuffer
 			return source.substring(from, stop);
 		}
 
-		final StringBuffer buf = new StringBuffer(stop-from);
+		final StringBuilder buf = new StringBuilder(stop-from);
 		for (int i = from; i < stop; i++)
 		{
 			char c = source.charAt(i);
@@ -807,7 +807,7 @@ public class InputBuffer
 
 	public static String getLinePointer(int pos)
 	{
-		final StringBuffer padding = new StringBuffer(pos);
+		final StringBuilder padding = new StringBuilder(pos);
 		for (int i = 0; i < pos - 1; ++i)
 		{
 			padding.append(".");
@@ -819,7 +819,7 @@ public class InputBuffer
 	public void clearUnusedBuffers() 
 	{
 		// TODO: remove this and pre-size text
-        text = new StringBuffer(text.toString());
+        text = new StringBuilder(text.toString());
 		try { in.close(); } catch (IOException e) {}
 		in = null;
 		curr_line = null;

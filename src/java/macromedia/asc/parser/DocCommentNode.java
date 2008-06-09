@@ -36,7 +36,7 @@ public class DocCommentNode extends MetaDataNode
 			return null;
 	    }
 
-    private StringBuffer emitMetaDataComment(StringBuffer buf, String debugName, MetaDataNode meta, boolean isAttributeOfDefinition)
+    private StringBuilder emitMetaDataComment(StringBuilder buf, String debugName, MetaDataNode meta, boolean isAttributeOfDefinition)
 	{
 		buf.append("\n<metadata>\n");
 		String tagname = meta.id;
@@ -110,7 +110,7 @@ public class DocCommentNode extends MetaDataNode
 		return buf;
 	}
 
-	public StringBuffer emit(Context cx,StringBuffer buf)
+	public StringBuilder emit(Context cx,StringBuilder buf)
 	{
 		String tagname = "";
 		StatementListNode metaData = null;
@@ -546,7 +546,7 @@ public class DocCommentNode extends MetaDataNode
 
     public static String escapeXml(String s)
     {
-        StringBuffer out = new StringBuffer(s.length() + 16);
+        StringBuilder out = new StringBuilder(s.length() + 16);
         int length = s.length();
         for(int i = 0; i < length; i++)
         {

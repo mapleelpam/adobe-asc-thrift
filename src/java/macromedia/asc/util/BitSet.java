@@ -258,7 +258,7 @@ public final class BitSet
     
     public String toString()
     {
-    	StringBuffer b = new StringBuffer("{");
+    	StringBuilder b = new StringBuilder("{");
     	if (bits != null)
 			for (int i=0, n=bits.length<<6; i < n; i++)
 			{

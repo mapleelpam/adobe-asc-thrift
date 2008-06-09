@@ -39,7 +39,7 @@ public final class Token
 		// RegExp literals should not escape the u's either
         if (tokenClass != STRINGLITERAL_TOKEN && lexeme.indexOf("\\u") != -1) // contains a unicode escape char?
         {
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             int len = lexeme.length();
             for(int x =0; x < len; x++)
             {

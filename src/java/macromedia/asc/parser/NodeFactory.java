@@ -738,7 +738,7 @@ public final class NodeFactory implements ErrorConstants
 			else
 				identifier = this.identifier("anonymous",pos);
 		}
-		StringBuffer internal_name = new StringBuffer(identifier.name.length() + 6);
+		StringBuilder internal_name = new StringBuilder(identifier.name.length() + 6);
 
 		if (!fun_names.containsKey(identifier.name))
 		{
@@ -1333,7 +1333,7 @@ public final class NodeFactory implements ErrorConstants
                         }
 						if( base_name != null && pname != null )
 						{
-							String compound_name = new StringBuffer(base_name.length() + pname.name.length() + 1).append(base_name).append(".").append(pname.name).toString();
+							String compound_name = new StringBuilder(base_name.length() + pname.name.length() + 1).append(base_name).append(".").append(pname.name).toString();
 							if( compound_names.contains(compound_name) )
 							{
 								selector = this.getExpression(this.identifier(compound_name,selector.pos()));

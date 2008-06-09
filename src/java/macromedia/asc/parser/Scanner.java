@@ -255,7 +255,7 @@ public final class Scanner implements ErrorConstants
 
     public void error(int kind, String arg, int tokenid)
     {
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
 
         String origin = this.input.origin;
         int ln  = this.input.markLn + 1;
@@ -397,9 +397,9 @@ public final class Scanner implements ErrorConstants
         slash_context = slashcontexts.removeLast();
     }
 
-    private StringBuffer getDocTextBuffer(String doctagname)
+    private StringBuilder getDocTextBuffer(String doctagname)
     {
-        StringBuffer doctextbuf = new StringBuffer();
+        StringBuilder doctextbuf = new StringBuilder();
         doctextbuf.append("<").append(doctagname).append("><![CDATA[");
         return doctextbuf;
     }
@@ -423,10 +423,10 @@ public final class Scanner implements ErrorConstants
             isFirstTokenOnLine = false;
         }
         String xmltagname = null, doctagname = "description";
-        StringBuffer doctextbuf = null;
+        StringBuilder doctextbuf = null;
         int startofxml = input.positionOfNext()+1;
-        StringBuffer blockcommentbuf = null;
-        StringBuffer stringliteralbuf = null;
+        StringBuilder blockcommentbuf = null;
+        StringBuilder stringliteralbuf = null;
         char regexp_flags =0; // used to track option flags encountered in a regexp expression.  Initialized in regexp_state
 
         while (true)
@@ -452,12 +452,12 @@ public final class Scanner implements ErrorConstants
                                 state = start_state;
                                 return AMPERSAND_TOKEN;
                             case '\'':
-                                stringliteralbuf = new StringBuffer();
+                                stringliteralbuf = new StringBuilder();
                                 stringliteralbuf.append((char)c);
                                 state = singlequote_state;
                                 continue;
                             case '\"':
-                                stringliteralbuf = new StringBuffer();
+                                stringliteralbuf = new StringBuilder();
                                 stringliteralbuf.append((char)c);
                                 state = doublequote_state;
                                 continue;
@@ -1301,11 +1301,11 @@ public final class Scanner implements ErrorConstants
                     switch (nextchar())
                     {
                         case '/':
-                            if (blockcommentbuf == null) blockcommentbuf = new StringBuffer();
+                            if (blockcommentbuf == null) blockcommentbuf = new StringBuilder();
                             state = linecomment_state;
                             continue;
                         case '*':
-                            if (blockcommentbuf == null) blockcommentbuf = new StringBuffer();
+                            if (blockcommentbuf == null) blockcommentbuf = new StringBuilder();
                             blockcommentbuf.append("/*");
                             state = blockcommentstart_state;
                             continue;

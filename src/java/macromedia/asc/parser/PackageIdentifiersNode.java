@@ -94,7 +94,7 @@ public class PackageIdentifiersNode extends Node
     {
         if( pkg_part == null )
         {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             //ListIterator<IdentifierNode> it = list.listIterator();            
             //while( it.hasNext() )
 			int len = list.size();

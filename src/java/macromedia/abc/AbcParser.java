@@ -554,7 +554,7 @@ public final class AbcParser
 
         // Calculate the internal name - this matter because with get/set properties you can end up with
         // multiple methods with the same name, but they must each have different internal names.
-        StringBuffer internal_name = new StringBuffer(methName.length() + 5);
+        StringBuilder internal_name = new StringBuilder(methName.length() + 5);
         if( !fun_names.containsKey(methName) )
         {
             fun_names.put(methName,0);

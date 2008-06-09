@@ -89,7 +89,7 @@ public final class MultiName
 	public String toString()
 	{
 		// return "multiname{...}::" + localPart;
-		StringBuffer b = new StringBuffer("{");
+		StringBuilder b = new StringBuilder("{");
 		for (int i = 0, length = (namespaceURI == null) ? 0 : namespaceURI.length; i < length; i++)
 		{
 			b.append(namespaceURI[i]);
