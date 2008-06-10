@@ -121,6 +121,8 @@ public class ScriptCompiler
 		boolean decimalFlag = false;
         boolean useas3 = false;
 
+        int target = TARGET_AVM2;
+
         for (int i = 0, length = args.length; i < length; i++)
 		{
 			if (args[i].equals("-builtin"))
@@ -180,6 +182,28 @@ public class ScriptCompiler
                     use_namespaces = new ObjectList<String>();
                 use_namespaces.add(args[++i]);
             }
+            else if ( args[i].equals("-avmtarget"))
+            {
+                ++i;
+                try
+                {
+                    String vm_target = args[i].trim();
+                    int v = Integer.parseInt(vm_target);
+                    switch(v) {
+                    case 1:
+                        target = TARGET_AVM1;
+                        break;
+                    case 2:
+                        target = TARGET_AVM2;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                catch(Exception e)
+                {
+                }
+            }
             else
 			{
 				filespecs.add(args[i]);
@@ -190,7 +214,8 @@ public class ScriptCompiler
 		TypeValue.init();
 		ObjectValue.init();
 		s = new ContextStatics();
-		s.use_static_semantics = use_static_semantics;
+        s.setAbcVersion(target);
+        s.use_static_semantics = use_static_semantics;
         if( useas3 )
         {
             s.dialect = Features.DIALECT_AS3;
@@ -270,7 +295,7 @@ public class ScriptCompiler
 			cxi.setPath(file.get(i).getParent());
 
 			ProgramNode program;
-			if (file.get(i).getName().endsWith(".as"))
+            if (file.get(i).getName().endsWith(".as"))
 			{
 				program = new Parser(cxi, new FileInputStream(file.get(i)), file.get(i).getPath(), null).parseProgram();
 			}

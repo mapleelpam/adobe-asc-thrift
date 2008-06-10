@@ -12,6 +12,7 @@
 package macromedia.abc;
 
 import macromedia.asc.util.ByteList;
+import macromedia.asc.util.ObjectList;
 
 import java.io.IOException;
 import java.io.FileOutputStream;
@@ -23,8 +24,7 @@ public class Optimizer
 {
     public static void main(String[] args)
     {
-        BytecodeBuffer[] byte_codes = new BytecodeBuffer[args.length];
-
+        ObjectList<String> file_names = new ObjectList();
         String output_file = "merged.abc";
         for( int i = 0; i < args.length; ++i )
         {
@@ -34,25 +34,35 @@ public class Optimizer
             }
             else
             {
-                try
-                {
-                    BytecodeBuffer buf = new BytecodeBuffer(args[i]);
-                    byte_codes[i] = buf;
-                }
-                catch( IOException ioe )
-                {
-
-                }
+                file_names.add(args[i]);
             }
         }
 
+        BytecodeBuffer[] byte_codes = new BytecodeBuffer[file_names.size()];
+        for(int i = 0; i < file_names.size(); ++i )
+        {
+            try
+            {
+                BytecodeBuffer buf = new BytecodeBuffer(file_names.at(i));
+                byte_codes[i] = buf;
+            }
+            catch( IOException ioe )
+            {
+
+            }
+        }
         byte[] abc = optimize(byte_codes);
 
         try
         {
             if( abc != null )
             {
-                new FileOutputStream(output_file).write(abc);
+                // kkiran close the FileOutputStream, else CP wont be able to
+                // read the merged "abc" file
+                //new FileOutputStream(output_file).write(abc);
+                 FileOutputStream fos = new FileOutputStream(output_file);
+                 fos.write(abc);
+                 fos.close();
             }
             else
             {
