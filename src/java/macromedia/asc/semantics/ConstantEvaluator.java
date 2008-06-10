@@ -495,7 +495,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     cx.internalError("Illegal use of parameterized type");
             }
         }
-        return type.getPrototype();
+        return node.ref;
     }
 
 

@@ -1521,10 +1521,21 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 
 		if( node.statement != null)
         {
+            cx.pushScope(node.activation);
+
             boolean saved_in_with = in_with;
             in_with = true;
+
+            int saveWithDepth = cx.statics.withDepth;
+            cx.statics.withDepth = cx.getScopes().size()-1;
+
 			node.statement.evaluate(cx,this);
+
+            cx.statics.withDepth = saveWithDepth;
+
             in_with = saved_in_with;
+
+            cx.popScope();
         }
 
 		return null;

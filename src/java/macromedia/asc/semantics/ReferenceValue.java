@@ -511,6 +511,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
                         ObjectValue static_prot_ns = cx.getNamespace(fullname.toString(), Context.NS_STATIC_PROTECTED);
 
                         cframe = new TypeValue(cx, new ClassBuilder(fullname, prot_ns, static_prot_ns), fullname, TYPE_object);
+                        cframe.type = cx.typeType().getDefaultTypeInfo();
                         ObjectValue iframe = new ObjectValue(cx,new InstanceBuilder(fullname),cframe);
                         cframe.prototype = iframe;
 
