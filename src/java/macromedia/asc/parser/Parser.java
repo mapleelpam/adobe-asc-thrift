@@ -46,7 +46,7 @@ public final class Parser
     private static final String ASTERISK = "*".intern();
     private static final String DEFAULT = "default".intern();
     private static final String AS3 = "AS3".intern();
-    private static final String CONFIG = "CONFIG".intern();
+    public static final String CONFIG = "CONFIG".intern();
     private static final String GET = "get".intern();
     private static final String NAMESPACE = "namespace".intern();
     private static final String SET = "set".intern();
@@ -154,7 +154,8 @@ public final class Parser
 
     private boolean parsing_include = false;
 
-    private ObjectList< HashSet<String> > config_namespaces = new ObjectList< HashSet<String> >();
+    public ObjectList< HashSet<String> > config_namespaces = new ObjectList< HashSet<String> >();
+
     /*
      * Log a syntax error and recover
      */
@@ -918,6 +919,7 @@ public final class Parser
                 else
                 {
                 	QualifiedIdentifierNode qualid = nodeFactory.qualifiedIdentifier(temp,parsePropertyIdentifier()); 
+                    assert config_namespaces.size() > 0; 
                     if( config_namespaces.last().contains(first.name) )
                     	qualid.is_config_name = true;
                     result = qualid; 
@@ -1810,6 +1812,7 @@ XMLElementContent
         else
         {
         	IdentifierNode ident = parseIdentifier();
+            assert config_namespaces.size() > 0; 
             if( config_namespaces.last().contains(ident.name) && lookahead(DOUBLECOLON_TOKEN))
             {
             	match(DOUBLECOLON_TOKEN);
@@ -7541,6 +7544,7 @@ XMLElementContent
         
         result = nodeFactory.configNamespaceDefinition(first, second, -1);
 
+        assert config_namespaces.size() > 0; 
         config_namespaces.last().add(result.name.name);
         
         if (debug)
@@ -7591,6 +7595,7 @@ XMLElementContent
 
         match(PACKAGE_TOKEN);
 
+        assert config_namespaces.size() > 0; 
         HashSet<String> conf_ns = new HashSet<String>(config_namespaces.last().size());
         conf_ns.addAll(config_namespaces.last());
         config_namespaces.push_back(conf_ns);
