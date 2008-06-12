@@ -112,45 +112,60 @@ public class GlobalOptimizer
 	final boolean OUTPUT_DOT = false;
 	final boolean SHOW_DFG =  false;
 	final boolean SHOW_CODE = false;
-	final boolean STRIP_DEBUG_INFO = true;
+	boolean STRIP_DEBUG_INFO = true;
 
 	public static void main(String[] args) throws IOException
 	{
 		if (args.length == 0)
 		{
-			System.out.println("usage: GlobalOptimizer [imports] -- [exports]");
+			System.out.println("usage: GlobalOptimizer [-obscure_natives] [imports] -- [exports]");
 			return;
 		}
 
 		GlobalOptimizer go = new GlobalOptimizer(); 
-		InputAbc[] a = new InputAbc[args.length];
-		int[] lengths = new int[args.length];
+ 		List<InputAbc> a = new ArrayList<InputAbc>();
+ 		List<Integer> lengths = new ArrayList<Integer>();
 		String filename = null;
 		byte[] before = null;
 		int split = -1;
+ 		boolean obscure_natives = false; 
 		for (int i = 0; i < args.length; ++i)
 		{
+ 			if(args[i].equals("-obscure_natives")) {
+				obscure_natives = true;
+ 				continue;
+ 			}
+			if(args[i].equals("-d")) {
+				go.STRIP_DEBUG_INFO=false;
+				continue;
+			}
 			if(args[i].equals("--")) {
-				split = i;
+				split = a.size();
+				continue;
                 continue;
             }
 			filename = args[i];
 			before = load(filename);
-			lengths[i] = before.length;
-			a[i] = go.new InputAbc();
-			a[i].readAbc(before);
+			lengths.add(before.length);
+			InputAbc ia = go.new InputAbc();
+			ia.readAbc(before);
+			a.add(ia);
+			if(obscure_natives) {
+				ia.obscure_natives();
+				obscure_natives = false;
+			}
 		}
 		
 		
 		// merge exports together
 		List<Integer> initScripts = new ArrayList<Integer>();
-		InputAbc first = a[split+1];
-		int before_length = lengths[split+1];
+		InputAbc first = a.get(split+1);
+ 		int before_length = lengths.get(split+1);
 		initScripts.add(first.scripts.length - 1);
-		for(int i=split+2; i < args.length; i++) {
-			first.combine(a[i]);
+		for(int i=split+2; i < a.size(); i++) {
+			first.combine(a.get(i));
 			initScripts.add(first.scripts.length - 1);
-			before_length += lengths[i];
+			before_length += lengths.get(i);
 		}
 		
 		// we only optimize the last abc file
@@ -352,7 +367,7 @@ public class GlobalOptimizer
 			scripts = new Type[p.readU30()];
 			for (int i = 0, n = scripts.length; i < n; i++)
 				scripts[i] = readScript(p, i);
-		
+
 			for (int i = 0, n = p.readU30(); i < n; i++)
 				readBody(p);
 			
@@ -361,6 +376,20 @@ public class GlobalOptimizer
 				resolveType(t);
 			
 			toResolve = null;
+		}
+		
+		void obscure_natives()
+		{
+			for(Type t: classes) {
+				t.obscure_natives = true;
+				if (t.itype != null)
+					t.itype.obscure_natives = true;
+			}
+			for(Type t: scripts) {
+				t.obscure_natives = true;
+				if (t.itype != null)
+					t.itype.obscure_natives = true;
+			}
 		}
 		
 		void combine(InputAbc abc)
@@ -781,6 +810,8 @@ public class GlobalOptimizer
 			for (int j = 0, n = t.interfaces.length; j < n; j++)
 				t.interfaces[j] = lookup(p.readU30()); // interface
 			t.init = methods[p.readU30()]; // init_id
+			if(t.init.isNative())
+				throw new RuntimeException("Constructors can't be native: "+t);
 			t.init.cx = t;
 			t.init.params[0] = t.ref.nonnull();
 			t.init.kind = "init";
@@ -2260,7 +2291,10 @@ public class GlobalOptimizer
 		{
 			if (t == ANY)
 				return 0;
-			else
+			else if(t.emitAsAny()) {
+				System.out.println("Emitting: " + t + " as any");
+				return 0;
+			} else
 				return namePool.id(t.name);
 		}
 		
@@ -2460,7 +2494,7 @@ public class GlobalOptimizer
 		}
 		void addTypeRef(Type t)
 		{
-			if (t != ANY)
+			if (t != ANY && !t.emitAsAny())
 				addName(t.name);
 		}
 		
@@ -2673,30 +2707,26 @@ public class GlobalOptimizer
 	void emitSource(Abc abc, String name, byte[] data, List<Integer> initScripts,
 			PrintWriter out_h, IndentingPrintWriter out_c)
 	{
-		out_h.println("/* machine generated file -- do not edit */");
-
 		// header file - definitions & native method decls
-		out_h.println("DECLARE_NATIVE_MAP("+name+", "+ abc.methodPool1.size()+")");
-		
-		out_h.printf("    #ifdef AVMPLUS_64BIT\n");
-		out_h.printf("    #error createThunkArgs is not 64-bit clean yet, sorry\n");
-		out_h.printf("    #endif\n");
+		out_h.println("/* machine generated file -- do not edit */");
+ 		out_h.println("namespace avmplus {");
+
+ 		out_h.println("AVMPLUS_NATIVEMAP_DECLARE("+name+", "+ abc.methodPool1.size()+")");
 
 		out_c.println("/* machine generated file -- do not edit */");
+ 		out_c.println("namespace avmplus {");
 		
 		// output vm creation init method
-		String init_decl = "avm %s_init(GC *gc, Configuration &c, const uint8_t *abc_data=NULL, size_t length=0)";
-		out_h.printf(init_decl + ";", name);
+ 		out_h.println("extern AvmInstance "+name+"_init(GC* gc, const AvmConfiguration& c, const uint8_t* abc_data=NULL, size_t length=0);");
 		
 		// data buf decl only visible to init method
-		out_h.println("extern const uint8_t "+name+"_abc_data["+data.length+"];");
 		out_c.println("extern const uint8_t "+name+"_abc_data["+data.length+"];");
-		out_c.printf("avm %s_init(GC *gc, Configuration &c, const uint8_t *abc_data/*=NULL*/, size_t length/*=0*/)", name);
-		out_c.printf("\n{\n\tif(abc_data==NULL) { abc_data = %s_abc_data; length=%s; }\n", name, data.length);
-		out_c.printf("\tavm _vm = INIT_VM(gc, c, %s, abc_data, length);\n", name);
+ 		out_c.println("AvmInstance "+name+"_init(GC* gc, const AvmConfiguration& c, const uint8_t* abc_data/*=NULL*/, size_t length/*=0*/)");
+ 		out_c.printf("{\n\tif (abc_data==NULL) { abc_data = %s_abc_data; length = %s; }\n", name, data.length);
+ 		out_c.printf("\tAvmInstance _vm = AvmInit(gc, c, abc_data, length, %s_natives, %s_offset);\n", name, name);
 		
 		for(int i: initScripts) {
-			out_c.printf("\tINIT_SCRIPT(_vm, %d);\n", i);
+ 			out_c.printf("\tAvmInitScript(_vm, %d);\n", i);
 		}
 		
 		out_c.printf("\treturn _vm;\n}\n");
@@ -2708,19 +2738,19 @@ public class GlobalOptimizer
 		for (Type s: abc.scripts)
 			emitSourceTraits("", abc, s, out_h, impls, out_t, out_c);
 		
-		out_c.print("BEGIN_NATIVE_MAP("+name+")");
+		out_c.print("AVMPLUS_NATIVEMAP_BEGIN("+name+")");
 		out_c.indent++;
 		out_c.println();
 		for (int id: impls.keySet())
 		{
 			String s = impls.get(id);
 			if (s.charAt(0) == 'f')
-				out_c.println("FORTH_METHOD("+s.substring(1)+")");
+				out_c.println("AVMPLUS_NATIVEMAP_FORTHMETHOD("+s.substring(1)+")");
 			else
-				out_c.println("NATIVE_METHOD("+s.substring(1)+")");
+				out_c.println("AVMPLUS_NATIVEMAP_CMETHOD("+s.substring(1)+")");
 		}
 		out_c.indent--;
-		out_c.println("END_NATIVE_MAP()");
+		out_c.println("AVMPLUS_NATIVEMAP_END()");
 		out_c.println();
 		
 		// put thunks in cpp file
@@ -2729,7 +2759,7 @@ public class GlobalOptimizer
 		out_c.println();
 		
 		// cpp file - abc data, thunks
-		out_c.print("const unsigned char "+name+"_abc_data["+data.length+"] = {");
+		out_c.print("const uint8_t "+name+"_abc_data["+data.length+"] = {");
 		out_c.indent++;
 		out_c.println();
 		for (int i=0, n=data.length; i < n; i++)
@@ -2743,6 +2773,9 @@ public class GlobalOptimizer
 		}
 		out_c.indent--;
 		out_c.println("};");
+		out_c.println("} /* namespace avmplus */");
+
+		out_h.println("} /* namespace avmplus */");
 	}
 
 	void emitSourceTraits(String prefix, Abc abc, Type s, 
@@ -2750,6 +2783,7 @@ public class GlobalOptimizer
 	{
 		out_h.println();
 
+		assert(!s.init.isNative());
 		for (Binding b: s.defs.values())
 		{
 			Namespace ns = b.name.nsset(0);
@@ -2768,22 +2802,25 @@ public class GlobalOptimizer
 
 			if (b.method != null) {
 				if(b.method.isNative())
-					emitSourceMethod(prefix, abc, b, ns, out_h, impls, out_t);
-				else if(isNative) {
+					emitSourceMethod(prefix, abc, b, ns, out_h, impls, out_t, s.obscure_natives);
+				else if(isNative && !s.obscure_natives) {
 					int scriptId = abc.scriptId(s);
 					if(scriptId == -1)
 						throw new RuntimeException("Only scripts can have native callins");
 					emitCallinMethod(b, ns, abc.scriptId(s), out_h, out_c);
 				}
 			} else if (isClass(b))
-				emitSourceClass(abc, out_h, out_c, impls, out_t, b, ns);
+				emitSourceClass(abc, out_h, out_c, impls, out_t, b, ns, s.obscure_natives);
 			else if (isSlot(b) && isNative)
-				emitSourceSlot(prefix, abc, b, ns, id, ctype, out_h, out_t);
+				emitSourceSlot(prefix, abc, b, ns, id, ctype, out_h, out_t, s.obscure_natives);
 		}
 	}
 	
-	void emitSourceSlot(String prefix, Abc abc, Binding b, Namespace ns, String id, String ctype, PrintWriter out_h, PrintWriter out_t)
+	void emitSourceSlot(String prefix, Abc abc, Binding b, Namespace ns, String id, String ctype, PrintWriter out_h, PrintWriter out_t, boolean obscure_natives)
 	{
+		if (obscure_natives)
+			return;
+			
 		if (isAtom(b.type.t))
 		{
 			if (ctype != null)
@@ -2792,30 +2829,31 @@ public class GlobalOptimizer
 				if (b.type.t != ANY || !ns.isPrivateOrInternal())
 					throw new RuntimeException("native field "+id+" must be private or internal and type *");
 				out_h.println("AVMPLUS_NATIVE_SLOT_DECL_GC("+ctype+","+b.offset+","+id+")");
-				out_t.println("AVMPLUS_NATIVE_SLOT_IMPL_GC("+ctype+","+b.offset+","+id+")");
 			}
 			else
 			{
 				out_h.println("AVMPLUS_NATIVE_SLOT_DECL_ATOM("+b.offset+","+id+")");
-				out_t.println("AVMPLUS_NATIVE_SLOT_IMPL_ATOM("+b.offset+","+id+")");
 			}
+		}
+		else if (b.type.t.emitAsAny())
+		{
+			ctype = ctype(b.type);
+			out_h.println("AVMPLUS_NATIVE_SLOT_DECL_GC("+ctype+","+b.offset+","+id+")");
 		}
 		else if (b.type.t.numeric)
 		{
 			ctype = ctype(b.type);
 			out_h.println("AVMPLUS_NATIVE_SLOT_DECL_PRIM("+ctype+","+b.offset+","+id+")");
-			out_t.println("AVMPLUS_NATIVE_SLOT_IMPL_PRIM("+ctype+","+b.offset+","+id+")");
 		}
 		else
 		{
 			ctype = ctype(b.type);
 			out_h.println("AVMPLUS_NATIVE_SLOT_DECL_RC("+ctype+","+b.offset+","+id+")");
-			out_t.println("AVMPLUS_NATIVE_SLOT_IMPL_RC("+ctype+","+b.offset+","+id+")");
 		}
 	}
 	
 	void emitSourceClass(Abc abc, PrintWriter out_h, PrintWriter out_c, Map<Integer,String>impls, PrintWriter out_t,
-			Binding b, Namespace ns)
+			Binding b, Namespace ns, boolean obscure_natives)
 	{
 		String label = (ns.isPublic()||ns.isInternal()) ? b.name.name : 
 			ns.isProtected() ? "protected_"+b.name.name :
@@ -2823,7 +2861,12 @@ public class GlobalOptimizer
 			(ns.uri.replace(' ', '_').replace('.','_').replace('$','_')+'_'+b.name.name);
 
 		Type c = b.type.t;
-		out_h.println("const int abcclass_"+ label + " = " + abc.classId(c) + ";");
+
+		if (!obscure_natives)
+		{
+			out_h.println("const int abcclass_"+ label + " = " + abc.classId(c) + ";");
+		}
+
 		emitSourceTraits(label+"_", abc, c, out_h, impls, out_t, out_c);
 		emitSourceTraits(label+"_", abc, c.itype, out_h, impls, out_t, out_c);
 	}
@@ -2832,19 +2875,20 @@ public class GlobalOptimizer
 	{
 		Type t = tref.t;
 		if (t == VOID) return "void";
-		if (isAtom(t)) return "BoxReturnType";
+		if (isAtom(t)) return "AvmBox";
 		if (t == INT) return "int32_t";
 		if (t == BOOLEAN) return "bool";	// no, this would be bad.
 		if (t == UINT) return "uint32_t";
-		if (t == STRING) return "Stringp";
-		if (t == NAMESPACE) return "Namespacep";
+		if (t == STRING) return "AvmString";
+		if (t == NAMESPACE) return "AvmNamespace";
 		if (t == NUMBER) return "double";
-		else return "ScriptObjectp /*"+tref.toString()+"*/";
+		if (t.base == null) return tref.nonnull().toString() + "*";
+		else return "AvmObject /*"+tref.toString()+"*/";
 	}
 
 	void emitSourceMethod(String prefix, Abc abc, 
 			Binding b, Namespace ns, PrintWriter out_h,
-			Map<Integer,String> impls, PrintWriter out_t)
+			Map<Integer,String> impls, PrintWriter out_t, boolean obscure_natives)
 	{
 		Method m = b.method;
 
@@ -2900,7 +2944,7 @@ public class GlobalOptimizer
 			}
 
 			// create a C++ declaration for the native thunk.
-			createThunkArgs(out_h, impl, m);
+			createThunkArgs(out_h, impl, m, obscure_natives);
 			out_h.printf("AVMPLUS_NATIVE_METHOD_DECL(%s, %s)\n", ctype(m.returns), impl);
 
 			impls.put(abc.methodId(m), "n" + impl);
@@ -2923,7 +2967,7 @@ public class GlobalOptimizer
 	 * @param id
 	 * @param m
 	 */
-	void createThunkArgs(PrintWriter out_h, String id, Method m)
+	void createThunkArgs(PrintWriter out_h, String id, Method m, boolean obscure_natives)
 	{
 
 		if (!m.hasParamNames() && m.params.length > 1)
@@ -2932,6 +2976,12 @@ public class GlobalOptimizer
 		}
 
 		out_h.println();
+		if (obscure_natives)
+		{
+			out_h.println("struct " + id + "_args;");
+			return;
+		}
+		
 		out_h.println("struct " + id + "_args");
 		out_h.println("{");
 
@@ -2952,7 +3002,7 @@ public class GlobalOptimizer
 			}
 			else if (m.params[i].t==OBJECT || m.params[i].t==ANY)
 			{
-				out_h.printf("    public: Box %s;\n", argname);
+				out_h.printf("    public: AvmBoxArg %s;\n", argname);
 			}
 			else
 			{
@@ -2960,7 +3010,7 @@ public class GlobalOptimizer
 			}
 		}
 
-		out_h.printf("    public: StatusOut* status_out;\n");
+		out_h.printf("    public: AvmStatusOut status_out;\n");
 
 		out_h.println("};");
 	}
@@ -2969,28 +3019,10 @@ public class GlobalOptimizer
 			PrintWriter out_h, PrintWriter out_c)
 	{
 		Method m = b.method;
-		String impl = ns.uri+"_"+b.name.name;
+		String impl = ns.uri.replace('.', '_') + "_" + b.name.name;
 		writeCallin(m, class_id, impl, out_h, out_c);
 	}	
-	
-	String boxFieldExpr(Type t)
-	{
-		if(t == INT)
-			return "i";
-		else if(t == UINT)
-			return "u";
-		else if(t == BOOLEAN)
-			return "i != 0";
-		else if(t == STRING)
-			return "str";
-		else if(t == NAMESPACE)
-			return "ns";
-		else if(t == NUMBER)
-			return "d";		
-		else
-			return "TYPE_UNKNOWN!";
-	}
-	
+
 	String boxSetter(Type t)
 	{
 		if(t == INT)
@@ -3000,13 +3032,14 @@ public class GlobalOptimizer
 		else if(t == BOOLEAN)
 			return "Bool";
 		else if(t == STRING)
-			return "Str";
+			return "String";
 		else if(t == NAMESPACE)
-			return "Ns";
+			return "Namespace";
 		else if(t == NUMBER)
 			return "Double";		
-		else
-			return "TYPE_UNKNOWN!";
+		else if(t.base == null) // same test use to emit ANY for native slots, valid?
+			return "GCObj";
+		return "Obj";
 	}
 	
 	void writeCallin(Method m, int script_id, String impl, PrintWriter out_h, PrintWriter out_c)
@@ -3016,30 +3049,28 @@ public class GlobalOptimizer
 		PrintWriter decl = new PrintWriter(declSW);
 		PrintWriter body = new PrintWriter(bodySW);
 		
-		decl.printf("%s %s(avm vm", ctype(m.returns), impl);
+		decl.printf("%s %s(AvmInstance vm", ctype(m.returns), impl);
 		body.print("\n{\n");
 		if(m.params.length > 1)
-			body.printf("\tBox __args[%d];\n", m.params.length - 1);
+			body.printf("\tAvmBox _args[%d];\n", m.params.length - 1);
 		// args
 		int i=1;
 		for (int n=m.params.length; i < n; i++)
 		{
 			Typeref t = m.params[i];
-			// prims only!
-			assert(t.t == VOID || t.t == INT || t.t == BOOLEAN || t.t == UINT 
-					|| t.t == STRING || t.t == NAMESPACE || t.t == NUMBER);
 			decl.printf(", %s %s", ctype(t), m.paramNames[i]);
-			body.printf("\t__args[%d].set%s(%s);\n", i-1, boxSetter(t.t), m.paramNames[i]);			
+			body.printf("\t_args[%d] = AvmBox%s(%s);\n", i-1, boxSetter(t.t), m.paramNames[i]);
 		}
-		decl.print(")");
+		decl.print(")"); 
+ 		body.print("\t");
 		if(m.returns.t != VOID)
-			body.print("\tBox __returnBox = Box::fromRetType(");
+			body.print("const AvmBox _returnBox = ");
 		
-		body.printf("\tINVOKE_CALLIN(vm, %d, %d, %d, %s)", 
-				script_id, m.emit_id, m.params.length - 1, m.params.length > 1 ? "(Box*)&__args" : "NULL");
+		body.printf("\tAvmInvokeCallin(vm, %d, %d, %d, %s);\n", 
+				script_id, m.emit_id, m.params.length - 1, m.params.length > 1 ? "(AvmBox*)&_args" : "NULL");
 		
 		if(m.returns.t != VOID)			
-			body.printf(");\n\treturn __returnBox.%s;\n", boxFieldExpr(m.returns.t));
+			body.printf("\treturn AvmUnBox%s(_returnBox);\n", boxSetter(m.returns.t));
 		else 
 			body.print(";\n");
 		body.print("}\n");
@@ -3210,9 +3241,9 @@ public class GlobalOptimizer
 	{
 		for (Method m: pool.values)
 		{
-			if (m.entry == null) 
+			if (m.entry == null)
 				continue;
-			w.writeU30(abc.methodId(m));
+			w.writeU30(m.emit_id);
 			w.writeU30(m.max_stack);
 			w.writeU30(m.local_count);
 			if (m.cx != null && m.cx.scopes != null)
@@ -3267,7 +3298,7 @@ public class GlobalOptimizer
 		if ((flags & METHOD_HasParamNames) != 0)
 		{
 			for (int i=1; i < m.paramNames.length; i++)
-				w.writeU30(abc.namePool.id(m.paramNames[i]));
+				w.writeU30(abc.stringPool.id(m.paramNames[i].name));
 		}
 	}
 	
@@ -3606,7 +3637,11 @@ public class GlobalOptimizer
 	void optimize(Method m)
 	{
 		System.out.println("OPTIMIZE "+m.id + " "+ m.name);
+
+		if(m.entry == null)
+			return;
 		
+		System.out.println("BEFORE OPT");		
 		System.out.println("BEFORE OPT");
 		print(dfs(m.entry.to));
 		
@@ -5238,6 +5273,7 @@ public class GlobalOptimizer
 			switch (e.op)
 			{
 			default:
+				System.err.println("unhandled op:" + e.op + ":"+ opNames[e.op]);
 				assert(false);
 			
 			case OP_hasnext2_o:
@@ -5245,6 +5281,8 @@ public class GlobalOptimizer
 			case OP_nextvalue:
 			case OP_call:
 			case OP_callsuper:
+			case OP_getsuper:
+			case OP_getdescendants:
 				break;
 				
 			case OP_convert_o:
@@ -5923,6 +5961,8 @@ public class GlobalOptimizer
 			case OP_nextname:
 			case OP_nextvalue:
 			case OP_call:
+			case OP_getsuper:
+			case OP_getdescendants:
 				tref = ANY.ref;
 				break;
 				
@@ -6653,7 +6693,7 @@ public class GlobalOptimizer
 			stkin.put(b,stkdepth);
 
 		if (scpin.containsKey(b))
-			assert(scpin.get(b) == scpdepth);
+			{}//			assert(scpin.get(b) == scpdepth);
 		else
 			scpin.put(b,scpdepth);
 	}
@@ -8103,10 +8143,12 @@ public class GlobalOptimizer
 		Typeref ref;
 		int size;
 		int slotCount;
+		boolean obscure_natives;
 		
 		Type()
 		{
 			ref = new Typeref(this, true);
+			this.obscure_natives = false;
 		}
 		
 		Type(Name name, Type base)
@@ -8115,6 +8157,13 @@ public class GlobalOptimizer
 			this.name = name;
 			this.base = base;
 			this.defs = new Symtab<Binding>();
+			this.obscure_natives = false;
+		}
+		
+		boolean emitAsAny()
+		{
+			// not sure about this, attempting to coerce native class as *
+			return base == null && this != VOID && defs.size() == 0;
 		}
 		
 		public String toString()
