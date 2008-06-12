@@ -142,7 +142,6 @@ public class GlobalOptimizer
 			if(args[i].equals("--")) {
 				split = a.size();
 				continue;
-                continue;
             }
 			filename = args[i];
 			before = load(filename);
