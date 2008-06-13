@@ -3037,8 +3037,8 @@ public class GlobalOptimizer
 		else if(t == NUMBER)
 			return "Double";		
 		else if(t.base == null) // same test use to emit ANY for native slots, valid?
-			return "GCObj";
-		return "Obj";
+			return "GCObject";
+		return "Object";
 	}
 	
 	void writeCallin(Method m, int script_id, String impl, PrintWriter out_h, PrintWriter out_c)
