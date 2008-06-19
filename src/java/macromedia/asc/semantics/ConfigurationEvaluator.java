@@ -1084,7 +1084,8 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 	}
 
 	public Value evaluate(Context cx, MetaDataNode node) {
-		return null;
+        this.evaluate(cx, node.data);
+        return null;
 	}
 
 	public Value evaluate(Context cx, DocCommentNode node) {
