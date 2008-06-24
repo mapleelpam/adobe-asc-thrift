@@ -263,11 +263,15 @@ public final class ReferenceValue extends Value implements ErrorConstants
                 case SET_TOKEN:
                     slot = base.getSlot(cx, this.getSetSlotIndex());
                     this.slot = slot;
+                    if( slot != null && cx.checkVersion() && this.slot.getVersion() > cx.version() )
+                        cx.error(this.src_position, kError_WrongVersion, this.name, String.valueOf(this.slot.getVersion()), String.valueOf(cx.version()));
                     this.setKind(SET_TOKEN);
                     break;
                 case GET_TOKEN:
                     slot = base.getSlot(cx, this.getGetSlotIndex());
                     this.slot = slot;
+                    if( slot != null && cx.checkVersion() && this.slot.getVersion() > cx.version() )
+                        cx.error(this.src_position, kError_WrongVersion, this.name, String.valueOf(this.slot.getVersion()), String.valueOf(cx.version()));
                     this.setKind(GET_TOKEN);
                     break;
                 default:
@@ -365,6 +369,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     }
                     else
                         bindToSlot(cx, obj, qualifier);
+
                     return true;
                 }
             }
@@ -568,6 +573,14 @@ public final class ReferenceValue extends Value implements ErrorConstants
         }
         this.slot = obj.getSlot(cx,obj.getSlotIndex(cx,getKind(),name,qualifier));
 
+        if( cx.checkVersion() )
+        {
+            if( this.slot.getVersion() > cx.version() )
+            {
+                cx.error(this.src_position, kError_WrongVersion, this.name, String.valueOf(this.slot.getVersion()), String.valueOf(cx.version()));
+                //new Exception().printStackTrace();
+            }
+        }
         /* don't early bind to xml properties.  XML tag values show up as dynamic properties which trump any predefined properties
         /*  by the same name (i.e. an xml tag named "name" should trump the XML method named "name").  It's not safe to bind to any
         /*  declared xml property at compile time. */

@@ -50,6 +50,7 @@ public class ClassDefinitionNode extends DefinitionNode
 	public ObjectList<ClassDefinitionNode> deferred_subclasses;
     public ExpressionStatementNode init;
     public boolean needs_prototype_ns;
+    public int version = -1;
 
     public Multinames imported_names = new Multinames();
 	public Namespaces used_namespaces = new Namespaces(); // don't delete

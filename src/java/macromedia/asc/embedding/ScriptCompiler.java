@@ -62,8 +62,9 @@ public class ScriptCompiler
     private static boolean builtinFlag;
 	private static boolean debugFlag;
 	private static boolean optimize;
-	
-	public static void main(String[] args) throws Throwable
+    private static boolean check_version;
+
+    public static void main(String[] args) throws Throwable
 	{
 		long startTime = System.currentTimeMillis();
 
@@ -96,9 +97,14 @@ public class ScriptCompiler
             // In theory, this should be in a second compile loop in order to reduce memory usage.
             resolveExpression();
             importExpr();
+
+            // Check version only used by MetadataEval & ConstantEval
+            s.check_version = check_version;
             md();
 			ce();
-			cg();
+            s.check_version = false;
+
+            cg();
 
 
 			start = end;
@@ -203,6 +209,10 @@ public class ScriptCompiler
                 catch(Exception e)
                 {
                 }
+            }
+            else if (args[i].equals("-versioncheck") )
+            {
+                check_version = true;
             }
             else
 			{

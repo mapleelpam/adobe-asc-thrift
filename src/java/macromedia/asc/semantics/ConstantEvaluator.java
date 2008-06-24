@@ -269,6 +269,10 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
     {
         ObjectValue fun = fcn.fun;
         cx.pushScope(fun.activation);
+
+        if( fcn.def != null && fcn.def.version > -1)
+            cx.pushVersion(fcn.def.version);
+
         PreprocessDefinitionTypeInfo(cx,fcn.signature);
         // process local definitions of the function
         if(fcn.body != null)
@@ -289,6 +293,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 slot.addDeclStyle(PARAM_Void);
             }
         }
+
+        if( fcn.def != null && fcn.def.version > -1)
+            cx.popVersion();
     }
 
     // also handles BinaryFunctionDefinitionNode
@@ -309,6 +316,11 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         PreprocessDefinitionTypeInfo(cx,node.statements.items, true);
 
         cx.pushScope(node.iframe);
+
+
+        if( node.version > -1 )
+            cx.pushVersion(node.version);
+
         if (node.instanceinits != null)
             PreprocessDefinitionTypeInfo(cx,node.instanceinits, false);
 
@@ -343,41 +355,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         cx.popScope();
         cx.popStaticClassScopes(node);
 
-/*        System.out.println("CE preprocess for " + node.cframe.name.toString());
+        if( node.version > -1 )
+            cx.popVersion();
 
-        if(node.cframe.types != null)
-        {
-            // When type parameters are fully implemented
-            // this should do something to resolve references to the type parameters to the actual
-            // types so all the signatures are correct instead of just blindly copying the slots
-            System.out.println("Copying slots from " + node.cframe.name.toString());
-            for(int i = 0, limit = node.cframe.types.size(); i < limit; ++i )
-            {
-                Slot s = node.cframe.types.at(i);
-                TypeValue t = (TypeValue)s.getValue();
-                int id = s.implies(cx, NEW_TOKEN);
-                ObjectValue base = node.ref.getBase();
-                if( base == null )
-                {
-                    if(node.ref.getScopeIndex() >= 0 )
-                        base = cx.scope(node.ref.getScopeIndex());
-                }
-                if( base != null )
-                {
-                    s = base.getSlot(cx, id);
-                    if( s != null )
-                    {
-                        s.setTypes(ctor_types);
-                        s.setDeclStyles(ctor_decls);
-                    }
-                }
-                ObjectValue p = node.cframe.prototype;
-                if(node.cframe == cx.vectorType() )
-                    p = cx.vectorObjType().prototype;
-                FlowAnalyzer.inheritSlots(p, t.prototype, t.prototype.builder, cx);
-            }
-        }
- */
     }
 
 
@@ -2617,6 +2597,13 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             super_context.pop_back();
 
             // check for get/set type compatibility
+            if( node.version > -1)
+                cx.pushVersion(node.version);
+
+            // Turn off version checking to avoid erroneous errors when getter/setters
+            // weren't introduced in the same version.
+            boolean old_check_ver = cx.checkVersion() ;
+            cx.statics.check_version = false;
 
             if( node.name.kind == GET_TOKEN ||
                 node.name.kind == SET_TOKEN )
@@ -2680,6 +2667,11 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     cx.error(pos-1, kError_GetterCannotHaveParameters);
                 }
             }
+
+            cx.statics.check_version = old_check_ver;
+
+            if( node.version > -1)
+                cx.popVersion();
         }
 
         if( node.needs_init )
@@ -2713,7 +2705,14 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
                 ObjectValue fun = node.fun;
                 cx.pushScope(fun.activation);
+
+                if( node.def != null && node.def.version > -1)
+                    cx.pushVersion(node.def.version);
+
                 node.signature.evaluate(cx,this);
+
+                if( node.def != null && node.def.version > -1)
+                    cx.popVersion();
                 cx.popScope();
 
 
@@ -2734,6 +2733,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         {
             saved_scopes = cx.swapScopeChain(node.scope_chain);
         }
+
+        if( node.def != null && node.def.version > -1 )
+            cx.pushVersion(node.def.version);
 
         ObjectValue fun = node.fun;
         cx.pushScope(fun.activation);
@@ -2823,6 +2825,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         }
 
         cx.popScope(); // activation
+        if( node.def != null && node.def.version > -1)
+            cx.popVersion();
 
         if( saved_scopes != null )
         {
@@ -3450,6 +3454,11 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             class_slot = node.ref.getSlot(cx, NEW_TOKEN);
         }
 
+        if( node.version > -1 )
+        {
+            cx.pushVersion(node.version);
+        }
+
         if (node.attrs != null)
         {
             node.attrs.evaluate(cx, this);
@@ -3563,6 +3572,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
         cx.popScope(); // iframe
         cx.popStaticClassScopes(node);
+
+        if( node.version > -1)
+            cx.popVersion();
 
         node.needs_init = true;
 

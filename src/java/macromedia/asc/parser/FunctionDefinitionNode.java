@@ -41,6 +41,7 @@ public class FunctionDefinitionNode extends DefinitionNode
 	public ExpressionStatementNode init;
 	public boolean needs_init;
     public boolean is_prototype;
+    public int version = -1;
 
     public FunctionDefinitionNode(Context cx, PackageDefinitionNode pkgdef, AttributeListNode attrs, FunctionNameNode name, FunctionCommonNode fexpr)
 	{

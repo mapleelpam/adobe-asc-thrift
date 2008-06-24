@@ -587,7 +587,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
                         for( Node meta_node : vdn.metaData.items)
                         {
                             if( meta_node instanceof MetaDataNode)
-                                addMetadataToSlot(slot, (MetaDataNode)meta_node);
+                                addMetadataToSlot(cx, slot, (MetaDataNode)meta_node);
                         }
                     }
                 }
@@ -654,13 +654,18 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
             for( Node meta_node : fdn.metaData.items)
             {
                 if( meta_node instanceof MetaDataNode)
-                    addMetadataToSlot(func_slot, (MetaDataNode)meta_node);
+                {
+                    addMetadataToSlot(cx, func_slot, (MetaDataNode)meta_node);
+                    int i = isVersionMetadata(cx, (MetaDataNode)meta_node);
+                    if( i > -1)
+                        fdn.version = i;
+                }
             }
         }
 		return null;
 	};
 
-    private void addMetadataToSlot(Slot slot, MetaDataNode metadata)
+    private void addMetadataToSlot(Context cx, Slot slot, MetaDataNode metadata)
     {
         if( metadata != null )
         {
@@ -668,11 +673,39 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
             {
                 // Don't add comments as metadata
                 slot.addMetadata(metadata);
+                int i = isVersionMetadata(cx, metadata);
+                if( i != -1 )
+                    slot.setVersion((byte)i);
             }
         }
     }
 
-	public Value evaluate(Context cx, FunctionNameNode node)
+    private int isVersionMetadata(Context cx, MetaDataNode metadata)
+    {
+        if( cx.checkVersion() )
+        {
+            if( "Version".equals(metadata.id) && metadata.values != null && metadata.values.length ==1)
+            {
+                KeylessValue k = metadata.values[0] instanceof KeylessValue ? (KeylessValue)metadata.values[0] : null;
+                if( k != null )
+                {
+                    int i = -1;
+                    try
+                    {
+                        i = Integer.valueOf(k.obj);
+                    }
+                    catch(NumberFormatException nfe)
+                    {
+                        // not an integer
+                    }
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public Value evaluate(Context cx, FunctionNameNode node)
 	{
 		return null;
 	};
@@ -759,7 +792,12 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
             for( Node meta_node : cdn.metaData.items)
             {
                 if( meta_node instanceof MetaDataNode)
-                    addMetadataToSlot(classSlot, (MetaDataNode)meta_node);
+                {
+                    addMetadataToSlot(cx, classSlot, (MetaDataNode)meta_node);
+                    int i = isVersionMetadata(cx, (MetaDataNode)meta_node);
+                    if( i > -1)
+                        cdn.version = i;
+                }
             }
 
 		return null;

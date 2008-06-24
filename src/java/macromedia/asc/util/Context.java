@@ -1400,6 +1400,33 @@ public final class Context implements ErrorConstants
         return statics.use_static_semantics;
     }
 
+    public boolean checkVersion()
+    {
+        return statics.check_version;
+    }
+
+    public void pushVersion(int v)
+    {
+        if( checkVersion() ) {
+            //System.out.println("pushing version " + v);
+            statics.versions.push_back(v);
+        }
+    }
+
+    public int popVersion()
+    {
+        if( checkVersion() ) {
+            int ret = statics.versions.pop_back();
+            //System.out.println("pop version " + ret);
+            return ret;
+        }
+        return 0;
+    }
+
+    public int version()
+    {
+        return statics.versions.size() > 0 ? statics.versions.back() : 0;
+    }
     /**
      * Check which version of the language we're compiling for.  9 is ES3, 10 is AS3
      * @param n

@@ -124,8 +124,9 @@ public abstract class Slot
 	private Value value;
     private TypeInfo type;
 	private ObjectList<TypeInfo> types;
-	
-	protected final void setAuxData(int type, Object value)
+    private byte version = 0;
+
+    protected final void setAuxData(int type, Object value)
 	{
 		if (auxDataItems != null)
 		{
@@ -631,4 +632,14 @@ public abstract class Slot
 	{
 		return def_bits;
 	}
+
+    public void setVersion(byte version)
+    {
+        this.version = version;
+    }
+
+    public byte getVersion()
+    {
+        return this.version;
+    }
 }

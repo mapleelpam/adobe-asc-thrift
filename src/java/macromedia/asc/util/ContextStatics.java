@@ -48,7 +48,8 @@ public class ContextStatics
 	NodeFactory nodeFactory;
 	ByteCodeFactory bytecodeFactory;
 	ObjectList<ObjectValue> scopes = new ObjectList<ObjectValue>();
-	public int withDepth = -1;
+    IntList versions = new IntList();
+    public int withDepth = -1;
 	public NamespacesTable internNamespaces = new NamespacesTable();
 	public CompilerHandler handler = null;
 	String pathspec;
@@ -114,6 +115,8 @@ public class ContextStatics
 	public int ticket_count = 0;
 	public boolean use_static_semantics = false;
     public int dialect = 9;
+
+    public boolean check_version = false;
 
     /**
      * For use with auto-using namespaces during compilation.
