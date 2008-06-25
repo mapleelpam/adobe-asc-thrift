@@ -8271,12 +8271,21 @@ protected void Setsuper(ByteList code,int index)
     {
         super.setPosition(lnNum, colPos, pos);
         
-        if (emit_debug_info && pos > 0)
+        if (emit_debug_info)
         {
-            if (debug_info.debug_linenum != lnNum)
+            if (pos > 0)
             {
-                debug_info.debug_linenum_dirty = true;
-                debug_info.debug_linenum = lnNum;
+                if (debug_info.debug_linenum != lnNum)
+                {
+                    debug_info.debug_linenum_dirty = true;
+                    debug_info.debug_linenum = lnNum;
+                }
+            }
+            else
+            {
+                // Reset the line number, so it doesn't get flushed by
+                // the next method.
+                debug_info.debug_linenum = -1;
             }
         }
     }
@@ -8286,6 +8295,7 @@ protected void Setsuper(ByteList code,int index)
         if( emit_debug_info )
         {
             debug_info.debug_linenum_dirty = false;
+            debug_info.debug_linenum = -1;
         }
     }
 

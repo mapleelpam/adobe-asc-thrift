@@ -40,7 +40,8 @@ import static macromedia.asc.embedding.avmplus.Features.*;
 public class InputBuffer
 {
 	private StringBuilder text;
-	private IntList line_breaks;
+	// Used by Flex's OffsetInputBuffer.java
+	protected IntList line_breaks;
 	private boolean atEOF = false;
 	
 	public Reader in;
@@ -739,7 +740,7 @@ public class InputBuffer
     public int getLineBreakPos(int line){
     	return line_breaks.at(line-1);
     }
-    
+
     public int getColPos(int pos)
 	{
         int line = getLnNum(pos);
