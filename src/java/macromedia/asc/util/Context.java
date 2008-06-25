@@ -771,7 +771,11 @@ public final class Context implements ErrorConstants
                 // a widening cast
                 if ( actual[0].getTypeValue().getTypeInfo(true).includes(this,expected) )
                 {
-                    if ( !isExplicit && actual[0].getTypeValue() != noType()) // always allow coercion from Object.  Just too common a problem without this
+                    if ( actual[0].getTypeValue() == vectorObjType() && expected.getTypeValue().baseclass == vectorObjType() )
+                    {
+                        // allow coercion from Vector.<*> to Vector.<T>
+                    }
+                    else if ( !isExplicit && actual[0].getTypeValue() != noType()) // always allow coercion from Object.  Just too common a problem without this
                     {
                         error(expr.pos()-1, kError_ImplicitCoercionToSubtype, actual[0].getName(this).toString(), expected.getName(this).toString());
                     }
