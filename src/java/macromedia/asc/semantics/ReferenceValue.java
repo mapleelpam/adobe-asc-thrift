@@ -263,15 +263,11 @@ public final class ReferenceValue extends Value implements ErrorConstants
                 case SET_TOKEN:
                     slot = base.getSlot(cx, this.getSetSlotIndex());
                     this.slot = slot;
-                    if( slot != null && cx.checkVersion() && this.slot.getVersion() > cx.version() )
-                        cx.error(this.src_position, kError_WrongVersion, this.name, String.valueOf(this.slot.getVersion()), String.valueOf(cx.version()));
                     this.setKind(SET_TOKEN);
                     break;
                 case GET_TOKEN:
                     slot = base.getSlot(cx, this.getGetSlotIndex());
                     this.slot = slot;
-                    if( slot != null && cx.checkVersion() && this.slot.getVersion() > cx.version() )
-                        cx.error(this.src_position, kError_WrongVersion, this.name, String.valueOf(this.slot.getVersion()), String.valueOf(cx.version()));
                     this.setKind(GET_TOKEN);
                     break;
                 default:
@@ -290,6 +286,8 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     }
                     break;
             }
+            if( slot != null && cx.checkVersion() && slot.getVersion() > cx.version() )
+                cx.error(this.src_position, kError_WrongVersion, this.name, String.valueOf(slot.getVersion()), String.valueOf(cx.version()));
         }
         return slot;
 

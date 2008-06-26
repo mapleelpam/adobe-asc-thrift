@@ -2587,6 +2587,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         }
         if (node.fexpr != null)
         {
+            if( node.version > -1)
+                cx.pushVersion(node.version);
+
             int state = super_error;
             if( "$construct".equals(node.ref.name) )
             {
@@ -2597,8 +2600,6 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             super_context.pop_back();
 
             // check for get/set type compatibility
-            if( node.version > -1)
-                cx.pushVersion(node.version);
 
             // Turn off version checking to avoid erroneous errors when getter/setters
             // weren't introduced in the same version.
