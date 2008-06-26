@@ -39,7 +39,7 @@ import static macromedia.asc.embedding.avmplus.Features.*;
  */
 public class InputBuffer
 {
-	private StringBuilder text;
+	protected StringBuilder text;
 	// Used by Flex's OffsetInputBuffer.java
 	protected IntList line_breaks;
 	private boolean atEOF = false;
