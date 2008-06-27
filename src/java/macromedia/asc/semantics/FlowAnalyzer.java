@@ -732,7 +732,8 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                 }
                 if( typerefs.size() != node.typeArgs.values.size() )
                     node.ref = null;  //Something didn't resolve to a reference
-                node.ref.addTypeParam(typerefs.at(0));
+                if( node.ref != null )
+                    node.ref.addTypeParam(typerefs.at(0));
             }
         }
         else
@@ -3333,7 +3334,10 @@ else
                 Slot slot = obj.getSlot(cx,slot_id);
                 slot.setConst(is_const);
                 slot.setTypeRef(node.typeref);
-                
+
+                if( is_const && loop_index > 0)
+                    cx.error(node.pos(), kError_AssignmentToConstVar);
+
                 if( (node.block != null) ||  // node.block is null for defintions at the top level of the method 
                 	(node.initializer == null) )
                 {
