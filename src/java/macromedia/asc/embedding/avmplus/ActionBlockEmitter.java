@@ -2317,7 +2317,7 @@ public class ActionBlockEmitter extends Emitter
     protected void DebugSlot(String name, int slot, int linenum)
     {
         int index = ab.addUtf8Constant(bytecodeFactory.ConstantUtf8Info(name));
-        DebugLocal(ab.code, index, slot, linenum);
+        DebugLocal(ab.code, index, slot, (linenum < 0 ) ? 0 : linenum);
     }
 
     /*
