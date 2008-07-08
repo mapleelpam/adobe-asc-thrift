@@ -1823,7 +1823,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     
                     boolean forceType = true;
                     int usage = numberUsage.get_usage();
-                    if (usage == NumberUsage.use_Number) {
+                    if (usage == NumberUsage.use_Number ) {
                        	/* in this case, the types of the operands determine the type of the result */
                     	forceType = false;
                     	if (cx.statics.es4_numerics && ((ltype[0] == cx.decimalType()) || (rtype[0] == cx.decimalType()))) {
@@ -1849,6 +1849,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     	}
                     	else
                     		usage = NumberUsage.use_int;
+
+                        if( !cx.statics.es4_numerics )
+                            usage = NumberUsage.use_double;
                     }
                     switch (usage) {
                     case NumberUsage.use_decimal: {
