@@ -534,7 +534,7 @@ public class DocCommentNode extends MetaDataNode
             {
                 // Vector
                 TypeValue t = (TypeValue)s.getValue();
-                name += "$" + t.indexed_type;
+                name += getIndexedTypeName(cx, t.indexed_type);
             }
             return name;
         }
@@ -542,6 +542,24 @@ public class DocCommentNode extends MetaDataNode
         {
             return s.getDebugName();
         }
+    }
+    private static String getIndexedTypeName(Context cx, TypeValue t)
+    {
+        ParameterizedName pn = t.name instanceof ParameterizedName ? (ParameterizedName)t.name : null;
+        String name = "$";
+        if( pn != null )
+        {
+            name += t.name.name;
+            if( t.indexed_type != null )
+            {
+                name += getIndexedTypeName(cx, t.indexed_type);
+            }
+        }
+        else
+        {
+            name += t;
+        }
+        return name;
     }
 
     public static String escapeXml(String s)
