@@ -200,6 +200,7 @@ public final class AbcParser
         }
         size = buf.readU32();
         cPoolNsPositions = new int[size];
+        if (debug) System.out.println("ns "+size);
         for (int i = 1; i < size; i++)
         {
             cPoolNsPositions[i] = buf.pos();
@@ -208,6 +209,7 @@ public final class AbcParser
         }
         size = buf.readU32();
         cPoolNsSetPositions = new int[size];
+        if (debug) System.out.println("nssets "+size);
         for (int i = 1; i < size; i++)
         {
             cPoolNsSetPositions[i] = buf.pos();
@@ -219,6 +221,7 @@ public final class AbcParser
         }
         size = buf.readU32();
         cPoolMnPositions = new int[size];
+        if (debug) System.out.println("names "+size);
         for (int i = 1; i < size; i++)
         {
             cPoolMnPositions[i] = buf.pos();
@@ -250,8 +253,9 @@ public final class AbcParser
                     break;
                 case ActionBlockConstants.CONSTANT_RTQnameL:
                 case ActionBlockConstants.CONSTANT_RTQnameLA:
+					break;
                 default:
-                    break;
+					throw new RuntimeException("bad multiname type: " + kind);
 
             }
         }
@@ -930,15 +934,23 @@ public final class AbcParser
         long interfaces = buf.readU32();
 
         ListNode interface_nodes = null;
+		
+		if(debug&&interfaces>0) System.out.println("parsing " + interfaces);
         for( long i = 0; i < interfaces; ++i )
         {
+
 //            buf.skipEntries(interfaces);
             int int_index = buf.readU32();
-            QName intName = getMultinameFromCPool(int_index);
-            String simpleIntName = getStringFromCPool(intName.name);
-
-            Namespaces intNamespaces = getNamespaces(intName.nameSpace);
-
+            QName intName = getQNameFromCPool(int_index);
+			String simpleIntName = getStringFromCPool(intName.name);
+			Namespaces intNamespaces;
+			if(intName.nsIsSet)
+			  intNamespaces = getNamespaces(intName.nameSpace);
+			else {
+				intNamespaces = new Namespaces(1); 
+				intNamespaces.add(getNamespace(intName.nameSpace));
+			}
+		
             IdentifierNode ident = ctx.getNodeFactory().identifier(simpleIntName);
 
             ident.ref = new ReferenceValue(ctx, null, simpleIntName, intNamespaces);
@@ -1301,8 +1313,9 @@ public final class AbcParser
 
     static class QName
     {
-        int name;
-        int nameSpace;
+        int name = 0;
+        int nameSpace = 0;
+        boolean nsIsSet = false;
     };
 
     static class ParameterizedQName extends QName
@@ -1320,8 +1333,6 @@ public final class AbcParser
     {
         int orig = buf.pos();
         QName value = new QName();
-        value.nameSpace = 0;
-        value.name = 0;
 
         buf.seek( cPoolMnPositions[index] );
         int kind = buf.readU8();
@@ -1341,31 +1352,14 @@ public final class AbcParser
                 params.add(buf.readU32());
             value = new ParameterizedQName(name, params);
             break;
-        default:
-            break;
-        }
-        buf.seek(orig);
-        return value;
-    }
-
-    QName getMultinameFromCPool(int index)
-    {
-        int orig = buf.pos();
-        QName value = new QName();
-        value.nameSpace = 0;
-        value.name = 0;
-
-        buf.seek( cPoolMnPositions[index] );
-        int kind = buf.readU8();
-
-        switch(kind)
-        {
         case ActionBlockConstants.CONSTANT_Multiname:
         case ActionBlockConstants.CONSTANT_MultinameA:
                 value.name = buf.readU32();
                 value.nameSpace = buf.readU32();
+                value.nsIsSet = true;
             break;
         default:
+        	System.err.println("Unexpected multiname type: " + kind);
             break;
         }
         buf.seek(orig);
