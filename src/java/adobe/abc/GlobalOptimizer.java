@@ -2944,7 +2944,10 @@ public class GlobalOptimizer
 
 			// create a C++ declaration for the native thunk.
 			createThunkArgs(out_h, impl, m, obscure_natives);
-			out_h.printf("AVMPLUS_NATIVE_METHOD_DECL(%s, %s)\n", ctype(m.returns), impl);
+			if(m.returns.t != VOID && m.returns.t.base == null && !isAtom(m.returns.t))
+				out_h.printf("AVMPLUS_NATIVE_METHOD_DECL_GCOBJ(%s, %s)\n", ctype(m.returns), impl);
+			else 
+				out_h.printf("AVMPLUS_NATIVE_METHOD_DECL(%s, %s)\n", ctype(m.returns), impl);
 
 			impls.put(abc.methodId(m), "n" + impl);
 		}
@@ -5742,7 +5745,24 @@ public class GlobalOptimizer
 				// TODO constant folding
 				tref = namedTypes.get(e.ref).ref;
 				break;
-				
+			
+			case OP_astypelate:
+			{
+				Typeref t1 = types.get(e.args[1]);
+				if (t1.t.itype != null)
+				{
+					if (t1.t.itype.atom || t1.t.itype.numeric)
+						tref = OBJECT.ref;
+					else
+						tref = t1.t.itype.ref;
+				}
+				else
+				{
+					tref = ANY.ref;
+				}
+				break;
+			}
+			
 			case OP_typeof:
 			{
 				Type t0 = type(types,e.args[0]);
