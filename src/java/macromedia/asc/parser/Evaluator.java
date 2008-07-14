@@ -241,11 +241,11 @@ public interface Evaluator
 
 	Value evaluate(Context cx, PragmaNode node);
 
-	Value evaluate(Context cx, UsePrecisionNode node);
+    Value evaluate(Context cx, UsePrecisionNode node);
 
 	Value evaluate(Context cx, UseNumericNode node);
 
-	Value evaluate(Context cx, UseRoundingNode node);
+	Value evaluate(Context cx, UseRoundingNode node); 
 
     Value evaluate(Context cx, PragmaExpressionNode node);
 

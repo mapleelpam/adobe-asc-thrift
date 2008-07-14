@@ -307,7 +307,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
             // binding from the inside to the outside of the
             // scope chain. Fix up this reference's base member
             // and recurse.
-
+        	
             ObjectList<ObjectValue> scopes = cx.getScopes();
             int lowestScope = isTypeAnnotation() ? 0 : (cx.statics.withDepth+1);
             for(int i=scopes.size() - 1; i >= lowestScope; i--)

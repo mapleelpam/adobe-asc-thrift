@@ -7555,8 +7555,9 @@ XMLElementContent
         return result;
     }
     
-    private UseDirectiveNode generateAs3UseDirective(Context ctx)
+    public static UseDirectiveNode generateAs3UseDirective(Context ctx)
     {
+        NodeFactory nodeFactory = ctx.getNodeFactory();
         IdentifierNode as3Identifier = nodeFactory.identifier(AS3, false);
         Namespaces namespaces = new Namespaces();
         NamespaceValue namespaceValue = new NamespaceValue();
