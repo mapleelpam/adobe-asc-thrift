@@ -129,8 +129,10 @@ public class ContextStatics
     /**
      * Returns a list filled with namespaces that should be automatically
      * opened, based on the current target player, e.g. flash10, AS3.
-     * 
+     *
      * You would add these to ContextStatics.use_namespaces before Parse.parse().
+     *
+     * This code is not currently used; it was written for 'flash10' which was removed.
      * 
      * @see macromedia.asc.util.ContextStatics.use_namespaces
      */
@@ -138,10 +140,13 @@ public class ContextStatics
     {
         final ObjectList<String> use_namespaces = new ObjectList<String>();
         
+        /*
+        // no longer needed, but this is how you would do it
         if (targetPlayerMajorVersion >= 10)
         {
             use_namespaces.add("flash10");
         }
+        */
         
         return use_namespaces;
     }
