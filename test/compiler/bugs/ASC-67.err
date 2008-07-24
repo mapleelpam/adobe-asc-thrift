@@ -1,6 +1,6 @@
 
 [Compiler] Error #1084: Syntax error: expecting rightparen before semicolon.
-bugs/ASC-67.as, Ln 1, Col 35:
+bugs.ASC-67.as, Ln 1, Col 35:
 var result:\* = \(String\(new Date\(\)\);
 ..................................^
 
