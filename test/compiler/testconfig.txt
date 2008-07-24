@@ -16,3 +16,12 @@ as3/LocalizedErrors/1186-PrototypeVarBindingErr          ,    expectedfailure  ,
 as3/LocalizedErrors/1187-PrototypeVarErr                 ,    expectedfailure  , asc-full|asc-smokes   ,
 as3/LocalizedErrors/1190-BaseClassNotCTCErr              ,    expectedfailure  , asc-full|asc-smokes   ,
 as3/Warnings/DiffDataTypesWithNullUndefinedWarn          ,    expectedfailure  , asc-full|asc-smokes   ,
+# bug regressions
+bugs/ASC-96                                              ,    asc.args         , asc-full|asc-smokes   ,    -coach -import global.abc
+bugs/ASC-1564                                            ,    asc.args         , asc-full|asc-smokes   ,    -md -import global.abc
+bugs/ASC-3250                                            ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc
+bugs/ASC-3310                                            ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc -import playerglobal.abc -swf MainPocket,100,100
+bugs/ASC-3334a                                           ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -avmtarget 1
+bugs/ASC-3334b                                           ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -avmtarget 2
+bugs/ASC-3384                                            ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+bugs/ASC-3414                                            ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc

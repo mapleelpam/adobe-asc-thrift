@@ -300,7 +300,7 @@ for ast in tests:
 	for line in lines:
 		if line.startswith("#"):
 			continue
-		fields=line.split(',')
+		fields=line.split(',',3) #maxsplit=3 so that any commas in last field are preserved
 		for f in range(len(fields)):
 			fields[f]=fields[f].strip()
 		while len(fields)<4:
