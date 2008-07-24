@@ -273,7 +273,7 @@ def dict_match(dict,test,value):
 def writeErrActualFile(root, actual):
   fdopen=open(root+'.err.actual','w')
   if globs['regexOutput']:
-    subPattern = r'([\.\^\$\*\+\?\{\}\[\]\(\)])'
+    subPattern = r'([\^\$\*\+\?\{\}\[\]\(\)])'
     for line in actual:
       line = re.sub(r'([\\/])', r'.', line) # replace all / and \ with . so that paths are win & *nix compatible
       line = re.sub(subPattern, r'\\\1',line)
