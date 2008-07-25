@@ -4,9 +4,8 @@
  *
  */
 
-package ErrorMessages {
-
-//var str:String = \ ;
-var sum:int = 1 + 2 +
-		
-}
+  
+  function test() {
+    package hello {}
+  }
+  
