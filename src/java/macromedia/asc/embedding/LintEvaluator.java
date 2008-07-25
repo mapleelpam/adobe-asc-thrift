@@ -16,6 +16,7 @@ import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_boolean;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_double;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_decimal;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_int;
+import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_uint;
 import macromedia.asc.embedding.avmplus.*;
 import macromedia.asc.util.*;
 import macromedia.asc.parser.*;
@@ -1127,7 +1128,8 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
   						switch( nonVoidType.getTypeId() )
   						{
   							case TYPE_boolean:
-  							case TYPE_int: // same as case TYPE_uint:
+  							case TYPE_int:
+  							case TYPE_uint:
   							case TYPE_double:
   							case TYPE_decimal:
   								warning(node.getPosition(), cx.input, kWarning_BadNullComparision, getSimpleTypeName(nonVoidType));

@@ -270,19 +270,32 @@ def dict_match(dict,test,value):
       if dict[k].has_key(value):
         return dict[k][value]
         
+def regexReplace(match):
+  'regex replace function for writeErrActualFile'
+  matchDict = match.groupdict()
+  for i in matchDict:
+    if matchDict['regexchar']:
+      return r'\%s' % matchDict['regexchar']
+    elif matchDict['byteswritten']:
+      return r'\d+ bytes written'
+    else: #testdir
+      return r'.*'
+
+
 def writeErrActualFile(root, actual):
+  'output a regex ready err.actual file'
   fdopen=open(root+'.err.actual','w')
+  testDir = os.path.dirname(root)
   if globs['regexOutput']:
-    subPattern = r'([\^\$\*\+\?\{\}\[\]\(\)])'
+    subPattern = r'((?P<testdir>%s.)|(?P<byteswritten>\d+ bytes written)|(?P<regexchar>[\^\$\*\+\?\{\}\[\]\(\)\\]))' % testDir
     for line in actual:
-      line = re.sub(r'([\\/])', r'.', line) # replace all / and \ with . so that paths are win & *nix compatible
-      line = re.sub(subPattern, r'\\\1',line)
-      line = re.sub(r'\d+ bytes written',r'\d+ bytes written', line)
+      line = re.sub(subPattern, regexReplace,line)
       fdopen.write(line+"\n")
   else:
     for line in actual:
       fdopen.write(line+"\n")
   fdopen.close()
+
 
 asc = globs['asc']
 if not asc: # or not isfile(avm.split()[0]): /* isfile() fails for alias on OSX */
