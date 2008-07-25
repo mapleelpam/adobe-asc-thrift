@@ -48,9 +48,9 @@ public class InputBuffer
 	private int pushBackChar = -1;
 	public String origin;
 
-	public StringBuilder curr_line;
-	public StringBuilder prev_line;
-	public StringBuilder raw_curr_line; // un-normalized verison of curr_line
+	private StringBuilder curr_line;
+	private StringBuilder prev_line;
+	private StringBuilder raw_curr_line; // un-normalized verison of curr_line
 
 	public int curr_line_offset;
 	public int prev_line_offset;
@@ -67,8 +67,7 @@ public class InputBuffer
 	public InputBuffer(InputStream in, String encoding, String origin) // Init lineA to make distinct from curr_line (see nextchar)
 	{
 		this.in = createReader(in, encoding);
-		this.text = new StringBuilder(8192);
-
+		this.text = new StringBuilder(4096);
 		init(origin, 0);
 	}
 
@@ -100,7 +99,7 @@ public class InputBuffer
 
 		has_unixnewlines = false;
 
-		line_breaks = new IntList(200);
+		line_breaks = new IntList(256);
 		line_breaks.add(0);
 	}
 
@@ -225,6 +224,136 @@ public class InputBuffer
 	}
 
 	/*
+	 * nextline
+	 * 
+	 * If the last character was at the end of a line,
+	 * then swap buffers and fill the new one with characters
+	 * from the input reader.
+	 */
+	
+	private void nextline()
+	{
+		int c = -1;
+		
+		if (!atEOF)
+		{
+			lnNum++;
+		}
+
+		colPos = 0;
+		raw_curr_line.setLength(0);
+
+		// If the current character is a newline, then read
+		// the next line of input into the other input buffer.
+
+		StringBuilder prevSave = prev_line;
+		prev_line = curr_line;
+		prev_line_offset = curr_line_offset;
+
+		curr_line = prevSave;
+		curr_line.setLength(0);
+		curr_line_offset = pos;
+
+		// Fill the current line with characters.
+
+		while (c != '\n' && c != 0)
+		{
+			int lastChar = c;
+			c = read();
+
+			if (lastChar == '\r' && c != '\n')
+			{
+				// A bare carriage return was encountered, not a CR-LF.
+				// Treat as line break by breaking out of loop.
+				pushBackChar = c;
+				pos--;
+				break;
+			}
+
+			// Skip Unicode 3.0 format-control (general category Cf in
+			// Unicode Character Database) characters.
+
+			while (true)
+			{
+				switch (c)
+				{
+				case 0x070f: // SYRIAC ABBREVIATION MARK
+				case 0x180b: // MONGOLIAN FREE VARIATION SELECTOR ONE
+				case 0x180c: // MONGOLIAN FREE VARIATION SELECTOR TWO
+				case 0x180d: // MONGOLIAN FREE VARIATION SELECTOR
+					// THREE
+				case 0x180e: // MONGOLIAN VOWEL SEPARATOR
+				case 0x200c: // ZERO WIDTH NON-JOINER
+				case 0x200d: // ZERO WIDTH JOINER
+				case 0x200e: // LEFT-TO-RIGHT MARK
+				case 0x200f: // RIGHT-TO-LEFT MARK
+				case 0x202a: // LEFT-TO-RIGHT EMBEDDING
+				case 0x202b: // RIGHT-TO-LEFT EMBEDDING
+				case 0x202c: // POP DIRECTIONAL FORMATTING
+				case 0x202d: // LEFT-TO-RIGHT OVERRIDE
+				case 0x202e: // RIGHT-TO-LEFT OVERRIDE
+				case 0x206a: // INHIBIT SYMMETRIC SWAPPING
+				case 0x206b: // ACTIVATE SYMMETRIC SWAPPING
+				case 0x206c: // INHIBIT ARABIC FORM SHAPING
+				case 0x206d: // ACTIVATE ARABIC FORM SHAPING
+				case 0x206e: // NATIONAL DIGIT SHAPES
+				case 0x206f: // NOMINAL DIGIT SHAPES
+				case 0xfeff: // ZERO WIDTH NO-BREAK SPACE
+				case 0xfff9: // INTERLINEAR ANNOTATION ANCHOR
+				case 0xfffa: // INTERLINEAR ANNOTATION SEPARATOR
+				case 0xfffb: // INTERLINEAR ANNOTATION TERMINATOR
+					c = read();
+					continue; // skip it.
+				default:
+					break;
+				}
+				break; // out of while loop.
+			}
+
+			switch(c)
+			{
+			// Line terminators.
+			case 0x000a:
+			case 0x000d:
+			case 0x2028:
+			case 0x2029:
+				raw_curr_line.append((char) c);
+				// skip line stuff for \r\n
+				if(lastChar == '\r' && c == '\n') {
+					line_breaks.set(lnNum + 1, pos);
+				} else {
+					curr_line.append('\n'); // normalize linebreaks to \n
+					line_breaks.resize(lnNum + 1); // resize the type
+					// vector, if needed
+					line_breaks.set(lnNum + 1, pos);
+				}
+				break;
+				// White space
+			case 0x0009:
+			case 0x000b:
+			case 0x000c:
+			case 0x0020:
+			case 0x00a0:
+				raw_curr_line.append((char) c);
+				c = ' ';
+				curr_line.append((char) c);
+				break;
+				// End of line
+			case -1:
+				c = 0;
+				raw_curr_line.append((char) c);
+				curr_line.append((char) c);
+				break;
+				// All other characters.
+			default:
+				// Use c as is.
+				raw_curr_line.append((char) c);
+				curr_line.append((char) c);
+			}
+		}
+	}
+
+	/*
 	 * nextchar
 	 *
 	 * The basic function of nextchar() is to fetch the next character,
@@ -237,149 +366,35 @@ public class InputBuffer
 	 * 4. treats <cr>+<lf> as a single line terminator.
 	 * 5. returns 0 when the end of input is reached.
 	 */
-	public int nextchar()
-	{
-		return nextchar(false);
-	}
 
 	public int nextchar(boolean get_unnormalized)
 	{
-		int c = -1;
-		
-		// If the last character was at the end of a line,
-		// then swap buffers and fill the new one with characters
-		// from the input reader.
+		int c;
 
 		if (colPos == curr_line.length())
 		{
-			if (!atEOF)
-			{
-				lnNum++;
-			}
-			
-			colPos = 0;
-			raw_curr_line.setLength(0);
-
-			// If the current character is a newline, then read
-			// the next line of input into the other input buffer.
-
-			StringBuilder prevSave = prev_line;
-			prev_line = curr_line;
-			prev_line_offset = curr_line_offset;
-
-			curr_line = prevSave;
-			curr_line.setLength(0);
-			curr_line_offset = pos;
-
-			// Fill the current line with characters.
-
-			while (c != '\n' && c != 0)
-			{
-				int lastChar = c;
-				c = read();
-
-				if (lastChar == '\r' && c != '\n')
-				{
-					// A bare carriage return was encountered, not a CR-LF.
-					// Treat as line break by breaking out of loop.
-					pushBackChar = c;
-					pos--;
-					break;
-				}
-
-				// Skip Unicode 3.0 format-control (general category Cf in
-				// Unicode Character Database) characters.
-
-				while (true)
-				{
-					switch (c)
-					{
-						case 0x070f: // SYRIAC ABBREVIATION MARK
-						case 0x180b: // MONGOLIAN FREE VARIATION SELECTOR ONE
-						case 0x180c: // MONGOLIAN FREE VARIATION SELECTOR TWO
-						case 0x180d: // MONGOLIAN FREE VARIATION SELECTOR THREE
-						case 0x180e: // MONGOLIAN VOWEL SEPARATOR
-						case 0x200c: // ZERO WIDTH NON-JOINER
-						case 0x200d: // ZERO WIDTH JOINER
-						case 0x200e: // LEFT-TO-RIGHT MARK
-						case 0x200f: // RIGHT-TO-LEFT MARK
-						case 0x202a: // LEFT-TO-RIGHT EMBEDDING
-						case 0x202b: // RIGHT-TO-LEFT EMBEDDING
-						case 0x202c: // POP DIRECTIONAL FORMATTING
-						case 0x202d: // LEFT-TO-RIGHT OVERRIDE
-						case 0x202e: // RIGHT-TO-LEFT OVERRIDE
-						case 0x206a: // INHIBIT SYMMETRIC SWAPPING
-						case 0x206b: // ACTIVATE SYMMETRIC SWAPPING
-						case 0x206c: // INHIBIT ARABIC FORM SHAPING
-						case 0x206d: // ACTIVATE ARABIC FORM SHAPING
-						case 0x206e: // NATIONAL DIGIT SHAPES
-						case 0x206f: // NOMINAL DIGIT SHAPES
-						case 0xfeff: // ZERO WIDTH NO-BREAK SPACE
-						case 0xfff9: // INTERLINEAR ANNOTATION ANCHOR
-						case 0xfffa: // INTERLINEAR ANNOTATION SEPARATOR
-						case 0xfffb: // INTERLINEAR ANNOTATION TERMINATOR
-							c = read();
-							continue; // skip it.
-						default:
-							break;
-					}
-					break; // out of while loop.
-				}
-
-				switch(c)
-				{
-				// Line terminators.
-				case 0x000a:
-				case 0x000d:
-				case 0x2028:
-				case 0x2029:
-					raw_curr_line.append((char) c);
-					// skip line stuff for \r\n
-					if(lastChar == '\r' && c == '\n') {
-						line_breaks.set(lnNum + 1, pos);
-					} else {
-						curr_line.append('\n'); // normalize linebreaks to \n
-						line_breaks.resize(lnNum + 1); // resize the type vector, if needed
-						line_breaks.set(lnNum + 1, pos);
-					}
-					break;
-				// White space
-				case 0x0009:
-				case 0x000b:
-				case 0x000c:
-				case 0x0020:
-				case 0x00a0:
-					raw_curr_line.append((char) c);
-					c = ' ';
-					curr_line.append((char) c);
-					break;
-				// End of line
-				case -1:
-					c = 0;
-					raw_curr_line.append((char) c);
-					curr_line.append((char) c);
-					break;
-				// All other characters.
-				default:
-					// Use c as is.
-					raw_curr_line.append((char) c);
-					curr_line.append((char) c);
-				}
-			}
-
-            // cn:  this if statement is wrong and should be removed.  \n is now in returned on the previous call to the call that
-            //       re-fills the curr_line and exexutes this block.  The code below makes us return\n twice when get_unnormalized is used and the line was only terminated by a 0xA, not a 0xD,0xA.  Too scary to change at this
-            //       point, but should be fixed soon after we ship.   Only known bug is handling of line continuation sequence ("\0xA") in a String when the string is withing an XML CDATA node (all newline sequences are normalized to a single 0xA in XML)
-            if (get_unnormalized)  // return the newline we aught have unless
-                return '\n';
+			nextline();
 		}
-
-		// Get the next character.	
+	
 		c = get_unnormalized ? raw_curr_line.charAt(colPos++) : curr_line.charAt(colPos++);
 		
 		return c;
 	}
+	
+	public int nextchar()
+	{
+		int c;
 
+		if (colPos == curr_line.length())
+		{
+			nextline();
+		}
+	
+		c = curr_line.charAt(colPos++);
+		
+		return c;
+	}
+	
 	/*
 	 * retract
 	 *
@@ -572,6 +587,7 @@ public class InputBuffer
 	{
 		// C: only 1 string in 1000 needs escaping and the lengths of these strings are usually small,
 		//    so we can cut StringBuilder usage if we check '\\' up front.
+           
 		int stop = to+1;
 		boolean required = false;
 
@@ -712,9 +728,25 @@ public class InputBuffer
 		return escapeString(curr_line, markCol-1, colPos-1);
 	}
 
+    public char markCharAt(int offset)
+    {
+        assert(markCol+offset > 0);
+        return curr_line.charAt((markCol-1)+offset);
+    }
+    
+    public int markLength()
+    {
+        return colPos - markCol + 1;
+    }
+    
     public String getLineText(int pos)
     {
         int i, end, a, len;
+        
+        // ??? why not use i = getLnNum(pos) ???
+        // ??? or just scan back from pos for the last lf ???
+        // ??? --this code is just silly ???
+        
         for (i = 0; i < line_breaks.size() && (a = line_breaks.get(i)) <= pos && a >= 0 && i <= lnNum; i++);
 
         int begin = line_breaks.get(i - 1);
