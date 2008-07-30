@@ -1109,7 +1109,7 @@ public final class NodeFactory implements ErrorConstants
         }
         else
         {
-            node = new LabeledStatementNode(label, stmt_is_loop, statement);
+            node = new LabeledStatementNode(label, stmt_is_loop, statement!=null?statement:this.emptyStatement());
         }
 		node.setPositionNonterminal(label, pos);
 		return node;
