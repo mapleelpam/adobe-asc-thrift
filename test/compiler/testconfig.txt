@@ -14,7 +14,6 @@ as3/Warnings/.*                                          ,    asc.args         ,
 errors-and-warnings/.*                                   ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc -import playerglobal.abc
 # expected failures, under investigating
 as3/LocalizedErrors/1190-BaseClassNotCTCErr              ,    expectedfailure  , asc-full|asc-smokes   ,
-errors-and-warnings/error1040                            ,    expectedfailure  , asc-full|asc-smokes   ,    https://bugs.adobe.com/jira/browse/ASC-3500
 errors-and-warnings/warning1060                          ,    expectedfailure  , asc-full|asc-smokes   ,    cpeyer: investigating
 # bug regressions
 bugs/ASC-96                                              ,    asc.args         , asc-full|asc-smokes   ,    -coach -import global.abc

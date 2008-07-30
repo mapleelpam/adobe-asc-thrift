@@ -1,2 +1,7 @@
-Error 1040 should be shown here.  Will update once nullPointerException bug is fixed.
-see https://bugs.adobe.com/jira/browse/ASC-3500
+
+\[Compiler\] Error #1040: Duplicate label definition.
+.*error1040.as, Ln 8, Col 10:
+i:\{
+.........\^
+
+1 error found
