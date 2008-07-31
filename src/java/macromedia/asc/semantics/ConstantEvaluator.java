@@ -1344,13 +1344,28 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         {
             if (val != null)
             {
-                Value constVal = val.getValue(cx);
-                type[0] = constVal!=null ? constVal.getType(cx) : val.getType(cx);
+            	//  tharwood 7/28/2008: if the value can be further evaluated, 
+            	//  that value usually has the same or a more specific type. 
+            	//  However, the secondary value may be undefined, 
+            	//  in which case avm uses the type of the original value.  
+            	//  Mimic that logic here. 
+            	Value constVal = val.getValue(cx);
+	                
+                if ( constVal != null )
+                {
+                	TypeInfo constValType = constVal.getType(cx);
+                	
+                	if ( !constValType.getTypeValue().equals(cx.voidType()))
+                	{
+                		type[0] = constValType;
+                	}
+                }   
             }
             else
             {
-                type[0] = null;
+            	type[0] = null;
             }
+
             Slot slot;
 
             {
