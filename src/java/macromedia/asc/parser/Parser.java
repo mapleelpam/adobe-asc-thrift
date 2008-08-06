@@ -5359,6 +5359,19 @@ XMLElementContent
                         error(syntax_error, kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes,attributeString, directiveString);
                         skiperror(SEMICOLON_TOKEN);
                     }
+                    else if ( temp.isConfigurationName() )
+                    {
+                        // Flex gets here when it parses a code fragment like: CONFIG::foo
+                        result = estmt;
+                    }
+                    else
+                    {
+                        // It's not known what code would reach this
+                        // state, so this is a best guess at how to
+                        // handle it.
+                        assert false : "Unexpected state";
+                        result = estmt;
+                    }
                 }
                 else
                 {
