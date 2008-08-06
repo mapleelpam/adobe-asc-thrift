@@ -100,6 +100,7 @@ def usage(c):
   print " -a --asc             compiler to use"
   print " -g --globalabc       location of global.abc"
   print " -p --playerglobalabc location of playerglobal.abc"
+  print "    --toplevelabc     location of toplevel.abc"
   print " -x --exclude         comma separated list of directories to skip"
   print " -h --help            display help and exit"
   print " -i --intermediate    create and compare intermediate code/AVM assembly/parse tree"
@@ -109,7 +110,7 @@ def usage(c):
   exit(c)
 
 try:
-  opts, args = getopt(argv[1:], "vE:a:g:x:htc:p:r", ["verbose","avm=","asc=","globalabc=","exclude=","help","notime","config=","playerglobalabc=","regex"])
+  opts, args = getopt(argv[1:], "vE:a:g:x:htc:p:r", ["verbose","avm=","asc=","globalabc=","exclude=","help","notime","config=","playerglobalabc=","regex","toplevelabc="])
 except:
   usage(2)
 
@@ -136,6 +137,8 @@ for o, v in opts:
     globs['playerglobalabc'] = v
   elif o in ("-r","--regex"):
     globs['regexOutput'] = True
+  elif o in ("--toplevelabc"):
+    globs['toplevelabc'] = v
 
 exclude = globs['exclude']
 
