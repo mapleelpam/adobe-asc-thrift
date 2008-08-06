@@ -1,3 +1,0 @@
-10
-ReferenceError: Error #1056: Cannot create property x on dynamic.as$1.B.
-	at global$init()

@@ -1,3 +1,0 @@
-hello
-ReferenceError: Error #1065: Variable g is not defined.
-	at global$init()

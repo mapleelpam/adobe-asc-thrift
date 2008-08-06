@@ -1,5 +1,0 @@
-in catch, throwing exception
-in finally
-TypeError: blah
-	at <anonymous>()
-	at global$init()

@@ -1,7 +1,0 @@
-
-param count mismatch
-   virt params=2 optional=0 BaseClass/class_method()
-   over params=1 optional=0 BaseClass/class_method()
-VerifyError: Error #1053: Illegal override of IllegalClassOverride in .IllegalClassOverride.
-
-	at global$init()

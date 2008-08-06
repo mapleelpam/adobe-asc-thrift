@@ -1,3 +1,0 @@
-TypeError: Error #1034: Type Coercion failed: cannot convert "hi" to A.
-	at A$/test()
-	at global$init()
