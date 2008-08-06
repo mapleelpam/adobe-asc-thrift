@@ -44,7 +44,10 @@ fd,tmpfile = tempfile.mkstemp()
 os.close(fd)
 
 globs = { 'avm':'', 'asc':'', 'globalabc':'', 'playerglobalabc':'', 'exclude':[], 'tmpfile':tmpfile, 'config':'asc-smokes', 'failmsgs':[],'expfailmsgs':[],
-          'unpassmsgs':[],'allfails':0,'allexpfails':0,'allunpass':0,'allpasses':0,'allskips':0, 'regexOutput':False}
+          'unpassmsgs':[],'allfails':0,'allexpfails':0,'allunpass':0,'allpasses':0,'allskips':0, 'regexOutput':False, 'toplevelabc':''}
+
+globs['toplevelabc'] = abspath(abspath(dirname(sys.argv[0]))+'/../../abc/toplevel.abc')
+
 if 'AVM' in environ:
   globs['avm'] = environ['AVM']
 if 'ASC' in environ:
@@ -57,6 +60,8 @@ if 'CVS' in environ:
   globs['exclude'] = ['CVS']
 if 'CONFIG' in environ:
   globs['config'] = environ['CONFIG']
+if 'TOPLEVELABC' in environ:
+  globs['toplevelabc'] = environ['TOPLEVELABC']
 
 def verbose_print(m, start="", end=""):
   if verbose:
@@ -97,6 +102,7 @@ def usage(c):
   print " -p --playerglobalabc location of playerglobal.abc"
   print " -x --exclude         comma separated list of directories to skip"
   print " -h --help            display help and exit"
+  print " -i --intermediate    create and compare intermediate code/AVM assembly/parse tree"
   print " -t --notime          do not generate timestamps (cleaner diffs)"
   print " -c --config          sets the config string [default qvm]"
   print " -r --regex           output err.actual files that are regex corrected"
@@ -193,11 +199,17 @@ def run_pipe(cmd):
 
 def run_avm(abc):
   output=[]
-  cmd="%s %s" % (globs['avm'],abc)
+  avmargs = ''
+  if globs['settings'].has_key('avm.args'):
+    avmargs = globs['settings']['avm.args']
+  cmd="%s %s %s" % (globs['avm'],avmargs,abc)
   try:
     f=run_pipe(cmd)
     for line in f:
-      output.append(line.strip())
+      line = line.strip()
+      if line:
+        if not (line[0:3] == 'at ' and line[-1] == ')'):  #don't record error location, so we strip it out
+          output.append(line)
   finally:
     f.close()
   return output
@@ -213,12 +225,14 @@ def compile_test(as):
     cmd = "java -jar " + asc
   else:
     cmd = asc
-
+  # sub out correct locations for global abc files
   if globs['settings'].has_key('asc.args'):
     ascargs=globs['settings']['asc.args']
     if playerglobalabc:
-      ascargs=re.sub(' playerglobal\.abc'," "+playerglobalabc,ascargs)
-    ascargs=re.sub(' global\.abc'," "+globalabc,ascargs)
+      ascargs=re.sub(' playerglobal\.abc', ' '+playerglobalabc, ascargs)
+    ascargs=re.sub(' global\.abc', ' '+globalabc, ascargs)
+    ascargs=re.sub(' builtin\.abc', ' '+globalabc, ascargs)
+    ascargs=re.sub(' toplevel\.abc', ' '+globs['toplevelabc'], ascargs)
     cmd+= " "+ascargs
   else:
     cmd += " -import " + globalabc
@@ -229,15 +243,18 @@ def compile_test(as):
   try:
     f = run_pipe("%s %s" % (cmd,as))
     for line in f:
-      output.append(line.strip())
+      line = line.strip()
+      if line:
+        output.append(line)
   finally:
     f.close()
   return output
 
-def fail(abc, msg, failmsgs):
-  msg = msg.strip()
-  err_print("   %s" % msg)
-  globs['failmsgs'] += ["%s : %s" % (abc, msg)]
+# Unused function?
+#def fail(abc, msg, failmsgs):
+#  msg = msg.strip()
+#  err_print("   %s" % msg)
+#  globs['failmsgs'] += ["%s : %s" % (abc, msg)]
 
 def fixExpected(expected):
   for i in range(len(expected)):
@@ -278,6 +295,8 @@ def regexReplace(match):
       return r'\%s' % matchDict['regexchar']
     elif matchDict['byteswritten']:
       return r'\d+ bytes written'
+    elif matchDict['errorNumber']:
+      return '%s.*$' % matchDict['errorNumber']
     else: #testdir
       return r'.*'
 
@@ -287,7 +306,7 @@ def writeErrActualFile(root, actual):
   fdopen=open(root+'.err.actual','w')
   testDir = os.path.dirname(root)
   if globs['regexOutput']:
-    subPattern = r'((?P<testdir>%s.)|(?P<byteswritten>\d+ bytes written)|(?P<regexchar>[\^\$\*\+\?\{\}\[\]\(\)\\]))' % testDir
+    subPattern = r'((?P<testdir>%s.)|(?P<byteswritten>\d+ bytes written)|(?P<errorNumber>^.*Error: Error #[0-9]{4})(.*$)|(?P<regexchar>[\^\$\*\+\?\{\}\[\]\(\)\\]))' % testDir
     for line in actual:
       line = re.sub(subPattern, regexReplace,line)
       fdopen.write(line+"\n")
@@ -328,6 +347,7 @@ for ast in tests:
   if isfile('./testconfig.txt'):
     for line in open('./testconfig.txt').read().splitlines():
       lines.append(line)
+  # process testconfig.txt lines
   for line in lines:
     if line.startswith("#"):
       continue
@@ -340,9 +360,8 @@ for ast in tests:
       settings[fields[1]]=fields[3]
   globs['settings']=settings
   if settings.has_key('skip'):
-    js_print('  skipped')
+    js_print('  skipped : %s' % settings['skip'])
     globs['allskips'] += 1
-    
     continue
   if os.path.isfile("%s.abc" % root):
     os.unlink("%s.abc" % root)
@@ -357,31 +376,35 @@ for ast in tests:
   if os.path.isfile("%s.err" % root):
     fileobject=open("%s.err" % root)
     for line in fileobject:
-      expected.append(line.strip())
+      line = line.strip()
+      if line:
+        expected.append(line)
   elif os.path.isfile("%s.out" % root):
     fileobject=open("%s.out" % root)
     for line in fileobject:
-      expected.append(line.strip())
+      line = line.strip()
+      if line:
+        expected.append(line)
   else:
-    expected=["","%s.abc, [\d]+ bytes written" % tname]
+    expected=["%s.abc, [\d]+ bytes written" % tname]
   if len(expected) != len(actual):
-    fail_print("[[KEY]]: %s" % ast)
     if settings.has_key('expectedfailure'):
       expectFail=True
       globs['allexpfails'] += 1
     else:
       expectFail=False
       globs['allfails'] += 1
-    fail_print(ast,expected=expectFail)
-    fail_print( "  FAILED: number of lines actual vs expected does not match")
-    fail_print("expected:[")
+    #fail_print("[[KEY]]: %s" % ast, expected=expectFail)
+    fail_print(ast,expected=expectFail, pr=False)
+    fail_print("  FAILED: number of lines actual vs expected does not match",expected=expectFail)
+    fail_print("  expected:[",expected=expectFail)
     for line in expected:
-      fail_print(line)
-    fail_print("]")
-    fail_print("actual  :[")
+      fail_print("    "+line,expected=expectFail)
+    fail_print("  ]",expected=expectFail)
+    fail_print("  actual  :[",expected=expectFail)
     for line in actual:
-      fail_print(line)
-    fail_print("]")
+      fail_print("    "+line,expected=expectFail)
+    fail_print("  ]",expected=expectFail)
     writeErrActualFile(root,actual)
   else:
     fixExpected(expected)

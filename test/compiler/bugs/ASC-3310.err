@@ -22,5 +22,4 @@ public function MainPocket\(\)
 
 
 ASC-3310.swf, .* bytes written
-VerifyError: Error #1014: Class flash.display::Sprite could not be found.
-
+VerifyError: Error #1014.*$
