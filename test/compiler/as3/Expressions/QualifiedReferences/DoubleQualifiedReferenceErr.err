@@ -1,5 +1,5 @@
 [Compiler] Error #1084: Syntax error: expecting identifier before doublecolon.
-as3/Expressions/QualifiedReferences/DoubleQualifiedReferenceErr.as, Ln 16, Col 11:
+.*DoubleQualifiedReferenceErr.as, Ln 16, Col 11:
 a.ns2::ns1::x;
 ..........^
 1 error found

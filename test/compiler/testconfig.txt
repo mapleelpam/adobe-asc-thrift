@@ -19,6 +19,7 @@ as3/LocalizedErrors/1061-StaticCallToUndefinedMethod     ,    asc.args         ,
 as3/LocalizedErrors/1180-UndefinedMethodErr              ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
 as3/LocalizedErrors/1188-IllegalAssgnErr                 ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
 as3/LocalizedErrors/1195-InaccessibleMethodErr           ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
+as3/LocalizedErrors/1087-ExtraCharsAfterEndOfProgram     ,    skip             , asc-full|asc-smokes   ,    cpeyer: investigating
 as3/Warnings/.*                                          ,    asc.args         , asc-full|asc-smokes   ,    -warnings -AS3 -import global.abc -import playerglobal.abc
 sanity/strict/.*                                         ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc -import toplevel.abc
 sanity/strict/xml_dynamic                                ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc -import toplevel.abc
