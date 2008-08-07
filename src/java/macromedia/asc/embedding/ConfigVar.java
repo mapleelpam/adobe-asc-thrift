@@ -25,4 +25,11 @@ public class ConfigVar
         this.name  = name;
         this.value = value;
     }
+
+    
+    @Override
+    public String toString()
+    {
+        return String.format("%s::%s=%s", ns, name, value);
+    }
 }
