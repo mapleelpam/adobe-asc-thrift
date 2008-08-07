@@ -16,6 +16,7 @@
 	<property name="global.dest" value="${basedir}/../../lib/global.abc" />
 	<property name="shell.dest"	value="${basedir}/../../lib/shell.abc" />
 	<property name="playerglobal.dest" value="${basedir}/../../lib/playerglobal.abc" />
+	<property name="clover.jar" value="" />
 
 	<condition property="avm.name" value="./avmplus">
 		<os family="mac"/>
@@ -166,4 +167,19 @@
             <fileset dir="${basedir}/classes" />
 		</delete>
 	</target>
+	<target name="with.clover">
+		<taskdef resource="cloverlib.xml" classpath="${clover.jar}"/>
+    	<clover-setup>
+      		<fileset dir="${java.src.dir}" excludes="macromedia/asc/parser/Scanner.java" />
+    	</clover-setup>
+ 	</target>
+	<target name="clover.html">
+   		<clover-report>
+     		<current outfile="clover_html">
+       			<format type="html" />
+       			<fileset dir="${java.src.dir}" 
+        			excludes="macromedia/asc/parser/Scanner.java" />
+     		</current>
+    	</clover-report>
+ </target>
 </project>
