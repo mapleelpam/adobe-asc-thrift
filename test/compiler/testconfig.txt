@@ -72,3 +72,20 @@ bugs/ASC-3334a                                           ,    asc.args         ,
 bugs/ASC-3334b                                           ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -avmtarget 2
 bugs/ASC-3384                                            ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
 bugs/ASC-3414                                            ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc
+cmdline/help1                                            ,    asc.args         , asc-full|asc-smokes   ,    -help
+cmdline/help2                                            ,    asc.args         , asc-full|asc-smokes   ,    -
+cmdline/static_semantics                                 ,    asc.args         , asc-full|asc-smokes   ,    -! -import global.abc
+cmdline/show_bytes                                       ,    asc.args         , asc-full|asc-smokes   ,    -b -import global.abc
+cmdline/show_flow                                        ,    asc.args         , asc-full|asc-smokes   ,    -f -import global.abc
+cmdline/show_parse_trees                                 ,    asc.args         , asc-full|asc-smokes   ,    -p -import global.abc
+cmdline/show_instructions                                ,    asc.args         , asc-full|asc-smokes   ,    -i -import global.abc
+cmdline/movieclip                                        ,    asc.args         , asc-full|asc-smokes   ,    -movieclip -import global.abc
+cmdline/metadata                                         ,    asc.args         , asc-full|asc-smokes   ,    -md -import global.abc
+cmdline/m                                                ,    asc.args         , asc-full|asc-smokes   ,    -m -import global.abc
+cmdline/abcfuture                                        ,    asc.args         , asc-full|asc-smokes   ,    -abcfuture -import global.abc
+cmdline/avmtarget                                        ,    asc.args         , asc-full|asc-smokes   ,    -avmtarget 3 -import global.abc
+cmdline/avmtargetn                                       ,    asc.args         , asc-full|asc-smokes   ,    -avmtarget n -import global.abc
+cmdline/config                                           ,    asc.args         , asc-full|asc-smokes   ,    -config 1 -import global.abc
+cmdline/sanity                                           ,    asc.args         , asc-full|asc-smokes   ,    -sanity
+cmdline/exe                                              ,    asc.args         , asc-full|asc-smokes   ,    -exe avmshell
+cmdline/swf                                              ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import playerglobal.abc -swf swf,550,400,-g,-usenetwork

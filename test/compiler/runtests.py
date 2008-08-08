@@ -236,6 +236,7 @@ def compile_test(as):
     ascargs=re.sub(' global\.abc', ' '+globalabc, ascargs)
     ascargs=re.sub(' builtin\.abc', ' '+globalabc, ascargs)
     ascargs=re.sub(' toplevel\.abc', ' '+globs['toplevelabc'], ascargs)
+    ascargs=re.sub(' avmshell', ' '+globs['avm'], ascargs)
     cmd+= " "+ascargs
   else:
     cmd += " -import " + globalabc
