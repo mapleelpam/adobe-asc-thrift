@@ -113,12 +113,13 @@ public class GlobalOptimizer
 	final boolean SHOW_DFG =  false;
 	final boolean SHOW_CODE = false;
 	boolean STRIP_DEBUG_INFO = true;
+	boolean ALLOW_NATIVE_CTORS = false;	// not final, AbcThunkGen needs to set this to true
 
 	public static void main(String[] args) throws IOException
 	{
 		if (args.length == 0)
 		{
-			System.out.println("usage: GlobalOptimizer [-obscure_natives] [imports] -- [exports]");
+			System.out.println("usage: GlobalOptimizer [-obscure_natives] [-no_c_gen] [imports] -- [exports]");
 			return;
 		}
 
@@ -129,9 +130,14 @@ public class GlobalOptimizer
 		byte[] before = null;
 		int split = -1;
  		boolean obscure_natives = false; 
+ 		boolean no_c_gen = false; 
 		for (int i = 0; i < args.length; ++i)
 		{
  			if(args[i].equals("-obscure_natives")) {
+				obscure_natives = true;
+ 				continue;
+ 			}
+ 			if(args[i].equals("-no_c_gen")) {
 				obscure_natives = true;
  				continue;
  			}
@@ -157,6 +163,9 @@ public class GlobalOptimizer
 		
 		
 		// merge exports together
+		// TODO this is not right, it only works for builtin ABCs and only under TT...
+		// we really need to construct a new script (that calls all the scripts in the initScripts list)
+		// and append it to the end as the new initscript.
 		List<Integer> initScripts = new ArrayList<Integer>();
 		InputAbc first = a.get(split+1);
  		int before_length = lengths.get(split+1);
@@ -169,7 +178,7 @@ public class GlobalOptimizer
 		
 		// we only optimize the last abc file
 		go.optimize(first);
-		byte[] after = go.emit(first, filename, initScripts);
+		byte[] after = go.emit(first, filename, initScripts, no_c_gen);
 		
 		System.out.println();
 		System.out.println("BEFORE "+before_length);
@@ -256,6 +265,18 @@ public class GlobalOptimizer
 			QNAME = lookup("QName");
 			VOID = lookup("void",null);
 			
+			OBJECT.ctype = CTYPE_ATOM;
+			NULL.ctype = CTYPE_ATOM;
+			ANY.ctype = CTYPE_ATOM;
+			VOID.ctype = CTYPE_VOID;
+			INT.ctype = CTYPE_INT;
+			UINT.ctype = CTYPE_UINT;
+			NUMBER.ctype = CTYPE_DOUBLE;
+			BOOLEAN.ctype = CTYPE_BOOLEAN;
+			STRING.ctype = CTYPE_STRING;
+			NAMESPACE.ctype = CTYPE_NAMESPACE;
+			// everything else defaults to CTYPE_OBJECT
+
 			INT.numeric = NUMBER.numeric = UINT.numeric = BOOLEAN.numeric = true;
 			
 			STRING.primitive = BOOLEAN.primitive = true;
@@ -809,7 +830,7 @@ public class GlobalOptimizer
 			for (int j = 0, n = t.interfaces.length; j < n; j++)
 				t.interfaces[j] = lookup(p.readU30()); // interface
 			t.init = methods[p.readU30()]; // init_id
-			if(t.init.isNative())
+			if(t.init.isNative() && !ALLOW_NATIVE_CTORS)
 				throw new RuntimeException("Constructors can't be native: "+t);
 			t.init.cx = t;
 			t.init.params[0] = t.ref.nonnull();
@@ -1468,6 +1489,15 @@ public class GlobalOptimizer
 					break;
 				}
 				
+				case OP_applytype:
+				{
+					int argc = 1+p.readU30();
+					e = new Expr(m,op, frame, sp, argc);
+					sp -= argc;
+					b.add(frame[sp++] = e);
+					break;
+				}
+				
 				case OP_constructsuper:
 				{
 					int argc = 1+p.readU30();
@@ -1549,6 +1579,7 @@ public class GlobalOptimizer
 					break;
 					
 				default:
+					System.out.println("Unknown ABC bytecode "+op);
 					assert (false);
 				}
 			}
@@ -2632,6 +2663,7 @@ public class GlobalOptimizer
 		case OP_callsupervoid:
 		case OP_constructprop:
 			return e.args.length - refArgc[e.ref.kind] - 1;
+		case OP_applytype:
 		case OP_callstatic:
 		case OP_callmethod:
 		case OP_constructsuper:
@@ -2665,7 +2697,7 @@ public class GlobalOptimizer
 		}
 	}
 	
-	byte[] emit(InputAbc a, String filename, List<Integer> initScripts) throws IOException
+	byte[] emit(InputAbc a, String filename, List<Integer> initScripts, boolean no_c_gen) throws IOException
 	{
 		// schedule everything that is reachable.  this will assign new id's to
 		// stuff, then we can write it all out in the right order.
@@ -2686,7 +2718,8 @@ public class GlobalOptimizer
 		{
 			out.close();
 		}
-		if (abc.haveNatives)
+		
+		if (abc.haveNatives && !no_c_gen)
 		{
 			PrintWriter out_h = new PrintWriter(new FileWriter(scriptname+".h2"));
 			IndentingPrintWriter out_c = new IndentingPrintWriter(new FileWriter(scriptname+".cpp2"));
@@ -3405,6 +3438,9 @@ public class GlobalOptimizer
 				break;
 			case OP_newfunction:
 				out.writeU30(abc.methodId(e.m));
+				break;
+			case OP_applytype:
+				out.writeU30(argc(e));
 				break;
 			case OP_callstatic:
 			//case OP_callmethod:
@@ -5470,6 +5506,10 @@ public class GlobalOptimizer
 				}
 				break;
 			}
+							
+			case OP_applytype:
+				tref = types.get(e.args[0]).nonnull();
+				break;
 			
 			case OP_callstatic:
 				tref = e.m.returns;
@@ -6133,6 +6173,10 @@ public class GlobalOptimizer
 				}
 				break;
 			}
+			
+			case OP_applytype:
+				tref = types.get(e.args[0]).nonnull();
+				break;
 			
 			case OP_callstatic:
 				tref = e.m.returns;
@@ -8144,6 +8188,16 @@ public class GlobalOptimizer
 		}
 	}
 	
+	final static int CTYPE_VOID			= 0;
+	final static int CTYPE_ATOM			= 1;
+	final static int CTYPE_BOOLEAN		= 2;
+	final static int CTYPE_INT			= 3;
+	final static int CTYPE_UINT			= 4;
+	final static int CTYPE_DOUBLE		= 5;
+	final static int CTYPE_STRING		= 6;
+	final static int CTYPE_NAMESPACE	= 7;
+	final static int CTYPE_OBJECT		= 8;
+
 	class Type
 	{
 		Name name;
@@ -8162,12 +8216,14 @@ public class GlobalOptimizer
 		Typeref ref;
 		int size;
 		int slotCount;
+		int ctype;
 		boolean obscure_natives;
 		
 		Type()
 		{
 			ref = new Typeref(this, true);
 			this.obscure_natives = false;
+			this.ctype = CTYPE_OBJECT;
 		}
 		
 		Type(Name name, Type base)
@@ -8260,19 +8316,19 @@ public class GlobalOptimizer
 		int tk = b.kind();
 		return tk == TRAIT_Class;
 	}
-	boolean isMethod(Binding b)
+	static boolean isMethod(Binding b)
 	{
 		if (b == null) return false;
 		int tk = b.kind();
 		return tk == TRAIT_Method;
 	}
-	boolean isGetter(Binding b)
+	static boolean isGetter(Binding b)
 	{
 		if (b == null) return false;
 		int tk = b.kind();
 		return tk == TRAIT_Getter;
 	}
-	boolean isSetter(Binding b)
+	static boolean isSetter(Binding b)
 	{
 		if (b == null) return false;
 		int tk = b.kind();
@@ -8964,7 +9020,7 @@ public class GlobalOptimizer
 	    0,//"OP_0x50",
 	    0,//"OP_0x51",
 	    0,//"OP_0x52",
-	    0,//"OP_0x53",
+	    STKVAL|EFFECT|PX,//"applytype",
 	    0,//"OP_0x54",
 	    STKVAL,//"newobject",
 	    STKVAL,// "newarray",
@@ -9224,7 +9280,7 @@ public class GlobalOptimizer
     "OP_0x50",
     "OP_0x51",
     "OP_0x52",
-    "OP_0x53",
+    "applytype",
     "OP_0x54",
     "newobject",
     "newarray",
