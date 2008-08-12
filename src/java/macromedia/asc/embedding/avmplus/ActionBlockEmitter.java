@@ -1072,6 +1072,8 @@ public class ActionBlockEmitter extends Emitter
         ab.exception_count = 0;
         ab.exception_table.clear();
 
+        clearPositionInfo();
+
         return method_info;
     }
 
@@ -8271,23 +8273,20 @@ protected void Setsuper(ByteList code,int index)
     {
         super.setPosition(lnNum, colPos, pos);
         
-        if (emit_debug_info)
+        if ((emit_debug_info) &&
+            (pos > 0) &&
+            (debug_info.debug_linenum != lnNum))
         {
-            if (pos > 0)
-            {
-                if (debug_info.debug_linenum != lnNum)
-                {
-                    debug_info.debug_linenum_dirty = true;
-                    debug_info.debug_linenum = lnNum;
-                }
-            }
-            else
-            {
-                // Reset the line number, so it doesn't get flushed by
-                // the next method.
-                debug_info.debug_linenum = -1;
-            }
+            debug_info.debug_linenum_dirty = true;
+            debug_info.debug_linenum = lnNum;
         }
+
+        // If the position is not greater than zero, don't set
+        // debug_linenum to -1, because synthetic nodes can have a
+        // position of 0 and they can be intermixed within a function.
+        // Nodes following a synthetic node might need to use the
+        // existing debug_linenum.  See the Flex fdbunit tests and
+        // SDK-16323 for tests case.
     }
 
     public void clearPositionInfo()

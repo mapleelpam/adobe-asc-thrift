@@ -3962,6 +3962,8 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         LoadThis();
         PushScope();
 
+        boolean startedMethod = false;
+
         if (node.statements != null)
         {
             for (PackageDefinitionNode def : node.pkgdefs)
@@ -3974,6 +3976,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         else
         {
             StartMethod(frame.functionName, frame.maxParams, frame.maxLocals);
+            startedMethod = true;
         }
 
         int reg_offset = getRegisterOffset(cx);
@@ -3986,6 +3989,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         else
         {
             Return(TYPE_void);
+        }
+
+        if (startedMethod)
+        {
+            clearPositionInfo();
         }
 
 		setPosition(0, 0, 0);
@@ -4369,6 +4377,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                 node.statements.evaluate(cx, this);
             }
 
+            clearPositionInfo();
             setPosition(0, 0, 0);
             Return(TYPE_void);
 
