@@ -494,9 +494,9 @@ public class AbcThunkGen
 	{
 		String ret = ctype_i(m.returns.t.ctype, false);
 		
-		out_h.printf("extern AvmThunkRetType_%s %s_thunk%s(AvmMethodEnv env, uint32_t argc, const AvmBox* argv);\n", ret, name, cookie?"c":"");
+		out_h.printf("extern AvmThunkRetType_%s AVMTHUNK_CALLTYPE %s_thunk%s(AvmMethodEnv env, uint32_t argc, const AvmBox* argv);\n", ret, name, cookie?"c":"");
 
-		out_c.printf("AvmThunkRetType_%s %s_thunk%s(AvmMethodEnv env, uint32_t argc, const AvmBox* argv)\n", ret, name, cookie?"c":"");
+		out_c.printf("AvmThunkRetType_%s AVMTHUNK_CALLTYPE %s_thunk%s(AvmMethodEnv env, uint32_t argc, const AvmBox* argv)\n", ret, name, cookie?"c":"");
 		out_c.println("{");
 		out_c.indent++;
 
@@ -513,7 +513,7 @@ public class AbcThunkGen
 				out_c.println("const uint32_t argoff0 = 0;");
 			else
 				out_c.println("const uint32_t argoff"+i+" = argoff"+(i-1)+" + "+argszprev+";");
-			argszprev = "(sizeof("+cts+") / sizeof(AvmBox))";
+			argszprev = "AvmThunkArgSize_"+cts;
 		}
 		if (m.needsRest())
 		{
@@ -562,34 +562,18 @@ public class AbcThunkGen
 		if (!m.hasOptional() && !m.needsRest())
 			out_c.println("(void)argc;");
 
-		String decl = "AVMTHUNK_DECLARE_MEMBER_FUNCTION(MemberFunction, "+ret+", "+argtypes[0]+", (";
-		for (int i = 1; i < argtypes.length; ++i)
-		{
-			String comma = i < argtypes.length-1 ? ", " : "";
-			decl += argtypes[i] + comma;
-		}
-		decl += "))";
-		out_c.println(decl);
-		
 		out_c.println("AVMTHUNK_DEBUG_ENTER(env)");
 		
 		String call = "";
 		if (m.returns.t.ctype != GlobalOptimizer.CTYPE_VOID)
 			call += "const "+ret+" ret = ";		
-		call += "AVMTHUNK_CALL_MEMBER_FUNCTION(";
+		call += "AVMTHUNK_CALL_FUNCTION_"+(argvals.length-1)+"(AVMTHUNK_GET_HANDLER(env), "+ret;
 		out_c.println(call);
 		out_c.indent++;
-		out_c.println(argvals[0]+", ");
-		out_c.println("MemberFunction(AVMTHUNK_GET_HANDLER(env)),");
-		out_c.println("(");
-		out_c.indent++;
-		for (int i = 1; i < argvals.length; ++i)
+		for (int i = 0; i < argvals.length; ++i)
 		{
-			String comma = i < argvals.length-1 ? ", " : "";
-			out_c.println(argvals[i] + comma);
+			out_c.println(", " + argtypes[i] + ", " + argvals[i]);
 		}
-		out_c.indent--;
-		out_c.println(")");
 		out_c.indent--;
 		out_c.println(");");
 
