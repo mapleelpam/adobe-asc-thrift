@@ -17,6 +17,9 @@
 	<property name="shell.dest"	value="${basedir}/../../lib/shell.abc" />
 	<property name="playerglobal.dest" value="${basedir}/../../lib/playerglobal.abc" />
 	<property name="clover.jar" value="" />
+	<!-- clover html out  and history directories -->
+	<property name="clover_html" value="clover_html" />
+	<property name="clover_hist" value="clover_hist" />
 
 	<condition property="avm.name" value="./avmplus">
 		<os family="mac"/>
@@ -99,6 +102,16 @@
             </manifest>
         </jar>
 	</target>
+	
+	<target name="asc-coverage-jar" depends="classes" >
+		<mkdir dir="${lib.dir}" />
+		<jar file="${lib.dir}/asc.jar" basedir="${basedir}/classes" includes="macromedia/asc/**/*,macromedia/abc/**/*,adobe/abc/**/*">
+            <manifest>
+                <attribute name="Main-Class" value="macromedia.asc.embedding.Main"/>
+                <attribute name="Class-Path" value="clover.jar"/>
+            </manifest>
+        </jar>
+	</target>
 
     <target name="run-depend" if="src.depend">
         <echo level="info" message="Removing class files that changed and dependent class files."/>
@@ -174,8 +187,10 @@
     	</clover-setup>
  	</target>
 	<target name="clover.html">
+		<!-- generate a historypoint for the current coverage -->
+   		<clover-historypoint historyDir="${clover_hist}"/>
    		<clover-report>
-     		<current outfile="clover_html">
+     		<current outfile="${clover_html}">
        			<format type="html" />
        			<fileset dir="${java.src.dir}" 
         			excludes="macromedia/asc/parser/Scanner.java,macromedia/asc/util/*Decimal*.java,macromedia/asc/embedding/BatchCompiler.java"/>
@@ -185,6 +200,11 @@
             		<totalPercentageCovered format="bar"/>
             	</columns>            	
      		</current>
+     		
+     		<!-- generate historical report -->
+     		<historical outfile="${clover_html}/historical.html" historyDir="${clover_hist}">
+     			<format type="html" />
+     		</historical>
     	</clover-report>
  </target>
 </project>
