@@ -44,7 +44,7 @@ fd,tmpfile = tempfile.mkstemp()
 os.close(fd)
 
 globs = { 'avm':'', 'asc':'', 'globalabc':'', 'playerglobalabc':'', 'exclude':[], 'tmpfile':tmpfile, 'config':'asc-smokes', 'failmsgs':[],'expfailmsgs':[],
-          'unpassmsgs':[],'allfails':0,'allexpfails':0,'allunpass':0,'allpasses':0,'allskips':0, 'regexOutput':False, 'toplevelabc':''}
+          'unpassmsgs':[],'allfails':0,'allexpfails':0,'allunpass':0,'allpasses':0,'allskips':0, 'regexOutput':False, 'toplevelabc':'', 'full':False}
 
 globs['toplevelabc'] = abspath(abspath(dirname(sys.argv[0]))+'/../../abc/toplevel.abc')
 
@@ -101,6 +101,7 @@ def usage(c):
   print " -g --globalabc       location of global.abc"
   print " -p --playerglobalabc location of playerglobal.abc"
   print "    --toplevelabc     location of toplevel.abc"
+  print " -f --full            do a full coverage pass (all switches and options exercised"
   print " -x --exclude         comma separated list of directories to skip"
   print " -h --help            display help and exit"
   print " -i --intermediate    create and compare intermediate code/AVM assembly/parse tree"
@@ -110,7 +111,8 @@ def usage(c):
   exit(c)
 
 try:
-  opts, args = getopt(argv[1:], "vE:a:g:x:htc:p:r", ["verbose","avm=","asc=","globalabc=","exclude=","help","notime","config=","playerglobalabc=","regex","toplevelabc="])
+  opts, args = getopt(argv[1:], "vE:a:g:x:htc:p:rf", ["verbose","avm=","asc=","globalabc=","exclude=","help","notime",
+                                "config=","playerglobalabc=","regex","toplevelabc=","full"])
 except:
   usage(2)
 
@@ -139,6 +141,8 @@ for o, v in opts:
     globs['regexOutput'] = True
   elif o in ("--toplevelabc"):
     globs['toplevelabc'] = v
+  elif o in ("-f", "--full"):
+    globs['full'] = True
 
 exclude = globs['exclude']
 
