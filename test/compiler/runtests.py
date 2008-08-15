@@ -249,6 +249,12 @@ def compile_test(as):
   verbose_print("   compiling %s" % file)
   output=[]
   try:
+    if globs['full']: # compile test w/ multiple command line options
+      ignore = run_pipe("%s %s %s" % (cmd,"-f" ,as))
+      ignore = run_pipe("%s %s %s" % (cmd,"-i" ,as))
+      ignore = run_pipe("%s %s %s" % (cmd,"-m" ,as))
+      ignore = run_pipe("%s %s %s" % (cmd,"-p" ,as))
+      ignore = run_pipe("%s %s %s" % (cmd,"-d" ,as))
     f = run_pipe("%s %s" % (cmd,as))
     for line in f:
       line = line.strip()
