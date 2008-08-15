@@ -288,7 +288,7 @@ public class AbcThunkGen
 			case GlobalOptimizer.CTYPE_VOID:		
 				return "void";
 			case GlobalOptimizer.CTYPE_BOOLEAN:		
-				return "bool";
+				return "AvmBoolArg";
 			case GlobalOptimizer.CTYPE_INT:			
 				return "int32_t";
 			case GlobalOptimizer.CTYPE_UINT:		
