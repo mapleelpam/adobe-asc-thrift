@@ -146,7 +146,7 @@ public class GlobalOptimizer
 				continue;
 			}
 			if(args[i].equals("--")) {
-				split = a.size();
+				split = i - 1;
 				continue;
             }
 			filename = args[i];
@@ -630,7 +630,16 @@ public class GlobalOptimizer
 			switch (kind)
 			{
 			default:
-				assert (false);
+				throw new RuntimeException("Unknown name kind: "+kind);
+			case CONSTANT_TypeName:
+			{
+				int index = p.readU30();	// Index to the Multiname type, i.e. Vector
+				int count = p.readU30();	// number of type parameter names
+				assert(count == 1);			// all we support for now
+				int typeparm = p.readU30();	// Multinames for the type parameters, i.e. String for a Vector.<String>
+				Name mn = this.names[index];
+				return new Name(kind, mn.name, mn.nsset, typeparm);
+			}
 			case CONSTANT_Qname:
 			case CONSTANT_QnameA:
 				return new Name(kind, namespaces[p.readU30()], strings[p.readU30()]);
@@ -2035,6 +2044,7 @@ public class GlobalOptimizer
 		final int kind;
 		private final Nsset nsset;
 		final String name;
+		final int type_param;	// 0 if none
 
 		Name(int kind)
 		{
@@ -2046,14 +2056,19 @@ public class GlobalOptimizer
 		}
 		Name(int kind, Namespace ns, String name)
 		{
-			this(kind, name, new Nsset(new Namespace[] { ns }));
+			this(kind, name, new Nsset(new Namespace[] { ns }), 0);
 		}
 		Name(int kind, String name, Nsset nsset)
+		{
+			this(kind, name, nsset, 0);
+		}
+		Name(int kind, String name, Nsset nsset, int type_param)
 		{
 			assert(nsset != null);
 			this.kind = kind;
 			this.nsset = nsset;
 			this.name = name;
+			this.type_param = type_param;
 		}
 		Name(String name)
 		{
@@ -3175,6 +3190,8 @@ public class GlobalOptimizer
 			w.write(n.kind);
 			switch (n.kind)
 			{
+			case CONSTANT_TypeName:
+				throw new RuntimeException("TODO CONSTANT_TypeName is not supported on output yet, only input");
 			case CONSTANT_Qname:
 			case CONSTANT_QnameA:
 				w.writeU30(abc.nsPool.id(n.nsset(0)));
