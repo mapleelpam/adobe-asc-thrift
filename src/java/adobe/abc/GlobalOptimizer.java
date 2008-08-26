@@ -151,6 +151,7 @@ public class GlobalOptimizer
 			{
 				quiet_mode = true;
 				go.VERBOSE_MODE = false;
+				continue;
 			}
 			if(args[i].equals("--")) {
 				split = i - 1;
@@ -190,7 +191,7 @@ public class GlobalOptimizer
 			before_length += lengths.get(i);
 		}
 		
-		// we only optimize the last abc file
+		// Optimize the linked ABC file.
 		go.optimize(first);
 		byte[] after = go.emit(first, filename, initScripts, no_c_gen);
 		
