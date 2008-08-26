@@ -48,20 +48,46 @@ public class DocCommentNode extends MetaDataNode
   	    boolean has_name = false;
         if( meta.values != null )
         {
-            for( Value v : meta.values )
+            if( "SkinStates".equals(meta.id) )
             {
-                if (v instanceof MetaDataEvaluator.KeylessValue && has_name == false)
+                boolean first = true;
+                for( Value v : meta.values )
                 {
-                    MetaDataEvaluator.KeylessValue ov = (MetaDataEvaluator.KeylessValue)v;
-                    buf.append("name='").append(ov.obj).append("' ");
-                    has_name = true;
-                    continue;
+                    if( v instanceof MetaDataEvaluator.KeylessValue )
+                    {
+                        MetaDataEvaluator.KeylessValue ov = (MetaDataEvaluator.KeylessValue)v;
+                        if( first )
+                        {
+                            first = false;
+                            buf.append("states='");
+                        }
+                        else
+                        {
+                            buf.append(", ");
+                        }
+                        buf.append(ov.obj);
+                    }
                 }
-                if (v instanceof MetaDataEvaluator.KeyValuePair)
+                if( !first )
+                    buf.append("'");
+            }
+            else
+            {
+                for( Value v : meta.values )
                 {
-                    MetaDataEvaluator.KeyValuePair kv = (MetaDataEvaluator.KeyValuePair)v;
-                    buf.append(kv.key).append("='").append(kv.obj).append("' ");
-                    continue;
+                    if (v instanceof MetaDataEvaluator.KeylessValue && has_name == false)
+                    {
+                        MetaDataEvaluator.KeylessValue ov = (MetaDataEvaluator.KeylessValue)v;
+                        buf.append("name='").append(ov.obj).append("' ");
+                        has_name = true;
+                        continue;
+                    }
+                    if (v instanceof MetaDataEvaluator.KeyValuePair)
+                    {
+                        MetaDataEvaluator.KeyValuePair kv = (MetaDataEvaluator.KeyValuePair)v;
+                        buf.append(kv.key).append("='").append(kv.obj).append("' ");
+                        continue;
+                    }
                 }
             }
         }
@@ -465,7 +491,8 @@ public class DocCommentNode extends MetaDataNode
                             emitMetaDataComment(buf, debug_name, mdi, true);
                         }
                     }
-                    else if (mdi.id.equals("Bindable") || mdi.id.equals("Deprecated") || mdi.id.equals("Exclude") || mdi.id.equals("DefaultProperty"))
+                    else if (mdi.id.equals("Bindable") || mdi.id.equals("Deprecated") || mdi.id.equals("Exclude")
+                            || mdi.id.equals("DefaultProperty") || mdi.id.equals("SkinStates") )
                     {
                         emitMetaDataComment(buf, debug_name, mdi, true);
                     }
