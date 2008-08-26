@@ -123,7 +123,8 @@ public class GlobalOptimizer
  		List<Integer> lengths = new ArrayList<Integer>();
 		String filename = null;
 		byte[] before = null;
-		int split = -1;
+		//  Index of first export in the file list.
+		int first_exported_file = -1;
  		boolean obscure_natives = false; 
  		boolean no_c_gen = false; 
 		boolean quiet_mode = false;
@@ -154,7 +155,7 @@ public class GlobalOptimizer
 				continue;
 			}
 			if(args[i].equals("--")) {
-				split = i - 1;
+				first_exported_file = a.size();
 				continue;
             }
 
@@ -170,7 +171,7 @@ public class GlobalOptimizer
 			}
 		}
 
-		if ( 0 == args.length || split+1 >= a.size() )
+		if ( 0 == args.length || first_exported_file >= a.size() )
 		{
 			System.err.println("usage: GlobalOptimizer [-obscure_natives] [-no_c_gen] [-verbose] [-quiet] [imports] -- [exports]");
 			return;
@@ -182,16 +183,18 @@ public class GlobalOptimizer
 		// we really need to construct a new script (that calls all the scripts in the initScripts list)
 		// and append it to the end as the new initscript.
 		List<Integer> initScripts = new ArrayList<Integer>();
-		InputAbc first = a.get(split+1);
- 		int before_length = lengths.get(split+1);
+		InputAbc first = a.get(first_exported_file);
+ 		int before_length = lengths.get(first_exported_file);
 		initScripts.add(first.scripts.length - 1);
-		for(int i=split+2; i < a.size(); i++) {
+
+		//  Combine other exported files.
+		for(int i=first_exported_file+1; i < a.size(); i++) {
 			first.combine(a.get(i));
 			initScripts.add(first.scripts.length - 1);
 			before_length += lengths.get(i);
 		}
 		
-		// Optimize the linked ABC file.
+		// Optimize the combined ABC file and emit.
 		go.optimize(first);
 		byte[] after = go.emit(first, filename, initScripts, no_c_gen);
 		
