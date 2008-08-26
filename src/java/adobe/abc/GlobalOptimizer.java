@@ -114,15 +114,10 @@ public class GlobalOptimizer
 	final boolean SHOW_CODE = false;
 	boolean STRIP_DEBUG_INFO = true;
 	boolean ALLOW_NATIVE_CTORS = false;	// not final, AbcThunkGen needs to set this to true
+	boolean VERBOSE_MODE=false;
 
 	public static void main(String[] args) throws IOException
 	{
-		if (args.length == 0)
-		{
-			System.out.println("usage: GlobalOptimizer [-obscure_natives] [-no_c_gen] [imports] -- [exports]");
-			return;
-		}
-
 		GlobalOptimizer go = new GlobalOptimizer(); 
  		List<InputAbc> a = new ArrayList<InputAbc>();
  		List<Integer> lengths = new ArrayList<Integer>();
@@ -131,6 +126,8 @@ public class GlobalOptimizer
 		int split = -1;
  		boolean obscure_natives = false; 
  		boolean no_c_gen = false; 
+		boolean quiet_mode = false;
+
 		for (int i = 0; i < args.length; ++i)
 		{
  			if(args[i].equals("-obscure_natives")) {
@@ -138,17 +135,28 @@ public class GlobalOptimizer
  				continue;
  			}
  			if(args[i].equals("-no_c_gen")) {
-				obscure_natives = true;
+				no_c_gen = true;
  				continue;
  			}
 			if(args[i].equals("-d")) {
 				go.STRIP_DEBUG_INFO=false;
 				continue;
 			}
+			if(args[i].equals("-verbose")) {
+				go.VERBOSE_MODE = true;
+				quiet_mode = false;
+				continue;
+			}
+			if ( args[i].equals("-quiet"))
+			{
+				quiet_mode = true;
+				go.VERBOSE_MODE = false;
+			}
 			if(args[i].equals("--")) {
 				split = i - 1;
 				continue;
             }
+
 			filename = args[i];
 			before = load(filename);
 			lengths.add(before.length);
@@ -159,6 +167,12 @@ public class GlobalOptimizer
 				ia.obscure_natives();
 				obscure_natives = false;
 			}
+		}
+
+		if ( 0 == args.length || split+1 >= a.size() )
+		{
+			System.err.println("usage: GlobalOptimizer [-obscure_natives] [-no_c_gen] [-verbose] [-quiet] [imports] -- [exports]");
+			return;
 		}
 		
 		
@@ -180,12 +194,16 @@ public class GlobalOptimizer
 		go.optimize(first);
 		byte[] after = go.emit(first, filename, initScripts, no_c_gen);
 		
-		System.out.println();
-		System.out.println("BEFORE "+before_length);
-		System.out.println("AFTER  "+after.length);
-		int delta = before_length - after.length;
-		long percent = Math.round(delta/(double)before_length*100);
-		System.out.println("SAVED  "+delta+ " "+percent+"%");
+		//  Print summary statistics.
+		if ( ! quiet_mode )
+		{
+			System.out.println();
+			System.out.println("Before optimization: "+before_length);
+			System.out.println("After optimization:  "+after.length);
+			int delta = before_length - after.length;
+			long percent = Math.round(delta/(double)before_length*100);
+			System.out.println("Saved:  "+delta+ " "+percent+"%");
+		}
 	}
 
 	static byte[] load(String filename) throws IOException
@@ -537,7 +555,7 @@ public class GlobalOptimizer
 				}
 			}
 			if (size > 0)
-				System.out.println("sizeof "+t+" "+size);
+				verboseStatus("sizeof "+t+" "+size);
 			t.size = size;
 		}
 
@@ -1588,13 +1606,11 @@ public class GlobalOptimizer
 					break;
 					
 				default:
-					System.out.println("Unknown ABC bytecode "+op);
+					System.err.println("Unknown ABC bytecode "+op);
 					assert (false);
 				}
 			}
 			
-			//System.out.println("RAW");
-			//print(dfs(m.entry.to));
 			dce(m);
 		}
 		
@@ -2337,7 +2353,7 @@ public class GlobalOptimizer
 			if (t == ANY)
 				return 0;
 			else if(t.emitAsAny()) {
-				System.out.println("Emitting: " + t + " as any");
+				verboseStatus("Emitting: " + t + " as any");
 				return 0;
 			} else
 				return namePool.id(t.name);
@@ -2631,7 +2647,7 @@ public class GlobalOptimizer
 		
 		void sort()
 		{
-			System.out.println("NAMES RANK " + namePool.refs);
+			verboseStatus("NAMES RANK " + namePool.refs);
 			intPool.sort();
 			uintPool.sort();
 			doublePool.sort();
@@ -2643,7 +2659,7 @@ public class GlobalOptimizer
 			methodPool1.sort();
 			methodPool2.countFrom = methodPool1.size();
 			methodPool2.sort();
-			System.out.println("NAMES " + namePool.values);
+			verboseStatus("NAMES " + namePool.values);
 			
 			// topological sort of the classes, base classes come first
 			TreeSet<Type> cs = new TreeSet<Type>(new Comparator<Type>()
@@ -3141,22 +3157,22 @@ public class GlobalOptimizer
 		for (int x: abc.intPool.values)
 			w.writeU30(x);
 		
-		System.out.println("ints count "+abc.intPool.size()+ " size " + (w.size()-pos));
+		verboseStatus("ints count "+abc.intPool.size()+ " size " + (w.size()-pos));
 		pos = w.size();
 		
 		w.writeU30(abc.uintPool.size());
 		for (long x: abc.uintPool.values)
 			w.writeU30((int)x);
 
-		System.out.println("uints count "+abc.uintPool.size()+ " size " + (w.size()-pos));
+		verboseStatus("uints count "+abc.uintPool.size()+ " size " + (w.size()-pos));
 		pos = w.size();
 		
-		System.out.println("doubles "+abc.doublePool.size());
+		verboseStatus("doubles "+abc.doublePool.size());
 		w.writeU30(abc.doublePool.size());
 		for (double x: abc.doublePool.values)
 			w.write64(Double.doubleToLongBits(x));
 		
-		System.out.println("double count "+abc.doublePool.size()+ " size " + (w.size()-pos));
+		verboseStatus("double count "+abc.doublePool.size()+ " size " + (w.size()-pos));
 		pos = w.size();
 
 		w.writeU30(abc.stringPool.size());
@@ -3165,13 +3181,13 @@ public class GlobalOptimizer
 			w.writeU30(s.length());
 			w.write(s.getBytes("UTF-8"));
 		}
-		System.out.println("strings count "+abc.stringPool.size()+ " size " + (w.size()-pos));
+		verboseStatus("strings count "+abc.stringPool.size()+ " size " + (w.size()-pos));
 		pos = w.size();
 		
 		w.writeU30(abc.nsPool.size());
 		for (Namespace ns: abc.nsPool.values)
 			emitNamespace(abc, w, ns);
-		System.out.println("ns count "+abc.nsPool.size()+ " size " + (w.size()-pos));
+		verboseStatus("ns count "+abc.nsPool.size()+ " size " + (w.size()-pos));
 		pos = w.size();
 		
 		w.writeU30(abc.nssetPool.size());
@@ -3181,7 +3197,7 @@ public class GlobalOptimizer
 			for (Namespace ns: nsset)
 				w.writeU30(abc.nsPool.id(ns));
 		}
-		System.out.println("nsset count "+abc.nssetPool.size()+ " size " + (w.size()-pos));
+		verboseStatus("nsset count "+abc.nssetPool.size()+ " size " + (w.size()-pos));
 		pos = w.size();
 		
 		w.writeU30(abc.namePool.size());
@@ -3217,7 +3233,7 @@ public class GlobalOptimizer
 				assert (false);
 			}
 		}
-		System.out.println("name count "+abc.namePool.size()+ " size " + (w.size()-pos));
+		verboseStatus("name count "+abc.namePool.size()+ " size " + (w.size()-pos));
 		pos = w.size();
 			
 		w.writeU30(abc.methodPool2.size());
@@ -3318,7 +3334,7 @@ public class GlobalOptimizer
 	void emitMethod(Abc abc, AbcWriter w, int method_id, Method m)
 	{
 		m.emit_id = method_id;
-		System.out.println("METHOD " + method_id + " was " + m.id);
+		verboseStatus("METHOD " + method_id + " was " + m.id);
 		w.writeU30(m.params.length-1);
 		w.writeU30(abc.typeRef(m.returns));
 		for (int i=1, n=m.params.length; i < n; i++)
@@ -3624,7 +3640,7 @@ public class GlobalOptimizer
 			out.writeU30(from);
 			out.writeU30(to);
 			int off = pos.get(h.entry);
-			System.out.println("handler "+h.entry+ " ["+from+","+to+")->"+off);
+			verboseStatus("handler "+h.entry+ " ["+from+","+to+")->"+off);
 			out.writeU30(off);
 			out.writeU30(abc.typeRef(h.type));
 			out.writeU30(abc.namePool.id(h.name));
@@ -3641,7 +3657,7 @@ public class GlobalOptimizer
 	
 	boolean defaultValueChanged(Binding b)
 	{
-		return !b.type.t.defaultValue.equals(b.value);
+		return b.type.t.defaultValue != null && !b.type.t.defaultValue.equals(b.value);
 	}
 	
 	void emitTraits(AbcWriter out, Abc abc, Type t)
@@ -3691,13 +3707,13 @@ public class GlobalOptimizer
 
 	void optimize(Method m)
 	{
-		System.out.println("OPTIMIZE "+m.id + " "+ m.name);
+		verboseStatus("OPTIMIZE "+m.id + " "+ m.name);
 
 		if(m.entry == null)
 			return;
 		
-		System.out.println("BEFORE OPT");		
-		System.out.println("BEFORE OPT");
+		verboseStatus("BEFORE OPT");		
+		verboseStatus("BEFORE OPT");
 		print(dfs(m.entry.to));
 		
 		if (OUTPUT_DOT)
@@ -3707,7 +3723,7 @@ public class GlobalOptimizer
 		dvn(m);
 		if (cfgopt(m))
 		{
-			System.out.println("AFTER CFGOPT");
+			verboseStatus("AFTER CFGOPT");
 			print(dfs(m.entry.to));
 			sccp(m);
 			dvn(m);
@@ -3716,7 +3732,7 @@ public class GlobalOptimizer
 		// find operations to fold together.
 		fold(m);
 		
-		System.out.println("AFTER FOLD");
+		verboseStatus("AFTER FOLD");
 		print(dfs(m.entry.to));
 
 		if (OUTPUT_DOT)
@@ -3725,7 +3741,7 @@ public class GlobalOptimizer
 		insert_casts(m);
 		remove_phi(m);
 		printabc(schedule(m.entry.to));
-		System.out.println();
+		verboseStatus("");
 	}
 	
 	void fold(Method m)
@@ -3903,7 +3919,7 @@ public class GlobalOptimizer
 					{
 						// phi nodes can only occur in nodes with more than one predecessor
 						assert(taken.first().op != OP_phi);
-						System.out.println("STRAIGHTEN "+s);
+						verboseStatus("STRAIGHTEN "+s);
 						b.remove(last);
 						b.addAll(taken);
 						for (Edge edge: taken.succ())
@@ -3914,7 +3930,7 @@ public class GlobalOptimizer
 					Expr first = taken.first();
 					if (first.op == OP_returnvalue || first.op == OP_returnvoid)
 					{
-						System.out.println("PRUNE "+b+"->"+s);
+						verboseStatus("PRUNE "+b+"->"+s);
 						last.op = first.op;
 						last.args = first.op == OP_returnvoid ? noexprs : new Expr[] { first.args[0] };
 						last.succ = noedges;
@@ -3926,7 +3942,7 @@ public class GlobalOptimizer
 							r.args[0] == first)
 					{
 						// successor block is returnvalue(phi)
-						System.out.println("PRUNE "+b+"->"+s);
+						verboseStatus("PRUNE "+b+"->"+s);
 						int i = findPhiArg(first, last.succ[0]);
 						last.op = r.op;
 						last.args = new Expr[] { first.args[i] };
@@ -3952,7 +3968,7 @@ public class GlobalOptimizer
 							// cond is in phi contributed by this edge.  so we have a redundant test.
 							// we want to retarget the branch: and adjust any phi nodes that are affected.
 							Edge before = br.op == last.op ? br.succ[1] : br.succ[0];
-							System.out.println("SKIPTEST old "+out+" new "+before);
+							verboseStatus("SKIPTEST old "+out+" new "+before);
 							phi.remove(i);
 							copyTargetPhi(phi, cond, before, out);
 							changed = true;
@@ -4006,7 +4022,7 @@ public class GlobalOptimizer
 		if (to.size()==1 && isJump(j))
 		{
 			// any edge targeting a jump can target the jump's target.
-			System.out.println("SKIP " + j.succ[0]);
+			verboseStatus("SKIP " + j.succ[0]);
 			copyTarget(j.succ[0], edge);
 			return true;
 		}
@@ -4019,7 +4035,7 @@ public class GlobalOptimizer
 	 */
 	void invert(Expr br)
 	{
-		System.out.println("INVERT "+br);
+		verboseStatus("INVERT "+br);
 
 		switch (br.op)
 		{
@@ -4451,8 +4467,8 @@ public class GlobalOptimizer
 		
 		sccp_analyze(m, uses, values, types, reached);
 
-		System.out.println("REACHED " + reached);
-		System.out.println("TYPES " + types);
+		verboseStatus("REACHED " + reached);
+		verboseStatus("TYPES " + types);
 	
 		sccp_cfgopt(values, types, reached);
 		
@@ -4479,7 +4495,7 @@ public class GlobalOptimizer
 		}
 		
 		dce(m);
-		//System.out.println("after sccp");
+		//verboseStatus("after sccp");
 		//print(dfs(m.entry.to));
 	}
 
@@ -5139,7 +5155,7 @@ public class GlobalOptimizer
 						if((etype.t == atype.t) && etype.nullable)
 							continue;
 						
-						System.out.println("MISSING CAST " + a + " " + atype+"->"+etype+" on " + p);
+						verboseStatus("MISSING CAST " + a + " " + atype+"->"+etype+" on " + p);
 						if (isCritical(p,pred))
 						{
 							split(p, m, pred);
@@ -5154,7 +5170,7 @@ public class GlobalOptimizer
 			}
 		}
 		
-		System.out.println("VERIFY TYPES "+types);
+		verboseStatus("VERIFY TYPES "+types);
 	}
 	
 	Expr upcast(Expr a, Method m, Type t)
@@ -6480,7 +6496,7 @@ public class GlobalOptimizer
 		for (int i=scopes.length-1; i >= 0; i--)
 		{
 			Type st = type(types,scopes[i]);
-			//System.out.println("finding "+ref);
+			//verboseStatus("finding "+ref);
 			Binding b = st.find(ref);
 			if (b != null)
 				return i;
@@ -6556,7 +6572,7 @@ public class GlobalOptimizer
 	void split(Edge e, Method m, SetMap<Block,Edge>pred)
 	{
 		assert(e.handler == null); // can't split exception edges
-		System.out.println("SPLIT "+e);
+		verboseStatus("SPLIT "+e);
 		Expr j = new Expr(m, OP_jump);
 		Block d = new Block(m);
 		Block to = e.to;
@@ -6633,7 +6649,7 @@ public class GlobalOptimizer
 		Map<Block,Deque<Expr>> exprs = new TreeMap<Block,Deque<Expr>>();
 		ConflictGraph conflicts = new ConflictGraph();
 		
-		System.out.println("BEFORE SCHED");
+		verboseStatus("BEFORE SCHED");
 		print(code);
 		
 		restused:
@@ -6647,7 +6663,7 @@ public class GlobalOptimizer
 					break restused;
 			m.flags &= ~(METHOD_Arguments|METHOD_Needrest);
 			m.flags |= METHOD_IgnoreRest;
-			System.out.println("IGNORE_REST for "+m.name);
+			verboseStatus("IGNORE_REST for "+m.name);
 		}
 
 		sched_greedy(m, code, locals, pred, exprs, conflicts);
@@ -6744,7 +6760,7 @@ public class GlobalOptimizer
 		m.max_stack = max_stack;
 		m.max_scope = max_scope;
 		
-		System.out.println("AFTER SCHED "+m.name+" local_count="+m.local_count+" max_stack="+max_stack+" max_scope="+max_scope);
+		verboseStatus("AFTER SCHED "+m.name+" local_count="+m.local_count+" max_stack="+max_stack+" max_scope="+max_scope);
 		
 		// some of the edges we split didn't need to be.
 		cfgopt(m);
@@ -6761,8 +6777,8 @@ public class GlobalOptimizer
 				if (locals.containsKey(e.id))
 					alloc2(e,conflicts,locals);
 
-		System.out.println("CONFLICTS " + conflicts);
-		System.out.println("LOCALS "+locals);
+		verboseStatus("CONFLICTS " + conflicts);
+		verboseStatus("LOCALS "+locals);
 	}
 	
 	void update_depth(Block b, int stkdepth, Map<Block,Integer> stkin, int scpdepth, Map<Block,Integer> scpin)
@@ -7107,18 +7123,18 @@ public class GlobalOptimizer
 			
 			fwd_state(m, locals, pred, liveout, stkout, scpout, work, b, live, stk, scp, verbose, out, phis);
 		}
-		System.out.println("STK_LIVEOUT " + liveout);
-		System.out.println("CONFLICTS " + cg);
+		verboseStatus("STK_LIVEOUT " + liveout);
+		verboseStatus("CONFLICTS " + cg);
 
 		for (Block b: code)
 		{
-			System.out.println("");
-			System.out.println(b);
+			verboseStatus("");
+			verboseStatus(b);
 			for (Object o: listings.get(b)) 
 				if (o instanceof Expr) 
 					print((Expr)o); 
 				else 
-					System.out.println(o);
+					verboseStatus(o);
 		}		
 		return cg;
 	}
@@ -7278,19 +7294,19 @@ public class GlobalOptimizer
 			
 			fwd_state(m, locals, pred, liveout, stkout, scpout, work, b, live, stk, scp, verbose, out, phis);
 		}
-		System.out.println("SCHED LIVEOUT " + liveout);
-		System.out.println("SCHED STKOUT " + stkout);
-		System.out.println("SCHED CONFLICTS " + cg);
+		verboseStatus("SCHED LIVEOUT " + liveout);
+		verboseStatus("SCHED STKOUT " + stkout);
+		verboseStatus("SCHED CONFLICTS " + cg);
 
 		for (Block b: code)
 		{
-			System.out.println("");
-			System.out.println(b);
+			verboseStatus("");
+			verboseStatus(b);
 			for (Object o: listings.get(b)) 
 				if (o instanceof Expr) 
 					print((Expr)o); 
 				else 
-					System.out.println(o);
+					verboseStatus(o);
 		}		
 		return cg;
 	}
@@ -7644,7 +7660,7 @@ public class GlobalOptimizer
 		Map<Block,Block> idom = idoms(code,pred);
 		EdgeMap<Block> loops = findLoops(code,idom,pred);
 		if (!loops.isEmpty())
-			System.out.println("LOOPS "+loops);
+			verboseStatus("LOOPS "+loops);
 		
 		for (Block b: code)
 		{
@@ -7832,7 +7848,7 @@ public class GlobalOptimizer
 			for (Edge s: b.succ())
 				if (isLoop(s, idom))
 				{
-					System.out.println("backedge "+s);
+					verboseStatus("backedge "+s);
 					Block h = s.to;
 					// find the set of blocks that are in the loop body.
 					Set<Block> loop = loops.get(h);
@@ -8528,6 +8544,8 @@ public class GlobalOptimizer
 	
 	void print(Expr e)
 	{
+		if ( !VERBOSE_MODE )
+			return;
 		PrintWriter pw = new PrintWriter(System.out);
 		printssa(e, pw);
 		pw.flush();
@@ -8535,6 +8553,8 @@ public class GlobalOptimizer
 	
 	void printabc(Expr e, PrintWriter out)
 	{
+		if ( !VERBOSE_MODE )
+			return;
 		out.print("    " + opNames[e.op]);
 		if (e.imm != null)
 		{
@@ -8605,7 +8625,9 @@ public class GlobalOptimizer
 	
 	void print(Deque<Block> blocks)
 	{
-		System.out.println(blocks);
+		if ( ! VERBOSE_MODE )
+			return;
+		verboseStatus(blocks);
 		PrintWriter pw = new PrintWriter(System.out);
 		for (Block b: blocks)
 			print(b,pw);
@@ -8613,7 +8635,9 @@ public class GlobalOptimizer
 	}
 	void printabc(Deque<Block> blocks)
 	{
-		System.out.println(blocks);
+		if ( ! VERBOSE_MODE )
+			return;
+		verboseStatus(blocks);
 		PrintWriter pw = new PrintWriter(System.out);
 		for (Block b: blocks)
 			printabc(b,pw);
@@ -8827,6 +8851,18 @@ public class GlobalOptimizer
 				attrs.add("taillabel=\""+e.label+"\"");
 		}
 		out.println(e.from + " -> " + e.to + " "+attrs+";");
+	}
+
+	void verboseStatus(String msg)
+	{
+		if ( VERBOSE_MODE )
+			System.out.println(msg);
+	}
+
+	void verboseStatus(Object o)
+	{
+		if ( VERBOSE_MODE )
+			System.out.println(o.toString());
 	}
 
 	class Reader
