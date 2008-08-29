@@ -206,5 +206,78 @@
      			<format type="html" />
      		</historical>
     	</clover-report>
- </target>
+    </target>
+ 
+ 
+    <path id="findbugs.class.path">
+        <fileset dir="lib/tools/findbugs/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    
+    <target name="findbugs.check">
+    	<condition property="findbugs.available">
+            <available classname="edu.umd.cs.findbugs.anttask.FindBugsTask" 
+                classpathref="findbugs.class.path"/>
+    	</condition>
+        <fail message="Unable to run FindBugs.  FindBugs was expected in ${basedir}/lib/tools/findbugs/lib but was not found."
+              unless="findbugs.available"/>
+    </target>
+
+    <target name="findbugs" if="findbugs.available" depends="findbugs.check">
+
+        <delete file="findbugsReport.xml" failOnError="false" />
+
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"
+            classpathref="findbugs.class.path" />
+
+        <findbugs home="lib/tools/findbugs"
+            output="xml:withMessages"
+            outputFile="findbugsReport.xml"
+            jvmargs="-Xmx512m"
+            excludeFilter="lib/tools/findbugs/findbugsExcludeFilter.xml"
+            workHard="true"
+            projectName="ASC">
+            <!-- classes to inspect -->
+            <class location="${lib.dir}/*.jar" />
+            <!-- path to source for inspected classes -->
+            <sourcePath path="${java.src.dir}" />
+            <!-- classes to exclude from reporting -->
+            <auxClasspath>
+                <fileset dir="lib/" >
+                    <include name="bcel.jar" />
+                    <include name="Regex.jar" />
+                </fileset>
+            </auxClasspath>
+        </findbugs>
+    </target>
+
+    <target name="findbugs-report" if="findbugs.available" depends="findbugs.check">
+        
+        <!-- ensure xml report exists -->
+        <fail message="The FindBugs xml report was not found.  Please run the 'findbugs' target first.">
+            <condition>
+                <not>
+                    <available file="findbugsReport.xml"/>
+                </not>
+            </condition>
+        </fail>
+        
+        <delete file="findbugsReport.htm" failOnError="false" />
+
+        <!-- create html report -->
+        <xslt in="findbugsReport.xml" out="findbugsReport.htm"
+            style="lib/tools/findbugs/xsl/default.xsl" />
+
+        <!-- launch gui viewer with access to source -->
+        <java jar="lib/tools/findbugs/lib/findbugsGUI.jar"
+           fork="true"
+           failonerror="true"
+           maxmemory="256m"
+           classpathref="findbugs.class.path">
+            <jvmarg value="-Dfindbugs.home=${basedir}/lib/tools/findbugs"/>
+            <arg line="-loadbugs ${basedir}\findbugsReport.xml"/>
+       </java>
+    </target>
+
 </project>
