@@ -208,19 +208,18 @@
     	</clover-report>
     </target>
  
- 
-    <path id="findbugs.class.path">
-        <fileset dir="lib/tools/findbugs/lib">
-            <include name="**/*.jar"/>
-        </fileset>
-    </path>
-    
     <target name="findbugs.check">
+        <property name="findbugs.home" value="lib/tools/findbugs-1.3.4"/>
+        <path id="findbugs.class.path">
+            <fileset dir="${findbugs.home}/lib">
+                <include name="**/*.jar"/>
+            </fileset>
+        </path>
     	<condition property="findbugs.available">
             <available classname="edu.umd.cs.findbugs.anttask.FindBugsTask" 
                 classpathref="findbugs.class.path"/>
     	</condition>
-        <fail message="Unable to run FindBugs.  FindBugs was expected in ${basedir}/lib/tools/findbugs/lib but was not found."
+        <fail message="Unable to run FindBugs.  FindBugs was expected in ${findbugs.home}/lib but was not found."
               unless="findbugs.available"/>
     </target>
 
@@ -231,11 +230,10 @@
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"
             classpathref="findbugs.class.path" />
 
-        <findbugs home="lib/tools/findbugs"
+        <findbugs home="${findbugs.home}"
             output="xml:withMessages"
             outputFile="findbugsReport.xml"
             jvmargs="-Xmx512m"
-            excludeFilter="lib/tools/findbugs/findbugsExcludeFilter.xml"
             workHard="true"
             projectName="ASC">
             <!-- classes to inspect -->
@@ -267,15 +265,15 @@
 
         <!-- create html report -->
         <xslt in="findbugsReport.xml" out="findbugsReport.htm"
-            style="lib/tools/findbugs/xsl/default.xsl" />
+            style="${findbugs.home}/src/xsl/default.xsl" />
 
         <!-- launch gui viewer with access to source -->
-        <java jar="lib/tools/findbugs/lib/findbugsGUI.jar"
+        <java jar="${findbugs.home}/lib/findbugsGUI.jar"
            fork="true"
            failonerror="true"
            maxmemory="256m"
            classpathref="findbugs.class.path">
-            <jvmarg value="-Dfindbugs.home=${basedir}/lib/tools/findbugs"/>
+            <jvmarg value="-Dfindbugs.home=${findbugs.home}"/>
             <arg line="-loadbugs ${basedir}\findbugsReport.xml"/>
        </java>
     </target>
