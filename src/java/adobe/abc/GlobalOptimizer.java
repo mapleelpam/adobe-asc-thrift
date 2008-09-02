@@ -124,7 +124,7 @@ public class GlobalOptimizer
 		String filename = null;
 		byte[] before = null;
 		//  Index of first export in the file list.
-		int first_exported_file = -1;
+		int first_exported_file = 0;
  		boolean obscure_natives = false; 
  		boolean no_c_gen = false; 
 		boolean quiet_mode = false;
@@ -176,7 +176,6 @@ public class GlobalOptimizer
 			System.err.println("usage: GlobalOptimizer [-obscure_natives] [-no_c_gen] [-verbose] [-quiet] [imports] -- [exports]");
 			return;
 		}
-		
 		
 		// merge exports together
 		// TODO this is not right, it only works for builtin ABCs and only under TT...
