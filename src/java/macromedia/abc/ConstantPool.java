@@ -383,11 +383,28 @@ public class ConstantPool
         {
         case CONSTANT_Qname:
         case CONSTANT_QnameA:
+        {
             int namespaceIndex = in.readU32();
             int nameIndex = in.readU32();
             QName value = createQName(getNamespaceName(namespaceIndex), getString(nameIndex));
             in.seek(originalPos);
             return value;
+        }
+        case CONSTANT_TypeName:
+        {
+            int nameIndex = in.readU32();
+            int count = in.readU32();
+            String params = ".<";
+            QName base = getQName(nameIndex);
+            for(int i = 0; i < count; ++i)
+            {
+                params += (i>0?",":"") + getQName(in.readU32());
+            }
+            params+=">";
+            QName value = createQName(base.getNamespace(), base.getLocalPart()+params);
+            in.seek(originalPos);
+            return value;
+        }
         default:
             in.seek(originalPos);
             throw new DecoderException("abc Decoder Error: constant pool index '" + index + "' is not a QName type. The actual type is '" + kind + "'");
