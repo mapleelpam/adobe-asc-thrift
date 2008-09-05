@@ -87,7 +87,7 @@ public class VariableDefinitionNode extends DefinitionNode
 	            {
 	                NodeFactory nf = cx.getNodeFactory();
 	                AttributeListNode aln = null; // This will get filled in correctly when FA evaluates the VariableBindingNode
-	                binding.variable.identifier = nf.qualifiedIdentifier(aln,binding.variable.identifier);
+	                binding.variable.identifier = nf.qualifiedIdentifier(aln,binding.variable.identifier.name, binding.variable.identifier.pos());
 	            }
 	
 	

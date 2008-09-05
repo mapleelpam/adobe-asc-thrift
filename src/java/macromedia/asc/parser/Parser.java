@@ -735,33 +735,14 @@ public final class Parser
 
     public IdentifierNode parseIdentifier()
     {
-
         if (debug)
         {
             System.err.println("begin parseIdentifier");
         }
 
-        IdentifierNode result = null;
-
-        if (lookahead(GET_TOKEN))
-        {
-            match(GET_TOKEN);
-            result = nodeFactory.identifier(GET,false,ctx.input.positionOfMark());
-        }
-        else if (lookahead(SET_TOKEN))
-        {
-            match(SET_TOKEN);
-            result = nodeFactory.identifier(SET,false,ctx.input.positionOfMark());
-        }
-        else if (lookahead(NAMESPACE_TOKEN))
-        {
-            match(NAMESPACE_TOKEN);
-            result = nodeFactory.identifier(NAMESPACE,false,ctx.input.positionOfMark());
-        }
-        else
-        {
-            result = nodeFactory.identifier(scanner.getTokenText(match(IDENTIFIER_TOKEN)),ctx.input.positionOfMark());
-        }
+        String name = parseIdentifierString();
+        int pos = ctx.input.positionOfMark();
+        IdentifierNode result = nodeFactory.identifier(name, false, pos);
 
         if (debug)
         {
@@ -769,7 +750,43 @@ public final class Parser
         }
 
         return result;
+    }
 
+    public String parseIdentifierString()
+    {
+        if (debug)
+        {
+            System.err.println("begin parseIdentifierString");
+        }
+
+        String result = null;
+
+        if (lookahead(GET_TOKEN))
+        {
+            match(GET_TOKEN);
+            result = GET;
+        }
+        else if (lookahead(SET_TOKEN))
+        {
+            match(SET_TOKEN);
+            result = SET;
+        }
+        else if (lookahead(NAMESPACE_TOKEN))
+        {
+            match(NAMESPACE_TOKEN);
+            result = NAMESPACE;
+        }
+        else
+        {
+            result = scanner.getTokenText(match(IDENTIFIER_TOKEN)).intern();
+        }
+
+        if (debug)
+        {
+            System.err.println("finish parseIdentifierString");
+        }
+
+        return result;
     }
 
     /*
@@ -778,46 +795,14 @@ public final class Parser
 
     public IdentifierNode parsePropertyIdentifier()
     {
-
         if (debug)
         {
             System.err.println("begin parsePropertyIdentifier");
         }
 
-        IdentifierNode result = null;
-
-        if (lookahead(DEFAULT_TOKEN))
-        {
-            match(DEFAULT_TOKEN);
-            result = nodeFactory.identifier(DEFAULT,false,ctx.input.positionOfMark());
-        }
-        else if (lookahead(GET_TOKEN))
-        {
-            match(GET_TOKEN);
-            result = nodeFactory.identifier(GET,false,ctx.input.positionOfMark());
-        }
-        else if (lookahead(SET_TOKEN))
-        {
-            match(SET_TOKEN);
-            result = nodeFactory.identifier(SET,false,ctx.input.positionOfMark());
-        }
-        else if (lookahead(NAMESPACE_TOKEN))
-        {
-            match(NAMESPACE_TOKEN);
-            result = nodeFactory.identifier(NAMESPACE,false,ctx.input.positionOfMark());
-        }
-        else if (HAS_WILDCARDSELECTOR && lookahead(MULT_TOKEN))
-        {
-            match(MULT_TOKEN);
-            result = nodeFactory.identifier(ASTERISK,false,ctx.input.positionOfMark());
-        }
-        else
-        {
-//            result = nodeFactory.identifier(scanner.getTokenText(match(IDENTIFIER_TOKEN)),ctx.input.positionOfMark());
-            int pos = ctx.input.positionOfMark();
-            String id = scanner.getTokenText(match(IDENTIFIER_TOKEN));
-            result = nodeFactory.identifier(id,pos);
-        }
+        int pos = ctx.input.positionOfMark();
+        String name = parsePropertyIdentifierString();
+        IdentifierNode result = nodeFactory.identifier(name, false, pos);
 
         if (debug)
         {
@@ -825,7 +810,53 @@ public final class Parser
         }
 
         return result;
+    }
 
+    public String parsePropertyIdentifierString()
+    {
+        if (debug)
+        {
+            System.err.println("begin parsePropertyIdentifierString");
+        }
+
+        String result = null;
+
+        if (lookahead(DEFAULT_TOKEN))
+        {
+            match(DEFAULT_TOKEN);
+            result = DEFAULT;
+        }
+        else if (lookahead(GET_TOKEN))
+        {
+            match(GET_TOKEN);
+            result = GET;
+        }
+        else if (lookahead(SET_TOKEN))
+        {
+            match(SET_TOKEN);
+            result = SET;
+        }
+        else if (lookahead(NAMESPACE_TOKEN))
+        {
+            match(NAMESPACE_TOKEN);
+            result = NAMESPACE;
+        }
+        else if (HAS_WILDCARDSELECTOR && lookahead(MULT_TOKEN))
+        {
+            match(MULT_TOKEN);
+            result = ASTERISK;
+        }
+        else
+        {
+            result = scanner.getTokenText(match(IDENTIFIER_TOKEN)).intern();
+        }
+
+        if (debug)
+        {
+            System.err.println("finish parsePropertyIdentifierString");
+        }
+
+        return result;
     }
 
     /*
@@ -918,7 +949,7 @@ public final class Parser
                 }
                 else
                 {
-                	QualifiedIdentifierNode qualid = nodeFactory.qualifiedIdentifier(temp,parsePropertyIdentifier()); 
+                	QualifiedIdentifierNode qualid = nodeFactory.qualifiedIdentifier(temp,parsePropertyIdentifierString(),ctx.input.positionOfMark());
                     assert config_namespaces.size() > 0; 
                     if( config_namespaces.last().contains(first.name) )
                     	qualid.is_config_name = true;
@@ -970,7 +1001,7 @@ public final class Parser
 
         first = parseParenExpression();
         match(DOUBLECOLON_TOKEN);
-        result = nodeFactory.qualifiedIdentifier(first, parsePropertyIdentifier());
+        result = nodeFactory.qualifiedIdentifier(first, parsePropertyIdentifierString(),ctx.input.positionOfMark());
         result.setAttr(is_attr);
 
         if (debug)
@@ -1557,7 +1588,7 @@ XMLElementContent
                 }
                 else
                 {
-                    result = nodeFactory.qualifiedIdentifier(first.items.last(), parseIdentifier());
+                    result = nodeFactory.qualifiedIdentifier(first.items.last(), parseIdentifierString(), ctx.input.positionOfMark());
                     result = nodeFactory.memberExpression(null, nodeFactory.getExpression(result));
                 }
             }
@@ -1816,7 +1847,7 @@ XMLElementContent
             if( config_namespaces.last().contains(ident.name) && lookahead(DOUBLECOLON_TOKEN))
             {
             	match(DOUBLECOLON_TOKEN);
-            	QualifiedIdentifierNode qualid = nodeFactory.qualifiedIdentifier(ident, parseIdentifier());
+            	QualifiedIdentifierNode qualid = nodeFactory.qualifiedIdentifier(ident, parseIdentifierString(), ctx.input.positionOfMark());
             	qualid.is_config_name = true;
             	result = qualid;
             }
@@ -6090,7 +6121,7 @@ XMLElementContent
             if (lookahead(DOUBLECOLON_TOKEN))
             {
                 match(DOUBLECOLON_TOKEN);
-                result = nodeFactory.qualifiedIdentifier(result, parseIdentifier());
+                result = nodeFactory.qualifiedIdentifier(result, parseIdentifierString(), ctx.input.positionOfMark());
             }
         }
         else if (lookahead(PROTECTED_TOKEN))
@@ -6100,7 +6131,7 @@ XMLElementContent
             if (lookahead(DOUBLECOLON_TOKEN))
             {
                 match(DOUBLECOLON_TOKEN);
-                result = nodeFactory.qualifiedIdentifier(result, parseIdentifier());
+                result = nodeFactory.qualifiedIdentifier(result, parseIdentifierString(), ctx.input.positionOfMark());
             }
         }
         else if (lookahead(PUBLIC_TOKEN))
@@ -6110,7 +6141,7 @@ XMLElementContent
             if (lookahead(DOUBLECOLON_TOKEN))
             {
                 match(DOUBLECOLON_TOKEN);
-                result = nodeFactory.qualifiedIdentifier(result, parseIdentifier());
+                result = nodeFactory.qualifiedIdentifier(result, parseIdentifierString(), ctx.input.positionOfMark());
             }
         }
         else if(lookahead(LEFTBRACKET_TOKEN))

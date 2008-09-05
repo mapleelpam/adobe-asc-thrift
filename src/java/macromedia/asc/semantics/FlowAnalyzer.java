@@ -3212,7 +3212,7 @@ else
             }
             else
             {
-                node.variable.identifier = nf.qualifiedIdentifier(aln,node.variable.identifier);
+                node.variable.identifier = nf.qualifiedIdentifier(aln, node.variable.identifier.name, node.variable.identifier.pos());
             }
             Value val = node.variable.identifier.evaluate(cx,this);
             node.ref = (val instanceof ReferenceValue) ? (ReferenceValue) val : null;
@@ -3409,7 +3409,7 @@ else
                     }
                     else
                     {
-                        node.variable.identifier = nf.qualifiedIdentifier(aln,node.variable.identifier);
+                        node.variable.identifier = nf.qualifiedIdentifier(aln, node.variable.identifier.name, node.variable.identifier.pos());
                     }
                     node.variable.identifier.ref = null; // force this to be regenerated since the namespace has probably changed
                     Value val2 = node.variable.identifier.evaluate(cx,this);
@@ -3559,7 +3559,8 @@ else
         }
 
         NodeFactory nodeFactory = cx.getNodeFactory();
-        node.init = nodeFactory.expressionStatement(nodeFactory.assignmentExpression(nodeFactory.qualifiedIdentifier(node.attrs,node.name.identifier),CONST_TOKEN,node.fexpr));
+        QualifiedIdentifierNode qualifiedIdentifier = nodeFactory.qualifiedIdentifier(node.attrs, node.name.identifier.name, node.name.identifier.pos());
+        node.init = nodeFactory.expressionStatement(nodeFactory.assignmentExpression(qualifiedIdentifier, CONST_TOKEN, node.fexpr));
         node.init.isVarStatement(true); // var statements always have a empty result
 
         // Compute reference
@@ -4470,7 +4471,8 @@ else
             node.state = ClassDefinitionNode.INHERIT;
 
             NodeFactory nodeFactory = cx.getNodeFactory();
-            node.init = nodeFactory.expressionStatement(nodeFactory.assignmentExpression(nodeFactory.qualifiedIdentifier(node.attrs,node.name),CONST_TOKEN,node));
+            QualifiedIdentifierNode qualifiedIdentifier = nodeFactory.qualifiedIdentifier(node.attrs, node.name.name, node.name.pos());
+            node.init = nodeFactory.expressionStatement(nodeFactory.assignmentExpression(qualifiedIdentifier, CONST_TOKEN, node));
             node.init.isVarStatement(true);
 
             clsdefs_sets.push_back(new ObjectList<ClassDefinitionNode>()); // make dummy

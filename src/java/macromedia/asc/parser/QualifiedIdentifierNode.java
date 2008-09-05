@@ -30,9 +30,13 @@ public class QualifiedIdentifierNode extends IdentifierNode
 	public Node qualifier;
 	public boolean is_config_name;
 
-	public QualifiedIdentifierNode(Node qualifier, IdentifierNode identifier, int pos)
+	public QualifiedIdentifierNode(Node qualifier, String name, int pos)
 	{
-		super(identifier!=null?identifier.name:"", pos);
+		super(name != null ? name : "", pos);
+		if (name != null)
+		{
+			assert name.intern() == name;
+		}
 		this.qualifier = qualifier;
 		this.is_config_name =false;
 	}

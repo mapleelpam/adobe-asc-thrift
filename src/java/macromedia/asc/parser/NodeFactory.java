@@ -374,27 +374,27 @@ public final class NodeFactory implements ErrorConstants
         return temp;
     }
 	
-    public ClassDefinitionNode classDefinition(Context cx, AttributeListNode attrs, IdentifierNode name, InheritanceNode inheritance, StatementListNode block)
+    public ClassDefinitionNode classDefinition(Context cx, AttributeListNode attrs, IdentifierNode identifier, InheritanceNode inheritance, StatementListNode block)
 	{
-		return classDefinition(cx, attrs, name, inheritance, block, false);
+		return classDefinition(cx, attrs, identifier, inheritance, block, false);
 	}
 
-    public ClassDefinitionNode classDefinition(Context cx, AttributeListNode attrs, IdentifierNode name, InheritanceNode inheritance, StatementListNode block, boolean non_nullable)
+    public ClassDefinitionNode classDefinition(Context cx, AttributeListNode attrs, IdentifierNode identifier, InheritanceNode inheritance, StatementListNode block, boolean non_nullable)
 	{
-		return classDefinition(cx, attrs, name, inheritance, block, non_nullable, -1);
+		return classDefinition(cx, attrs, identifier, inheritance, block, non_nullable, -1);
 	}
 
-	public ClassDefinitionNode classDefinition(Context cx, AttributeListNode attrs, IdentifierNode name, InheritanceNode inheritance, StatementListNode block, boolean non_nullable, int pos)
+	public ClassDefinitionNode classDefinition(Context cx, AttributeListNode attrs, IdentifierNode identifier, InheritanceNode inheritance, StatementListNode block, boolean non_nullable, int pos)
 	{
-        // make the name qualified with the attributes so it can be turned into a qualified name during flow analysis
-        name = qualifiedIdentifier(attrs,name);
+        // make the identifier qualified with the attributes so it can be turned into a qualified identifier during flow analysis
+        identifier = qualifiedIdentifier(attrs, identifier.name, identifier.pos());
 		Node baseclass = (inheritance != null) ? inheritance.baseclass : null;
 		ListNode interfaces = (inheritance != null) ? inheritance.interfaces : null;
-		ClassDefinitionNode node = new ClassDefinitionNode(cx, current_package, attrs, name, baseclass, interfaces, block);
+		ClassDefinitionNode node = new ClassDefinitionNode(cx, current_package, attrs, identifier, baseclass, interfaces, block);
         
         node.is_default_nullable = !non_nullable;
 
-		node.setPositionNonterminal(name, pos);
+		node.setPositionNonterminal(identifier, pos);
 		
 		node.clsdefs = clsdefs_sets.last();
 		clsdefs_sets.removeLast();
@@ -405,34 +405,34 @@ public final class NodeFactory implements ErrorConstants
 		return node;
 	}
 
-    public BinaryClassDefNode binaryClassDefinition(Context cx, AttributeListNode attrs, IdentifierNode name, InheritanceNode inheritance, StatementListNode block)
+    public BinaryClassDefNode binaryClassDefinition(Context cx, AttributeListNode attrs, IdentifierNode identifier, InheritanceNode inheritance, StatementListNode block)
     {
-        return binaryClassDefinition(cx, attrs, name, inheritance, block, -1);
+        return binaryClassDefinition(cx, attrs, identifier, inheritance, block, -1);
     }
 
-    public BinaryClassDefNode binaryClassDefinition(Context cx, AttributeListNode attrs, IdentifierNode name, InheritanceNode inheritance, StatementListNode block, int pos)
+    public BinaryClassDefNode binaryClassDefinition(Context cx, AttributeListNode attrs, IdentifierNode identifier, InheritanceNode inheritance, StatementListNode block, int pos)
     {
-        // make the name qualified with the attributes so it can be turned into a qualified name during flow analysis
-        name = qualifiedIdentifier(attrs,name);
+        // make the identifier qualified with the attributes so it can be turned into a qualified identifier during flow analysis
+        identifier = qualifiedIdentifier(attrs, identifier.name, identifier.pos());
         Node baseclass = (inheritance != null) ? inheritance.baseclass : null;
         ListNode interfaces = (inheritance != null) ? inheritance.interfaces : null;
-        BinaryClassDefNode node = new BinaryClassDefNode(cx, current_package, attrs, name, baseclass, interfaces, block);
-        node.setPositionNonterminal(name, pos);
+        BinaryClassDefNode node = new BinaryClassDefNode(cx, current_package, attrs, identifier, baseclass, interfaces, block);
+        node.setPositionNonterminal(identifier, pos);
 
         return node;
     }
 
-	public InterfaceDefinitionNode interfaceDefinition(Context cx, AttributeListNode attrs, IdentifierNode name, ListNode interfaces, StatementListNode block)
+	public InterfaceDefinitionNode interfaceDefinition(Context cx, AttributeListNode attrs, IdentifierNode identifier, ListNode interfaces, StatementListNode block)
 	{
-		return interfaceDefinition(cx, attrs, name, interfaces, block, -1);
+		return interfaceDefinition(cx, attrs, identifier, interfaces, block, -1);
 	}
 
-	public InterfaceDefinitionNode interfaceDefinition(Context cx, AttributeListNode attrs, IdentifierNode name, ListNode interfaces, StatementListNode block, int pos)
+	public InterfaceDefinitionNode interfaceDefinition(Context cx, AttributeListNode attrs, IdentifierNode identifier, ListNode interfaces, StatementListNode block, int pos)
 	{
-        // make the name qualified with the attributes so it can be turned into a qualified name during flow analysis
-        name = qualifiedIdentifier(attrs,name);
-        InterfaceDefinitionNode node = new InterfaceDefinitionNode(cx, current_package, attrs, name, interfaces, block);
-		node.setPositionNonterminal(name, pos);
+        // make the identifier qualified with the attributes so it can be turned into a qualified identifier during flow analysis
+        identifier = qualifiedIdentifier(attrs, identifier.name, identifier.pos());
+        InterfaceDefinitionNode node = new InterfaceDefinitionNode(cx, current_package, attrs, identifier, interfaces, block);
+		node.setPositionNonterminal(identifier, pos);
 
         node.clsdefs = new ObjectList<ClassDefinitionNode>();
         if( clsdefs_sets.size() > 0 )
@@ -443,17 +443,17 @@ public final class NodeFactory implements ErrorConstants
 		return node;
 	}
 	
-	public BinaryInterfaceDefinitionNode binaryInterfaceDefinition(Context cx, AttributeListNode attrs, IdentifierNode name, ListNode interfaces, StatementListNode block)
+	public BinaryInterfaceDefinitionNode binaryInterfaceDefinition(Context cx, AttributeListNode attrs, IdentifierNode identifier, ListNode interfaces, StatementListNode block)
 	{
-		return binaryInterfaceDefinition(cx, attrs, name, interfaces, block, -1);
+		return binaryInterfaceDefinition(cx, attrs, identifier, interfaces, block, -1);
 	}
 
-	public BinaryInterfaceDefinitionNode binaryInterfaceDefinition(Context cx, AttributeListNode attrs, IdentifierNode name, ListNode interfaces, StatementListNode block, int pos)
+	public BinaryInterfaceDefinitionNode binaryInterfaceDefinition(Context cx, AttributeListNode attrs, IdentifierNode identifier, ListNode interfaces, StatementListNode block, int pos)
 	{
-        // make the name qualified with the attributes so it can be turned into a qualified name during flow analysis
-        name = qualifiedIdentifier(attrs,name);
-        BinaryInterfaceDefinitionNode node = new BinaryInterfaceDefinitionNode(cx, current_package, attrs, name, interfaces, block);
-		node.setPositionNonterminal(name, pos);
+        // make the identifier qualified with the attributes so it can be turned into a qualified identifier during flow analysis
+        identifier = qualifiedIdentifier(attrs, identifier.name, identifier.pos());
+        BinaryInterfaceDefinitionNode node = new BinaryInterfaceDefinitionNode(cx, current_package, attrs, identifier, interfaces, block);
+		node.setPositionNonterminal(identifier, pos);
 
 		return node;
 	}
@@ -705,7 +705,7 @@ public final class NodeFactory implements ErrorConstants
 	public FunctionDefinitionNode functionDefinition(Context cx, AttributeListNode attrs, FunctionNameNode name, FunctionCommonNode fexpr, int pos)
 	{
 	    // fix up the name with the namespace attribute
-		name.identifier = qualifiedIdentifier(attrs,name.identifier);
+		name.identifier = qualifiedIdentifier(attrs, name.identifier.name, name.identifier.pos());
 		fexpr.identifier = name.identifier;
 		fexpr.setFunctionDefinition(true);
 		FunctionDefinitionNode node = new FunctionDefinitionNode(cx, current_package, attrs, name, fexpr);
@@ -716,7 +716,7 @@ public final class NodeFactory implements ErrorConstants
     public BinaryFunctionDefinitionNode binaryFunctionDefinition(Context cx, AttributeListNode attrs, FunctionNameNode name, FunctionCommonNode fexpr, int pos)
     {
         // fix up the name with the namespace attribute
-        name.identifier = qualifiedIdentifier(attrs,name.identifier);
+        name.identifier = qualifiedIdentifier(attrs, name.identifier.name, name.identifier.pos());
         fexpr.identifier = name.identifier;
         fexpr.setFunctionDefinition(true);
         BinaryFunctionDefinitionNode node = new BinaryFunctionDefinitionNode(cx, current_package, attrs, name, fexpr);
@@ -878,13 +878,18 @@ public final class NodeFactory implements ErrorConstants
 
 	public IdentifierNode identifier(String name, boolean intern)
 	{
-		IdentifierNode node = new IdentifierNode(name, intern, -1);
-		return node;
+		return identifier(name, intern, -1);
 	}
 
 	public IdentifierNode identifier(String name, boolean intern, int pos)
 	{
 		IdentifierNode node = new IdentifierNode(name, intern, pos);
+
+		if (ARGUMENTS == node.name)
+		{
+			this.has_arguments = true;
+		}
+
 		return node;
 	}
 
@@ -909,7 +914,7 @@ public final class NodeFactory implements ErrorConstants
 		QualifiedIdentifierNode qualid = (ident instanceof QualifiedIdentifierNode) ? (QualifiedIdentifierNode) ident : null;
 		if (qualid != null)
 		{
-			node = this.qualifiedIdentifier(qualid.qualifier, this.identifier(qualid.name,pos),pos);
+			node = this.qualifiedIdentifier(qualid.qualifier, qualid.name, pos);
 		}
 		else
 		{
@@ -1343,7 +1348,7 @@ public final class NodeFactory implements ErrorConstants
 							else if( compound_names.contains(base_name) )
 							{
 								LiteralStringNode nsn = literalString(bname.name,memb.pos()-1);
-								selector = this.getExpression(this.qualifiedIdentifier(nsn,pname,selector.pos()));
+								selector = this.getExpression(qualifiedIdentifier(nsn, pname.name, selector.pos()));
 								base = memb.base;
 							}
 						}
@@ -1768,16 +1773,21 @@ public final class NodeFactory implements ErrorConstants
         return node;
     }
 
-	public QualifiedIdentifierNode qualifiedIdentifier(Node qualifier, IdentifierNode identifier)
+	public QualifiedIdentifierNode qualifiedIdentifier(Node qualifier, String name)
 	{
-		return qualifiedIdentifier(qualifier, identifier, -1);
+		return qualifiedIdentifier(qualifier, name, -1);
 	}
 
-    public QualifiedIdentifierNode qualifiedIdentifier(Node qualifier, IdentifierNode identifier, int pos)
+    public QualifiedIdentifierNode qualifiedIdentifier(Node qualifier, String name, int pos)
     {
-        pos = identifier!=null?identifier.pos():pos; // ISSUE: called by ABC parser with no name to create uninited class def
-        QualifiedIdentifierNode node = new QualifiedIdentifierNode(qualifier, identifier, pos);
-        node.setPositionNonterminal(identifier, pos);
+        QualifiedIdentifierNode node = new QualifiedIdentifierNode(qualifier, name, pos);
+        node.setPositionTerminal(pos);
+
+        if (ARGUMENTS == name)
+        {
+            this.has_arguments = true;
+        }
+
         return node;
     }
 
@@ -2297,7 +2307,7 @@ public final class NodeFactory implements ErrorConstants
 
 	public VariableBindingNode variableBinding(AttributeListNode attrs, int kind, TypedIdentifierNode identifier, Node initializer, int pos)
 	{
-		identifier.identifier = qualifiedIdentifier(attrs,identifier.identifier);
+		identifier.identifier = qualifiedIdentifier(attrs, identifier.identifier.name, identifier.identifier.pos());
 		VariableBindingNode node = new VariableBindingNode(current_package, attrs, kind, identifier, initializer);
 		node.setPositionNonterminal(identifier, pos);
 		return node;
@@ -2558,7 +2568,7 @@ public final class NodeFactory implements ErrorConstants
 		NodeFactory nodeFactory = new NodeFactory(cx);
 
 		nodeFactory.identifier("a");
-		nodeFactory.qualifiedIdentifier(nodeFactory.identifier("public"), nodeFactory.identifier("b"));
+		nodeFactory.qualifiedIdentifier(nodeFactory.identifier("public"), "b");
 		nodeFactory.literalNull();
 		nodeFactory.literalBoolean(true);
 		nodeFactory.literalArray(nodeFactory.argumentList(null, nodeFactory.literalNumber("one")));
