@@ -99,7 +99,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 		}
 		else if (node.data.elementlist.size() > 1)
 		{
-			cx.error(node.pos()-1, kError_MetaDataAttributesHasMoreThanOneElement);
+			cx.error(node.pos(), kError_MetaDataAttributesHasMoreThanOneElement);
 		}
 		else if( node.data.elementlist.items.get(0) instanceof MemberExpressionNode )
 		{
@@ -129,7 +129,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 							Value value = n.evaluate(cx, this);
 							if (value == null)
 							{
-								cx.error(n.pos() - 1, kError_InvalidMetaData);
+								cx.error(n.pos(), kError_InvalidMetaData);
 							}
 							node.values[i] = value;
 						}
@@ -155,11 +155,11 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
         {
             if( node.data.elementlist.items.get(0) != null )
             {
-                cx.error(node.data.elementlist.items.get(0).pos() - 1, kError_InvalidMetaData);
+                cx.error(node.data.elementlist.items.get(0).pos(), kError_InvalidMetaData);
             }
             else
             {
-                cx.error(node.pos() - 1, kError_InvalidMetaData);
+                cx.error(node.pos(), kError_InvalidMetaData);
             }
         }
 

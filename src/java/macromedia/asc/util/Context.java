@@ -777,7 +777,7 @@ public final class Context implements ErrorConstants
                     }
                     else if ( !isExplicit && actual[0].getTypeValue() != noType()) // always allow coercion from Object.  Just too common a problem without this
                     {
-                        error(expr.pos()-1, kError_ImplicitCoercionToSubtype, actual[0].getName(this).toString(), expected.getName(this).toString());
+                        error(expr.pos(), kError_ImplicitCoercionToSubtype, actual[0].getName(this).toString(), expected.getName(this).toString());
                     }
                 }
                 else if ( expected.getTypeValue() == stringType() && (actual[0].getTypeValue() == xmlType() || actual[0].getTypeValue() == xmlListType()) )
@@ -787,7 +787,7 @@ public final class Context implements ErrorConstants
                     // unrelated cast (unless its between number types)
                 else if ( !(expected.isNumeric(this) && actual[0].isNumeric(this))) // always allow coercion between number types
                 {
-                    error(expr.pos()-1, kError_ImplicitCoercisionOfUnrelatedType, actual[0].getName(this).toString(), expected.getName(this).toString());
+                    error(expr.pos(), kError_ImplicitCoercisionOfUnrelatedType, actual[0].getName(this).toString(), expected.getName(this).toString());
                 }
             }
         }
@@ -1539,7 +1539,7 @@ public final class Context implements ErrorConstants
                 else
                 {
                     // must use the context in effect when the unresolvedNamespace was created.  The node may have come from an included file.
-                    ns.cx.error(ns.node.pos()-1, kError_Unknown_Namespace);
+                    ns.cx.error(ns.node.pos(), kError_Unknown_Namespace);
                 }
 
                 // null out the Context object. it's no longer used. UnresolvedNamespace instances may be referenced

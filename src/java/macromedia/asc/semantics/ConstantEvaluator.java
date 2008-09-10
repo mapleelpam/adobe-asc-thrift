@@ -522,7 +522,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                         ObjectValue base = node.ref.getBase();
                         if( base == null )
                         {
-                            if( cx.statics.withDepth == -1 ) cx.error(node.pos()-1, kError_Strict_PlainUndefinedMethod,node.ref.name);
+                            if( cx.statics.withDepth == -1 ) cx.error(node.pos(), kError_Strict_PlainUndefinedMethod,node.ref.name);
                         }
                         //  Note: Function is dynamic, but methods of a class are MethodClosures, a non-dynamic subclass of Function.
                         //  The compiler doesn't have an internal representation of MethodClosure, though the only reason it would
@@ -536,9 +536,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 								String className = (base instanceof TypeValue) ? "Class" : base.getType(cx).getName(cx).toString();
 
 								if (base.hasNameUnqualified(cx, node.ref.name, GET_TOKEN))
-									cx.error(node.pos()-1, kError_InaccessibleMethodReference, node.ref.name, className);
+									cx.error(node.pos(), kError_InaccessibleMethodReference, node.ref.name, className);
 								else
-									cx.error(node.pos()-1, kError_Strict_UndefinedMethod, node.ref.name, className);
+									cx.error(node.pos(), kError_Strict_UndefinedMethod, node.ref.name, className);
 							}
                         }
                     }
@@ -557,7 +557,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 if ( callSlot != null && getSlot != null && getSlot.declaredBy != null &&
                      ((getSlot.declaredBy.builder instanceof ClassBuilder) || (getSlot.declaredBy.builder instanceof InstanceBuilder)) )
                 {
-                    cx.error(node.pos()-1, kError_MethodIsNotAConstructor);
+                    cx.error(node.pos(), kError_MethodIsNotAConstructor);
                 }
             }
             type = type != null ? type : cx.noType().getDefaultTypeInfo();
@@ -566,7 +566,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     Builder bui = slot.getType().getBuilder();
                     if (bui instanceof ClassBuilder && ((ClassBuilder)bui).is_interface)
                     {
-                        cx.error(node.pos()-1, kError_CannotInstantiateInterface);
+                        cx.error(node.pos(), kError_CannotInstantiateInterface);
                     }
             }
         }
@@ -719,9 +719,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     if( base != null && (!base.isDynamic() || (base.getType(cx).getTypeValue() == cx.functionType() && !(base.builder instanceof GlobalBuilder)) ) )
                     {
                         if (base.hasNameUnqualified(cx, node.ref.name, GET_TOKEN))
-                            cx.error(node.expr.pos()-1, kError_InaccessiblePropertyReference, node.ref.name, base.getType(cx).getName(cx).toString());
+                            cx.error(node.expr.pos(), kError_InaccessiblePropertyReference, node.ref.name, base.getType(cx).getName(cx).toString());
                         else
-                            cx.error(node.expr.pos()-1, kError_UndefinedProperty,node.ref.name,base.getType(cx).getName(cx).toString());
+                            cx.error(node.expr.pos(), kError_UndefinedProperty,node.ref.name,base.getType(cx).getName(cx).toString());
                     }
                 }
 
@@ -730,7 +730,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
                 if( slot != null && !in_with && !isDynamic )
                 {
-                    cx.error(node.expr.pos()-1, kError_Strict_AttemptToDeleteFixedProperty, node.ref.name);
+                    cx.error(node.expr.pos(), kError_Strict_AttemptToDeleteFixedProperty, node.ref.name);
                 }
 
             }
@@ -787,9 +787,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     if( base != null && (!base.isDynamic() || (base.getType(cx).getTypeValue() == cx.functionType() && !(base.builder instanceof GlobalBuilder)) ) )
                     {
                         if (base.hasNameUnqualified(cx, node.ref.name, GET_TOKEN))
-                            cx.error(node.pos()-1, kError_InaccessiblePropertyReference, node.ref.name, base.getType(cx).getName(cx).toString());
+                            cx.error(node.pos(), kError_InaccessiblePropertyReference, node.ref.name, base.getType(cx).getName(cx).toString());
                         else
-                            cx.error(node.pos()-1, kError_UndefinedProperty,node.ref.name,base.getType(cx).getName(cx).toString());
+                            cx.error(node.pos(), kError_UndefinedProperty,node.ref.name,base.getType(cx).getName(cx).toString());
                     }
                 }
             }
@@ -824,7 +824,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
         if (node.base == null && !node.expr.isLValue())
         {
-            cx.error(node.pos()-1,kError_AssignmentToNonRefVar);
+            cx.error(node.pos(),kError_AssignmentToNonRefVar);
         }
         else
         {
@@ -917,7 +917,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 {
                     if (slot.getObjectValue() != null) // slot will only have a value if this is a class slot
                     {
-                        cx.error(node.pos()-1, kError_AssignmentToDefinedClass, node.ref.name);
+                        cx.error(node.pos(), kError_AssignmentToDefinedClass, node.ref.name);
                     }
                 }
             }
@@ -939,13 +939,13 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     }
                     if (!isXMLProp && slot.getObjectValue() != null)
                     {
-                        cx.error(node.pos()-1, kError_AssignmentToDefinedFunction, node.ref.name);
+                        cx.error(node.pos(), kError_AssignmentToDefinedFunction, node.ref.name);
                     }
                 }
             }
             else if( slot != null && slot.isConst() && (slot.isImported() || scope_index != base_index || val.hasValue() || rchkill_bits_count > 0) )
             {
-                cx.error(node.pos()-1, kError_AssignmentToConstVar);
+                cx.error(node.pos(), kError_AssignmentToConstVar);
             }
             else if( cx.useStaticSemantics() && slot == null )
             {
@@ -977,7 +977,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     }
                     else
                     {
-                        cx.error(node.pos()-1, kError_PropertyIsReadOnly);
+                        cx.error(node.pos(), kError_PropertyIsReadOnly);
                     }
                 }
                 else
@@ -987,9 +987,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     if( base != null && (!base.isDynamic() || (base.getType(cx).getTypeValue() == cx.functionType() && !(base.builder instanceof GlobalBuilder)) ) )
                     {
                         if (base.hasNameUnqualified(cx, node.ref.name, GET_TOKEN))
-                            cx.error(node.expr.pos()-1, kError_InaccessiblePropertyReference, node.ref.name, base.getType(cx).getName(cx).toString());
+                            cx.error(node.expr.pos(), kError_InaccessiblePropertyReference, node.ref.name, base.getType(cx).getName(cx).toString());
                         else
-                            cx.error(node.expr.pos()-1, kError_UndefinedProperty,node.ref.name,base.getType(cx).getName(cx).toString());
+                            cx.error(node.expr.pos(), kError_UndefinedProperty,node.ref.name,base.getType(cx).getName(cx).toString());
                     }
                 }
             }
@@ -1219,7 +1219,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                                  !(node.selector.expr instanceof QualifiedIdentifierNode) &&  // If it was qualified then fall through to the normal unfound property error
                                  scope.hasNameUnqualified(cx, node.ref.name, GET_TOKEN)  )
                             {
-                                cx.error(node.selector.expr.pos()-1, kError_InaccessiblePropertyReference,node.ref.name, scope.type.getName(cx).toString());
+                                cx.error(node.selector.expr.pos(), kError_InaccessiblePropertyReference,node.ref.name, scope.type.getName(cx).toString());
                                 break;
                             }
                         }
@@ -1241,18 +1241,18 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                                 if( !( slot != null && slot.getType()!= null && slot.getType().getTypeValue() == cx.functionType() && slot.getObjectValue() != null) )
                                 {
                                     if( qualified_pkg_name != null )
-                                        cx.error(node.selector.expr.pos()-1, kError_UnfoundPackageProperty, node.ref.name, qualified_pkg_name);
+                                        cx.error(node.selector.expr.pos(), kError_UnfoundPackageProperty, node.ref.name, qualified_pkg_name);
                                     else
                                         // Attempting to set a function will be caught by the SetExpressionNode
-                                        cx.error(node.selector.expr.pos()-1, kError_UnfoundProperty,node.ref.name);
+                                        cx.error(node.selector.expr.pos(), kError_UnfoundProperty,node.ref.name);
                                 }
                             }
                             else
                             {
                                 if( qualified_pkg_name != null )
-                                    cx.error(node.selector.expr.pos()-1, kError_UnfoundPackageProperty, node.ref.name, qualified_pkg_name);
+                                    cx.error(node.selector.expr.pos(), kError_UnfoundPackageProperty, node.ref.name, qualified_pkg_name);
                                 else
-                                    cx.error(node.selector.expr.pos()-1, kError_UnfoundProperty,node.ref.name);
+                                    cx.error(node.selector.expr.pos(), kError_UnfoundProperty,node.ref.name);
                             }
                         }
                     }
@@ -1260,7 +1260,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
             if( node.selector.is_package && node.ref.getSlotIndex(GET_TOKEN) < 0 )
             {
-                cx.error(node.selector.expr.pos()-1,kError_IllegalPackageReference,node.ref.name);
+                cx.error(node.selector.expr.pos(),kError_IllegalPackageReference,node.ref.name);
             }
         }
 
@@ -1415,9 +1415,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     if( base != null && (!base.isDynamic() || (base.getType(cx).getTypeValue() == cx.functionType() && !(base.builder instanceof GlobalBuilder))) )
                     {
                         if (base.hasNameUnqualified(cx, node.ref.name, GET_TOKEN))
-                            cx.error(node.pos()-1, kError_InaccessiblePropertyReference, node.ref.name, base.getType(cx).getName(cx).toString());
+                            cx.error(node.pos(), kError_InaccessiblePropertyReference, node.ref.name, base.getType(cx).getName(cx).toString());
                         else
-                            cx.error(node.pos()-1, kError_UndefinedProperty,node.ref.name,base.getType(cx).getName(cx).toString());
+                            cx.error(node.pos(), kError_UndefinedProperty,node.ref.name,base.getType(cx).getName(cx).toString());
                     }
                 }
             }
@@ -1426,7 +1426,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             	!(slot instanceof VariableSlot) && // FIXME: tpr added this since var's don't get a set slot,   
             	node.ref.getSlot(cx,SET_TOKEN) == null)
             {
-                cx.error(node.pos()-1, node.op == PLUSPLUS_TOKEN ? kError_InvalidIncrementOperand : kError_InvalidDecrementOperand);
+                cx.error(node.pos(), node.op == PLUSPLUS_TOKEN ? kError_InvalidIncrementOperand : kError_InvalidDecrementOperand);
             }
         }
         else
@@ -1434,7 +1434,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             QualifiedExpressionNode qen = node.getIdentifier() instanceof QualifiedExpressionNode? (QualifiedExpressionNode)node.getIdentifier() : null;
             if (qen != null && qen.nss != null )
             {
-                cx.error(node.pos()-1, node.op == PLUSPLUS_TOKEN ? kError_InvalidIncrementOperand : kError_InvalidDecrementOperand);
+                cx.error(node.pos(), node.op == PLUSPLUS_TOKEN ? kError_InvalidIncrementOperand : kError_InvalidDecrementOperand);
                      // this is a case we just don't handle. might need a more descriptive message
             }
 
@@ -1559,13 +1559,13 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                         if (lhstype[0].getTypeValue() == cx.nullType() &&
                             (rhstype[0].getTypeValue().isNumeric(cx)   || rhstype[0].getTypeValue() == cx.booleanType() ))
                         {
-                            cx.error(node.pos()-1, kError_IncompatableValueComparison, lhstype[0].getName(cx).toString(), rhstype[0].getName(cx).toString());
+                            cx.error(node.pos(), kError_IncompatableValueComparison, lhstype[0].getName(cx).toString(), rhstype[0].getName(cx).toString());
                         }
                             // yes, this could be combined with the above, but it would be hard to read
                         else if (rhstype[0].getTypeValue() == cx.nullType() &&
                                  (lhstype[0].getTypeValue().isNumeric(cx)   || lhstype[0].getTypeValue() == cx.booleanType() ))
                         {
-                            cx.error(node.pos()-1, kError_IncompatableValueComparison, lhstype[0].getName(cx).toString(), rhstype[0].getName(cx).toString());
+                            cx.error(node.pos(), kError_IncompatableValueComparison, lhstype[0].getName(cx).toString(), rhstype[0].getName(cx).toString());
                         }
                         // else no problem
                     }
@@ -1578,7 +1578,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     // Check for comparision between unrelated types (unless its between number types)
                     else if ( !((lhstype[0].getTypeValue().isNumeric(cx)) && (rhstype[0].getTypeValue().isNumeric(cx))) )
                     {
-                        cx.error(node.pos()-1, kError_IncompatableValueComparison, lhstype[0].getName(cx).toString(), rhstype[0].getName(cx).toString());
+                        cx.error(node.pos(), kError_IncompatableValueComparison, lhstype[0].getName(cx).toString(), rhstype[0].getName(cx).toString());
                     }
 
                     break;
@@ -2526,7 +2526,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             Slot typeSlot = node.typeref.getSlot(cx);
             if (typeSlot == null  || typeSlot.getValue() == null)
             {
-                cx.error(node.variable.type.pos()-1, kError_UnknownType, node.typeref.name);
+                cx.error(node.variable.type.pos(), kError_UnknownType, node.typeref.name);
                 slot.setType(type = cx.noType().getDefaultTypeInfo());
             }
             else
@@ -2544,7 +2544,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 else
                 {
                     // The value of the slot is not a type, so it's an unknown type
-                    cx.error(node.variable.type.pos()-1, kError_UnknownType, node.typeref.name);
+                    cx.error(node.variable.type.pos(), kError_UnknownType, node.typeref.name);
                     slot.setType(type = cx.noType().getDefaultTypeInfo());
                 }
             }
@@ -2575,7 +2575,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 ObjectValue checked = checkDefaultValue(cx, type, ov);
                 if( checked == null )
                 {
-                    cx.error(node.initializer.pos()-1, kError_IncompatibleDefaultValue,ov.type.getName(cx).toString(),type.getName(cx).toString());
+                    cx.error(node.initializer.pos(), kError_IncompatibleDefaultValue,ov.type.getName(cx).toString(),type.getName(cx).toString());
                 }
                 slot.setObjectValue((ObjectValue) val);
             }
@@ -2644,7 +2644,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                         //String kind_str = node.name.kind == GET_TOKEN ? "Getter" : "Setter";
                         //String otherkind_str = node.name.kind == GET_TOKEN ? "setter" : "getter";
                         node.ref.getSlot(cx,SET_TOKEN);
-                        cx.error(pos-1, kError_AccessorTypesMustMatch);
+                        cx.error(pos, kError_AccessorTypesMustMatch);
                     }
                 }
             }
@@ -2657,19 +2657,19 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     if( node.fexpr.signature.result != null && rt2.getTypeValue() != cx.voidType() )
                     {
                         int pos = node.fexpr.signature.result.pos();
-                        cx.error(pos-1, kError_BadSetterReturnType);
+                        cx.error(pos, kError_BadSetterReturnType);
                     }
                 }
                 ParameterListNode parameter = node.fexpr.signature.parameter;
                 if (parameter == null || parameter.items.size() != 1)
                 {
                     int pos = (parameter != null) ? parameter.pos() : node.fexpr.signature.pos();
-                    cx.error(pos-1, kError_SetterMustHaveOneParameter);
+                    cx.error(pos, kError_SetterMustHaveOneParameter);
                 }
                 else if (parameter.items.at(0).init != null)
                 {
                     int pos = node.fexpr.signature.parameter.pos();
-                    cx.error(pos-1, kError_SetterCannotHaveOptional);
+                    cx.error(pos, kError_SetterCannotHaveOptional);
                 }
             }
             else if( node.name.kind == GET_TOKEN )
@@ -2677,13 +2677,13 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 if (node.fexpr.signature.void_anno)
                 {
                     int pos = node.fexpr.signature.pos();
-                    cx.error(pos-1, kError_BadGetterReturnType);
+                    cx.error(pos, kError_BadGetterReturnType);
                 }
                 ParameterListNode parameter = node.fexpr.signature.parameter;
                 if (parameter != null && parameter.items.size() != 0)
                 {
                     int pos = node.fexpr.signature.parameter.pos();
-                    cx.error(pos-1, kError_GetterCannotHaveParameters);
+                    cx.error(pos, kError_GetterCannotHaveParameters);
                 }
             }
 
@@ -2790,7 +2790,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     if (slot != null && size(slot.getDeclStyles()) != 0 && slot.getDeclStyles().at(0) == PARAM_Required)
                     {
                         // found a slot, and it has required params
-                        cx.error(node.pos()-1, kError_NoDefaultBaseclassCtor, ib.basebui.classname.toString());
+                        cx.error(node.pos(), kError_NoDefaultBaseclassCtor, ib.basebui.classname.toString());
                     }
                 }
             }
@@ -2911,7 +2911,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
             else
             {
-                cx.error(node.result.pos()-1, kError_UnknownType, node.typeref.name);
+                cx.error(node.result.pos(), kError_UnknownType, node.typeref.name);
             }
         }
         else
@@ -2952,7 +2952,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
             else
             {
-                cx.error(node.result.pos()-1, kError_UnknownType, node.typeref.name);
+                cx.error(node.result.pos(), kError_UnknownType, node.typeref.name);
             }
         }
         else
@@ -3130,7 +3130,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
             else
             {
-                cx.error(node.type.pos()-1, kError_UnknownType, node.typeref.name);
+                cx.error(node.type.pos(), kError_UnknownType, node.typeref.name);
                 slot.setType(type = cx.noType().getDefaultTypeInfo());
             }
         }
@@ -3153,13 +3153,13 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 ObjectValue checked = checkDefaultValue(cx,type,ov);
                 if( checked == null )
                 {
-                    cx.error(node.init.pos()-1, kError_IncompatibleDefaultValue,ov.type.getName(cx).toString(),type.getName(cx).toString());
+                    cx.error(node.init.pos(), kError_IncompatibleDefaultValue,ov.type.getName(cx).toString(),type.getName(cx).toString());
                 }
                 slot.setValue(checked);
             }
             else
             {
-                cx.error(node.init.pos()-1, kError_NonConstantParamInitializer);
+                cx.error(node.init.pos(), kError_NonConstantParamInitializer);
             }
         }
         return type.getPrototype();
@@ -3196,7 +3196,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
             else
             {
-                cx.error(node.type.pos()-1, kError_UnknownType, node.typeref.name);
+                cx.error(node.type.pos(), kError_UnknownType, node.typeref.name);
                 slot.setType(type = cx.noType().getDefaultTypeInfo());
             }
         }
@@ -3706,7 +3706,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                         propType = "set ";
                     else if (orig_getter)
                         propType = "get ";
-                    cx.error(classNode.pos()-1, errorID, propType + name, namespaceString, classNode.iframe.type.getTypeValue().name.toString());
+                    cx.error(classNode.pos(), errorID, propType + name, namespaceString, classNode.iframe.type.getTypeValue().name.toString());
                 }
             }
         }
@@ -3766,7 +3766,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     else if(names.getType(i) == Names.GET_NAMES)
                         propType = "get ";
 
-                    cx.error(classNode.pos()-1, kError_ConflictingInheritedNameInInterface, propType + name,
+                    cx.error(classNode.pos(), kError_ConflictingInheritedNameInInterface, propType + name,
                         interfaceIFrame.type.getTypeValue().name.toString());
                 }
             }
@@ -3869,7 +3869,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                     Slot slot = ref.getSlot(cx,GET_TOKEN);
                     if (slot == null)
                     {
-                        cx.error(node.name.pos()-1, kError_DefinitionNotFound, import_name);
+                        cx.error(node.name.pos(), kError_DefinitionNotFound, import_name);
                     }
                     else
                     {
@@ -3883,7 +3883,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 		        ObjectValue ns = cx.getNamespace(packageName.intern());
 		        if (!ns.isPackage())
 		        {
-		            cx.error(node.name.pos()-1, kError_DefinitionNotFound, packageName);
+		            cx.error(node.name.pos(), kError_DefinitionNotFound, packageName);
 		        }
 	        }
         }

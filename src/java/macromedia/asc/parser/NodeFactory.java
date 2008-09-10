@@ -1347,7 +1347,7 @@ public final class NodeFactory implements ErrorConstants
 							}
 							else if( compound_names.contains(base_name) )
 							{
-								LiteralStringNode nsn = literalString(bname.name,memb.pos()-1);
+								LiteralStringNode nsn = literalString(bname.name,memb.pos());
 								selector = this.getExpression(qualifiedIdentifier(nsn, pname.name, selector.pos()));
 								base = memb.base;
 							}
@@ -1487,7 +1487,7 @@ public final class NodeFactory implements ErrorConstants
     public PackageDefinitionNode startPackage(Context cx,AttributeListNode attrs, PackageNameNode name)
     {
     	if (cx.scriptAssistParsing)
-    		 return startPackage(cx, attrs, name, cx.input.pos);
+    		 return startPackage(cx, attrs, name, cx.input.getCurrentPos());
     	else
     		return startPackage(cx, attrs, name, -1);
     }
@@ -1707,7 +1707,7 @@ public final class NodeFactory implements ErrorConstants
 		else
 		{
 			node = this.error(expr.getPosition(), kError_IncrementOperatorNotAReference);// todo: should be an cx.error, not an ErrorNode?
-			node.setPosition(node.getPosition() - 1);  // since increment has two characters.
+			node.setPosition(node.getPosition());
 		}
 
 		return node;

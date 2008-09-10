@@ -5,13 +5,13 @@ final virtual var a;
 ......................^
 
 [Compiler] Error #1035: Variables cannot be both final and virtual.
-1035-FinalVirtualVariables.as, Ln 5, Col 24:
+1035-FinalVirtualVariables.as, Ln 5, Col 23:
 final virtual var a;
-.......................^
+......................^
 
 [Compiler] Error #1033: Virtual variables are not supported.
-1035-FinalVirtualVariables.as, Ln 5, Col 24:
+1035-FinalVirtualVariables.as, Ln 5, Col 23:
 final virtual var a;
-.......................^
+......................^
 
 3 errors found

@@ -5,8 +5,8 @@
    ....^
 
 [Compiler] Error #1026: Constructor functions must be instance methods.
-   StaticPublicNameErr75.as, Ln 6, Col 36: 
+   StaticPublicNameErr75.as, Ln 6, Col 35: 
        static static public function StaticNameErr75() {}
-   ...................................^
+   ..................................^
 
 2 errors found

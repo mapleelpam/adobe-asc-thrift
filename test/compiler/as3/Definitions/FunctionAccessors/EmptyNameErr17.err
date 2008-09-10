@@ -4,7 +4,8 @@
 function get a'b \(\) \{\}
 ..................\^
 
-\[Compiler\] Error #1084: Syntax error: expecting leftparen before b \(\) \{\}.
+\[Compiler\] Error #1084: Syntax error: expecting leftparen before b () {}
+function set a.
 .*EmptyNameErr17.as, Ln 5, Col 19:
 function get a'b \(\) \{\}
 ..................\^

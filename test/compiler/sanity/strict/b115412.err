@@ -15,8 +15,6 @@ a\*/\)
 .\^
 
 \[Compiler\] Error #1084: Syntax error: expecting identifier before end of program.
-.*b115412.as, Ln 4, Col 1:
-\*/
-\^
+.*b115412.as, Ln 5, Col 1:
 
 4 errors found

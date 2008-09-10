@@ -497,7 +497,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 
         if( slot != null && !in_with  )
         {
-            warning(node.expr.pos()-1, cx.input, kWarning_DeleteOfFixedProperty, node.ref.name);
+            warning(node.expr.pos(), cx.input, kWarning_DeleteOfFixedProperty, node.ref.name);
         }
 
 		return (node.void_result ? cx.voidType() : cx.booleanType() );
@@ -2987,15 +2987,11 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		{
 			//TODO Review this for removal/revising later
 			// remove this when there is no longer problems with sometimes having a
-			// large and wrong loc.pos as well as it being off by one
+			// large and wrong loc.pos
 			int colPos = input.getColPos(loc.pos);
 			if (colPos > 300)
 			{
 				colPos = 1;
-			}
-			else
-			{
-				colPos = colPos - 1;
 			}
 
 			WarningRecord rec = new WarningRecord( loc,

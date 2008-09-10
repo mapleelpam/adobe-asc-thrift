@@ -52,7 +52,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
     public boolean is_nullable = true;
     public boolean has_nullable_anno = false;
 
-    public void setPosition(int pos) { src_position = pos-1; }
+    public void setPosition(int pos) { src_position = pos; }
     public int getPosition() { return src_position; }
 
     public ReferenceValue(Context cx, ObjectValue base, String name, ObjectValue qualifier)

@@ -1191,7 +1191,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             }
             else
             {
-                cx.internalError(node.pos()-1,"internal error: lhs is not a reference");
+                cx.internalError(node.pos(),"internal error: lhs is not a reference");
             }
 
             if (!node.void_result)
@@ -1248,7 +1248,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
                 if (btyp.isFinal() && !btyp.isDynamic())
                 {
-                    cx.error(node.pos()-1, kError_UnknownPropertyInNonDynamicInstance, node.ref.name);
+                    cx.error(node.pos(), kError_UnknownPropertyInNonDynamicInstance, node.ref.name);
                 }
 */
                 {
@@ -1418,7 +1418,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
             if( is_super )
             {
-                cx.error(node.pos()-1, kError_CannotDeleteSuperDecendants);
+                cx.error(node.pos(), kError_CannotDeleteSuperDecendants);
             }
 
             if( node.base != null )
@@ -1748,7 +1748,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
                 if( node.ref.getSlot(cx,SET_TOKEN) != null )
                 {
-                    cx.error(node.pos()-1, kError_PropertyIsWriteOnly);
+                    cx.error(node.pos(), kError_PropertyIsWriteOnly);
                 }
 
                 // If the base_index is 0 then push the base object
@@ -4271,7 +4271,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                         {
                             baseClassNode.deferred_subclasses = new ObjectList<ClassDefinitionNode>();
                         }
-                        cx.error(node.baseclass.pos()-1, kError_ForwardReferenceToBaseClass,baseClassNode.name.name);
+                        cx.error(node.baseclass.pos(), kError_ForwardReferenceToBaseClass,baseClassNode.name.name);
                         baseClassNode.deferred_subclasses.add(node);
                         return null;
                     }
@@ -4899,7 +4899,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         {
             int pos = node.pos();
             int line = cx.input.getLnNum(pos);
-            int col = cx.input.getColPos(pos, line);
+            int col = cx.input.getColPos(pos);
             setPosition(line,col,pos);
         }
 

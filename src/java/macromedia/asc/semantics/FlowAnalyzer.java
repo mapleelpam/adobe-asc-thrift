@@ -272,7 +272,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                             {
                                 if( private_namespaces.size() == 0 )
                                 {
-                                    cx.error(node.qualifier.pos()-1, kError_InvalidPrivate);
+                                    cx.error(node.qualifier.pos(), kError_InvalidPrivate);
                                 }
                                 else
                                 {
@@ -284,7 +284,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                             {
                                 if( static_protected_namespaces.size() == 0 )
                                 {
-                                    cx.error(node.qualifier.pos()-1, kError_InvalidProtected);
+                                    cx.error(node.qualifier.pos(), kError_InvalidProtected);
                                 }
                                 else
                                 {
@@ -334,13 +334,13 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                         if( ns == null )
                         {
                             return null;
-                            // cx.error(node.qualifier.pos()-1, kError_UndefinedNamespace );
+                            // cx.error(node.qualifier.pos(), kError_UndefinedNamespace );
                         }
                     }
                     else
                     if( ns == null && nss == null )
                     {
-                        cx.error(node.qualifier.pos()-1, kError_UndefinedNamespace);
+                        cx.error(node.qualifier.pos(), kError_UndefinedNamespace);
                     }
                 }
             }
@@ -416,10 +416,10 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         case error_this:
         case cinit_this:
         case package_this:
-            cx.error(node.pos()-1, kError_ThisUsedInStaticFunction);
+            cx.error(node.pos(), kError_ThisUsedInStaticFunction);
             break;
         case init_this:
-        	cx.error(node.pos()-1, kError_ThisUsedInInitializer);
+        	cx.error(node.pos(), kError_ThisUsedInInitializer);
         	break;
         default:
             // valid use of this
@@ -1445,7 +1445,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
         if (ref == null)
         {
-            cx.error(node.pos()-1, kError_InvalidLabel);
+            cx.error(node.pos(), kError_InvalidLabel);
         }
         else
         {
@@ -1456,12 +1456,12 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         {
             if (obj.defineName(cx, GET_TOKEN, labelName, ObjectValue.labelNamespace, loop_index) == 0)
             {
-                cx.error(node.pos()-1, kError_DuplicateLabel);
+                cx.error(node.pos(), kError_DuplicateLabel);
             }
             // and if it is a loop label, add a name for the loop label namespace too
             if (node.is_loop_label && obj.defineName(cx, GET_TOKEN, labelName, ObjectValue.loopLabelNamespace, loop_index) == 0)
             {
-                cx.error(node.pos()-1, kError_DuplicateLabel);
+                cx.error(node.pos(), kError_DuplicateLabel);
             }
         }
 
@@ -1903,7 +1903,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
         if( node.loop_index < 0 )
         {
-            cx.error(node.pos()-1, kError_ContinueHasNoTarget);
+            cx.error(node.pos(), kError_ContinueHasNoTarget);
         }
 
         Continue(node.loop_index);
@@ -1950,7 +1950,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         //TODO improve this error to suggest {} blocks
         if( node.loop_index < 0 )
         {
-            cx.error(node.pos()-1, kError_BreakHasNoTarget);
+            cx.error(node.pos(), kError_BreakHasNoTarget);
         }
 
         Break(node.loop_index);
@@ -2856,7 +2856,7 @@ else
                 // output errors against the nodes in dependency cycles...
                 if (!tsort.contains(clsdef))
                 {
-                    cx.error(clsdef.pos() - 1, kError_CircularReference, clsdef.cframe.builder.classname.name);
+                    cx.error(clsdef.pos(), kError_CircularReference, clsdef.cframe.builder.classname.name);
                     found_circular_or_duplicate_class_definition = true;
                 }
             }
@@ -2889,7 +2889,7 @@ else
         {
             if( doingPackage() && import_context.back() != true )
             {
-                cx.error(node.pos()-1, kError_NestedPackage);
+                cx.error(node.pos(), kError_NestedPackage);
                 return null;
             }
 
@@ -3019,17 +3019,17 @@ else
 
         if (is_dynamic)
         {
-            cx.error(node.pos()-1, kError_InvalidDynamic);
+            cx.error(node.pos(), kError_InvalidDynamic);
         }
 
         if (is_final)
         {
-            cx.error(node.pos()-1, kError_InvalidFinalUsage);
+            cx.error(node.pos(), kError_InvalidFinalUsage);
         }
 
         if (is_override)
         {
-            cx.error(node.pos()-1, kError_InvalidOverrideUsage);
+            cx.error(node.pos(), kError_InvalidOverrideUsage);
         }
 
         if( is_static )
@@ -3040,7 +3040,7 @@ else
             }
             else
             {
-                cx.error(node.attrs.pos()-1, kError_InvalidStatic);
+                cx.error(node.attrs.pos(), kError_InvalidStatic);
             }
         }
         else
@@ -3069,7 +3069,7 @@ else
             {
                 if( private_namespaces.size() == 0 )
                 {
-                    cx.error(attrs.pos()-1, kError_InvalidPrivate);
+                    cx.error(attrs.pos(), kError_InvalidPrivate);
                     attrs.namespaces.push_back(cx.publicNamespace()); // for graceful failure
                     attrs.namespace_ids.push_back(PRIVATE);
                 }
@@ -3086,7 +3086,7 @@ else
                 {
                     if( protected_namespaces.size() == 0 )
                     {
-                        cx.error(attrs.pos()-1, kError_InvalidProtected);
+                        cx.error(attrs.pos(), kError_InvalidProtected);
                         attrs.namespaces.push_back(cx.publicNamespace());
                         attrs.namespace_ids.push_back(PROTECTED);
                     }
@@ -3100,7 +3100,7 @@ else
                 {
                     if( static_protected_namespaces.size() == 0 )
                     {
-                        cx.error(attrs.pos()-1, kError_InvalidProtected);
+                        cx.error(attrs.pos(), kError_InvalidProtected);
                         attrs.namespaces.push_back(cx.publicNamespace());
                         attrs.namespace_ids.push_back(PROTECTED);
                     }
@@ -3226,7 +3226,7 @@ else
             if (node.inPackage() == false && cx.getScopes().size() == 1 && node.attrs != null)
             {
                 if( node.attrs.hasAttribute(PUBLIC) )
-                    cx.error(node.attrs.pos()-1, kError_InvalidPublic);
+                    cx.error(node.attrs.pos(), kError_InvalidPublic);
             }
         }
 
@@ -3259,7 +3259,7 @@ else
 
         if( bui instanceof InstanceBuilder && node.ref.name.equals(fun_name_stack.back()))
         {
-            cx.error(node.pos()-1, kError_ConstructorsMustBeInstanceMethods);
+            cx.error(node.pos(), kError_ConstructorsMustBeInstanceMethods);
         }
 
         Namespaces open_definition_namespaces ;
@@ -3301,7 +3301,7 @@ else
             else
             {
                 // If the type didn't resolve to a reference value then it's clearly going to be unknown
-                cx.error(node.variable.type.pos()-1, kError_UnknownType, "");
+                cx.error(node.variable.type.pos(), kError_UnknownType, "");
             }
         }
 
@@ -3392,7 +3392,7 @@ else
                 if( orig.getType().getTypeValue() == cx.typeType() || orig.isConst() )
                 {
                     // attempting to declare a var with the same name as a class, don't allow that
-                    cx.error(node.variable.identifier.pos()-1, kError_ConflictingNameInNamespace, node.ref.name, "internal");
+                    cx.error(node.variable.identifier.pos(), kError_ConflictingNameInNamespace, node.ref.name, "internal");
                 }
                 else
                 {
@@ -3420,7 +3420,7 @@ else
             if( orig.declaredBy != obj )
             {
                 String fullname = getFullNameForInheritedSlot(cx, orig.declaredBy, node.ref.name);
-                cx.error(node.variable.identifier.pos()-1, kError_ConflictingInheritedNameInNamespace, fullname, nsstr);
+                cx.error(node.variable.identifier.pos(), kError_ConflictingInheritedNameInNamespace, fullname, nsstr);
             }
             else
             {
@@ -3430,7 +3430,7 @@ else
                 }
                 else
                 {
-                    cx.error(node.variable.identifier.pos()-1, kError_ConflictingNameInNamespace, node.ref.name, "internal");
+                    cx.error(node.variable.identifier.pos(), kError_ConflictingNameInNamespace, node.ref.name, "internal");
                 }
             }
             if( (node.block != null) ||  // node.block is null for defintions at the top level of the method 
@@ -3520,19 +3520,19 @@ else
         {
             if( node.attrs.hasVirtual && node.attrs.hasFinal )
             {
-                cx.error(node.attrs.pos()-1, kError_FuncIsVirtualAndFinal);
+                cx.error(node.attrs.pos(), kError_FuncIsVirtualAndFinal);
             }
             if( node.attrs.hasStatic && node.attrs.hasVirtual )
             {
-                cx.error(node.attrs.pos()-1, kError_FuncIsStaticAndVirtual);
+                cx.error(node.attrs.pos(), kError_FuncIsStaticAndVirtual);
             }
             if( node.attrs.hasStatic && node.attrs.hasOverride )
             {
-                cx.error(node.attrs.pos()-1, kError_FuncIsStaticAndOverride);
+                cx.error(node.attrs.pos(), kError_FuncIsStaticAndOverride);
             }
             if( node.attrs.hasStatic && node.attrs.hasDynamic )
             {
-                cx.error(node.attrs.pos()-1, kError_InvalidDynamic);
+                cx.error(node.attrs.pos(), kError_InvalidDynamic);
             }
 
             is_static = node.attrs.hasStatic;
@@ -3555,7 +3555,7 @@ else
         if (node.pkgdef == null && cx.getScopes().size() == 1 && node.attrs != null )
         {
             if( node.attrs.hasAttribute(PUBLIC) )
-                cx.error(node.attrs.pos()-1, kError_InvalidPublic);
+                cx.error(node.attrs.pos(), kError_InvalidPublic);
         }
 
         NodeFactory nodeFactory = cx.getNodeFactory();
@@ -3638,18 +3638,18 @@ else
         {
             if (is_interface_method && is_native)
             {
-                cx.error(node.pos()-1, kError_InvalidInterfaceNative);
+                cx.error(node.pos(), kError_InvalidInterfaceNative);
             }
             if( node.fexpr.isUserDefinedBody() )
             {
-                cx.error(node.pos()-1, is_interface_method ? kError_InterfaceMethodWithBody : kError_NativeMethodWithBody);
+                cx.error(node.pos(), is_interface_method ? kError_InterfaceMethodWithBody : kError_NativeMethodWithBody);
             }
         }
         else
         {
             if( !node.fexpr.isUserDefinedBody() && !is_ctor && !is_native && !is_dynamic ) //ctors and native and dynamic methods don't need bodies
             {
-                cx.error(node.pos()-1, kError_FunctionWithoutBody);
+                cx.error(node.pos(), kError_FunctionWithoutBody);
             }
         }
 
@@ -3657,12 +3657,12 @@ else
         {
             if( node.attrs.hasFinal && (!is_instance_method || is_interface_method) )
             {
-                cx.error(node.pos()-1, kError_InvalidFinalUsage);
+                cx.error(node.pos(), kError_InvalidFinalUsage);
             }
             if( is_interface_method && (node.attrs.hasPrivate || node.attrs.hasProtected || node.attrs.hasInternal || node.attrs.hasPublic) && (!node.ref.name.equals("$construct") ))
             {
                 // todo fix error msg
-                cx.error(node.pos()-1, kError_BadAccessInterfaceMember);
+                cx.error(node.pos(), kError_BadAccessInterfaceMember);
             }
         }
 
@@ -3670,7 +3670,7 @@ else
         {
             if (is_interface_method)
             {
-                cx.error(node.pos()-1, kError_InvalidStatic);
+                cx.error(node.pos(), kError_InvalidStatic);
             }
         }
 
@@ -3679,7 +3679,7 @@ else
             // Namespace attributes are not allowed on interface methods
             if (node.attrs != null && node.attrs.getUserNamespace() != null)
             {
-                cx.error(node.pos()-1, kError_InterfaceNamespaceAttribute);
+                cx.error(node.pos(), kError_InterfaceNamespaceAttribute);
             }
         }
 
@@ -3764,14 +3764,14 @@ else
                     {
                     	if( !( namespaces.size() == 1 && hasNamespaces.size() == 1 && namespaces.at(0).isProtected() && hasNamespaces.at(0).isProtected() ) )
                     	{
-                    		cx.error(node.pos()-1, kError_IncompatibleOverride);
+                    		cx.error(node.pos(), kError_IncompatibleOverride);
                     	}
                     }
 
                     int overridden_kind = (slot_id == implied_id) ? kind : EMPTY_TOKEN;
                     if (overridden_kind != node.name.kind && !is_ctor)
                     {
-                        cx.error(node.pos()-1, kError_IncompatibleOverride);
+                        cx.error(node.pos(), kError_IncompatibleOverride);
                     }
 
                     if( true /* check signature and final */ )
@@ -3784,13 +3784,13 @@ else
                             if( node.name.kind == SET_TOKEN || node.name.kind == GET_TOKEN)
                                 cx.error(node.pos(), kError_OverrideFinalAccessor);
                             else
-                                cx.error(node.pos()-1, kError_FinalMethodRedefinition);
+                                cx.error(node.pos(), kError_FinalMethodRedefinition);
                         }
 
                         if( slot.declaredBy == obj )
                         {
                             // This was already defined at this level, it was not inherited from a base class
-                            cx.error(node.pos()-1, kError_DuplicateFunction);
+                            cx.error(node.pos(), kError_DuplicateFunction);
                         }
                         else if( is_prototype || is_dynamic )
                         {
@@ -3798,7 +3798,7 @@ else
                         }
                         else if( !is_override && !is_ctor )
                         {
-                            cx.error(node.pos()-1, kError_OverrideOfFuncNotMarkedForOverride);
+                            cx.error(node.pos(), kError_OverrideOfFuncNotMarkedForOverride);
                         }
 
                         if( node.name.kind == GET_TOKEN )
@@ -3849,12 +3849,12 @@ else
             else
             if (bui instanceof GlobalBuilder && (node.pkgdef != null || namespaces.at(0) != hasNamespaces.at(0)) && is_first_time )
             {
-                cx.error(node.pos()-1, kError_DuplicateFunction);
+                cx.error(node.pos(), kError_DuplicateFunction);
             }
             else
             if( cx.useStaticSemantics() && is_first_time ) // ISSUE: remove use of this flag by not evaluating this code twice
             {
-                cx.error(node.pos()-1, kError_DuplicateFunction);
+                cx.error(node.pos(), kError_DuplicateFunction);
             }
             else
             {
@@ -3867,7 +3867,7 @@ else
             {
                 if (is_interface_method)
                 {
-                    cx.error(node.pos()-1, kError_InvalidOverrideUsage);
+                    cx.error(node.pos(), kError_InvalidOverrideUsage);
                 }
                 else
                 {
@@ -3875,11 +3875,11 @@ else
                     UnresolvedNamespace un = n instanceof UnresolvedNamespace ? (UnresolvedNamespace) n : null;
                     if( un == null || un.resolved )
                     {
-                        cx.error(node.pos()-1, kError_OverrideNotFound);
+                        cx.error(node.pos(), kError_OverrideNotFound);
                     }
                     else
                     {
-                        cx.error(un.node.pos()-1, kError_Unknown_Namespace);
+                        cx.error(un.node.pos(), kError_Unknown_Namespace);
                     }
                 }
             }
@@ -4065,7 +4065,7 @@ else
             node.typeref = ((val instanceof ReferenceValue) ? (ReferenceValue)val : null);
             if( node.typeref == null )
             {
-                cx.error(node.result.pos()-1, kError_UnknownType);
+                cx.error(node.result.pos(), kError_UnknownType);
             }
             else
             {
@@ -4135,7 +4135,7 @@ else
             }
             else
             {
-                cx.error(node.type.pos()-1, kError_UnknownType);
+                cx.error(node.type.pos(), kError_UnknownType);
             }
         }
 
@@ -4329,22 +4329,22 @@ else
                 is_intrinsic = node.attrs.hasIntrinsic;
                 if( node.attrs.hasNative )
                 {
-                    cx.error(node.pos()-1, kError_InvalidNative);
+                    cx.error(node.pos(), kError_InvalidNative);
                 }
 				// Note: node.attrs.hasOverride will have already been checked
 				// by the hoisted_defs test in StatementListNode
                 /*if( node.attrs.hasOverride )
                 {
-                    cx.error(node.pos()-1, kError_InvalidOverride);
+                    cx.error(node.pos(), kError_InvalidOverride);
                 }*/
             }
 
             if( cx.getScopes().size() > 1 )
             {
                 if (node.isInterface())
-                    cx.error(node.pos()-1, kError_InvalidInterfaceNesting);
+                    cx.error(node.pos(), kError_InvalidInterfaceNesting);
                 else
-                    cx.error(node.pos()-1, kError_InvalidClassNesting);
+                    cx.error(node.pos(), kError_InvalidClassNesting);
             }
 
             // Only do the following once
@@ -4363,7 +4363,7 @@ else
                 if (node.pkgdef == null && cx.getScopes().size() == 1 && node.attrs != null)
                 {
                     if( node.attrs.hasAttribute(PUBLIC) )
-                        cx.error(node.attrs.pos()-1, kError_InvalidPublic);
+                        cx.error(node.attrs.pos(), kError_InvalidPublic);
                 }
 
                 Value val = node.name.evaluate(cx,this);
@@ -4446,11 +4446,11 @@ else
                 {
                     if( node.isInterface() )
                     {
-                        cx.error( node.name.pos()-1, kError_DuplicateInterfaceDefinition, node.ref.name);
+                        cx.error( node.name.pos(), kError_DuplicateInterfaceDefinition, node.ref.name);
                     }
                     else
                     {
-                        cx.error( node.name.pos()-1, kError_DuplicateClassDefinition, node.ref.name);
+                        cx.error( node.name.pos(), kError_DuplicateClassDefinition, node.ref.name);
                         found_circular_or_duplicate_class_definition = true;
                     }
                 }
@@ -4537,7 +4537,7 @@ else
                     if( node.baseref == null )
                     {
                         // uh oh, didn't resolve to anything, but we have a baseclass expression
-                        cx.error(node.baseclass.pos()-1, kError_InvalidBaseTypeExpression);
+                        cx.error(node.baseclass.pos(), kError_InvalidBaseTypeExpression);
                     }
                 }
             }
@@ -4550,19 +4550,19 @@ else
                 if (type == null)
                 {
                     // stay silent. we'll report this in the else part...
-                    // cx.error(node.baseclass.pos()-1, kError_UnknownBaseClass);
+                    // cx.error(node.baseclass.pos(), kError_UnknownBaseClass);
                 }
                 else
                 if( type.builder.is_final )
                 {
                     // stay silent. we'll report this in the else part...
-                    // cx.error(node.baseclass.pos()-1, kError_BaseClassIsFinal);
+                    // cx.error(node.baseclass.pos(), kError_BaseClassIsFinal);
                 }
                 else
                 if ( type.builder instanceof ClassBuilder && ((ClassBuilder)type.builder).is_interface )
                 {
                     // stay silent. we'll report this in the else part...
-                    // cx.error(node.baseclass.pos()-1, node.isInterface() ? kError_CannotExtendClass : kError_CannotExtendInterface);
+                    // cx.error(node.baseclass.pos(), node.isInterface() ? kError_CannotExtendClass : kError_CannotExtendInterface);
                 }
                 else
                 {
@@ -4595,7 +4595,7 @@ else
                         if (t == null)
                         {
                             // stay silent. we'll report this in the else part...
-                            // cx.error(node.baseclass.pos()-1, kError_UnknownBaseClass);
+                            // cx.error(node.baseclass.pos(), kError_UnknownBaseClass);
                         }
                         else
                         {
@@ -4641,17 +4641,17 @@ else
 
                 if (type == null)
                 {
-                    cx.error(node.baseclass.pos()-1, kError_UnknownBaseClass, node.baseref.name);
+                    cx.error(node.baseclass.pos(), kError_UnknownBaseClass, node.baseref.name);
                 }
                 else
                 if( type.builder.is_final )
                 {
-                    cx.error(node.baseclass.pos()-1, kError_BaseClassIsFinal);
+                    cx.error(node.baseclass.pos(), kError_BaseClassIsFinal);
                 }
                 else
                 if ( type.builder instanceof ClassBuilder && ((ClassBuilder)type.builder).is_interface )
                 {
-                    cx.error(node.baseclass.pos()-1, kError_CannotExtendInterface);
+                    cx.error(node.baseclass.pos(), kError_CannotExtendInterface);
                 }
                 else
                 {
@@ -4696,7 +4696,7 @@ else
 
                         if (t == null )
                         {
-                            cx.error(node.interfaces.items.get(i).pos()-1, kError_UnknownInterface, ref.name);
+                            cx.error(node.interfaces.items.get(i).pos(), kError_UnknownInterface, ref.name);
                         }
                         else
                         {
@@ -4704,13 +4704,13 @@ else
                             {
                                 if (!(((ClassBuilder)t.builder).is_interface))
                                 {
-                                    cx.error(node.interfaces.items.get(i).pos()-1, kError_CannotExtendClass, ref.name);
+                                    cx.error(node.interfaces.items.get(i).pos(), kError_CannotExtendClass, ref.name);
                                 }
                                 else
                                 {
                                     if( seen_interfs.contains(t) )
                                     {
-                                        cx.error(node.interfaces.items.get(i).pos()-1, kError_DuplicateImplements, node.ref.name, ref.name);
+                                        cx.error(node.interfaces.items.get(i).pos(), kError_DuplicateImplements, node.ref.name, ref.name);
                                     }
                                     else
                                     {
@@ -4727,14 +4727,14 @@ else
                             }
                             else
                             {
-                                cx.error(node.interfaces.items.get(i).pos()-1, kError_UnknownInterface, ref.name);
+                                cx.error(node.interfaces.items.get(i).pos(), kError_UnknownInterface, ref.name);
                             }
                         }
                     }
                     else
                     {
                         // uh oh, didn't resolve to anything, but we have a baseclass expression
-                        cx.error(node.interfaces.items.get(i).pos()-1, kError_InvalidInterfaceTypeExpression);
+                        cx.error(node.interfaces.items.get(i).pos(), kError_InvalidInterfaceTypeExpression);
                     }
                 }
             }
@@ -5010,19 +5010,19 @@ else
 		            if (type == null)
 		            {
 		                // stay silent. we'll report this in the else part...
-		                // cx.error(node.baseclass.pos()-1, kError_UnknownBaseClass);
+		                // cx.error(node.baseclass.pos(), kError_UnknownBaseClass);
 		            }
 		            else
 		            if( type.builder.is_final )
 		            {
 		                // stay silent. we'll report this in the else part...
-		                // cx.error(node.baseclass.pos()-1, kError_BaseClassIsFinal);
+		                // cx.error(node.baseclass.pos(), kError_BaseClassIsFinal);
 		            }
 	                else
 	                if ( type.builder instanceof ClassBuilder && ((ClassBuilder)type.builder).is_interface )
 	                {
 	                    // stay silent. we'll report this in the else part...
-	                    // cx.error(node.baseclass.pos()-1, node.isInterface() ? kError_CannotExtendClass : kError_CannotExtendInterface);
+	                    // cx.error(node.baseclass.pos(), node.isInterface() ? kError_CannotExtendClass : kError_CannotExtendInterface);
 	                }
 	                else
 	                {
@@ -5057,7 +5057,7 @@ else
 							// the library with the parent class (e.g., playerglobal.swc)
 							// ... it's a fatal error, because we'd just throw a NullPointerException
 							// in the scanInterfaceMethods call below. (srj)
-							cx.error(node.pos()-1, kError_UnknownType, ref.toMultiName());
+							cx.error(node.pos(), kError_UnknownType, ref.toMultiName());
 							continue;
 						}
                         interface_refs.push_back(ref);
@@ -5238,7 +5238,7 @@ else
         Slot slot = ref!=null?ref.getSlot(cx):null;
         if( slot == null )
         {
-            cx.internalError(node.pos()-1, "internal error in FA::InterfaceDefinitionNode has no slot");
+            cx.internalError(node.pos(), "internal error in FA::InterfaceDefinitionNode has no slot");
             return null;
         }
         slot.setImplNode(node);  // use this to validate class definitions during CE
@@ -5249,23 +5249,23 @@ else
         {
             if (node.attrs.hasFinal)
             {
-                cx.error(node.pos()-1,kError_InvalidInterfaceAttribute, "final");
+                cx.error(node.pos(),kError_InvalidInterfaceAttribute, "final");
             }
             if (node.attrs.hasDynamic)
             {
-                cx.error(node.pos()-1,kError_InvalidInterfaceAttribute, "dynamic");
+                cx.error(node.pos(),kError_InvalidInterfaceAttribute, "dynamic");
             }
             if (node.attrs.hasNative)
             {
-                cx.error(node.pos()-1,kError_InvalidInterfaceAttribute, "native");
+                cx.error(node.pos(),kError_InvalidInterfaceAttribute, "native");
             }
             if (node.attrs.hasPrivate)
             {
-                cx.error(node.pos()-1,kError_InvalidInterfaceAttribute, PRIVATE);
+                cx.error(node.pos(),kError_InvalidInterfaceAttribute, PRIVATE);
             }
             if (node.attrs.hasProtected)
             {
-                cx.error(node.pos()-1,kError_InvalidInterfaceAttribute, PROTECTED);
+                cx.error(node.pos(),kError_InvalidInterfaceAttribute, PROTECTED);
             }
         }
 
@@ -5332,7 +5332,7 @@ else
                 {
                     if( setPrivate )
                     {
-                        cx.error(n.pos()-1, kError_DuplicateAttribute, PRIVATE);
+                        cx.error(n.pos(), kError_DuplicateAttribute, PRIVATE);
                     }
                     setPrivate = node.hasPrivate = true;
                 }
@@ -5341,7 +5341,7 @@ else
                 {
                     if( setProtected )
                     {
-                        cx.error(n.pos()-1, kError_DuplicateAttribute, PROTECTED);
+                        cx.error(n.pos(), kError_DuplicateAttribute, PROTECTED);
                     }
                     setProtected = node.hasProtected = true;
                 }
@@ -5350,7 +5350,7 @@ else
                 {
                     if( setPublic )
                     {
-                        cx.error(n.pos()-1, kError_DuplicateAttribute, PUBLIC);
+                        cx.error(n.pos(), kError_DuplicateAttribute, PUBLIC);
                     }
                     setPublic = node.hasPublic = true;
                 }
@@ -5359,7 +5359,7 @@ else
                 {
                     if( setInternal )
                     {
-                        cx.error(n.pos()-1, kError_DuplicateAttribute, INTERNAL);
+                        cx.error(n.pos(), kError_DuplicateAttribute, INTERNAL);
                     }
                     setInternal = node.hasInternal = true;
                 }
@@ -5369,7 +5369,7 @@ else
                     {
                         if( setPrototype )
                         {
-                            cx.error(n.pos()-1, kError_DuplicateAttribute, PROTOTYPE);
+                            cx.error(n.pos(), kError_DuplicateAttribute, PROTOTYPE);
                         }
                         setPrototype = node.hasPrototype = true;
                     }
@@ -5391,25 +5391,25 @@ else
                         {
                             if( obj == ObjectValue.intrinsicAttribute ) {
                                 node.hasIntrinsic = true;
-                                cx.error(n.pos()-1, kError_Unsupported_Intrinsic);
+                                cx.error(n.pos(), kError_Unsupported_Intrinsic);
                             }
                             else
                             if( obj == ObjectValue.staticAttribute ) {
                                 if( setStatic )
                                 {
-                                    cx.error(n.pos()-1, kError_DuplicateAttribute, STATIC);
+                                    cx.error(n.pos(), kError_DuplicateAttribute, STATIC);
                                 }
                                 setStatic = node.hasStatic = true;
                                 if( !(cx.scope().builder instanceof InstanceBuilder) && !(cx.scope().builder instanceof ClassBuilder))
                                 {
-                                    cx.error(n.pos()-1, kError_InvalidStatic);
+                                    cx.error(n.pos(), kError_InvalidStatic);
                                 }
                             }
                             else
                             if( obj == ObjectValue.dynamicAttribute ) {
                                 if( setDynamic )
                                 {
-                                    cx.error(n.pos()-1, kError_DuplicateAttribute, "dynamic");
+                                    cx.error(n.pos(), kError_DuplicateAttribute, "dynamic");
                                 }
                                 setDynamic = node.hasDynamic = true;
                             }
@@ -5417,19 +5417,19 @@ else
                             if( obj == ObjectValue.virtualAttribute ) {
                                 if( setVirtual )
                                 {
-                                    cx.error(n.pos()-1, kError_DuplicateAttribute, "virtual");
+                                    cx.error(n.pos(), kError_DuplicateAttribute, "virtual");
                                 }
                                 setVirtual = node.hasVirtual = true;   // error if has final too
                                 if( !(cx.scope().builder instanceof InstanceBuilder) && !(cx.scope().builder instanceof ClassBuilder) )
                                 {
-                                    cx.error(n.pos()-1, kError_InvalidVirtual);
+                                    cx.error(n.pos(), kError_InvalidVirtual);
                                 }
                             }
                             else
                             if( obj == ObjectValue.finalAttribute ) {
                                 if( setFinal )
                                 {
-                                    cx.error(n.pos()-1, kError_DuplicateAttribute, "final");
+                                    cx.error(n.pos(), kError_DuplicateAttribute, "final");
                                 }
                                 setFinal = node.hasFinal = true;    // error if has virtual too
                             }
@@ -5437,19 +5437,19 @@ else
                             if( obj == ObjectValue.overrideAttribute ) {
                                 if( setOverride )
                                 {
-                                    cx.error(n.pos()-1, kError_DuplicateAttribute, "override");
+                                    cx.error(n.pos(), kError_DuplicateAttribute, "override");
                                 }
                                 setOverride = node.hasOverride = true;
                                 if( !(cx.scope().builder instanceof InstanceBuilder) && !(cx.scope().builder instanceof ClassBuilder) )
                                 {
-                                    cx.error(n.pos()-1, kError_InvalidOverride);
+                                    cx.error(n.pos(), kError_InvalidOverride);
                                 }
                             }
                             else
                             if( obj == ObjectValue.nativeAttribute ) {
                                 if( setNative )
                                 {
-                                    cx.error(n.pos()-1, kError_DuplicateAttribute, "native");
+                                    cx.error(n.pos(), kError_DuplicateAttribute, "native");
                                 }
                                 setNative = node.hasNative = true;
                             }
@@ -5463,7 +5463,7 @@ else
                                     }
                                     if( !(cx.scope().builder instanceof ClassBuilder || cx.scope().builder instanceof InstanceBuilder) )
                                     {
-                                        cx.error(node.pos()-1, kError_InvalidNamespace);
+                                        cx.error(node.pos(), kError_InvalidNamespace);
                                     }
                                     else
                                     {
@@ -5477,7 +5477,7 @@ else
                         {   
                             if( !(cx.scope().builder instanceof ClassBuilder || cx.scope().builder instanceof InstanceBuilder) )
                             {
-                                cx.error(node.pos()-1, kError_InvalidNamespace);
+                                cx.error(node.pos(), kError_InvalidNamespace);
                             }
                             else
                             {
@@ -5502,7 +5502,7 @@ else
                 if (!(ns instanceof NamespaceValue))
                 {
                     // Error: Not a namespace attribute
-                    cx.error(node.pos()-1, kError_InvalidAttribute);
+                    cx.error(node.pos(), kError_InvalidAttribute);
                 }
                 else if (!foundUserNamespace)
                 {
@@ -5511,7 +5511,7 @@ else
                 }
                 else
                 {
-                    cx.error(node.pos()-1, kError_MultipleNamespaceAttributes);
+                    cx.error(node.pos(), kError_MultipleNamespaceAttributes);
                     break;
                 }
             }
@@ -5520,12 +5520,12 @@ else
         // Only one of public, private, protected, internal may be used.
         if (((node.hasPrivate?1:0) + (node.hasPublic?1:0) + (node.hasProtected?1:0) + (node.hasInternal?1:0)) > 1)
         {
-            cx.error(node.pos()-1, kError_ConflictingAccessSpecifiers);
+            cx.error(node.pos(), kError_ConflictingAccessSpecifiers);
         }
 
         if (node.hasUserNamespace() && (node.hasPrivate || node.hasPublic || node.hasProtected || node.hasInternal))
         {
-               cx.error(node.pos()-1, kError_NamespaceAccessSpecifiers);
+               cx.error(node.pos(), kError_NamespaceAccessSpecifiers);
         }
 
         return null;
@@ -5768,7 +5768,7 @@ else
             }
             else
             {
-                cx.error(node.name.pos()-1, kError_Unknown_Namespace);
+                cx.error(node.name.pos(), kError_Unknown_Namespace);
             }
         }
         return null;
@@ -5827,14 +5827,14 @@ else
                     super_context.set(super_context.size()-1, super_error2);
                     break;
             case super_error2:
-                cx.error(node.pos()-1,kError_IllegalSuperStatement);
+                cx.error(node.pos(),kError_IllegalSuperStatement);
                 break;
             case super_error_es4:
-            	cx.error(node.pos()-1, kError_InvalidES4SuperStatement);
+            	cx.error(node.pos(), kError_InvalidES4SuperStatement);
             	break;
             case super_error:
             default:
-                cx.error(node.pos()-1,kError_InvalidSuperStatement);
+                cx.error(node.pos(),kError_InvalidSuperStatement);
                 break;
         }
 
@@ -5872,7 +5872,7 @@ else
 
         if( node.attrs != null && node.attrs.hasAttribute(STATIC) )
         {
-            cx.error(node.attrs.pos()-1, kError_StaticModifiedNamespace);
+            cx.error(node.attrs.pos(), kError_StaticModifiedNamespace);
         }
 
         if( node.pkgdef != null && cx.getScopes().size() == 1 )
@@ -5907,7 +5907,7 @@ else
         Namespaces hasNamespaces = obj.hasNames(cx,GET_TOKEN,node.ref.name,namespaces);
         if( hasNamespaces != null )
         {
-            cx.error(node.pos()-1, kError_DuplicateNamespaceDefinition);
+            cx.error(node.pos(), kError_DuplicateNamespaceDefinition);
         }
         else
         {
@@ -5968,7 +5968,7 @@ else
             slot.setConst(true);
             if( slot.getObjectValue() == null )
             {
-                cx.error(node.value.pos()-1, kError_InvalidNamespaceInitializer);
+                cx.error(node.value.pos(), kError_InvalidNamespaceInitializer);
             }
 
             node.needs_init = true; // need to re-evaluate to get this definition into the def_bits for the block

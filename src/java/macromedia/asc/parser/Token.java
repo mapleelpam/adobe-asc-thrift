@@ -35,6 +35,10 @@ public final class Token
 
 	public Token(int tokenClass, String lexeme)
 	{
+        
+        // ??? FIXME --not the token constructors problem --should be done in Scanner
+        
+        
         // InputBuffer's escapeString handles all escapes in a string, including u's
 		// RegExp literals should not escape the u's either
         if (tokenClass != STRINGLITERAL_TOKEN && lexeme.indexOf("\\u") != -1) // contains a unicode escape char?
@@ -101,7 +105,7 @@ public final class Token
 	{
 		if (tokenClass == STRINGLITERAL_TOKEN)
 		{
-			return (lexeme.length() == 1) ? "" : lexeme.substring(1, lexeme.length() - 1);
+			return (lexeme.length() <= 1) ? "" : lexeme.substring(1, lexeme.length() - 1);
 		}
 
 		return lexeme;

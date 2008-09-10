@@ -1,7 +1,5 @@
-
 RestExpressionNode not yet implemented
-.*restarg.as, Ln 1, Col 23:
+.*restarg.as, Ln 1, Col 22:
 foo\(one,two,three,...rest\)
-......................\^
-
+.....................^
 1 error found

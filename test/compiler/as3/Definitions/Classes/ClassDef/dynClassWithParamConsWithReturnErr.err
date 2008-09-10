@@ -1,7 +1,5 @@
-
-[Compiler] Error #1051: Return value must be undefined.
-   dynClassWithParamConsWithReturnErr.as, Ln 11, Col 87: 
-                                                                            return z=x\+y;
-   ......................................................................................^
-
+\[Compiler\] Error #1051: Return value must be undefined.
+.*dynClassWithParamConsWithReturnErr.as, Ln 11, Col 86:
+return z=x\+y;
+.....................................................................................^
 1 error found

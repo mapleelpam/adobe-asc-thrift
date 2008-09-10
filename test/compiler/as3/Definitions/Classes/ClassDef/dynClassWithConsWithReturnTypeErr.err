@@ -1,7 +1,5 @@
-
-[Compiler] Error #1130: A constructor cannot specify a return type.
-   dynClassWithConsWithReturnTypeErr.as, Ln 7, Col 34: 
-                   public function dynClassWithConsWithReturnTypeErr\(a:Nu...
-   .................................^
-
+\[Compiler\] Error #1130: A constructor cannot specify a return type.
+.*dynClassWithConsWithReturnTypeErr.as, Ln 7, Col 33:
+public function dynClassWithConsWithReturnTypeErr\(a:Nu...
+................................^
 1 error found

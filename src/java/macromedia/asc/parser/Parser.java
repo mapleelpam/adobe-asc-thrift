@@ -189,16 +189,10 @@ public final class Parser
         int column;
         if( pos < 0 )
         {
-            lineno = scanner.input.markLn + 1;
-            column = scanner.input.markCol;
             pos = scanner.input.positionOfMark();
-
         }
-        else
-        {
-            lineno = scanner.input.getLnNum(pos);
-            column = scanner.input.getColPos(pos);
-        }
+        lineno = scanner.input.getLnNum(pos);
+        column = scanner.input.getColPos(pos);
 
         if (kind == syntax_error || kind == syntax_eos_error )
         {
@@ -217,11 +211,6 @@ public final class Parser
      * skip ahead after an error is detected. this simply goes until the next
      * whitespace or end of input.
      */
-
-    private void skiperror()
-    {
-        skiperror(syntax_error);
-    }
 
     private void skiperror(int kind)
     {
@@ -367,7 +356,7 @@ public final class Parser
     public Parser(Context cx, InputStream in, String origin, String encoding, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack)
     {
 	    init(cx, origin, emit_doc_info, save_comment_nodes, block_kind_stack);
-        scanner = new Scanner(cx, in, encoding, origin);
+        scanner = new Scanner(cx, in, encoding, origin, save_comment_nodes);
         this.encoding = encoding;
     }
 
@@ -380,7 +369,7 @@ public final class Parser
 	public Parser(Context cx, String in, String origin)
 	{
 		init(cx, origin, false, false, null);
-	    scanner = new Scanner(cx, in, origin);
+	    scanner = new Scanner(cx, in, origin, false);
 	}
 
 	public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes)
@@ -391,7 +380,7 @@ public final class Parser
 	public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack)
 	{
 		init(cx, origin, emit_doc_info, save_comment_nodes, block_kind_stack);
-	    scanner = new Scanner(cx, in, origin);
+	    scanner = new Scanner(cx, in, origin, save_comment_nodes);
 	}
 
     public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack, boolean is_include)
@@ -1234,14 +1223,14 @@ public final class Parser
             {
                 scanner.exitSlashDivContext();
                 error(kError_Lexical_NoMatchingTag);
-                return nodeFactory.error(ctx.input.positionOfMark()-1,kError_Lexical_NoMatchingTag);
+                return nodeFactory.error(ctx.input.positionOfMark(),kError_Lexical_NoMatchingTag);
             }
             match(XMLTAGSTARTEND_TOKEN); // "</"
             if( lookahead(GREATERTHAN_TOKEN) )
             {
                 if( !is_xmllist )
                 {
-                    ctx.error(ctx.input.positionOfMark()-1,kError_MissingXMLTagName);
+                    ctx.error(ctx.input.positionOfMark(),kError_MissingXMLTagName);
                 }
             }
             else
@@ -2262,7 +2251,7 @@ XMLElementContent
                 IdentifierNode id = memb.selector.expr instanceof IdentifierNode ? (IdentifierNode) memb.selector.expr : null;
                 if( id != null )
                 {
-                    ctx.error(memb.selector.expr.pos()-1,kError_IllegalPackageReference, id.name);
+                    ctx.error(memb.selector.expr.pos(),kError_IllegalPackageReference, id.name);
                 }
                 memb.selector.is_package = false; // hack, to avoid reporting same error later
             }
@@ -2305,7 +2294,7 @@ XMLElementContent
                 IdentifierNode ident = memb.selector.expr instanceof IdentifierNode ? (IdentifierNode) memb.selector.expr : null;
                 if( ident != null )
                 {
-                    ctx.error(memb.selector.expr.pos()-1,kError_IllegalPackageReference, ident.name);
+                    ctx.error(memb.selector.expr.pos(),kError_IllegalPackageReference, ident.name);
                     memb.selector.is_package = false; // to avoid redundant errors
                 }
             }
@@ -2321,7 +2310,7 @@ XMLElementContent
                 IdentifierNode ident = memb.selector.expr instanceof IdentifierNode ? (IdentifierNode) memb.selector.expr : null;
                 if( ident != null )
                 {
-                    ctx.error(memb.selector.expr.pos()-1,kError_IllegalPackageReference, ident.name);
+                    ctx.error(memb.selector.expr.pos(),kError_IllegalPackageReference, ident.name);
                 }
             }
 */
@@ -2508,7 +2497,7 @@ XMLElementContent
                 IdentifierNode ident = memb.selector.expr instanceof IdentifierNode ? (IdentifierNode) memb.selector.expr : null;
                 if( ident != null )
                 {
-                    ctx.error(memb.selector.expr.pos()-1,kError_IllegalPackageReference, ident.name);
+                    ctx.error(memb.selector.expr.pos(),kError_IllegalPackageReference, ident.name);
                 }
             }
 */
@@ -2616,7 +2605,7 @@ XMLElementContent
             {
                 scanner.enterSlashRegExpContext();
                 match(LEFTPAREN_TOKEN);
-                result = nodeFactory.filterOperator(first,parseListExpression(allowIn_mode),first.pos()-1);
+                result = nodeFactory.filterOperator(first,parseListExpression(allowIn_mode),first.pos());
                 match(RIGHTPAREN_TOKEN);
                 scanner.exitSlashRegExpContext();
             }
@@ -6009,33 +5998,33 @@ XMLElementContent
         {
             if( node.hasAttribute("private") )
             {
-                ctx.error(node.pos()-1, kError_InvalidPrivate);
+                ctx.error(node.pos(), kError_InvalidPrivate);
             }
             else
             if( node.hasAttribute("protected") )
             {
-                ctx.error(node.pos()-1, kError_InvalidProtected);
+                ctx.error(node.pos(), kError_InvalidProtected);
             }
             else
             if( node.hasAttribute("static") )
             {
-                ctx.error(node.pos()-1, kError_InvalidStatic);
+                ctx.error(node.pos(), kError_InvalidStatic);
             }
             else
             if( block_kind_stack.last() != PACKAGE_TOKEN && block_kind_stack.last() != EMPTY_TOKEN && node.hasAttribute("internal") )
             {
-                ctx.error(node.pos()-1, kError_InvalidInternal);
+                ctx.error(node.pos(), kError_InvalidInternal);
             }
             else
             if( block_kind_stack.last() != PACKAGE_TOKEN && node.hasAttribute("public") )
             {
-                ctx.error(node.pos()-1, kError_InvalidPublic);
+                ctx.error(node.pos(), kError_InvalidPublic);
             }
         }
 
         if( node.hasAttribute("prototype") )
         {
-            ctx.error(node.pos()-1,kError_PrototypeIsAnInvalidAttribute);
+            ctx.error(node.pos(),kError_PrototypeIsAnInvalidAttribute);
         }
 
         return node.hasAttribute("static") ||
@@ -6846,7 +6835,7 @@ XMLElementContent
         else
         {
             // error
-            ctx.error(first.pos()-1, kError_Parser_DefinitionOrDirectiveExpected);
+            ctx.error(first.pos(), kError_Parser_DefinitionOrDirectiveExpected);
         }
         
         result = nodeFactory.assignmentExpression(first, ASSIGN_TOKEN, second);

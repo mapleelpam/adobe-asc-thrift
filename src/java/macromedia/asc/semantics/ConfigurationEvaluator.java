@@ -1142,7 +1142,7 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
         {
             if( !isTopLevel() )
             {
-                cx.error(node.pos()-1, kError_InvalidConfigLocation);
+                cx.error(node.pos(), kError_InvalidConfigLocation);
                 return null;
             }
 
@@ -1158,12 +1158,12 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
                 Slot slot = obj.getSlot(cx,slot_id);
                 if( node.kind != Tokens.CONST_TOKEN)
                 {
-                	cx.error(node.attrs.pos()-1,kError_NonConstConfigVar );
+                	cx.error(node.attrs.pos(),kError_NonConstConfigVar );
                 }
                 slot.setConst(true);
         		if( node.initializer == null )
         		{
-                	cx.error(node.pos()-1, kError_NonConstantConfigInit);
+                	cx.error(node.pos(), kError_NonConstantConfigInit);
         		}
         		else
         		{
@@ -1174,7 +1174,7 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 	                fold_expressions = old_fold;
 	                if( init_val == null || !init_val.hasValue() )
 	                {
-	                	cx.error(node.initializer.pos()-1, kError_NonConstantConfigInit);
+	                	cx.error(node.initializer.pos(), kError_NonConstantConfigInit);
 	                }
 		        	slot.setValue(init_val);
         		}
@@ -1182,7 +1182,7 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
     		}
             else
             {
-                cx.error(node.variable.identifier.pos()-1, kError_ConflictingNameInNamespace, ref.name, ref.namespaces.at(0).name);
+                cx.error(node.variable.identifier.pos(), kError_ConflictingNameInNamespace, ref.name, ref.namespaces.at(0).name);
             }
         }
         else
@@ -1288,7 +1288,7 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
         
         if( !isTopLevel() )
         {
-            cx.error(node.pos()-1, kError_InvalidConfigLocation);
+            cx.error(node.pos(), kError_InvalidConfigLocation);
             return null;
         }
         Namespaces namespaces = new Namespaces();
