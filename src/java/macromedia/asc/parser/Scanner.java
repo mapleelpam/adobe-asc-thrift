@@ -831,7 +831,7 @@ public final class Scanner implements ErrorConstants
                                 continue;
                                 
                             case ' ': // White space
-                            case 0x0009:
+                            case '\t':
                             case 0x000b:
                             case 0x000c:
                             case 0x00a0:
@@ -1895,7 +1895,7 @@ public final class Scanner implements ErrorConstants
                     switch ( c )
                     {
                         case '*':  state = doccommentstar_state; continue;
-                        case ' ': case '\r': case '\n': 
+                        case ' ': case '\t': case '\r': case '\n': 
                             {
                             if (doctextbuf == null) doctextbuf = getDocTextBuffer(doctagname);
                             if( doctagname.length() > 0 ) { doctextbuf.append("\n<").append(doctagname).append("><![CDATA["); };
