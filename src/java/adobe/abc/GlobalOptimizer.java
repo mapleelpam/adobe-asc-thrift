@@ -114,7 +114,9 @@ public class GlobalOptimizer
 	final boolean SHOW_CODE = false;
 	boolean STRIP_DEBUG_INFO = true;
 	boolean ALLOW_NATIVE_CTORS = false;	// not final, AbcThunkGen needs to set this to true
-	boolean VERBOSE_MODE=false;
+	
+	boolean verbose_mode=false;
+	boolean legacy_verifier=true;	// Todo: switch default  
 
 	public static void main(String[] args) throws IOException
 	{
@@ -144,14 +146,20 @@ public class GlobalOptimizer
 				continue;
 			}
 			if(args[i].equals("-verbose")) {
-				go.VERBOSE_MODE = true;
+				go.verbose_mode = true;
 				quiet_mode = false;
 				continue;
 			}
 			if ( args[i].equals("-quiet"))
 			{
 				quiet_mode = true;
-				go.VERBOSE_MODE = false;
+				go.verbose_mode = false;
+				continue;
+			}
+			if ( args[i].equals("-legacy_verifier"))
+			{
+				go.legacy_verifier = !go.legacy_verifier;
+				go.verboseStatus("legacy_verifier set to " + go.legacy_verifier);
 				continue;
 			}
 			if(args[i].equals("--")) {
@@ -3539,14 +3547,11 @@ public class GlobalOptimizer
 		
 		// find the back edges to see where we need labels
 		BitSet labels = new BitSet();
-		BitSet done = new BitSet();
+		
 		for (Block b: code)
-		{
-			done.set(b.id);
 			for (Edge e: b.succ())
-				if (done.get(e.to.id))
+				if ( e.isBackedge() )
 					labels.set(e.to.id);
-		}
 
 		// emit the code and leave room for the branch offsets,
 		// and compute the final position of each block.
@@ -3747,6 +3752,35 @@ public class GlobalOptimizer
 		verboseStatus("");
 	}
 	
+	public static byte[] optimize( byte[] raw_abc, java.util.Vector<String> imports )
+	throws java.io.IOException
+	{
+		GlobalOptimizer go = new GlobalOptimizer();
+	
+		//  TODO: ASC and GO data structures need to interoperate.
+		//  For now, just redo the imports.
+		for ( String import_name: imports )
+		{
+			go.new InputAbc().readAbc(load(import_name));
+		}
+	
+		InputAbc input_abc = go.new InputAbc();
+		input_abc.readAbc(raw_abc);
+	
+		go.optimize(input_abc);
+	
+		Abc abc = go.new Abc();
+	
+		for (Type s: input_abc.scripts)
+		{
+			abc.addScript(s);
+		}
+		
+		abc.sort();
+		
+		return go.emitAbc(abc);
+	}
+	
 	void fold(Method m)
 	{
 		Deque<Block> code = dfs(m.entry.to);
@@ -3928,6 +3962,7 @@ public class GlobalOptimizer
 						for (Edge edge: taken.succ())
 							edge.from = b;
 						changed = true;
+						printabc(b, new PrintWriter(System.out));
 						break blocks;
 					}
 					Expr first = taken.first();
@@ -4151,6 +4186,11 @@ public class GlobalOptimizer
 		public int id()
 		{
 			return id;
+		}
+		
+		public boolean isBackedge()
+		{
+			return from.postorder < to.postorder;
 		}
 		
 		public int hashCode()
@@ -6681,6 +6721,7 @@ public class GlobalOptimizer
 		stkin.put(m.entry.to, 0);
 		scpin.put(m.entry.to, 0);
 		
+		
 		// insert phi copies on edges where needed
 		Set<Edge> splits = new TreeSet<Edge>();
 		for (Block b: code)
@@ -6759,6 +6800,9 @@ public class GlobalOptimizer
 				update_depth(s.to, 1, stkin, 0, scpin);
 		}
 		
+		if ( legacy_verifier )
+			killCruftyLocals(m); 
+		
 		m.local_count = max_local+1;
 		m.max_stack = max_stack;
 		m.max_scope = max_scope;
@@ -6767,6 +6811,79 @@ public class GlobalOptimizer
 		
 		// some of the edges we split didn't need to be.
 		cfgopt(m);
+	}
+	
+	/**
+	 *  Work around legacy verifier restrictions:
+	 *  Kill predecessor blocks' locals if they're live out
+	 *  on more than one path and not live in to a block.
+	 *  @param m - the Method under analysis.
+	 */
+	void killCruftyLocals(Method m)
+	{
+		Deque<Block> code = dfs(m.entry.to);
+		SetMap<Block, Edge>pred = preds(code);
+		
+		Map<Block,LocalVarState> local_state = getLocalVarState(code, pred);
+		
+		Map<Block, BitSet> killed_vars = new TreeMap<Block, BitSet>();
+		
+		for ( Block b: code)
+		{
+			//  Work around legacy verifier restrictions:
+			//  Kill predecessor blocks' locals if they're
+			//  active on more than one path and not phi inputs.
+			killed_vars.put(b, new BitSet() );
+			
+			Set<Edge> current_preds = pred.get(b);
+			
+			if ( current_preds.size() > 1)
+			{
+				LocalVarState current_state = local_state.get(b);
+				// BitSet current_livein = current_state.getLivein();
+				
+				//  Find variables that come in on multiple paths.
+				Map<Integer, Set<Edge>> livein_edges = new TreeMap<Integer,Set<Edge>>();
+				
+				for ( Edge p: current_preds )
+				{
+					BitSet pred_liveout = local_state.get(p.from).getLiveout();
+					
+					for ( int varnum = 0; varnum < pred_liveout.length(); varnum++)
+					{
+						if ( pred_liveout.get(varnum) )
+						{
+							if ( livein_edges.get(varnum) == null )
+							{
+								livein_edges.put(varnum, new TreeSet<Edge>());
+							}
+							
+							livein_edges.get(varnum).add(p);
+						}
+					}
+				}
+				
+				//  Find locals coming from more than one predecessor
+				//  whose types don't match; these need to be killed
+				//  if they're not in the current block's livein set
+				//  (in which case they will have been a phi input).
+				for ( Integer suspect_local: livein_edges.keySet() )
+				{
+					if ( livein_edges.get(suspect_local).size() > 1 )
+					{
+						for ( Edge p: livein_edges.get(suspect_local))
+						{
+							if ( ! (current_state.isPhiInput(p, suspect_local) || current_state.getLivein().get(suspect_local) || killed_vars.get(b).get(suspect_local)) )
+							{	
+								p.to.exprs.addFirst(new Expr(m, OP_kill, suspect_local.intValue()));
+								killed_vars.get(b).set(suspect_local);
+							}
+						}
+					}
+				}
+				
+			}
+		}
 	}
 
 	void alloc_locals(Deque<Block> code, Map<Integer, Integer> locals, ConflictGraph conflicts)
@@ -6818,9 +6935,9 @@ public class GlobalOptimizer
 				used.set(locals.get(i));
 		
 		int loc = -1;
+		//  If the expression's locked to a specific local (e.g., it's an arg), it must use that local.
 		if (e.locals.length == 1 && e.inLocal() && locals.containsKey(e.locals[0].id) && (loc=locals.get(e.locals[0].id)) != -1)
 		{
-			// must use same local as arg
 			assert(!used.get(loc));
 			allocate(e.id, loc, locals, conflicts);
 		}
@@ -6828,6 +6945,7 @@ public class GlobalOptimizer
 		if (e.op != OP_phi)
 			return;
 		
+		//  If any phi input is already allocated, and the local's available, use that slot. 
 		for (Expr a: e.args)
 		{
 			if (locals.containsKey(a.id) && (loc=locals.get(a.id)) != -1 && !used.get(loc))
@@ -6839,6 +6957,7 @@ public class GlobalOptimizer
 
 		if (loc == -1)
 		{
+			//  No previous allocation found; allocate lowest-numbered free local.
 			loc = 0;
 			while (used.get(loc))
 				loc++;
@@ -6864,7 +6983,6 @@ public class GlobalOptimizer
 		if (locals.get(e.id) != -1)
 			return;
 
-		// otherwise assign the lowest numbered free local
 		BitSet used = new BitSet();
 		for (int i: conflicts.get(e.id))
 			if (locals.get(i) != -1)
@@ -6887,10 +7005,74 @@ public class GlobalOptimizer
 			return;
 		}
 
+		// otherwise assign the lowest numbered free local
 		loc = 0;
 		while (used.get(loc))
 			loc++;
 		allocate(e.id, loc, locals, conflicts);
+	}
+	
+	Map<Block,LocalVarState> getLocalVarState(Deque<Block> code, SetMap<Block,Edge> pred)
+	{
+		
+		Map<Block,LocalVarState> result = new TreeMap<Block,LocalVarState>();
+				
+		for ( Block b: code)
+		{
+			buildLocalMap(b, result, pred);
+		}
+		
+		//  Compute liveout sets.
+		computeLiveout(code, result);
+		
+		return result;
+	}
+	
+	LocalVarState buildLocalMap(Block b, Map<Block,LocalVarState> local_map, SetMap<Block,Edge> preds)
+	{
+	
+		LocalVarState result = local_map.get(b);
+		
+		if ( null == result )
+		{
+			result = new LocalVarState(b);
+			local_map.put(b, result);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 *  Compute variable live-out sets for a control-flow graph.
+	 *  Follows Cooper & Torczon's [section 9.2.2] Round-robin, iterative solver
+	 * @param code - The CFG.  Presumed to be in DFS order (not a precondition).
+	 * @param live_map - the result map of blocks to sets of live-out variables.
+	 * @pre live_map must already have per-block data 
+	 *   for upwardly exposed vars, defines, and kills.
+	 */
+	void computeLiveout(Deque<Block> code, Map<Block,LocalVarState> live_map)
+	{
+		//  
+		boolean changed = true;
+		
+		while ( changed )
+		{
+			changed = false;
+			
+			for ( Block b: code)
+			{
+				LocalVarState current_state = live_map.get(b);
+				
+				BitSet next_liveout = new BitSet();
+				
+				for ( Edge p: b.succ() )
+				{
+					next_liveout.or(live_map.get(p.to).getLivein());
+				}
+				
+				changed |= current_state.mergeLiveout(next_liveout);
+			}
+		}
 	}
 	
 	static interface Deque<E> extends List<E>
@@ -7037,6 +7219,10 @@ public class GlobalOptimizer
 			Deque<Object> verbose = new LinkedDeque<Object>();
 			Deque<Expr> out = new LinkedDeque<Expr>();
 
+			Set<Expr> out_of_order = new TreeSet<Expr>();
+			
+			verboseStatus("Block " + b.toString());
+
 			live.addAll(liveout.get(b));
 			for (Expr l: live)
 				locals.put(l.id, l.op == OP_arg ? l.imm[0] : -1);
@@ -7051,19 +7237,41 @@ public class GlobalOptimizer
 					showstate(live, stk, scp, verbose);
 					
 					Expr e = remove_dup(stk, m, out, verbose);
+					verboseStatus("Popped " + formatExpr(e) + " from stack");
 					
 					if (e.inLocal() || e.op == OP_phi ||
 						e != in.peekLast() || stk.contains(e))
 					{
-						issue_load(e, m, out, verbose, live, locals);
+						/*
+						if ( e != in.peekLast() && ! e.hasEffect() )
+						{
+							verboseStatus(".. out-of-order, but issue " + e);
+							issue_expr(e, m, out, verbose, stk, scp, live, locals);
+							out_of_order.add(e);
+						}
+						else
+						*/
+						{
+							if ( verbose_mode )
+							{
+								verboseStatus(" loading " + e.toString() + " because ");
+								if ( e.inLocal() ) verboseStatus("e.inLocal()");
+								if ( e.op == OP_phi ) verboseStatus("e.op == OP_phi");
+								if ( e != in.peekLast() ) verboseStatus(e.toString() + " != last Expr: " + formatExpr(in.peekLast()) );
+								if ( stk.contains(e) ) verboseStatus("stk.contains(" + e.toString() + ")");
+							}
+							issue_load(e, m, out, verbose, live, locals);
+						}
 					}
 					else if (live.contains(e))
 					{
 						// stack top ready to be issued but it's live. issue store.
 						// push e back twice: once for store, once to consume.  then
 						// go around loop once more to handle the dup + issue.
+						verboseStatus(" define() and issue_store() live Expr " + e.toString());
 						define(e,live,cg);
 						issue_store(e, m, out, verbose, stk);
+						verboseStatus("  pushing" + e.toString() + "back on stack");
 						stk.add(e);
 					}
 					else if (e.op == OP_xarg)
@@ -7075,6 +7283,7 @@ public class GlobalOptimizer
 					else
 					{
 						// e is ready to issue
+						verboseStatus(" issuing " + e);
 						issue_expr(in.removeLast(), m, out, verbose, stk, scp, live, locals);
 					}
 					continue;
@@ -7084,7 +7293,13 @@ public class GlobalOptimizer
 				{
 					showstate(live, stk, scp, verbose);
 					Expr e = in.removeLast();
-					if (e.op == OP_phi)
+					verboseStatus("Processing next insn " + formatExpr(e));
+					if ( out_of_order.contains(e) )
+					{
+						verboseStatus(".. already issued " + e );
+						continue;
+					}
+					else if (e.op == OP_phi)
 					{
 						issue_phi(e, verbose, phis, live, cg);
 					}
@@ -7098,14 +7313,18 @@ public class GlobalOptimizer
 					{
 						if (live.contains(e))
 						{
+							verboseStatus(" live Expr " + e);
 							define(e,live,cg);
 							if (e.onStack())
 							{
+								verboseStatus("  storing live Expr " + e + " from stack");
 								issue_store(e, m, out, verbose, stk);
+								verboseStatus("   recycling " + e);
 								in.add(e);
 							}
 							else if (e.inLocal())
 							{
+								verboseStatus("  issuing live Expr " + e);
 								issue_expr(e, m, out, verbose, stk, scp, live, locals);
 							}
 						}
@@ -7116,6 +7335,7 @@ public class GlobalOptimizer
 						}
 						else
 						{
+							verboseStatus(" non-live Expr " + e);
 							if (e.onStack())
 								issue_pop(m,out,verbose,e);
 							issue_expr(e, m, out, verbose, stk, scp, live, locals);
@@ -7464,6 +7684,7 @@ public class GlobalOptimizer
 	
 	void define(Expr e, Set<Expr> live, ConflictGraph cg)
 	{
+		verboseStatus("define() kills " + e.toString());
 		live.remove(e);
 		for (Expr l: live)
 			cg.add(e,l);
@@ -7471,11 +7692,15 @@ public class GlobalOptimizer
 	
 	void issue_expr(Expr e, Method m, Deque<Expr>out, Deque<Object> verbose, Deque<Expr>stk, Deque<Expr>scp, Set<Expr>live, Map<Integer,Integer> locals)
 	{
+		verboseStatus("issue_expr(" + formatExpr(e) + ")");
 		if (!e.isSynthetic())
 			out.addFirst(e);
 		verbose.addFirst(e);
 		for (Expr a: e.args)
+		{
+			verboseStatus(".. pushing " + formatExpr(a));
 			stk.add(a);
+		}
 		for (Expr a: e.locals)
 			use(a, live, locals);
 		try_dup(stk, m, out, verbose);
@@ -7484,8 +7709,10 @@ public class GlobalOptimizer
 	void issue_store(Expr e, Method m, Deque<Expr>out, Deque<Object> verbose, Deque<Expr>stk)
 	{
 		Expr set = setlocal(m, e.id, e);
+		verboseStatus("issue_store(" + formatExpr(set) + ")");
 		out.addFirst(set);
 		verbose.addFirst(set);
+		verboseStatus(".. pushing " + formatExpr(e));
 		stk.add(e);
 	}
 	
@@ -7493,6 +7720,7 @@ public class GlobalOptimizer
 	{
 		Expr dup = dup(m,e);
 		out.addFirst(dup);
+		verboseStatus("issue_dup(" + dup.toString() + ")");
 		verbose.addFirst(dup);
 	}
 	
@@ -7508,11 +7736,13 @@ public class GlobalOptimizer
 		use(e, live, locals);
 		Expr get = getlocal(m,e.id);
 		out.addFirst(get);
+		verboseStatus("issue_load(" + formatExpr(get) + ")");
 		verbose.addFirst(get);
 	}
 
 	void use(Expr e, Set<Expr> live, Map<Integer, Integer> locals)
 	{
+		verboseStatus("use() enlivining " + formatExpr(e));
 		live.add(e);
 		locals.put(e.id, e.op == OP_arg ? e.imm[0] : -1);
 	}
@@ -7796,7 +8026,7 @@ public class GlobalOptimizer
 	 */
 	boolean isLoop(Edge e, Map<Block,Block>idom)
 	{
-		return e.from.postorder < e.to.postorder && dominates(e.to, e.from, idom);
+		return e.isBackedge() && dominates(e.to, e.from, idom);
 	}
 	
 	Block remove(Set<Block>work)
@@ -8547,7 +8777,7 @@ public class GlobalOptimizer
 	
 	void print(Expr e)
 	{
-		if ( !VERBOSE_MODE )
+		if ( !verbose_mode )
 			return;
 		PrintWriter pw = new PrintWriter(System.out);
 		printssa(e, pw);
@@ -8556,7 +8786,7 @@ public class GlobalOptimizer
 	
 	void printabc(Expr e, PrintWriter out)
 	{
-		if ( !VERBOSE_MODE )
+		if ( !verbose_mode )
 			return;
 		out.print("    " + opNames[e.op]);
 		if (e.imm != null)
@@ -8582,53 +8812,68 @@ public class GlobalOptimizer
 	}
 	
 	void printssa(Expr e, PrintWriter out)
+	{		
+		out.println(formatExpr(e));
+	}
+	
+	String formatExpr(Expr e)
 	{
-		out.print(e);
+		if ( null == e )
+		{
+			return "null";
+		}
+		
+		StringBuffer outBuffer = new StringBuffer();
+		
+		outBuffer.append(e.toString());
 		if (e.onStack() || e.inLocal() || e.onScope())
-			out.print(" =");
+			outBuffer.append(" =");
 		else
-			out.print("  ");
+			outBuffer.append("  ");
 			
 		if (e.value == null)
-			out.print(" "+opNames[e.op]);
+			outBuffer.append(" "+opNames[e.op]);
 		if (e.imm != null)
 		{
-			StringBuilder s = new StringBuilder();
-			s.append('<');
+			outBuffer.append('<');
 			for (int i: e.imm)
-				s.append(i).append(',');
-			s.setCharAt(s.length()-1,'>');
-			out.print(s);
+				outBuffer.append(i).append(',');
+			outBuffer.setCharAt(outBuffer.length()-1,'>');
 		}
 		if (e.args.length > 0)
-			out.print(format('(',e.args,')'));
+			outBuffer.append(format('(',e.args,')'));
 		if (e.locals.length > 0)
-			out.print(format('(',e.locals,')'));
+			outBuffer.append(format('(',e.locals,')'));
 		if (e.scopes.length > 0)
-			out.print(format('{',e.scopes,'}'));
+			outBuffer.append(format('{',e.scopes,'}'));
 		if (e.pred.length>0)
-			out.print(format('[',e.pred,']'));
+			outBuffer.append(format('[',e.pred,']'));
 		if (e.succ != null)
-			out.print(format('[',e.succ,']'));
+			outBuffer.append(format('[',e.succ,']'));
 		if (e.value != null)
-			print(e.value,out);
+			outBuffer.append(formatObject(e.value));
 		if (e.ref != null)
-			out.print(" "+e.ref);//.format()); // full name
-			
-		out.println();
+			outBuffer.append(" "+e.ref);//.format()); // full name
+	
+		return outBuffer.toString();
 	}
 	
 	void print(Object value, PrintWriter out)
 	{
+		out.print(formatObject(value));
+	}
+	
+	String formatObject(Object value)
+	{
 		if (value instanceof String)
-			out.print(" \"" + ((String)value).replace("\n","\\n").replace("\r","\\r") + "\"");
+			return(" \"" + ((String)value).replace("\n","\\n").replace("\r","\\r") + "\"");
 		else
-			out.print(" "+ value);
+			return(" "+ value);
 	}
 	
 	void print(Deque<Block> blocks)
 	{
-		if ( ! VERBOSE_MODE )
+		if ( ! verbose_mode )
 			return;
 		verboseStatus(blocks);
 		PrintWriter pw = new PrintWriter(System.out);
@@ -8638,7 +8883,7 @@ public class GlobalOptimizer
 	}
 	void printabc(Deque<Block> blocks)
 	{
-		if ( ! VERBOSE_MODE )
+		if ( ! verbose_mode )
 			return;
 		verboseStatus(blocks);
 		PrintWriter pw = new PrintWriter(System.out);
@@ -8845,7 +9090,7 @@ public class GlobalOptimizer
 		else
 		{
 			// TODO smarter edge classification
-			if (e.from.postorder < e.to.postorder)
+			if (e.isBackedge())
 				attrs.add("tailport=w,headport=w");
 
 			if (e.label == 0)
@@ -8858,16 +9103,158 @@ public class GlobalOptimizer
 
 	void verboseStatus(String msg)
 	{
-		if ( VERBOSE_MODE )
+		if ( verbose_mode )
 			System.out.println(msg);
 	}
 
 	void verboseStatus(Object o)
 	{
-		if ( VERBOSE_MODE )
+		if ( verbose_mode )
 			System.out.println(o.toString());
 	}
+	
+	class LocalVarState
+	{
+		/**
+		 *  Live-Out variables are variables that are
+		 *  used (without being redefined) in a successor
+		 *  block.  Note: the relationship is transitive.
+		 */
+		private BitSet liveout = new BitSet();
+		
+		/** 
+		 *  Variables killed in this block via explicit OP_kill insn. 
+		 */
+		private BitSet kills   = new BitSet();
+		
+		/**
+		 *  Variables defined in this block via setlocal.
+		 */
+		private BitSet def     = new BitSet();
+		
+		/**
+		 *  Upwardly-exposed variables, read in this block
+		 *  before any definition.  This means that their
+		 *  value comes from predecessor blocks. 
+		 */
+		private BitSet ue_vars = new BitSet();
+		
+		Map<Edge, BitSet> phi_inputs = new TreeMap<Edge, BitSet>();
+		
+		LocalVarState(Block b)
+		{
+			for ( Expr e: b.exprs)
+			{
+				switch(e.op)
+				{
+					case OP_getlocal0:
+					case OP_getlocal1:
+					case OP_getlocal2:
+					case OP_getlocal3:
+					{
+						uses( e.op - OP_getlocal0 );
+						break;
+					}
+					case OP_getlocal:
+					{
+						uses(e.imm[0]);
+						break;
+					}
+	
+					case OP_setlocal0:
+					case OP_setlocal1:
+					case OP_setlocal2:
+					case OP_setlocal3:
+					{
+						uses( e.op - OP_setlocal0 );
+						break;
+					}
+					
+					case OP_setlocal:
+					{
+						defines(e.imm[0]);
+						break;
+					}
+	
+					case OP_kill:
+					{
+						//  Just kills the variable
+						int varnum = e.imm[0];
+						kills.set(varnum);
+						break;
+					}
+					
+					case OP_phi:
+					{
+						defines(e.id);
+						
+						for (int i=e.args.length-1; i >= 0; i--)
+						{
+							addPhiInput(e.pred[i], e.args[i].id);
+						}
+						break;
+					}
+				}
+			}
+		}
+		
+		public boolean mergeLiveout(BitSet next_liveout) 
+		{
+			next_liveout.or(this.liveout);
+			boolean result = !this.liveout.equals(next_liveout);
+			
+			if ( result )
+			{
+				verboseStatus(this.toString() + " replacing " + this.liveout.toString() + " with " + next_liveout.toString());
+				this.liveout = next_liveout;
+			}
+			
+			return result;
+		}
 
+		boolean isPhiInput(Edge pred_edge, int var_index)
+		{
+			if ( null == phi_inputs.get(pred_edge))
+				return false;
+			else
+				return phi_inputs.get(pred_edge).get(var_index);
+		}
+		
+		BitSet getLivein()
+		{
+			BitSet result = (BitSet)this.liveout.clone();
+			result.andNot(this.def);
+			result.andNot(this.kills);
+			result.or(this.ue_vars);
+			return result;
+		}
+		
+		BitSet getLiveout()
+		{
+			return (BitSet)liveout.clone();
+		}
+		
+		private void addPhiInput(Edge pred_edge, int var_index)
+		{
+			if ( null == phi_inputs.get(pred_edge))
+			{
+				phi_inputs.put(pred_edge, new BitSet());
+			}
+			
+			phi_inputs.get(pred_edge).set(var_index);
+		}
+		
+		private void uses(int varnum)
+		{
+			if ( !def.get(varnum) )
+				ue_vars.set(varnum);
+		}
+		
+		private void defines(int varnum)
+		{
+			def.set(varnum);
+		}
+	}
 	class Reader
 	{
 		int pos;
@@ -9001,7 +9388,7 @@ public class GlobalOptimizer
 	    EFFECT|PX,//"setsuper",
 	    EFFECT|PX,//"dxns",
 	    EFFECT|PX,//"dxnslate",
-	    LOCVAL,//"kill",
+	    LOCVAL|EFFECT,//"kill",
 	    EFFECT,//"label",
 	    SYNTH,//"phi",
 	    STKVAL|SYNTH,//"xarg",
