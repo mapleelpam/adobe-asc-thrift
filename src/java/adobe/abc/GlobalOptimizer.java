@@ -116,7 +116,7 @@ public class GlobalOptimizer
 	boolean ALLOW_NATIVE_CTORS = false;	// not final, AbcThunkGen needs to set this to true
 	
 	boolean verbose_mode=false;
-	boolean legacy_verifier=true;	// Todo: switch default  
+	boolean legacy_verifier=false;  
 
 	public static void main(String[] args) throws IOException
 	{
