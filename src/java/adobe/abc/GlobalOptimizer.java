@@ -2247,7 +2247,7 @@ public class GlobalOptimizer
 	
 	void readyMethod(Method m)
 	{
-		if (m.entry != null)
+		if (m.entry != null && ! ready.contains(m))
 			ready.add(m);
 	}
 	
