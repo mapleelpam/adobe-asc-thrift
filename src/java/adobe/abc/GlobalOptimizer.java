@@ -2235,7 +2235,17 @@ public class GlobalOptimizer
 	
 	static final Metadata[] nometadata = new Metadata[0];
 
+	/**
+	 * Methods ready for optimization.
+	 * Populated by readyMethod(), called from readyType()
+	 * and by initial processing of the OP_newfunction Expr.
+	 */
 	List<Method> ready = new ArrayList<Method>();
+
+	/** 
+	 * Track already-processed methods so they never go on the ready list twice.
+	 */
+	Set<Method> already_processed = new TreeSet<Method>();
 	
 	void readyType(Type t)
 	{
@@ -2247,8 +2257,11 @@ public class GlobalOptimizer
 	
 	void readyMethod(Method m)
 	{
-		if (m.entry != null && ! ready.contains(m))
+		if (m.entry != null && ! already_processed.contains(m))
+		{
 			ready.add(m);
+			already_processed.add(m);
+		}
 	}
 	
 	void optimize(InputAbc a)
