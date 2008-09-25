@@ -2257,7 +2257,7 @@ public class GlobalOptimizer
 	
 	void readyMethod(Method m)
 	{
-		if (m.entry != null && ! already_processed.contains(m))
+		if (m.entry != null /* FIXME: temp fix to get TT build up && ! already_processed.contains(m) */)
 		{
 			ready.add(m);
 			already_processed.add(m);
