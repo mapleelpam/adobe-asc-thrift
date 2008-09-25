@@ -131,24 +131,27 @@ public class BytecodeBuffer
 
 	public void writeU32(long v)
 	{
-		resize(4);
         if ( v < 128 && v > -1 )
         {
-	        bytecodes[size++] = (byte) v;
+            resize(1);
+            bytecodes[size++] = (byte) v;
         }
         else if ( v < 16384 && v > -1)
         {
-	        bytecodes[size++] = (byte) ((v & 0x7F) | 0x80);
-	        bytecodes[size++] = (byte) ((v >> 7) & 0x7F);
+            resize(2);
+            bytecodes[size++] = (byte) ((v & 0x7F) | 0x80);
+            bytecodes[size++] = (byte) ((v >> 7) & 0x7F);
         }
         else if ( v < 2097152 && v > -1)
         {
+            resize(3);
             bytecodes[size++] = (byte) ((v & 0x7F) | 0x80);
             bytecodes[size++] = (byte) ((v >> 7) | 0x80);
             bytecodes[size++] = (byte) ((v >> 14) & 0x7F);
         }
         else if (  v < 268435456 && v > -1)
         {
+            resize(4);
             bytecodes[size++] = (byte) ((v & 0x7F) | 0x80);
             bytecodes[size++] = (byte) (v >> 7 | 0x80);
             bytecodes[size++] = (byte) (v >> 14 | 0x80);
@@ -156,6 +159,7 @@ public class BytecodeBuffer
         }
         else
         {
+            resize(5);
             bytecodes[size++] = (byte) ((v & 0x7F) | 0x80);
             bytecodes[size++] = (byte) (v >> 7 | 0x80);
             bytecodes[size++] = (byte) (v >> 14 | 0x80);
