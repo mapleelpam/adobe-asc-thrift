@@ -2244,8 +2244,12 @@ public class GlobalOptimizer
 
 	/** 
 	 * Track already-processed methods so they never go on the ready list twice.
+	 * @warn Methods are tracked by hashCode() b/c Method defines a compare function 
+	 * that can compare different Methods as equal (if they're in different types).
+	 * If Method.hashCode() is modified, then Method will need a unique ID to 
+	 * make this set work.
 	 */
-	Set<Method> already_processed = new TreeSet<Method>();
+	Set<Integer> already_processed = new TreeSet<Integer>();
 	
 	void readyType(Type t)
 	{
@@ -2257,10 +2261,10 @@ public class GlobalOptimizer
 	
 	void readyMethod(Method m)
 	{
-		if (m.entry != null /* FIXME: temp fix to get TT build up && ! already_processed.contains(m) */)
+		if (m.entry != null && ! already_processed.contains(m.hashCode()) )
 		{
 			ready.add(m);
-			already_processed.add(m);
+			already_processed.add(m.hashCode());
 		}
 	}
 	
