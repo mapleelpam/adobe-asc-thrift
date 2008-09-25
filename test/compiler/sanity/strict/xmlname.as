@@ -1,5 +1,7 @@
 var x = <x xmlns:ns="foo"><ns:a>10</ns:a><b/><ns:c/></x>
 var ns = new Namespace("foo")
+
+var f\u0061 = 3;
 print("1:",x.*)
 print("2:",x.ns::*)
 print("3:",x.ns::a)

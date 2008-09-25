@@ -55,9 +55,8 @@ public interface States
 	public static final int doccommentstar_state = doccomment_state+1;
 	public static final int doccommenttag_state = doccommentstar_state+1;
 	public static final int doccommentvalue_state = doccommenttag_state+1;
-	public static final int linecomment_state = doccommentvalue_state+1;
-
-	public static final int startxml_state = linecomment_state+1;
+	
+	public static final int startxml_state = doccommentvalue_state+1;
 	public static final int startxmlname_state = startxml_state+1;
 	public static final int xmlliteral_state = startxmlname_state+1;
 	public static final int endxml_state = xmlliteral_state+1;

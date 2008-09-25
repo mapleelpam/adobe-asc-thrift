@@ -435,18 +435,8 @@ public final class Scanner implements ErrorConstants
         switch (kind)
         {
             case kError_Lexical_General:
-                //while ( true )
-                //{
-                //    char nc = nextchar();
-                //    //Debugger::trace("nc " + nc);
-                //    if( nc == ' ' ||
-                //        nc == '\n' ||
-                //        nc == 0 )
-                //    {
-                //        return;
-                //    }
-                //}
                 return;
+                
             case kError_Lexical_LineTerminatorInSingleQuotedStringLiteral:
             case kError_Lexical_LineTerminatorInDoubleQuotedStringLiteral:
                 while (true)
@@ -457,6 +447,7 @@ public final class Scanner implements ErrorConstants
                         return;
                     }
                 }
+                
             case kError_Lexical_SyntaxError:
             default:
                 while (true)
@@ -527,18 +518,6 @@ public final class Scanner implements ErrorConstants
         return doctextbuf;
     }
 
-    private String getXMLText(int begin, int end)
-    {
-        int len = (end-begin)+1; 
-
-        String xmltext = null;
-        if( len > 0 )
-        {
-	        xmltext = input.copy(begin,end);
-        }
-        return xmltext;
-    }
-
     public void clearUnusedBuffers() {
      //   input.clearUnusedBuffers();
         input = null;
@@ -591,7 +570,7 @@ public final class Scanner implements ErrorConstants
                             state = A_state;
                             continue;
                             
-                            case 0xffffffef:
+                            case 0xffffffef: // ??? not in Character type range ???
                                 state = utf8sig_state;
                                 continue;
                                 
@@ -632,7 +611,7 @@ public final class Scanner implements ErrorConstants
                                         return EOS_TOKEN;
                                     }
                                 }
-                                return makeTokenInstance(STRINGLITERAL_TOKEN, input.copy(needs_escape));
+                                return makeTokenInstance(STRINGLITERAL_TOKEN, input.copyReplaceStringEscapes(needs_escape));
                             }
 
                             case '-':   // tokens: -- -= -
@@ -830,17 +809,16 @@ public final class Scanner implements ErrorConstants
                                 state = decimalinteger_state;
                                 continue;
                                 
-                            case ' ': // White space
+                            case ' ': // ascii range white space
                             case '\t':
                             case 0x000b:
                             case 0x000c:
+                            case 0x0085:    
                             case 0x00a0:
                                 continue;
-                                
-                            case '\n': // Line terminators.
+
+                            case '\n': // ascii line terminators.
                             case '\r':
-                            case 0x2028:
-                            case 0x2029:
                                 isFirstTokenOnLine = true;
                                 continue;
                                 
@@ -848,17 +826,23 @@ public final class Scanner implements ErrorConstants
                                 return EOS_TOKEN;
                                 
                             default:
-                                switch (input.classOfNext())
+                                switch (input.nextcharClass((char)c,true))
                                 {
-                                    case Lu:
-                                    case Ll:
-                                    case Lt:
-                                    case Lm:
-                                    case Lo:
-                                    case Nl:
+                                    case Lu: case Ll: case Lt: case Lm: case Lo: case Nl:
                                         maybe_reserved = false;
                                         state = A_state;
                                         continue;
+                                          
+                                    case Zs:// unicode whitespace and control-characters
+                                    case Cc: 
+                                    case Cf:
+                                        continue;
+                                            
+                                    case Zl:// unicode line terminators 
+                                    case Zp:
+                                        isFirstTokenOnLine = true;
+                                        continue;
+                                        
                                     default:
                                         state = error_state;
                                         continue;
@@ -873,7 +857,7 @@ public final class Scanner implements ErrorConstants
                 case A_state:
                
                     while ( true ){
-                        int c = nextchar();
+                        char c = nextchar();
                         if ( c >= 'a' && c <= 'z' )
                         {
                             continue;
@@ -882,22 +866,28 @@ public final class Scanner implements ErrorConstants
                             maybe_reserved = false;
                             continue;
                         }
-                        if ( c == 0 )
+                        if ( c <= 0x7f && c != '\\' ) // in ascii range & not a valid char
                         {
+                            retract();
                             break;
                         }
 
-                        switch (input.classOfNext())
+                        // else outside ascii range (or an escape sequence )
+                        
+                        switch (input.nextcharClass(c,false))
                         {
                         case Lu: case Ll: case Lt: case Lm: case Lo: case Nl: case Mn: case Mc: case Nd: case Pc:
                             maybe_reserved = false;
+                            input.nextcharClass(c,true); // advance input cursor
                             continue;
                         }
+                        
+                        retract();
                         break;
                     }
-                    retract();
+                    
                     state = start_state;   
-                    String s = input.copy(); 
+                    String s = input.copyReplaceUnicodeEscapes(!maybe_reserved); 
                     if ( maybe_reserved )
                     {
                         Integer i = reservedWord.get(s); 
@@ -1123,19 +1113,59 @@ public final class Scanner implements ErrorConstants
                      */
 
                 case slash_state:
+                {
+                    char c;
+              
                     switch (nextchar())
-                    {
-                        case '/':
-                            if (blockcommentbuf == null) blockcommentbuf = new StringBuilder();
-                            state = linecomment_state;
+                    {   
+                        case '/': // line comment
+                            state = start_state;
+                            line_comment: 
+                            while ( (c=nextchar()) != 0)
+                            {
+                                if ( c == '\r' || c == '\n' )
+                                {
+                                    isFirstTokenOnLine = true;
+                                    if (save_comments == false)
+                                    {
+                                        break line_comment;
+                                    }
+                                    retract(); // don't include newline in line comment. (Sec 7.3)
+                                    return makeTokenInstance( SLASHSLASHCOMMENT_TOKEN, input.copyReplaceUnicodeEscapes() );
+                                }
+                            }
                             continue;
+                            
                         case '*':
-                            if (blockcommentbuf == null) blockcommentbuf = new StringBuilder();
-                            blockcommentbuf.append("/*");
-                            state = blockcommentstart_state;
+                            if (save_comments == false)
+                            {
+                                block_comment:
+                                while ( (c=nextchar()) != 0)
+                                {
+                                    if ( c == '\r' || c == '\n' )
+                                        isFirstTokenOnLine = true;
+                                    
+                                    if (c == '*')
+                                    {
+                                        c = nextchar();
+                                        if (c == '/' )
+                                        {
+                                            break block_comment;
+                                        }
+                                        retract();
+                                    }   
+                                }
+                                state = start_state;
+                            }
+                            else {
+                                if (blockcommentbuf == null) 
+                                    blockcommentbuf = new StringBuilder();
+                                blockcommentbuf.append("/*");
+                                state = blockcommentstart_state;
+                            }
                             continue;
+                    
                         default:
-                        {
                             retract(); // since we didn't use the current character for this decision.
                             if (isSlashDivContext())
                             {
@@ -1146,8 +1176,8 @@ public final class Scanner implements ErrorConstants
                                 state = slashregexp_state;
                             }
                             continue;
-                        }
                     }
+                }
 
                     /*
                      * tokens: / /=
@@ -1316,7 +1346,7 @@ public final class Scanner implements ErrorConstants
                     default: 
                         retract(); 
                         state = start_state; 
-                        return makeTokenInstance( REGEXPLITERAL_TOKEN, input.copy(false) );
+                        return makeTokenInstance( REGEXPLITERAL_TOKEN, input.copyReplaceUnicodeEscapes());
                 }
                     /*
                      * tokens: ^^ ^^= ^=  ^
@@ -1477,7 +1507,7 @@ public final class Scanner implements ErrorConstants
                         case '>':  
                         {
                             state = start_state;
-                            return makeTokenInstance(XMLMARKUP_TOKEN,getXMLText(startofxml,pos()-1));
+                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()-1));
                         }
                         default:   state = xmlcdata_state; continue;
                     }
@@ -1509,7 +1539,7 @@ public final class Scanner implements ErrorConstants
                         case '>':  
                         {
                             state = start_state;
-                            return makeTokenInstance(XMLMARKUP_TOKEN,getXMLText(startofxml,pos()-1));
+                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()-1));
                         }
                         default:   error(kError_Lexical_General); state = start_state; continue;
                     }
@@ -1528,7 +1558,7 @@ public final class Scanner implements ErrorConstants
                         case '>':  
                         {
                             state = start_state;
-                            return makeTokenInstance(XMLMARKUP_TOKEN,getXMLText(startofxml,pos()-1));
+                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()-1));
                         }
                         default:   error(kError_Lexical_General); state = start_state; continue;
                     }
@@ -1539,7 +1569,7 @@ public final class Scanner implements ErrorConstants
                         case '<': case '{':  
                         {
                             retract();
-                            String xmltext = getXMLText(startofxml,pos()-1);
+                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml,pos()-1);
                             if( xmltext != null )
                             {
                                 state = start_state;
@@ -1578,7 +1608,7 @@ public final class Scanner implements ErrorConstants
                     {
                         case '{':  // return XMLPART_TOKEN
                             {
-	                            String xmltext = input.copy(startofxml, pos()-2);
+	                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-2);
                                 return makeTokenInstance(XMLPART_TOKEN, xmltext);
                             }
                         case '<':
@@ -1605,7 +1635,7 @@ public final class Scanner implements ErrorConstants
                                             --level;
                                             if (level == 0)
                                             {
-	                                            String xmltext = input.copy(startofxml, pos());
+	                                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos());
                                                 state = start_state;
                                                 return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
                                             }
@@ -1710,7 +1740,7 @@ public final class Scanner implements ErrorConstants
                                 {
                                     xmltagname = null;
                                 }
-	                            String xmltext = input.copy(startofxml, pos()-2);
+	                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-2);
                                 return makeTokenInstance(XMLPART_TOKEN, xmltext);
                             }
                         case '>':
@@ -1724,14 +1754,14 @@ public final class Scanner implements ErrorConstants
                                     {
                                         if (temp.equals(xmltagname))
                                         {
-	                                        String xmltext = input.copy(startofxml, pos());
+	                                        String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos());
                                             state = start_state;
                                             return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
                                         }
                                     }
                                     else
                                     {
-	                                    String xmltext = input.copy(startofxml, pos());
+	                                    String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos());
                                         state = start_state;
                                         return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
                                     }
@@ -1769,10 +1799,18 @@ public final class Scanner implements ErrorConstants
                     {
                         switch ( nextchar() )          
                         {
-                            case '>': state = rightshift_state; break;
-                            case '=': state = start_state; return GREATERTHANOREQUALS_TOKEN;
-                            //default:  retract(); state = start_state; return greaterthan_token;
-                            default:  retract(); state = start_state; return GREATERTHAN_TOKEN;
+                            case '>': 
+                                state = rightshift_state; 
+                                break;
+                            
+                            case '=': 
+                                state = start_state; 
+                                return GREATERTHANOREQUALS_TOKEN;
+                            
+                            default:  
+                                retract(); 
+                                state = start_state; 
+                                return GREATERTHAN_TOKEN;
                         }
                     }
                     else      
@@ -1848,20 +1886,41 @@ public final class Scanner implements ErrorConstants
                     blockcommentbuf.append(c);
                     switch ( c )
                     {
-                    case '*':  state = doccommentstar_state; continue;
+                    case '*':  
+                        state = doccommentstar_state; 
+                        continue;
+                    
                     case '@':
-                        if (doctextbuf == null) doctextbuf = getDocTextBuffer(doctagname);
-                        if( doctagname.length() > 0 ) { doctextbuf.append("]]></").append(doctagname).append(">"); };
+                        if (doctextbuf == null) 
+                            doctextbuf = getDocTextBuffer(doctagname);
+                        if( doctagname.length() > 0 ) 
+                        { 
+                            doctextbuf.append("]]></").append(doctagname).append(">"); 
+                        }
                         doctagname = "";
-                        state = doccommenttag_state; continue;
-                    case '\r': case '\n': isFirstTokenOnLine = true;
-                    if (doctextbuf == null) doctextbuf = getDocTextBuffer(doctagname);
-                    doctextbuf.append('\n');
-                    state = doccomment_state; continue;
-                    case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
+                        state = doccommenttag_state; 
+                        continue;
+                        
+                    case '\r': 
+                    case '\n': 
+                        isFirstTokenOnLine = true;
+                        if (doctextbuf == null) 
+                            doctextbuf = getDocTextBuffer(doctagname);
+                        doctextbuf.append('\n');
+                        state = doccomment_state; 
+                        continue;
+                    
+                    case 0:    
+                        error(kError_BlockCommentNotTerminated); 
+                        state = start_state; 
+                        continue;
+                        
                     default:
-                        if (doctextbuf == null) doctextbuf = getDocTextBuffer(doctagname);
-                    doctextbuf.append((char)(c)); state = doccomment_state; continue;
+                        if (doctextbuf == null) 
+                            doctextbuf = getDocTextBuffer(doctagname);
+                        doctextbuf.append((char)(c)); 
+                        state = doccomment_state; 
+                        continue;
                     }
                 }
 
@@ -1872,12 +1931,18 @@ public final class Scanner implements ErrorConstants
                     switch ( c )                    
                     {
                         case '/':
-                            {
-                            if (doctextbuf == null) doctextbuf = getDocTextBuffer(doctagname);
-                            if( doctagname.length() > 0 ) { doctextbuf.append("]]></").append(doctagname).append(">"); };
-                            String doctext = doctextbuf.toString();
-                            state = start_state; return makeTokenInstance(DOCCOMMENT_TOKEN,doctext);
+                        {
+                            if (doctextbuf == null) 
+                                doctextbuf = getDocTextBuffer(doctagname);
+                            if( doctagname.length() > 0 ) 
+                            { 
+                                doctextbuf.append("]]></").append(doctagname).append(">"); 
+                            }
+                            String doctext = doctextbuf.toString(); // ??? does this needs escape conversion ???
+                            state = start_state; 
+                            return makeTokenInstance(DOCCOMMENT_TOKEN,doctext);
                         }
+                        
                         case '*':  state = doccommentstar_state; continue;
                         case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
                         default:   state = doccomment_state; continue;
@@ -1890,19 +1955,43 @@ public final class Scanner implements ErrorConstants
                 */
 
                 case doccommenttag_state:
-                    {
+                {
                     int c = nextchar();
                     switch ( c )
                     {
-                        case '*':  state = doccommentstar_state; continue;
+                        case '*':  
+                            state = doccommentstar_state; 
+                            continue;
+                        
                         case ' ': case '\t': case '\r': case '\n': 
-                            {
-                            if (doctextbuf == null) doctextbuf = getDocTextBuffer(doctagname);
-                            if( doctagname.length() > 0 ) { doctextbuf.append("\n<").append(doctagname).append("><![CDATA["); };
-                            state = doccomment_state; continue;
+                        {
+                            if (doctextbuf == null) 
+                                doctextbuf = getDocTextBuffer(doctagname);
+                            
+                            // skip extra whitespace --fixes bug on tag text parsing 
+                            // --but really, the problem is not here, it's in whatever reads asdoc output..
+                            // --So if that gets fixed, feel free to delete the following.
+                            
+                            while ( (c=nextchar()) == ' ' || c == '\t' )
+                                ;
+                            retract();
+                            
+                            if( doctagname.length() > 0 ) 
+                            { 
+                                doctextbuf.append("\n<").append(doctagname).append("><![CDATA["); 
+                            }
+                            state = doccomment_state; 
+                            continue;
                         }
-                        case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
-                        default:   doctagname += (char)(c); state = doccommenttag_state; continue;
+                        
+                        case 0:    
+                            error(kError_BlockCommentNotTerminated); 
+                            state = start_state; 
+                            continue;
+                        
+                        default:   
+                            doctagname += (char)(c); 
+                            continue;
                     }
                 }
 
@@ -1913,11 +2002,22 @@ public final class Scanner implements ErrorConstants
                 case doccommentvalue_state:
                 switch ( nextchar() )
                 {
-                    case '*':  state = doccommentstar_state; continue;
-                    case '@':  state = doccommenttag_state; continue;
-                    case '\r': case '\n': state = doccomment_state; continue;
-                    case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
-                    default:   state = doccomment_state; continue;
+                    case '*':  
+                        state = doccommentstar_state; 
+                        continue;
+                        
+                    case '@':  
+                        state = doccommenttag_state; 
+                        continue;
+                        
+                    case 0:    
+                        error(kError_BlockCommentNotTerminated); 
+                        state = start_state; 
+                        continue;
+                        
+                    default:   
+                        state = doccomment_state; 
+                        continue;
                 }
 
                 /*
@@ -1947,8 +2047,7 @@ public final class Scanner implements ErrorConstants
                         case '/':  
                         {
                             state = start_state;
-                            String blocktext = blockcommentbuf.toString();
-
+                            String blocktext = blockcommentbuf.toString(); // ??? needs escape conversion
                             return makeTokenInstance( BLOCKCOMMENT_TOKEN, blocktext );
                         }
                         case '*':  state = blockcommentstar_state; continue;
@@ -1956,31 +2055,6 @@ public final class Scanner implements ErrorConstants
                         default:   state = blockcomment_state; continue;
                             // if not a slash, then keep looking for an end comment.
                     }
-                }
-
-                /*
-                * prefix: // <comment chars>
-                */
-
-                case linecomment_state:
-                {
-                    state = start_state;
-                    end_of_comment: while (true)
-                    {
-                        int c = nextchar();
-                        switch ( c )
-                        {
-                        case '\r': case '\n': // don't include newline in line comment. (Sec 7.3)
-                            retract(); 
-                            if ( save_comments == false )
-                                break end_of_comment;
-                            return makeTokenInstance( SLASHSLASHCOMMENT_TOKEN, input.copy() );
-
-                        case 0:    
-                            return EOS_TOKEN;
-                        }
-                    }
-                    continue;
                 }
               
                 /*

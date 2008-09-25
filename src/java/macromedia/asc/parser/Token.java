@@ -35,61 +35,8 @@ public final class Token
 
 	public Token(int tokenClass, String lexeme)
 	{
-        
-        // ??? FIXME --not the token constructors problem --should be done in Scanner
-        
-        
-        // InputBuffer's escapeString handles all escapes in a string, including u's
-		// RegExp literals should not escape the u's either
-        if (tokenClass != STRINGLITERAL_TOKEN && lexeme.indexOf("\\u") != -1) // contains a unicode escape char?
-        {
-            StringBuilder buffer = new StringBuilder();
-            int len = lexeme.length();
-            for(int x =0; x < len; x++)
-            {
-                if ( x+2<len && lexeme.charAt(x) == '\\' && lexeme.charAt(x+1) == 'u' )
-                {
-                    if (x!= 0 && lexeme.charAt(x-1) == '\\')  // watch out for '\\u'
-                    {
-                        buffer.append(lexeme.charAt(x));
-                        continue;
-                    }
-                    int thisChar = 0;
-                    int y, digit;
-                    // calculate numeric value, bail if invalid
-                    for( y=x+2; y<x+6 && y < len; y++ )
-                    {
-                        digit = Character.digit( lexeme.charAt(y),16 );
-                        if (digit == -1)
-                            break;
-                        thisChar = (thisChar << 4) + digit;
-                    }
-                    if ( y != x+6 || Character.isDefined((char)thisChar) == false )  // if there was a problem or the char is invalid just escape the '\''u' with 'u'
-                    {
-                        buffer.append(lexeme.charAt(++x));
-                    }
-                    else // use Character class to convert unicode codePoint into a char ( note, this will handle a wider set of unicode codepoints than the c++ impl does).
-                    {
-                        // jdk 1.5.2 only, but handles extended chars:  char[] ca = Character.toChars(thisChar);
-                        char c = (char)thisChar;
-                        buffer.append(c);
-                        x += 5;
-                    }
-                }
-                else
-                {
-                    buffer.append(lexeme.charAt(x));
-                }
-            }
-		    this.tokenClass = tokenClass;
-		    this.lexeme = buffer.toString();
-        }
-
-        else
-        {
-            this.tokenClass = tokenClass;
-            this.lexeme = lexeme;
-        }
+	    this.tokenClass = tokenClass;
+	    this.lexeme = lexeme;
 	}
 
 	public int getTokenClass()
@@ -107,7 +54,6 @@ public final class Token
 		{
 			return (lexeme.length() <= 1) ? "" : lexeme.substring(1, lexeme.length() - 1);
 		}
-
 		return lexeme;
 	}
 

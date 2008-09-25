@@ -1,32 +1,17 @@
-
 [Compiler] Error #1093: Syntax error.
-   temp.fla, Ln 1, Col 1: 
-   \?\?\?\? 
-   ^
-
+/Users/peted/opensource/flex/sdk/trunk/modules/asc/test/compiler/as3/Directives/Include/temp.fla, Ln 1, Col 1:
+\?\?\?\?
+^
 [Compiler] Error #1093: Syntax error.
-   temp.fla, Ln 1, Col 2: 
-   \?\?\?\? 
-   .^
-
+/Users/peted/opensource/flex/sdk/trunk/modules/asc/test/compiler/as3/Directives/Include/temp.fla, Ln 1, Col 2:
+\?\?\?\?
+.^
 [Compiler] Error #1093: Syntax error.
-   temp.fla, Ln 1, Col 3: 
-   \?\?\?\? 
-   ..^
-
+/Users/peted/opensource/flex/sdk/trunk/modules/asc/test/compiler/as3/Directives/Include/temp.fla, Ln 1, Col 4:
+\?\?\?\?
+...^
 [Compiler] Error #1093: Syntax error.
-   temp.fla, Ln 1, Col 4: 
-   \?\?\?\? 
-   ...^
-
-[Compiler] Error #1093: Syntax error.
-   temp.fla, Ln 1, Col 5: 
-   \?\?\?\? 
-   ....^
-
-[Compiler] Error #1093: Syntax error.
-   temp.fla, Ln 1, Col 6: 
-   \?\?\?\? 
-   .....^
-
-6 errors found
+/Users/peted/opensource/flex/sdk/trunk/modules/asc/test/compiler/as3/Directives/Include/temp.fla, Ln 1, Col 6:
+\?\?\?\?
+.....^
+4 errors found

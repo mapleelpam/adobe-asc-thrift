@@ -83,7 +83,7 @@ public class InputBuffer
     
 	public InputBuffer(InputStream in, String encoding, String origin)
 	{   
-		CharBuffer cb = createBuffer(in, encoding);
+		final CharBuffer cb = createBuffer(in, encoding);
         text = cb.array();
 		init(origin,0,0);
 	}
@@ -207,15 +207,9 @@ public class InputBuffer
         // Convert/decode to CharBuffer
         
         CharBuffer cb = cs.decode(bb);
-       
-        if ( false ) // If some stripping is needed, do it in place.
-        {
-            trim_format_controls(cb);
-        }
+
         return cb;
 	}
-    
-    
     
      private void buildLineMap(char[] src, int max) 
      {
@@ -308,76 +302,9 @@ public class InputBuffer
          return lineMap[l-1];
      }
      
-     /**
-      * ecma standard says strip the following characters
-      * --This is off for now, until we find a user that wants it.
-      * --when we do, it'll get enabled according to an --strict-ecma flag or something.
-      * --FIXME -- this needs to be implemented as a screener in the nextchar/retract methods to keep filepos references correct.
-      * @param cb - the source text
-      */
-     
-     private void trim_format_controls(CharBuffer cb)
-     {
-         char[] buf = cb.array();
-         cb.flip();
-         
-         int len = cb.remaining();
-         char c;
-         int i,j;
-
-         for ( i = j = 0; j < len;)
-         {
-             c = buf[j];
-         
-             // Skip Unicode 3.0 format-control (general category Cf in
-             // Unicode Character Database) characters.
-
-             switch (c)
-             {
-             case 0x070f: // SYRIAC ABBREVIATION MARK
-             case 0x180b: // MONGOLIAN FREE VARIATION SELECTOR ONE
-             case 0x180c: // MONGOLIAN FREE VARIATION SELECTOR TWO
-             case 0x180d: // MONGOLIAN FREE VARIATION SELECTOR
-                 // THREE
-             case 0x180e: // MONGOLIAN VOWEL SEPARATOR
-             case 0x200c: // ZERO WIDTH NON-JOINER
-             case 0x200d: // ZERO WIDTH JOINER
-             case 0x200e: // LEFT-TO-RIGHT MARK
-             case 0x200f: // RIGHT-TO-LEFT MARK
-             case 0x202a: // LEFT-TO-RIGHT EMBEDDING
-             case 0x202b: // RIGHT-TO-LEFT EMBEDDING
-             case 0x202c: // POP DIRECTIONAL FORMATTING
-             case 0x202d: // LEFT-TO-RIGHT OVERRIDE
-             case 0x202e: // RIGHT-TO-LEFT OVERRIDE
-             case 0x206a: // INHIBIT SYMMETRIC SWAPPING
-             case 0x206b: // ACTIVATE SYMMETRIC SWAPPING
-             case 0x206c: // INHIBIT ARABIC FORM SHAPING
-             case 0x206d: // ACTIVATE ARABIC FORM SHAPING
-             case 0x206e: // NATIONAL DIGIT SHAPES
-             case 0x206f: // NOMINAL DIGIT SHAPES
-             case 0xfeff: // ZERO WIDTH NO-BREAK SPACE
-             case 0xfff9: // INTERLINEAR ANNOTATION ANCHOR
-             case 0xfffa: // INTERLINEAR ANNOTATION SEPARATOR
-             case 0xfffb: // INTERLINEAR ANNOTATION TERMINATOR
-                 j++;
-                 break; // skip it.
-             default:
-                 if ( i != j )
-                     buf[i] = c;
-                 i++;
-                 j++;
-                 break;
-             }
-         }
-         
-         while ( j > i )
-              buf[i++] = 0;
-     }
-
-
     /**
      * Scanner position mark
-      * Scanner only.
+     * Scanner only.
      */
 
     public int textMark()
@@ -422,21 +349,6 @@ public class InputBuffer
         if ( textPos > 0 )
             textPos--;
 	}
-
-	/*
-	 * classOfNext
-	 */
-
-    // utilities used by classOfNext
-    final private int unHex(char c)
-    {
-       return Character.digit(c,16);
-    }
-
-    final private boolean isHex(char c)
-    {
-        return Character.digit(c,16) != -1;
-    }
 
 	// utility for java branch only to convert a Character.getType() unicode type specifier to one of the enums
 	//  defined in CharacterClasses.java.  In the c++ branch, we use the character as an index to a table defined
@@ -485,37 +397,45 @@ public class InputBuffer
 	}
 
     /**
-     * Needs work, note that this method advances the input cursor 'textPos'
+     * Advance the input cursor if advance is true.
      * @return the Unicode character class of the current
      * character
      */
     
-	public char classOfNext()
+	public char nextcharClass(char c, boolean advance)
 	{
-        char c;
-        
-        c = text[textPos-1];
+        int distance = 0;
 
         if( c == '\\' && text[textPos] == 'u' )
         {
-            char c1,c2,c3,c4;
-            c1 = text[textPos+1];
-            c2 = text[textPos+2];
-            c3 = text[textPos+3];
-            c4 = text[textPos+4];
-            if ( isHex(c1) & isHex(c2) & isHex(c3) & isHex(c4) ){
+            int y, digit, thisChar=0;
                 
-                /*  This is a jdk 1.5 only feature.  However, we only support 16bit chars, so its
-                *    o.k. to cast to (char) instead
-                * char[] ca = Character.toChars(ic);
-                * c = ca[0];
-                */
+            for( y = textPos+1; y < textPos + 5 && y < text.length; y++ )
+            {
+                digit = Character.digit( text[y],16 );
+                if (digit == -1)
+                    break;
+                thisChar = (thisChar << 4) + digit;
+            }
+            
+            if ( y == textPos+5 && Character.isDefined((char)thisChar) ) 
+            {
+                c = (char) thisChar;
+                distance = 5;
+            }
+            else {
+                    
+                /*
+                 * eat one on error --just to be consistent with asc-test expected error print!
+                 * FIXME: Update the Scanner to produce an unknown escape error message.
+                 */
                 
-                int ic = (((((unHex(c1)  << 4) + unHex(c2)) << 4) + unHex(c3)) << 4) + unHex(c4);
-                c = (char) ic;
-                textPos += 5; // ??? advances textPos
-            }  
+                distance = 1;
+            }
         }
+        if ( advance )
+            textPos += distance;
+        
         return javaTypeOfToCharacterClass(Character.getType(c));
 	}
 
@@ -552,29 +472,89 @@ public class InputBuffer
 	 * copy
 	 */
 
+    private boolean has_escape( char[]src, int from, int to)
+    {
+        for (int i = from; i <= to; i++)
+        {
+            if (src[i] == '\\')
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean has_u_escape( char[]src, int from, int to)
+    {
+        for (int i = from; i <= to; i++)
+        {
+            if (src[i] == '\\' && i < to && src[i+1] == 'u' )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private String escapeUnicode(char[] src, int from, int to)
+    {
+        int len = 1+to-from;
+        
+        if (has_u_escape(src,from,to)==false)
+        {
+            return String.valueOf(src,from,len);
+        }
+   
+       final StringBuilder buf = new StringBuilder(len);
+        
+        for (int i = from; i <= to; i++)
+        {
+            char c = src[i];
+            if (c == '\\' && i < to)
+            {   
+                if ( src[i+1] == 'u' )
+                { 
+                    int thisChar = 0;
+                    int y, digit;
+                    // calculate numeric value, bail if invalid
+                    for( y=i+2; y<i+6 && y < to+1; y++ )
+                    {
+                        digit = Character.digit( src[y],16 );
+                        if (digit == -1)
+                            break;
+                        thisChar = (thisChar << 4) + digit;
+                    }
+                    if ( y != i+6 || Character.isDefined((char)thisChar) == false )  // if there was a problem or the char is invalid just escape the '\''u' with 'u'
+                    {
+                        c = src[++i];
+                    }
+                    else // use Character class to convert unicode codePoint into a char ( note, this will handle a wider set of unicode codepoints than the c++ impl does).
+                    {
+                        // jdk 1.5.2 only, but handles extended chars:  char[] ca = Character.toChars(thisChar);
+                        c = (char)thisChar;
+                        i += 5;
+                    }
+                }
+            }
+            buf.append(c);
+        }
+        return buf.toString();
+    }
+    
     /**
-     * Needs work: should be a general scan utility function.
      * Copies a string from index <from> to <to>, interpreting escape characters
   	 */
+    
 	private String escapeString(char[] src, int from, int to)
 	{
 		// C: only 1 string in 1000 needs escaping and the lengths of these strings are usually small,
 		//    so we can cut StringBuilder usage if we check '\\' up front.
            
 		int len = 1+to-from;
-		boolean required = false;
 
-		for (int i = from; i <= to; i++)
+		if (has_escape(src,from,to)==false)
 		{
-			if (src[i] == '\\')
-			{
-				required = true;
-				break;
-			}
-		}
-		if (!required)
-		{
-            return String.copyValueOf(src,from,len);
+            return String.valueOf(src,from,len);
 		}
 
         final StringBuilder buf = new StringBuilder(len);
@@ -585,6 +565,7 @@ public class InputBuffer
 			if (c == '\\')
 			{
 				int c2 = src[i + 1];
+                
 				switch (c2)
 				{
 					case '\'':
@@ -665,25 +646,25 @@ public class InputBuffer
 								c = 0xb;
 								++i;
 								break;
+                                
 							case 'x':
-							{
-								if ( i+3 < to && isHex(src[i+2]) && isHex(src[i+3]))
-								{
-									c = (char) ((unHex(src[i+2]) << 4) + unHex(src[i+3]));
-									i += 3;
-									/*  Character.toChars is a jdk 1.5 only feature.  However, we only support 16bit chars, so its
-									 *    o.k. to cast to (char) instead
-									 * char[] ca = Character.toChars(ic);
-									 * c = ca[0];
-									 */
-								}
-								else // invalid number, just skip the '\' escape char
-								{
-									i++;
-									c = 'x';
-								}
+							{  
+                                int d1,d2;
+                                
+                                if ( i+4 > to || 
+                                     (d1 = Character.digit(src[i+2],16)) == -1 || 
+                                     (d2 = Character.digit(src[i+3],16)) == -1 )
+                                {
+                                    ++i;
+                                    c = 'x';
+                                }
+                                else
+                                {
+                                    i += 3;
+                                    c = (char) ((d1 << 4) + d2);
+                                }
                                 break;
-							} // end case 'x'
+                            }
 
 							default:
 								c = src[++i];
@@ -698,34 +679,54 @@ public class InputBuffer
 		return buf.toString();
 	}
 
-	/** 
-     * Copies interpreting escaped characters
+ 
+    /** 
+     * A variety of copy methods...could this be simpler?
      * @return String
      */
     
-	public String copy()
-	{
+    public String copy()
+    {
         assert textMarkPos >= 0 && textPos > textMarkPos : "copy(): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos + "text.length = " + text.length;
         
-		return escapeString(text, textMarkPos, textPos-1);
-	}
+        return String.valueOf(text,textMarkPos,textPos-textMarkPos);
+    }
     
-    public String copy(boolean needs_escape)
+    public String copyReplaceStringEscapes(boolean needs_escape)
     {
-        assert textMarkPos >= 0 && textPos > textMarkPos : "copy(boolean): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos;
+        assert textMarkPos >= 0 && textPos > textMarkPos : "copyReplaceStringEscapes(boolean): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos;
         
         if ( needs_escape )
             return escapeString(text, textMarkPos, textPos-1);
-        return String.copyValueOf(text,textMarkPos,textPos-textMarkPos);
+        
+        return String.valueOf(text,textMarkPos,textPos-textMarkPos);
     }
     
-    public String copy(int begin, int end)
+    public String substringReplaceUnicodeEscapes(int begin, int end)
     {
         int len = (end-begin) + 1;
         
-        assert ( len > 0);
+        if ( len <= 0 )
+            return null;  // this is on purpose. xml cons doesn't always check.
         
-        return String.copyValueOf(text, begin, len);
+        return escapeUnicode(text,begin,end);
+    }
+    
+    public String copyReplaceUnicodeEscapes()
+    {
+        assert textMarkPos >= 0 && textPos > textMarkPos : "copyReplaceUnicodeEscapes(): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos;
+        
+        return escapeUnicode(text, textMarkPos, textPos-1);
+    }
+    
+    public String copyReplaceUnicodeEscapes(boolean needs_escape)
+    {
+        assert textMarkPos >= 0 && textPos > textMarkPos : "copyReplaceUnicodeEscapes(boolean): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos;
+        
+        if ( needs_escape )
+            return escapeUnicode(text, textMarkPos, textPos-1);
+        
+        return String.valueOf(text,textMarkPos,textPos-textMarkPos);
     }
     
     // ??? the following two methods are for temporary experimentation with reserved word lookup in Scanner
@@ -739,16 +740,12 @@ public class InputBuffer
     {
         return textPos - textMarkPos; // assumes pos is +1
     }
-
+    
     /**
-     * FIXME: called from one random method way off somewhere else.
-     * This method should be deleted.
-     * @return should return a source reference.
+     * 
+     * @param srcPos
+     * @return column position (from 1..n)
      */
-    public int getCurrentPos()
-    {
-            return textPos + startSourcePos;
-    }
     
     public int getColPos(int srcPos)
 	{
@@ -763,7 +760,7 @@ public class InputBuffer
     public String getLineText(int srcPos)
     {
         int i, start;
-        final StringBuilder buf = new StringBuilder(128);
+        //final StringBuilder buf = new StringBuilder(128);
         
         start = getLineStartPos(srcPos);
 
@@ -777,9 +774,9 @@ public class InputBuffer
             // Turn the following on to get linepointer ....^ to line up
             //if ( c == '\t' )
             //    c = ' ';
-            buf.append(c); 
+          //  buf.append(c); 
         }
-        return buf.toString();
+        return String.valueOf(text,start,i-start);//buf.toString();
     }
     
     /**

@@ -1487,7 +1487,7 @@ public final class NodeFactory implements ErrorConstants
     public PackageDefinitionNode startPackage(Context cx,AttributeListNode attrs, PackageNameNode name)
     {
     	if (cx.scriptAssistParsing)
-    		 return startPackage(cx, attrs, name, cx.input.getCurrentPos());
+    		 return startPackage(cx, attrs, name, cx.input.positionOfNext());
     	else
     		return startPackage(cx, attrs, name, -1);
     }

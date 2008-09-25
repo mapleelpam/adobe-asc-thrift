@@ -356,7 +356,7 @@ public final class Parser
     public Parser(Context cx, InputStream in, String origin, String encoding, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack)
     {
 	    init(cx, origin, emit_doc_info, save_comment_nodes, block_kind_stack);
-        scanner = new Scanner(cx, in, encoding, origin, save_comment_nodes);
+        scanner = new Scanner(cx, in, encoding, origin, save_comment_nodes|emit_doc_info);
         this.encoding = encoding;
     }
 
@@ -380,7 +380,7 @@ public final class Parser
 	public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack)
 	{
 		init(cx, origin, emit_doc_info, save_comment_nodes, block_kind_stack);
-	    scanner = new Scanner(cx, in, origin, save_comment_nodes);
+	    scanner = new Scanner(cx, in, origin, save_comment_nodes|emit_doc_info);
 	}
 
     public Parser(Context cx, String in, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack, boolean is_include)
