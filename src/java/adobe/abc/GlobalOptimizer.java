@@ -100,7 +100,8 @@ import static java.lang.Boolean.FALSE;
  * OP_add_d
  * OP_concat
  */
- 
+
+
 /**
  * @author Edwin Smith
  */
@@ -117,10 +118,13 @@ public class GlobalOptimizer
 	
 	boolean verbose_mode=false;
 	boolean legacy_verifier=false;  
+	
+	static TraceManager tm = new TraceManager();
 
 	public static void main(String[] args) throws IOException
 	{
-		GlobalOptimizer go = new GlobalOptimizer(); 
+		GlobalOptimizer go = new GlobalOptimizer();
+		
  		List<InputAbc> a = new ArrayList<InputAbc>();
  		List<Integer> lengths = new ArrayList<Integer>();
 		String filename = null;
@@ -162,13 +166,29 @@ public class GlobalOptimizer
 				go.verboseStatus("legacy_verifier set to " + go.legacy_verifier);
 				continue;
 			}
+			if ( args[i].equals("-allow_native_ctors"))
+			{
+				go.ALLOW_NATIVE_CTORS = true;
+				continue;
+			}
+			if ( args[i].equals("-trace") && i+1 < args.length )
+			{
+				i++;
+				tm.enable(new PrintWriter(new FileWriter(args[i])));
+				pushTracePhase("GlobalOptimizer");
+				continue;
+			}
 			if(args[i].equals("--")) {
 				first_exported_file = a.size();
 				continue;
             }
 
 			filename = args[i];
+			int load_phase = pushTracePhase("LoadFile");
+			addTraceAttr("filename", filename);
+			
 			before = load(filename);
+			
 			lengths.add(before.length);
 			InputAbc ia = go.new InputAbc();
 			ia.readAbc(before);
@@ -177,6 +197,8 @@ public class GlobalOptimizer
 				ia.obscure_natives();
 				obscure_natives = false;
 			}
+			
+			unwindTrace(load_phase);
 		}
 
 		if ( 0 == args.length || first_exported_file >= a.size() )
@@ -202,8 +224,14 @@ public class GlobalOptimizer
 		}
 		
 		// Optimize the combined ABC file and emit.
+		byte[] after = null;
+
+		pushTracePhase("Optimize");
 		go.optimize(first);
-		byte[] after = go.emit(first, filename, initScripts, no_c_gen);
+		after = go.emit(first, filename, initScripts, no_c_gen);
+		
+		unwindTrace(0);
+
 		
 		//  Print summary statistics.
 		if ( ! quiet_mode )
@@ -606,6 +634,8 @@ public class GlobalOptimizer
 		void readBody(Reader p)
 		{
 			Method m = methods[p.readU30()];
+			int body_phase = pushTracePhase("readBody");
+			addTraceAttr("method", m);
 			m.max_stack = p.readU30();
 			m.local_count = p.readU30();
 			m.max_scope = -(p.readU30()-p.readU30());
@@ -619,7 +649,9 @@ public class GlobalOptimizer
 			if (m.name != null)
 				act.name = m.name.append(" activation");
 			readTraits(p, act);
+			unwindTrace(body_phase);
 		}
+
 
 		Method readMethod(Reader p, int[] methodpos, int i)
 		{
@@ -888,15 +920,25 @@ public class GlobalOptimizer
 
 		void readCode(Method m, Reader p, Reader ptry)
 		{
+			
+			int read_code_phase = pushTracePhase("readCode");
+			addTraceAttr("Method", m);
+			addTraceAttr("code_start", p.pos);
+
 			int local_count = m.local_count;
 			int end_pos = p.pos + m.code_len;
 			
 			// initial state of frame
+			
 			Expr[] frame = new Expr[local_count + m.max_scope + m.max_stack];
 			Map<Integer,Block> blocks = new TreeMap<Integer,Block>();
 			Map<Block,FrameState> states = new TreeMap<Block,FrameState>();
 			int scopep = local_count;
 			int sp = local_count+m.max_scope;
+			traceEntry("InitialFrame");
+			addTraceAttr("length", frame.length);
+			addTraceAttr("sp", sp);
+			addTraceAttr("scopep", scopep);
 			
 			m.entry = new Edge(m,null,0);
 			Block b = createBlock(m, m.entry, states, frame, sp, scopep);
@@ -934,41 +976,80 @@ public class GlobalOptimizer
 			
 			BitSet trylabels = new BitSet();
 			BitSet catchlabels = new BitSet();
+			
+			//  Remember start position of the code reader to compute
+			//  relative offsets vs. absolute positions.
 			int code_start = p.pos;
-			int try_start = ptry.pos;
+			int try_start = ptry.pos;  //  FIXME: use m.handlers-based processing, remove this
 			
 			Handler[] handlers = m.handlers = new Handler[ptry.readU30()];
-			for (int j = 0, n=handlers.length; j < n; j++)
+			
+			if ( handlers.length > 0 )
 			{
-				Handler h = handlers[j] = new Handler();
-				
-				int from = ptry.readU30();
-				int to = ptry.readU30();
-				int target = ptry.readU30();
-				h.type = lookup(ptry.readU30()).ref.nonnull();
-				Name name = h.name = names[ptry.readU30()];
-				Type a = new Type(name,ANY);
-				h.activation = a.ref.nonnull();
-				Binding bind = new Binding(TRAIT_Var, name, this);
-				bind.type = h.type;
-				a.defs.put(name, bind);
+				int handler_setup_trace_phase = pushTracePhase("HandlerSetup");
+				for (int j = 0, n=handlers.length; j < n; j++)
+				{
+					Handler h = handlers[j] = new Handler();
+					
+					int from = ptry.readU30();
+					int to = ptry.readU30();
+					int target = ptry.readU30();
+					h.type = lookup(ptry.readU30()).ref.nonnull();
+					int name_idx = ptry.readU30();
+					Name name = h.name = names[name_idx];
 
-				trylabels.set(from);
-				trylabels.set(to);
-				catchlabels.set(target);
+					//  The name may be null if the catch variable
+					//  did not have a name.
+					//  NOTE: Also see the emitCode write logic.
+					if ( name != null )
+					{
+						Type a = new Type(name,ANY);
+						h.activation = a.ref.nonnull();
+						Binding bind = new Binding(TRAIT_Var, name, this);
+						bind.type = h.type;
+						a.defs.put(name, bind);
+					}
+					
+					traceEntry("Handler");
+					addTraceAttr("from", from);
+					addTraceAttr("to", to);
+					addTraceAttr("target", target);
+					addTraceAttr("name", h.name);
+	
+					trylabels.set(from);
+					trylabels.set(to);
+					catchlabels.set(target);
+				}
+				unwindTrace(handler_setup_trace_phase);
 			}
+			
+			int block_trace_phase = pushTracePhase("Block");
+			addTraceAttr("Block", b);
 			
 			boolean reachable = true;
 			while (p.pos < end_pos)
 			{
 				int pos = p.pos;
 				int op = p.readU8();
+				
+				boolean is_catch_block = catchlabels.get(pos-code_start);
 
 				if (op == OP_label || blocks.containsKey(p.pos-1) ||
-						trylabels.get(pos-code_start) ||
-						catchlabels.get(pos-code_start))
+						trylabels.get(pos-code_start) || is_catch_block )
 				{
+					int new_block_phase = pushTracePhase("NewBlock");
+					if  ( OP_label == op )
+						addTraceAttr("OP_label");
+					if ( blocks.containsKey(p.pos-1) )
+						addTraceAttr("branchTarget");
+					if ( trylabels.get(pos-code_start) )
+						addTraceAttr("tryBoundary");
+					if ( is_catch_block )
+						addTraceAttr("catchTarget");
+					addTraceAttr("reachable", reachable);
+	
 					Edge edge = null;
+					
 					if (reachable)
 					{
 						assert(!catchlabels.get(pos-code_start));
@@ -977,51 +1058,95 @@ public class GlobalOptimizer
 						{
 							b.add(e = new Expr(m,OP_jump));
 							e.succ = new Edge[] { edge = new Edge(m,b,0,blocks.get(pos)) };
+							addTraceAttr("SynthesizedJump", e);
 						}
 						else
 						{
 							edge = succ[0];
 						}
+						traceEntry("Successor");
+						addTraceAttr("Edge", edge);
 					}
-					else if (catchlabels.get(pos-code_start))
+					
+					//  For non-catch blocks, the block's saved stack frame
+					//  needs to be updated with the current stack frame --
+					//  this may create that saved stack frame as a 
+					//  side effect.  For a catch block, the stack frame
+					//  set up by the catch handler is already present
+					//  and is known to be the correct starting state
+					//  of the block.
+					if (! is_catch_block)
 					{
-						scopep = local_count;
-						sp = local_count + m.max_scope + 1;
+						merge(m,edge, blocks, states, pos, frame, sp, scopep);
 					}
-					merge(m,edge, blocks, states, pos, frame, sp, scopep);
+					else
+					{
+						traceEntry("CatchBlock");
+					}
+
 					b = blocks.get(pos);
+					assert(b != null);
 					FrameState state = states.get(b);
+					assert(state != null);
 					System.arraycopy(state.frame, 0, frame, 0, frame.length);
 					sp = state.sp;
 					scopep = state.scopep;
+
+					traceFrame("BlockStartingFrame", m, frame, scopep, sp);
+										
 					reachable = true;
+
+					unwindTrace(new_block_phase);
+					
+					unwindTrace(block_trace_phase);
+					block_trace_phase = pushTracePhase("Block");
+					addTraceAttr("Block", b);
+				}
+				// now we know what block we're in and pos is where it starts.
+				
+				//  Do we need to set up exception handlers?
+				if (handlers.length > 0 && b.xsucc == noedges)
+				{
+					// start of new block, add handlers.
+					
+					int handlers_resolution_trace_phase = pushTracePhase("HandlerResolution");
+					addTraceAttr("offset", pos - code_start);
+					
+					List<Edge> xsucc = new ArrayList<Edge>();
+					ptry.pos = try_start;
+					int n=ptry.readU30();
+					addTraceAttr("NumHandlers", n);
+					
+					for (int j=0; j < n; j++)
+					{
+						int from = code_start + ptry.readU30();
+						int to = code_start + ptry.readU30();
+						int target = code_start + ptry.readU30();
+
+						traceEntry("Handler");
+						addTraceAttr("from", from - code_start);
+						addTraceAttr("to", to - code_start);
+						addTraceAttr("target", target - code_start);
+						
+						if (pos >= from && pos < to)
+						{
+							addTraceAttr("activeHandler");
+							Edge edge = new Edge(m, b, j, handlers[j]);
+							xmerge(m, edge, blocks, states, target, frame, sp, scopep);
+							xsucc.add(edge);
+						}
+						ptry.readU30(); // type
+						ptry.readU30(); // name
+					}
+					
+					b.xsucc = xsucc.toArray(new Edge[xsucc.size()]);
+					unwindTrace(handlers_resolution_trace_phase);
 				}
 				
-				// now we know what block we're in and pos is where it starts.
-				if (handlers.length > 0)
-				{
-					if (b.xsucc == noedges)
-					{
-						// start of new block.
-						List<Edge> xsucc = new ArrayList<Edge>();
-						ptry.pos = try_start;
-						for (int j=0,n=ptry.readU30(); j < n; j++)
-						{
-							int from = code_start + ptry.readU30();
-							int to = code_start + ptry.readU30();
-							int target = code_start + ptry.readU30();
-							if (pos >= from && pos < to)
-							{
-								Edge edge = new Edge(m, b, j, handlers[j]);
-								xmerge(m, edge, blocks, states, target, frame, sp, scopep);
-								xsucc.add(edge);
-							}
-							ptry.readU30(); // type
-							ptry.readU30(); // name
-						}
-						b.xsucc = xsucc.toArray(new Edge[xsucc.size()]);
-					}
-				}
+				int insn_process_phase = pushTracePhase("Insn");
+				addTraceAttr("offset", pos-code_start);
+				addTraceAttr("op", op);
+				addTraceAttr("opName", opNames[op]);
 				
 				switch (op)
 				{
@@ -1046,6 +1171,7 @@ public class GlobalOptimizer
 				{
 					// includes a null pointer check and moves value to scope stack, so this isn't just a copy
 					b.add(frame[scopep++] = e = new Expr(m, op, frame, sp--, 1));
+					traceEntry("scopep", scopep);
 					break;
 				}
 
@@ -1053,6 +1179,7 @@ public class GlobalOptimizer
 					b.add(e = new Expr(m, op));
 					e.scopes = new Expr[] { frame[--scopep] };
 					frame[scopep] = null;
+					traceEntry("scopep", scopep);
 					break;
 					
 				case OP_nextname:
@@ -1086,6 +1213,7 @@ public class GlobalOptimizer
 				case OP_getglobalscope:
 					b.add(e = frame[sp++] = new Expr(m, op));
 					e.scopes = capture(frame, scopep, scopep-local_count);
+					traceEntry("scopep", scopep);
 					break;
 					
 				case OP_getscopeobject:
@@ -1249,6 +1377,7 @@ public class GlobalOptimizer
 					e = new Expr(m,op);
 					e.m = methods[p.readU30()];
 					e.scopes = capture(frame, scopep, scopep-local_count);
+					traceEntry("scopep", scopep);
 					b.add(frame[sp++] = e);
 					break;
 				}
@@ -1257,6 +1386,7 @@ public class GlobalOptimizer
 				{
 					e = new Expr(m, op, frame, sp, 1);
 					e.scopes = capture(frame, scopep, scopep-local_count);
+					traceEntry("scopep", scopep);
 					e.c = classes[p.readU30()];
 					b.add(frame[sp-1] = e);
 					break;
@@ -1574,6 +1704,7 @@ public class GlobalOptimizer
 					int ii = p.readU30();
 					if (!STRIP_DEBUG_INFO)
 						b.add(e = new Expr(m,op, strings[ii]));
+					addTraceAttr("file", strings[ii]);
 					break;
 				}	
 
@@ -1583,6 +1714,7 @@ public class GlobalOptimizer
 					int ii = p.readU30();
 					if (!STRIP_DEBUG_INFO)
 						b.add(e = new Expr(m,op, ii));
+					addTraceAttr("line", ii);
 					break;
 				}
 				case OP_debug:
@@ -1620,11 +1752,14 @@ public class GlobalOptimizer
 					System.err.println("Unknown ABC bytecode "+op);
 					assert (false);
 				}
+				
+				unwindTrace(insn_process_phase);
 			}
 			
 			dce(m);
+			
+			unwindTrace(read_code_phase);
 		}
-		
 	}
 	
 	// vm-wide lookup tables
@@ -1709,6 +1844,17 @@ public class GlobalOptimizer
 		public String toString()
 		{
 			return kind + " " + String.valueOf(name);
+		}
+	}
+	
+	static class StrictComparator<T> implements Comparator
+	{
+		public int compare(Object o1, Object o2)
+		{
+			if ( o1 != o2)
+				return 1;
+			else
+				return 0;
 		}
 	}
 	
@@ -2249,7 +2395,8 @@ public class GlobalOptimizer
 	 * If Method.hashCode() is modified, then Method will need a unique ID to 
 	 * make this set work.
 	 */
-	Set<Integer> already_processed = new TreeSet<Integer>();
+	Set<Method> already_processed = new TreeSet<Method>(new StrictComparator<Method>());
+	
 	
 	void readyType(Type t)
 	{
@@ -2261,10 +2408,10 @@ public class GlobalOptimizer
 	
 	void readyMethod(Method m)
 	{
-		if (m.entry != null && ! already_processed.contains(m.hashCode()) )
+		if (m.entry != null && ! already_processed.contains(m) )
 		{
 			ready.add(m);
-			already_processed.add(m.hashCode());
+			already_processed.add(m);
 		}
 	}
 	
@@ -2599,7 +2746,7 @@ public class GlobalOptimizer
 			for (int i=1, n=m.params.length; i < n; i++)
 				addTypeRef(m.params[i]);
 			
-			if (PRESERVE_METHOD_NAMES)	
+			if (PRESERVE_METHOD_NAMES )	
 				addName(m.debugName); // debug name
 			
 			if (m.hasOptional())
@@ -2616,7 +2763,8 @@ public class GlobalOptimizer
 			
 			for (Handler t: m.handlers)
 			{
-				addName(t.name);
+				if ( t.name != null )
+					addName(t.name);
 				addTypeRef(t.type);
 			}
 
@@ -3432,11 +3580,21 @@ public class GlobalOptimizer
 
 	void emitBlock(AbcWriter out, Block b, Abc abc)
 	{
+		int emit_block_trace_phase = pushTracePhase("emitBlock");
+		addTraceAttr("Block", b);
+		
 		// emit all but the last instruction of each block.
 		for (Expr e: b)
 		{
+			//  Don't emit control-flow insns here;
+			//  they're handled by intrablock
+			//  processing.
 			if (e.succ != null)
 				break;
+			
+			traceEntry("Expr", "id", e);
+			addTraceAttr("op", opNames[e.op]);
+			
 			out.write(e.op);
 			switch (e.op)
 			{
@@ -3554,21 +3712,34 @@ public class GlobalOptimizer
 				break;
 			}
 		}
+		
+		unwindTrace(emit_block_trace_phase);
 	}
 	
 	void emitCode(AbcWriter out, Abc abc, Method m) throws IOException
 	{
+		int emit_code_trace_phase = pushTracePhase("EmitCode");
+		addTraceAttr("Method", m);
+		
 		Map<Block,Integer> padding = new HashMap<Block,Integer>();
 		Deque<Block> code = schedule(m.entry.to);
 		Map<Block,AbcWriter> writers = new HashMap<Block,AbcWriter>();
 		
-		// find the back edges to see where we need labels
+		//  Find back edges to see where we need labels
+		//  Note: can't use isBackedge() here b/c schedule
+		//  may not lay out blocks in the same order.
 		BitSet labels = new BitSet();
+		BitSet done = new BitSet();
 		
 		for (Block b: code)
+		{
+			done.set(b.id);
 			for (Edge e: b.succ())
-				if ( e.isBackedge() )
+				if ( done.get(e.to.id) )
+				{
 					labels.set(e.to.id);
+				}
+		}
 
 		// emit the code and leave room for the branch offsets,
 		// and compute the final position of each block.
@@ -3579,29 +3750,41 @@ public class GlobalOptimizer
 		while (!work.isEmpty())
 		{
 			Block b = work.removeFirst();
+			int block_trace_phase = pushTracePhase("Block");
+			addTraceAttr("Block", b);
+			addTraceAttr("pos", code_len);
 			pos.put(b,code_len);
 			AbcWriter w = new AbcWriter();
 			writers.put(b, w);
 			if (labels.get(b.id))
+			{
+				addTraceAttr("hasLabel");
 				w.write(OP_label);
+			}
 			emitBlock(w, b, abc);
 			
 			code_len += w.size();
 			Expr last = b.last();
+	
 			if (last.succ.length == 0)
 			{
 				 // returnvoid, returnvalue, or throw
 				w.write(last.op);
 				code_len++;
+				traceEntry("TransferOut", "op", opNames[last.op]);
 			}
 			else if (isJump(last))
 			{
+				traceEntry("Jump", "target", last.succ[0].to);
 				if (work.isEmpty() || last.succ[0].to != work.peekFirst())
 				{
 					// target is not fall through block so we'll emit a jump.
 					code_len += 4;
 					padding.put(b, 4);
+					addTraceAttr("fallThrough", false);
 				}
+				else
+					addTraceAttr("fallThrough", true);
 			}
 			else if (isBranch(last))
 			{
@@ -3622,26 +3805,45 @@ public class GlobalOptimizer
 				assert(false);//TODO
 			}
 			blockends.put(b,code_len);
+			unwindTrace(block_trace_phase);
 		}
 
 		out.writeU30(code_len);
 		int code_start = out.size();
+		traceEntry("WriteCode", "Start", code_start);
 		for (Block b: code)
 		{
+			int write_block_trace_phase = pushTracePhase("WriteBlock");
+			addTraceAttr("Block", b);
+			addTraceAttr("postorder", b.postorder);
+			addTraceAttr("startPos", out.size());
+			addTraceAttr("offset", out.size() - code_start);
 			writers.get(b).writeTo(out);
 			if (padding.containsKey(b))
 			{
 				Expr last = b.last();
+				
+				int trace_phase_jump = pushTracePhase("endOfBlockBranch");
+				addTraceAttr("Expr", last);
+				addTraceAttr("op", opNames[last.op]);
+				addTraceAttr("padding", padding.get(b));
+
 				if (isBranch(last))
 				{
+					addTraceAttr("isBranch");
 					emitBranch(out, last.op, last.succ[1].to, code_start, pos);
 					padding.put(b, padding.get(b)-4);
 				}
 				if (padding.get(b) == 4)
 				{
+					traceEntry("ImpliedJump");
+					addTraceAttr("EdgeId", last.succ[0].id);
 					emitBranch(out, OP_jump, last.succ[0].to, code_start, pos);
 				}
+				unwindTrace(trace_phase_jump);
 			}
+			
+			unwindTrace(write_block_trace_phase);
 		}
 
 		out.writeU30(m.handlers.length);
@@ -3668,15 +3870,29 @@ public class GlobalOptimizer
 			verboseStatus("handler "+h.entry+ " ["+from+","+to+")->"+off);
 			out.writeU30(off);
 			out.writeU30(abc.typeRef(h.type));
-			out.writeU30(abc.namePool.id(h.name));
+			//  See corresponding logic
+			//  in readCode() where the 
+			//  handler's read in.
+			if ( h.name != null )
+				out.writeU30(abc.namePool.id(h.name));
+			else
+				out.writeU30(0);
 		}
+
+		unwindTrace(emit_code_trace_phase);
 	}
 	
 	void emitBranch(AbcWriter out, int op, Block target, int code_start, Map<Block,Integer>pos)
 	{
+		traceEntry("emitBranch");
+		addTraceAttr("op", opNames[op]);
+		addTraceAttr("target", target);
 		out.write(op);
 		int to = code_start + pos.get(target);
 		int from = out.size()+3;
+		addTraceAttr("to", to);
+		addTraceAttr("from", from);
+		addTraceAttr("offset", to-from);
 		out.writeS24(to-from);
 	}
 	
@@ -3769,7 +3985,7 @@ public class GlobalOptimizer
 		verboseStatus("");
 	}
 	
-	public static byte[] optimize( byte[] raw_abc, java.util.Vector<String> imports )
+	public static byte[] optimize( byte[] raw_abc, java.util.Vector<String> imports, boolean legacy_verifier )
 	throws java.io.IOException
 	{
 		GlobalOptimizer go = new GlobalOptimizer();
@@ -3784,6 +4000,7 @@ public class GlobalOptimizer
 		InputAbc input_abc = go.new InputAbc();
 		input_abc.readAbc(raw_abc);
 	
+		go.legacy_verifier = legacy_verifier;
 		go.optimize(input_abc);
 	
 		Abc abc = go.new Abc();
@@ -3950,7 +4167,6 @@ public class GlobalOptimizer
 	 * been split by previous operations may be removed by this pass.
 	 * 
 	 * Should we only do this pass on non-ssa form?
-	 * @param entry
 	 */
 	boolean cfgopt(Method m)
 	{
@@ -4186,18 +4402,23 @@ public class GlobalOptimizer
 			from = f;
 			label = i;
 			id = m.edgeId++;
+			traceEntry("Edge");
+			addTraceAttr("id", id);
+			addTraceAttr("from", f);
 		}
 		
 		Edge(Method m, Block f, int i, Block t)
 		{
 			this(m,f,i);
 			to = t;
+			addTraceAttr("to", t);
 		}
 		
 		Edge(Method m, Block f, int i, Handler h)
 		{
 			this(m,f,i);
 			handler = h;
+			addTraceAttr("handler", h);
 		}
 		
 		public int id()
@@ -5459,6 +5680,11 @@ public class GlobalOptimizer
 			case OP_getscopeobject:
 				v = values.get(e.scopes[0].args[0]);
 				tref = types.get(e.scopes[0].args[0]);
+				if ( tref == null )
+				{
+					//  FIXME: Should be more thorough.
+					tref = ANY.ref;
+				}
 				break;
 				
 			case OP_newclass:
@@ -5823,7 +6049,12 @@ public class GlobalOptimizer
 				Typeref t0 = types.get(e.args[0]);
 				Object v0 = values.get(e.args[0]);
 				Type t = namedTypes.get(e.ref);
-				if (t == STRING)
+				if ( null == t )
+				{
+					//  The type wasn't imported.  Fake it.
+					t = ANY;
+				}
+				else if (t == STRING)
 				{
 					tref = eval_coerce_s(t0);
 					v = eval_coerce_s(v0);
@@ -6039,6 +6270,7 @@ public class GlobalOptimizer
 			case OP_debugfile:
 			case OP_bkpt:
 			case OP_bkptline:
+			case OP_checkfilter:
 				return;
 			}
 		}
@@ -6089,6 +6321,11 @@ public class GlobalOptimizer
 					tref = aref;
 				else if (!tref.equals(aref))
 					tref = mdb(tref,aref);
+			}
+			
+			if ( null == tref )
+			{
+				tref = ANY.ref;
 			}
 			// make nullable types nullable at top of loop so verifier
 			// won't ever need to iterate.
@@ -7209,6 +7446,9 @@ public class GlobalOptimizer
 			Map<Block,Deque<Expr>> exprs,
 			ConflictGraph cg)
 	{
+		int sched_greedy_phase = pushTracePhase("sched_greedy");
+		addTraceAttr("Method", m);
+		
 		SetMap<Block,Expr> liveout = new SetMap<Block,Expr>();
 		Map<Block,Deque<Expr>> stkout = new TreeMap<Block,Deque<Expr>>();
 		Map<Block,Deque<Expr>> scpout = new TreeMap<Block,Deque<Expr>>();
@@ -7238,7 +7478,8 @@ public class GlobalOptimizer
 
 			Set<Expr> out_of_order = new TreeSet<Expr>();
 			
-			verboseStatus("Block " + b.toString());
+			int block_phase = pushTracePhase("Block");
+			addTraceAttr("block", b.toString());
 
 			live.addAll(liveout.get(b));
 			for (Expr l: live)
@@ -7254,7 +7495,8 @@ public class GlobalOptimizer
 					showstate(live, stk, scp, verbose);
 					
 					Expr e = remove_dup(stk, m, out, verbose);
-					verboseStatus("Popped " + formatExpr(e) + " from stack");
+					int pop_stack_phase = pushTracePhase("PopStack");
+					addTraceAttr("Expr", formatExpr(e));
 					
 					if (e.inLocal() || e.op == OP_phi ||
 						e != in.peekLast() || stk.contains(e))
@@ -7269,15 +7511,15 @@ public class GlobalOptimizer
 						else
 						*/
 						{
-							if ( verbose_mode )
-							{
-								verboseStatus(" loading " + e.toString() + " because ");
-								if ( e.inLocal() ) verboseStatus("e.inLocal()");
-								if ( e.op == OP_phi ) verboseStatus("e.op == OP_phi");
-								if ( e != in.peekLast() ) verboseStatus(e.toString() + " != last Expr: " + formatExpr(in.peekLast()) );
-								if ( stk.contains(e) ) verboseStatus("stk.contains(" + e.toString() + ")");
-							}
+							int force_load_phase = pushTracePhase("ForceLoad");
+							addTraceAttr("expr", e);
+							if ( e.inLocal() ) addTraceAttr("inLocal");
+							else if ( e.op == OP_phi ) addTraceAttr("OP_phi");
+							else if ( e != in.peekLast() ) addTraceAttr("stackMismatch", e.toString() + " != last Expr: " + formatExpr(in.peekLast()) );
+							else if ( stk.contains(e) ) addTraceAttr("stackOverload", "stk.contains(" + e.toString() + ")");
+
 							issue_load(e, m, out, verbose, live, locals);
+							unwindTrace(force_load_phase);
 						}
 					}
 					else if (live.contains(e))
@@ -7285,10 +7527,10 @@ public class GlobalOptimizer
 						// stack top ready to be issued but it's live. issue store.
 						// push e back twice: once for store, once to consume.  then
 						// go around loop once more to handle the dup + issue.
-						verboseStatus(" define() and issue_store() live Expr " + e.toString());
+						traceEntry("DefineLiveExpr", e);
 						define(e,live,cg);
 						issue_store(e, m, out, verbose, stk);
-						verboseStatus("  pushing" + e.toString() + "back on stack");
+						traceEntry("PushBack", e);
 						stk.add(e);
 					}
 					else if (e.op == OP_xarg)
@@ -7300,9 +7542,10 @@ public class GlobalOptimizer
 					else
 					{
 						// e is ready to issue
-						verboseStatus(" issuing " + e);
+						traceEntry("IssueExpr", e);
 						issue_expr(in.removeLast(), m, out, verbose, stk, scp, live, locals);
 					}
+					unwindTrace(pop_stack_phase);
 					continue;
 				}
 
@@ -7310,10 +7553,11 @@ public class GlobalOptimizer
 				{
 					showstate(live, stk, scp, verbose);
 					Expr e = in.removeLast();
-					verboseStatus("Processing next insn " + formatExpr(e));
+					int process_insn_phase = pushTracePhase("ProcessInsn");
+					addTraceAttr("Expr", formatExpr(e));
 					if ( out_of_order.contains(e) )
 					{
-						verboseStatus(".. already issued " + e );
+						traceEntry("IssuedOutOfOrder", e );
 						continue;
 					}
 					else if (e.op == OP_phi)
@@ -7330,18 +7574,18 @@ public class GlobalOptimizer
 					{
 						if (live.contains(e))
 						{
-							verboseStatus(" live Expr " + e);
+							traceEntry("LiveExpr", e);
 							define(e,live,cg);
 							if (e.onStack())
 							{
-								verboseStatus("  storing live Expr " + e + " from stack");
+								traceEntry("StoreLiveExprFromStack ", e);
 								issue_store(e, m, out, verbose, stk);
-								verboseStatus("   recycling " + e);
+								traceEntry("PushBackOnStack", e);
 								in.add(e);
 							}
 							else if (e.inLocal())
 							{
-								verboseStatus("  issuing live Expr " + e);
+								traceEntry("IssueExprFromLocal", e);
 								issue_expr(e, m, out, verbose, stk, scp, live, locals);
 							}
 						}
@@ -7352,16 +7596,23 @@ public class GlobalOptimizer
 						}
 						else
 						{
-							verboseStatus(" non-live Expr " + e);
+							int non_live_phase = pushTracePhase("NonLiveExpr");
+							addTraceAttr("Expr", e);
 							if (e.onStack())
+							{
+								traceEntry("StackPop", e);
 								issue_pop(m,out,verbose,e);
+							}
 							issue_expr(e, m, out, verbose, stk, scp, live, locals);
+							unwindTrace(non_live_phase);
 						}
 					}
+					unwindTrace(process_insn_phase);
 				}
 			}
 			
 			fwd_state(m, locals, pred, liveout, stkout, scpout, work, b, live, stk, scp, verbose, out, phis);
+			unwindTrace(block_phase);
 		}
 		verboseStatus("STK_LIVEOUT " + liveout);
 		verboseStatus("CONFLICTS " + cg);
@@ -7375,8 +7626,70 @@ public class GlobalOptimizer
 					print((Expr)o); 
 				else 
 					verboseStatus(o);
-		}		
+		}
+		unwindTrace(sched_greedy_phase);
 		return cg;
+	}
+
+	static int pushTracePhase(String phaseName) 
+	{
+		return tm.pushPhase(phaseName);
+	}
+	
+	static void traceEntry(String traceTag)
+	{
+		tm.traceEntry(traceTag);
+	}
+	
+	static void traceEntry(String traceTag, String attrValue)
+	{
+		tm.traceEntry(traceTag, attrValue);
+	}
+	
+	static void traceEntry(String traceTag, String attrName, String attrValue)
+	{
+		tm.traceEntry(traceTag, attrName, attrValue);
+	}
+	
+	static void traceEntry(String traceTag, String attrName, Object attrValue)
+	{
+		tm.traceEntry(traceTag, attrName, attrValue.toString());
+	}
+	
+	static void traceEntry(String traceTag, int attrValue)
+	{
+		tm.traceEntry(traceTag, attrValue);
+	}
+	
+	static void traceEntry(String traceTag, Object attrValue)
+	{
+		tm.traceEntry(traceTag, attrValue.toString());
+	}
+	
+	
+	static void unwindTrace(int phase_level)
+	{
+		tm.unwind(phase_level);
+	}
+	
+	static void addTraceAttr(String attrName)
+	{
+		tm.addAttr(attrName, "true");
+	}
+	
+	static void addTraceAttr(String attrName, Object attr) 
+	{
+		tm.addAttr(attrName, attr);
+	}
+	
+	static void addTraceAttr(String attrName, int attr) 
+	{
+		tm.addAttr(attrName, attr);
+	}
+	
+	static void addTraceAttr(String attrName, String attr) 
+	{
+		tm.addAttr(attrName, attr);
 	}
 
 	void showstate(Set<Expr> live, Deque<Expr> stk, Deque<Expr> scp, Deque<Object> verbose)
@@ -7701,43 +8014,50 @@ public class GlobalOptimizer
 	
 	void define(Expr e, Set<Expr> live, ConflictGraph cg)
 	{
-		verboseStatus("define() kills " + e.toString());
+		traceEntry("Define", "killed", e.toString());
 		live.remove(e);
 		for (Expr l: live)
 			cg.add(e,l);
 	}
-	
+
 	void issue_expr(Expr e, Method m, Deque<Expr>out, Deque<Object> verbose, Deque<Expr>stk, Deque<Expr>scp, Set<Expr>live, Map<Integer,Integer> locals)
 	{
-		verboseStatus("issue_expr(" + formatExpr(e) + ")");
+		int issue_phase = pushTracePhase("issue_expr");
+		addTraceAttr("Expr", e);
 		if (!e.isSynthetic())
 			out.addFirst(e);
 		verbose.addFirst(e);
 		for (Expr a: e.args)
 		{
-			verboseStatus(".. pushing " + formatExpr(a));
+			traceEntry("PushArg", "Expr", a);
 			stk.add(a);
 		}
 		for (Expr a: e.locals)
+		{
+			traceEntry("UseLocal", "Expr", a);
 			use(a, live, locals);
+		}
 		try_dup(stk, m, out, verbose);
+		unwindTrace(issue_phase);
 	}
 	
 	void issue_store(Expr e, Method m, Deque<Expr>out, Deque<Object> verbose, Deque<Expr>stk)
 	{
 		Expr set = setlocal(m, e.id, e);
-		verboseStatus("issue_store(" + formatExpr(set) + ")");
+		int store_phase = pushTracePhase("issue_store");
+		addTraceAttr("setlocalExpr", formatExpr(set));
 		out.addFirst(set);
 		verbose.addFirst(set);
-		verboseStatus(".. pushing " + formatExpr(e));
+		traceEntry("Push", formatExpr(e));
 		stk.add(e);
+		unwindTrace(store_phase);
 	}
 	
 	void issue_dup(Expr e, Method m, Deque<Expr>out, Deque<Object> verbose)
 	{
 		Expr dup = dup(m,e);
 		out.addFirst(dup);
-		verboseStatus("issue_dup(" + dup.toString() + ")");
+		traceEntry("issue_dup", dup);
 		verbose.addFirst(dup);
 	}
 	
@@ -7753,15 +8073,17 @@ public class GlobalOptimizer
 		use(e, live, locals);
 		Expr get = getlocal(m,e.id);
 		out.addFirst(get);
-		verboseStatus("issue_load(" + formatExpr(get) + ")");
+		traceEntry("issue_load", get);
 		verbose.addFirst(get);
 	}
 
 	void use(Expr e, Set<Expr> live, Map<Integer, Integer> locals)
 	{
-		verboseStatus("use() enlivining " + formatExpr(e));
+		traceEntry("use");
+		addTraceAttr("Expr", e);
 		live.add(e);
 		locals.put(e.id, e.op == OP_arg ? e.imm[0] : -1);
+		addTraceAttr("locals_entry", locals.get(e.id));
 	}
 	
 	void rename(Expr e, Expr[] args, Map<Expr,Expr> map, EdgeMap<Expr> ssaSucc)
@@ -7970,7 +8292,6 @@ public class GlobalOptimizer
 	 * the list of idom(b) from b to entry, as presented by
 	 * Cooper, Harvey, and Kennedy:
 	 * http://citeseer.ist.psu.edu/cooper01simple.html
-	 * @param entry
 	 * @return
 	 */
 	Map<Block,Block> idoms(Deque<Block> all, SetMap<Block,Edge>pred)
@@ -8677,10 +8998,17 @@ public class GlobalOptimizer
 	
 	Block createBlock(Method m, Edge edge, Map<Block,FrameState>states, Expr[] frame, int sp, int scopep)
 	{
+		int block_trace_phase = pushTracePhase("createBlock");
 		Block b = new Block(m);
+		addTraceAttr("Block", b);
 		FrameState state = new FrameState(frame,sp,scopep);
+
 		if (edge != null)
+		{
 			edge.to = b;
+			traceEntry("Edge");
+			addTraceAttr("to", b);
+		}
 		for (int i=0; i < sp; i++)
 		{
 			if (isLive(i,m,scopep) && frame[i] != null)
@@ -8694,7 +9022,9 @@ public class GlobalOptimizer
 				b.add(state.frame[i] = e);
 			}
 		}
+		traceFrame("NewBlockFrame", m, frame, scopep, sp);
 		states.put(b, state);
+		unwindTrace(block_trace_phase);
 		return b;
 	}
 	
@@ -8713,6 +9043,9 @@ public class GlobalOptimizer
 	 */
 	void merge(Method m, Edge edge, Map<Integer,Block> blocks, Map<Block,FrameState> states, int pos, Expr[] frame, int sp, int scopep)
 	{
+		int merge_trace_phase = pushTracePhase("merge");
+		addTraceAttr("Edge", edge);
+		
 		if (!blocks.containsKey(pos))
 		{
 			Block b = createBlock(m,edge,states,frame,sp,scopep);
@@ -8721,8 +9054,9 @@ public class GlobalOptimizer
 		else if (edge != null)
 		{
 			edge.to = blocks.get(pos);
-			merge(m, edge, states, frame, sp, scopep);
+			mergeFrameStates(m, edge, states, frame, sp, scopep);
 		}
+		unwindTrace(merge_trace_phase);
 	}
 	
 	/**
@@ -8734,23 +9068,45 @@ public class GlobalOptimizer
 	 * @param sp
 	 * @param scopep
 	 */
-	void merge(Method m, Edge edge, Map<Block,FrameState>states, Expr[] frame, int sp, int scopep)
+	void mergeFrameStates(Method m, Edge edge, Map<Block,FrameState>states, Expr[] frame, int sp, int scopep)
 	{
+		int merge_trace_phase = pushTracePhase("mergeFrameStates");
 		FrameState target = states.get(edge.to);
+		
+		/*
+		//  FIXME: There are a restricted set of circumstances
+		//  where it's permissible to have a stack mismatch --
+		//  asc doesn't completely restore scope stacks at a join
+		//  from a catch block to a return, for example.
+		//  Need a bottom value or sth similar to represent this.
+		
 		assert(target.sp == sp);
 		assert(target.scopep == scopep);
+		*/
 		for (int i=0; i < sp; i++)
 		{
 			if (isLive(i,m,scopep) && frame[i] != target.frame[i])
 			{
-				assert(frame[i] != null && target.frame[i].op == OP_phi);
-				target.frame[i].append(frame[i], edge);
+				if ( target.frame[i] == null )
+				{
+					//  FIXME: See above comment;
+					//  only valid value here is 
+					//  an invalid value.
+				}
+				else
+				{
+					assert(frame[i] != null && target.frame[i].op == OP_phi);
+					target.frame[i].append(frame[i], edge);
+				}
 			}
 		}
+		
+		unwindTrace(merge_trace_phase);
 	}
 
 	void xmerge(Method m, Edge edge, Map<Integer,Block> blocks, Map<Block,FrameState> states, int pos, Expr[] frame, int sp, int scopep)
 	{
+		int xmerge_trace_phase = pushTracePhase("xmerge");
 		scopep = m.local_count;
 		sp = scopep + m.max_scope;
 		
@@ -8759,6 +9115,7 @@ public class GlobalOptimizer
 		if (h.entry == null)
 		{
 			// first time, create handler block that jumps to catch block
+			addTraceAttr("firstTime");
 			Block hb = h.entry = createBlock(m, edge, states, frame, sp, scopep);
 			Expr xarg, jump;
 			hb.add(xarg = new Expr(m,OP_xarg, edge.label));
@@ -8767,6 +9124,11 @@ public class GlobalOptimizer
 			Expr save = frame[sp];
 			frame[sp] = xarg;
 			
+			traceEntry("HandlerBlock");
+			addTraceAttr("Block", hb);
+			addTraceAttr("Edge", edge);
+			traceFrame("Frame", m, frame, scopep, sp);
+			
 			// and merge the handler block with the real exception target.
 			merge(m, jump.succ[0], blocks, states, pos, frame, sp+1, scopep);
 			frame[sp] = save;
@@ -8774,11 +9136,50 @@ public class GlobalOptimizer
 		else
 		{
 			// each time, merge current state with handler block state.
+			addTraceAttr("notFirstTime");
 			edge.to = h.entry;
-			merge(m, edge, states, frame, sp, scopep);
+			mergeFrameStates(m, edge, states, frame, sp, scopep);
 		}
+		unwindTrace(xmerge_trace_phase);
 	}
 	
+	void traceFrame(String desc, Method m, Expr[] frame, int scopep, int sp)
+	{
+		int frame_trace_phase = pushTracePhase(desc);
+		int locals_trace_phase = pushTracePhase("Locals");
+		
+		int i = 0;
+		for ( i = 0; i < m.local_count; i++ )
+		{
+			traceEntry("Local");
+			addTraceAttr("number", i);
+			addTraceAttr("value", frame[i]);
+		}
+		unwindTrace(locals_trace_phase);
+		
+		int scope_stack_trace_phase = pushTracePhase("ScopeStack");
+		addTraceAttr("scopep", scopep);
+		for (; i < scopep; i++ )
+		{
+			traceEntry("Scope");
+			addTraceAttr("index", i);
+			addTraceAttr("value", frame[i]);
+		}
+		unwindTrace(scope_stack_trace_phase);
+		
+		int operand_trace_phase = pushTracePhase("OperandStack");
+		addTraceAttr("sp", sp);
+		for ( i = m.local_count + m.max_scope; i < sp; i++ )
+		{
+			traceEntry("Operand");
+			addTraceAttr("index", i);
+			addTraceAttr("value", frame[i]);
+		}
+		unwindTrace(operand_trace_phase);
+		
+		unwindTrace(frame_trace_phase);
+	}
+
 	static Expr[] capture(Expr[] frame, int top, int len)
 	{
 		Expr[] args = new Expr[len];
