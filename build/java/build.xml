@@ -278,4 +278,56 @@
        </java>
     </target>
 
+    <target name="pmd.check">
+        <property name="pmd.home" value="${basedir}/lib/tools/pmd"/>
+        <fail message="Unable to run PMD.  PMD was expected in ${pmd.home}/lib but was not found.">
+            <condition>
+                <not>
+                    <available file="${pmd.home}" type="dir" />
+                </not>
+            </condition>
+        </fail>
+    
+        <path id="pmd.class.path">
+            <fileset dir="${pmd.home}/lib">
+                <include name="**/*.jar"/>
+            </fileset>
+        </path>
+    	<condition property="pmd.available">
+            <available classname="net.sourceforge.pmd.ant.PMDTask"
+                classpathref="pmd.class.path"/>
+    	</condition>
+        <fail message="Unable to run PMD.  PMD was expected in ${pmd.home}/lib but was not found."
+              unless="pmd.available"/>
+    </target>
+
+    <target name="pmd" if="pmd.available" depends="pmd.check">
+        <delete file="pmdReport.xml" failOnError="false" />
+        
+        <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask">
+            <classpath>
+                <fileset dir="${pmd.home}">
+                    <include name="lib/**/*.jar"/>
+                    <include name="rulesets/*.xml"/>
+                </fileset>
+            </classpath>
+        </taskdef>
+        
+        <pmd shortFilenames="true" excludemarker="NOWARN"
+            rulesetfiles="${pmd.home}/rulesets/ascPMDRules.xml">
+            <formatter type="xml" toFile="pmdReport.xml" />
+            <fileset dir="${java.src.dir}" 
+                includes="**/**/*.java" 
+                excludes="macromedia/asc/embedding/WarningConstants.java"/>
+        </pmd>
+    </target>
+
+    <target name="pmd-report" depends="pmd"
+        description="Run PMD on code and create html report">
+        <delete file="pmdResults.htm" failOnError="false" />
+        <!-- create html report -->
+        <xslt in="pmdReport.xml" out="pmdReport.htm" 
+            style="${pmd.home}/etc/xslt/wz-pmd-report.xslt" /> 
+    </target>
+
 </project>
