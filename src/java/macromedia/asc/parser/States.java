@@ -45,8 +45,7 @@ public interface States
 	public static final int exponent_state = exponentstart_state + 1;
 	public static final int hexinteger_state = exponent_state + 1;
 	public static final int slashregexp_state = hexinteger_state + 1;
-	public static final int slashdiv_state = slashregexp_state + 1;
-	public static final int regexp_state = slashdiv_state + 1;
+	public static final int regexp_state = slashregexp_state + 1;
 
 	public static final int blockcommentstart_state = regexp_state+1;
 	public static final int blockcomment_state = blockcommentstart_state+1;

@@ -56,7 +56,8 @@ public class InputBuffer
     /**
      * input text, if a fragment, startSourcePos is non-zero
      */
-	private final char[] text;
+    
+    private final String text;
     private int textPos = 0;    // Scanner input cursor, current char + 1
     private int textMarkPos = 0;
     
@@ -78,25 +79,24 @@ public class InputBuffer
     
     public String origin; // sourcefilename
     public boolean report_pos = true;
-
-    
     
 	public InputBuffer(InputStream in, String encoding, String origin)
 	{   
-		final CharBuffer cb = createBuffer(in, encoding);
-        text = cb.array();
+        text = createBuffer(in, encoding);
 		init(origin,0,0);
 	}
 
 	public InputBuffer(String in, String origin)
 	{  
-		text = in.toCharArray(); // assumes any encoding required is already done.
+	    // assumes any encoding required is already done.
+        text = in;
 		init(origin,0,0);
 	}
     
     public InputBuffer(String in, String origin, int startPos, int startLine)
     {  
-        text = in.toCharArray(); // assumes any encoding required is already done.
+        // assumes any encoding required is already done.
+        text = in;
         init(origin,startPos,startLine);
         startSourcePos = startPos;
         startLineNumber = startLine;
@@ -118,20 +118,12 @@ public class InputBuffer
         startLineNumber = startLine;
 	}
 
-	private CharBuffer createBuffer(InputStream in, String encoding)
+	//private CharBuffer createBuffer(InputStream in, String encoding)
+    private String createBuffer(InputStream in, String encoding)
 	{
         
-        // load the input stream into a byte array
+        // load the input stream into a String
 
-// Buffered reads of the input file aren't too important if we're blocking the whole thing in memory
-// If we ever         
-//        if ( in instanceof FileInputStream )
-//        {
-//            // if in is a File, we can mmap it.
-//        }
-//        else {
-//        }
-  
         int i, len;
         byte [] b;
         ByteBuffer bb;
@@ -141,7 +133,7 @@ public class InputBuffer
             
             if ( i == 0 )
             {
-                return CharBuffer.allocate(0);
+                return "";
             }
 
             b = new byte[i];
@@ -208,10 +200,10 @@ public class InputBuffer
         
         CharBuffer cb = cs.decode(bb);
 
-        return cb;
+        return cb.toString();
 	}
     
-     private void buildLineMap(char[] src, int max) 
+     private void buildLineMap(String src, int max) 
      {
          int line = 0;
          int pos = 0;
@@ -220,9 +212,9 @@ public class InputBuffer
          while (pos < max) {
              lb[line++] = pos;
              do {
-                 char ch = src[pos];
+                 char ch = src.charAt(pos);
                  if (ch == '\r' || ch == '\n') {
-                     if (ch == '\r' && (pos+1) < max && src[pos+1] == '\n')
+                     if (ch == '\r' && (pos+1) < max && src.charAt(pos+1) == '\n')
                          pos += 2;
                      else
                          ++pos;
@@ -254,7 +246,7 @@ public class InputBuffer
              return 0;
          
          if (lineMap == null)
-             buildLineMap(text,text.length);
+             buildLineMap(text,text.length());
          
          if (pos == cachedLastLineMapPos)    
              return cachedLastLineMapIndex;
@@ -331,12 +323,12 @@ public class InputBuffer
 	{
 		int c;
         
-        if ( textPos >= text.length){
-            textPos = text.length + 1;
+        if ( textPos >= text.length()){
+            textPos = text.length() + 1;
             return 0;
         }
         
-		c = text[textPos++];
+		c = text.charAt(textPos++);
 		return c;
 	}
 	
@@ -406,13 +398,13 @@ public class InputBuffer
 	{
         int distance = 0;
 
-        if( c == '\\' && text[textPos] == 'u' )
+        if( c == '\\' && text.charAt(textPos) == 'u' )
         {
             int y, digit, thisChar=0;
                 
-            for( y = textPos+1; y < textPos + 5 && y < text.length; y++ )
+            for( y = textPos+1; y < textPos + 5 && y < text.length(); y++ )
             {
-                digit = Character.digit( text[y],16 );
+                digit = Character.digit( text.charAt(y),16 );
                 if (digit == -1)
                     break;
                 thisChar = (thisChar << 4) + digit;
@@ -472,11 +464,11 @@ public class InputBuffer
 	 * copy
 	 */
 
-    private boolean has_escape( char[]src, int from, int to)
+    private boolean has_escape( String src, int from, int to)
     {
-        for (int i = from; i <= to; i++)
+        for (int i = from; i < to; i++)
         {
-            if (src[i] == '\\')
+            if (src.charAt(i) == '\\')
             {
                 return true;
             }
@@ -484,11 +476,11 @@ public class InputBuffer
         return false;
     }
     
-    private boolean has_u_escape( char[]src, int from, int to)
+    private boolean has_u_escape( String src, int from, int to)
     {
-        for (int i = from; i <= to; i++)
+        for (int i = from; i < to; i++)
         {
-            if (src[i] == '\\' && i < to && src[i+1] == 'u' )
+            if (src.charAt(i) == '\\' && i < to && src.charAt(i+1) == 'u' )
             {
                 return true;
             }
@@ -496,37 +488,37 @@ public class InputBuffer
         return false;
     }
     
-    private String escapeUnicode(char[] src, int from, int to)
+    private String escapeUnicode(String src, int from, int to)
     {
-        int len = 1+to-from;
         
         if (has_u_escape(src,from,to)==false)
         {
-            return String.valueOf(src,from,len);
+            return src.substring(from,to);
         }
    
+       final int len = to-from;
        final StringBuilder buf = new StringBuilder(len);
         
-        for (int i = from; i <= to; i++)
+        for (int i = from; i < to; i++)
         {
-            char c = src[i];
+            char c = src.charAt(i);
             if (c == '\\' && i < to)
             {   
-                if ( src[i+1] == 'u' )
+                if ( src.charAt(i+1) == 'u' )
                 { 
                     int thisChar = 0;
                     int y, digit;
                     // calculate numeric value, bail if invalid
                     for( y=i+2; y<i+6 && y < to+1; y++ )
                     {
-                        digit = Character.digit( src[y],16 );
+                        digit = Character.digit( src.charAt(y),16 );
                         if (digit == -1)
                             break;
                         thisChar = (thisChar << 4) + digit;
                     }
                     if ( y != i+6 || Character.isDefined((char)thisChar) == false )  // if there was a problem or the char is invalid just escape the '\''u' with 'u'
                     {
-                        c = src[++i];
+                        c = src.charAt(++i);
                     }
                     else // use Character class to convert unicode codePoint into a char ( note, this will handle a wider set of unicode codepoints than the c++ impl does).
                     {
@@ -545,26 +537,25 @@ public class InputBuffer
      * Copies a string from index <from> to <to>, interpreting escape characters
   	 */
     
-	private String escapeString(char[] src, int from, int to)
+	private String escapeString(String src, int from, int to)
 	{
 		// C: only 1 string in 1000 needs escaping and the lengths of these strings are usually small,
 		//    so we can cut StringBuilder usage if we check '\\' up front.
-           
-		int len = 1+to-from;
 
 		if (has_escape(src,from,to)==false)
 		{
-            return String.valueOf(src,from,len);
+            return src.substring(from,to);
 		}
 
+        int len = to-from;
         final StringBuilder buf = new StringBuilder(len);
         
-		for (int i = from; i <= to; i++)
+		for (int i = from; i < to; i++)
 		{
-			char c = src[i];
+			char c = src.charAt(i);
 			if (c == '\\')
 			{
-				int c2 = src[i + 1];
+				int c2 = src.charAt(i + 1);
                 
 				switch (c2)
 				{
@@ -574,7 +565,7 @@ public class InputBuffer
                         
                     // strip escaped newlines    
                     case '\r':
-                        if ( src[i+2] == '\n' )
+                        if ( src.charAt(i+2) == '\n' )
                         {
                             i++;
                         }
@@ -594,14 +585,14 @@ public class InputBuffer
                         // calculate numeric value, bail if invalid
                         for( y=i+2; y<i+6 && y < to+1; y++ )
                         {
-                            digit = Character.digit( src[y],16 );
+                            digit = Character.digit( src.charAt(y),16 );
                             if (digit == -1)
                                 break;
                             thisChar = (thisChar << 4) + digit;
                         }
                         if ( y != i+6 || Character.isDefined((char)thisChar) == false )  // if there was a problem or the char is invalid just escape the '\''u' with 'u'
                         {
-                            c = src[++i];
+                            c = src.charAt(++i);
                         }
                         else // use Character class to convert unicode codePoint into a char ( note, this will handle a wider set of unicode codepoints than the c++ impl does).
                         {
@@ -615,7 +606,7 @@ public class InputBuffer
 				    {
 						if (PASS_ESCAPES_TO_BACKEND)
 						{
-							c = src[++i];
+							c = src.charAt(++i);
 							break; // else, unescape the unrecognized escape char
 						}
 	                    
@@ -652,8 +643,8 @@ public class InputBuffer
                                 int d1,d2;
                                 
                                 if ( i+4 > to || 
-                                     (d1 = Character.digit(src[i+2],16)) == -1 || 
-                                     (d2 = Character.digit(src[i+3],16)) == -1 )
+                                     (d1 = Character.digit(src.charAt(i+2),16)) == -1 || 
+                                     (d2 = Character.digit(src.charAt(i+3),16)) == -1 )
                                 {
                                     ++i;
                                     c = 'x';
@@ -667,7 +658,7 @@ public class InputBuffer
                             }
 
 							default:
-								c = src[++i];
+								c = src.charAt(++i);
 								break; // else, unescape the unrecognized escape char
 
 						} // end switch
@@ -687,9 +678,9 @@ public class InputBuffer
     
     public String copy()
     {
-        assert textMarkPos >= 0 && textPos > textMarkPos : "copy(): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos + "text.length = " + text.length;
+        assert textMarkPos >= 0 && textPos > textMarkPos : "copy(): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos + "text.length = " + text.length();
         
-        return String.valueOf(text,textMarkPos,textPos-textMarkPos);
+        return text.substring(textMarkPos,textPos);
     }
     
     public String copyReplaceStringEscapes(boolean needs_escape)
@@ -697,14 +688,14 @@ public class InputBuffer
         assert textMarkPos >= 0 && textPos > textMarkPos : "copyReplaceStringEscapes(boolean): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos;
         
         if ( needs_escape )
-            return escapeString(text, textMarkPos, textPos-1);
+            return escapeString(text, textMarkPos, textPos);
         
-        return String.valueOf(text,textMarkPos,textPos-textMarkPos);
+        return text.substring(textMarkPos,textPos);
     }
     
     public String substringReplaceUnicodeEscapes(int begin, int end)
     {
-        int len = (end-begin) + 1;
+        final int len = (end-begin);
         
         if ( len <= 0 )
             return null;  // this is on purpose. xml cons doesn't always check.
@@ -716,7 +707,7 @@ public class InputBuffer
     {
         assert textMarkPos >= 0 && textPos > textMarkPos : "copyReplaceUnicodeEscapes(): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos;
         
-        return escapeUnicode(text, textMarkPos, textPos-1);
+        return escapeUnicode(text, textMarkPos, textPos);
     }
     
     public String copyReplaceUnicodeEscapes(boolean needs_escape)
@@ -724,16 +715,16 @@ public class InputBuffer
         assert textMarkPos >= 0 && textPos > textMarkPos : "copyReplaceUnicodeEscapes(boolean): negative length copy textMarkPos =" + textMarkPos + " textPos = "+textPos;
         
         if ( needs_escape )
-            return escapeUnicode(text, textMarkPos, textPos-1);
+            return escapeUnicode(text, textMarkPos, textPos);
         
-        return String.valueOf(text,textMarkPos,textPos-textMarkPos);
+        return text.substring(textMarkPos,textPos);
     }
     
     // ??? the following two methods are for temporary experimentation with reserved word lookup in Scanner
     
     public char markCharAt(int offset)
     {
-        return text[textMarkPos-offset]; //???looks wrong...markPos+offset 
+        return text.charAt(textMarkPos-offset); //???looks wrong...markPos+offset 
     }
     
     public int markLength()
@@ -764,9 +755,9 @@ public class InputBuffer
         
         start = getLineStartPos(srcPos);
 
-        for (i = start; i < text.length; i++ )
+        for (i = start; i < text.length(); i++ )
         {
-            char c = text[i];
+            char c = text.charAt(i);
             
             if ( c == '\n' || c == '\r' || c == 0x00 || c == 0x2028 || c == 0x2029 )
                 break;
@@ -776,7 +767,7 @@ public class InputBuffer
             //    c = ' ';
           //  buf.append(c); 
         }
-        return String.valueOf(text,start,i-start);//buf.toString();
+        return text.substring(start,i);
     }
     
     /**

@@ -300,14 +300,9 @@ public final class Scanner implements ErrorConstants
         slash_context.removeLast();
     }
 
-    public boolean isSlashDivContext()
+    private boolean isSlashDivContext()
     {
         return slash_context.last() == slashdiv_context;
-    }
-
-    public boolean isSlashRegexpContext()   // ???  this method is not used.
-    {
-        return slash_context.last() == slashregexp_context;
     }
 
     /*
@@ -536,6 +531,7 @@ public final class Scanner implements ErrorConstants
         StringBuilder blockcommentbuf = null;
         char regexp_flags =0; // used to track option flags encountered in a regexp expression.  Initialized in regexp_state
         boolean maybe_reserved = false;
+        char c = 0;
 
         if (resetState)
         {
@@ -554,7 +550,7 @@ public final class Scanner implements ErrorConstants
 
                 case start_state:
                     {
-                        int c = nextchar();
+                        c = nextchar();
                         mark();
                         
                         switch (c)
@@ -570,7 +566,8 @@ public final class Scanner implements ErrorConstants
                             state = A_state;
                             continue;
                             
-                            case 0xffffffef: // ??? not in Character type range ???
+                            // could not have worked...case 0xffffffef: // ??? not in Character type range ???
+                        case 0xffef:
                                 state = utf8sig_state;
                                 continue;
                                 
@@ -855,9 +852,11 @@ public final class Scanner implements ErrorConstants
                  */
 
                 case A_state:
-               
+                {
+                    boolean needs_escape = c == '\\';   // ??? really should only be true if the word started with a backslash
+                
                     while ( true ){
-                        char c = nextchar();
+                        c = nextchar();
                         if ( c >= 'a' && c <= 'z' )
                         {
                             continue;
@@ -866,10 +865,16 @@ public final class Scanner implements ErrorConstants
                             maybe_reserved = false;
                             continue;
                         }
-                        if ( c <= 0x7f && c != '\\' ) // in ascii range & not a valid char
+                        if ( c <= 0x7f ) // in ascii range & mostly not a valid char
                         {
-                            retract();
-                            break;
+                            if ( c == '\\' )
+                            {
+                                needs_escape = true; // close enough, we just want to minimize rescans for unicode escapes
+                            }
+                            else {
+                                retract();
+                                break;
+                            }
                         }
 
                         // else outside ascii range (or an escape sequence )
@@ -887,7 +892,7 @@ public final class Scanner implements ErrorConstants
                     }
                     
                     state = start_state;   
-                    String s = input.copyReplaceUnicodeEscapes(!maybe_reserved); 
+                    String s = input.copyReplaceUnicodeEscapes(needs_escape); 
                     if ( maybe_reserved )
                     {
                         Integer i = reservedWord.get(s); 
@@ -900,7 +905,8 @@ public final class Scanner implements ErrorConstants
                     }
                     //String s = input.copy(); 
                     return makeTokenInstance(IDENTIFIER_TOKEN,s);
-               
+                }
+                
                 /*
                  * prefix: 0
                  * accepts: 0x... | 0X... | 01... | 0... | 0
@@ -1114,9 +1120,9 @@ public final class Scanner implements ErrorConstants
 
                 case slash_state:
                 {
-                    char c;
+                    c = nextchar();
               
-                    switch (nextchar())
+                    switch (c)
                     {   
                         case '/': // line comment
                             state = start_state;
@@ -1166,35 +1172,31 @@ public final class Scanner implements ErrorConstants
                             continue;
                     
                         default:
-                            retract(); // since we didn't use the current character for this decision.
+                            
                             if (isSlashDivContext())
                             {
-                                state = slashdiv_state;
+                                /*
+                                 * tokens: /> /= /
+                                 */
+                                
+                                state = start_state; 
+                                switch (c)
+                                {
+                                    case '>':
+                                        return XMLTAGENDEND_TOKEN;
+                                    case '=':
+                                        return DIVASSIGN_TOKEN;
+                                    default:
+                                        retract();
+                                        return DIV_TOKEN;
+                                }
                             }
-                            else
-                            {
-                                state = slashregexp_state;
-                            }
+ 
+                            state = slashregexp_state;
+                            retract(); // since we didn't use the current character for this decision.
                             continue;
                     }
                 }
-
-                    /*
-                     * tokens: / /=
-                     */
-
-                case slashdiv_state:
-                    state = start_state; 
-                    switch (nextchar())
-                    {
-                        case '>':
-                            return XMLTAGENDEND_TOKEN;
-                        case '=':
-                            return DIVASSIGN_TOKEN;
-                        default:
-                            retract();
-                            return DIV_TOKEN;
-                    }
 
                     /*
                      * tokens: /<regexpbody>/<regexpflags>
@@ -1400,6 +1402,7 @@ public final class Scanner implements ErrorConstants
                             case '=':
                                 state = start_state;
                                 return LESSTHANOREQUALS_TOKEN;
+                                
                             case '/': 
                                 state = start_state; 
                                 return XMLTAGSTARTEND_TOKEN;
@@ -1507,7 +1510,7 @@ public final class Scanner implements ErrorConstants
                         case '>':  
                         {
                             state = start_state;
-                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()-1));
+                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));
                         }
                         default:   state = xmlcdata_state; continue;
                     }
@@ -1539,7 +1542,7 @@ public final class Scanner implements ErrorConstants
                         case '>':  
                         {
                             state = start_state;
-                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()-1));
+                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));
                         }
                         default:   error(kError_Lexical_General); state = start_state; continue;
                     }
@@ -1558,7 +1561,7 @@ public final class Scanner implements ErrorConstants
                         case '>':  
                         {
                             state = start_state;
-                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()-1));
+                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));
                         }
                         default:   error(kError_Lexical_General); state = start_state; continue;
                     }
@@ -1569,7 +1572,7 @@ public final class Scanner implements ErrorConstants
                         case '<': case '{':  
                         {
                             retract();
-                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml,pos()-1);
+                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml,pos());
                             if( xmltext != null )
                             {
                                 state = start_state;
@@ -1608,7 +1611,7 @@ public final class Scanner implements ErrorConstants
                     {
                         case '{':  // return XMLPART_TOKEN
                             {
-	                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-2);
+	                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-1);
                                 return makeTokenInstance(XMLPART_TOKEN, xmltext);
                             }
                         case '<':
@@ -1635,7 +1638,7 @@ public final class Scanner implements ErrorConstants
                                             --level;
                                             if (level == 0)
                                             {
-	                                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos());
+	                                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()+1);
                                                 state = start_state;
                                                 return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
                                             }
@@ -1740,7 +1743,7 @@ public final class Scanner implements ErrorConstants
                                 {
                                     xmltagname = null;
                                 }
-	                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-2);
+	                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-1);
                                 return makeTokenInstance(XMLPART_TOKEN, xmltext);
                             }
                         case '>':
@@ -1754,14 +1757,14 @@ public final class Scanner implements ErrorConstants
                                     {
                                         if (temp.equals(xmltagname))
                                         {
-	                                        String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos());
+	                                        String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()+1);
                                             state = start_state;
                                             return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
                                         }
                                     }
                                     else
                                     {
-	                                    String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos());
+	                                    String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()+1);
                                         state = start_state;
                                         return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
                                     }
@@ -1849,7 +1852,7 @@ public final class Scanner implements ErrorConstants
 
                 case blockcommentstart_state:
                 {
-                    int c = nextchar();
+                    c = nextchar();
                     blockcommentbuf.append(c);
                     switch ( c )
                     {
@@ -1882,7 +1885,7 @@ public final class Scanner implements ErrorConstants
 
                 case doccomment_state:
                 {
-                    int c = nextchar();
+                    c = nextchar();
                     blockcommentbuf.append(c);
                     switch ( c )
                     {
@@ -1926,7 +1929,7 @@ public final class Scanner implements ErrorConstants
 
                 case doccommentstar_state:
                 {
-                    int c = nextchar();
+                    c = nextchar();
                     blockcommentbuf.append(c);
                     switch ( c )                    
                     {
@@ -1956,7 +1959,7 @@ public final class Scanner implements ErrorConstants
 
                 case doccommenttag_state:
                 {
-                    int c = nextchar();
+                    c = nextchar();
                     switch ( c )
                     {
                         case '*':  
@@ -2026,7 +2029,7 @@ public final class Scanner implements ErrorConstants
 
                 case blockcomment_state:
                 {
-                    int c = nextchar();
+                    c = nextchar();
                     blockcommentbuf.append(c);
                     switch ( c )                    
                     {
@@ -2040,7 +2043,7 @@ public final class Scanner implements ErrorConstants
 
                 case blockcommentstar_state:
                 {
-                    int c = nextchar();
+                    c = nextchar();
                     blockcommentbuf.append(c);
                     switch ( c )
                     {
