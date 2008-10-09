@@ -7289,7 +7289,7 @@ XMLElementContent
         return result;
     }
 
-    private StatementListNode parseConfigValues()
+    public StatementListNode parseConfigValues()
     {
         StatementListNode configs = null;
         String config_code = ctx.getConfigVarCode();
