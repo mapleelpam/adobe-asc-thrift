@@ -163,6 +163,7 @@ public class GlobalOptimizer
 			if ( args[i].equals("-legacy_verifier"))
 			{
 				go.legacy_verifier = !go.legacy_verifier;
+				addTraceAttr("legacy_verifier", go.legacy_verifier);
 				go.verboseStatus("legacy_verifier set to " + go.legacy_verifier);
 				continue;
 			}
@@ -176,6 +177,7 @@ public class GlobalOptimizer
 				i++;
 				tm.enable(new PrintWriter(new FileWriter(args[i])));
 				pushTracePhase("GlobalOptimizer");
+				addTraceAttr("timestamp", new Date());
 				continue;
 			}
 			if(args[i].equals("--")) {
@@ -1009,6 +1011,10 @@ public class GlobalOptimizer
 						bind.type = h.type;
 						a.defs.put(name, bind);
 					}
+					else
+					{
+						h.activation = ANY.ref.nonnull();
+					}
 					
 					traceEntry("Handler");
 					addTraceAttr("from", from);
@@ -1563,6 +1569,8 @@ public class GlobalOptimizer
 				case OP_ifstrictne:
 				{
 					b.add(e = new Expr(m, ifoper(op), frame, sp, 2));
+					traceEntry("ConditionalBranch");
+					addTraceAttr(e);
 					b.add(e = new Expr(m, OP_iffalse, new Expr[] { e }, 1, 1));
 					int offset = p.readS24();
 					sp-=2;
@@ -1582,6 +1590,8 @@ public class GlobalOptimizer
 				case OP_ifstricteq:
 				{
 					b.add(e = new Expr(m, ifoper(op), frame, sp, 2));
+					traceEntry("ConditionalBranch");
+					addTraceAttr(e);
 					b.add(e = new Expr(m, OP_iftrue, new Expr[] { e }, 1, 1));
 					int offset = p.readS24();
 					sp-=2;
@@ -1596,12 +1606,15 @@ public class GlobalOptimizer
 				case OP_lookupswitch:
 				{
 					b.add(e = new Expr(m,op, frame,sp--,1));
+					//  Default target
 					int target = pos+p.readS24();
-					int n = 1+p.readU30();
-					e.succ = new Edge[n+1];
-					e.succ[n] = new Edge(m,b, n, blocks.get(target));
-					merge(m,e.succ[n], blocks, states, target, frame, sp, scopep);
-					for (int i=0; i < n; i++)
+					// "There are case_count+1 case offsets."
+					int case_count = 1+p.readU30();
+					e.succ = new Edge[case_count+1];
+					//  Default case goes last.
+					e.succ[case_count] = new Edge(m,b, case_count, blocks.get(target));
+					merge(m,e.succ[case_count], blocks, states, target, frame, sp, scopep);
+					for (int i=0; i < case_count; i++)
 					{
 						target = pos+p.readS24();
 						e.succ[i] = new Edge(m,b, i, blocks.get(target));
@@ -1622,10 +1635,13 @@ public class GlobalOptimizer
 				
 				case OP_hasnext2:
 				{
+					int hasnext2_trace_phase = pushTracePhase("OP_hasnext2");
 					int oloc = p.readU30();
 					int iloc = p.readU30();
 					Expr index = frame[iloc];
 					Expr obj = frame[oloc];
+					addTraceAttr("index", index);
+					addTraceAttr("obj", obj);
 					b.add(e = frame[sp] = new Expr(m,op));
 					e.locals = new Expr[] { obj, index };
 					b.add(e = frame[oloc] = new Expr(m, OP_hasnext2_o));
@@ -1633,6 +1649,8 @@ public class GlobalOptimizer
 					b.add(e = frame[iloc] = new Expr(m, OP_hasnext2_i));
 					e.locals = new Expr[] { index };
 					sp++;
+					b.must_isolate_block = true;
+					unwindTrace(hasnext2_trace_phase);
 					break;
 				}
 				
@@ -3592,7 +3610,7 @@ public class GlobalOptimizer
 			if (e.succ != null)
 				break;
 			
-			traceEntry("Expr", "id", e);
+			traceEntry("Expr", "Expr", e);
 			addTraceAttr("op", opNames[e.op]);
 			
 			out.write(e.op);
@@ -3802,7 +3820,10 @@ public class GlobalOptimizer
 			else
 			{
 				assert(last.op == OP_lookupswitch);
-				assert(false);//TODO
+				//  Switch table contains a U30 case count and S24 offsets.
+				int switch_size = 1 + out.sizeOfU30(last.succ.length) + 3*last.succ.length;
+				code_len += switch_size;
+				padding.put(b, switch_size);
 			}
 			blockends.put(b,code_len);
 			unwindTrace(block_trace_phase);
@@ -3824,7 +3845,7 @@ public class GlobalOptimizer
 				Expr last = b.last();
 				
 				int trace_phase_jump = pushTracePhase("endOfBlockBranch");
-				addTraceAttr("Expr", last);
+				addTraceAttr(last);
 				addTraceAttr("op", opNames[last.op]);
 				addTraceAttr("padding", padding.get(b));
 
@@ -3839,6 +3860,10 @@ public class GlobalOptimizer
 					traceEntry("ImpliedJump");
 					addTraceAttr("EdgeId", last.succ[0].id);
 					emitBranch(out, OP_jump, last.succ[0].to, code_start, pos);
+				}
+				if ( last.op == OP_lookupswitch )
+				{
+					emitLookupswitch(out, last, code_start, pos);
 				}
 				unwindTrace(trace_phase_jump);
 			}
@@ -3882,6 +3907,7 @@ public class GlobalOptimizer
 		unwindTrace(emit_code_trace_phase);
 	}
 	
+
 	void emitBranch(AbcWriter out, int op, Block target, int code_start, Map<Block,Integer>pos)
 	{
 		traceEntry("emitBranch");
@@ -3894,6 +3920,33 @@ public class GlobalOptimizer
 		addTraceAttr("from", from);
 		addTraceAttr("offset", to-from);
 		out.writeS24(to-from);
+	}
+	
+	void emitLookupswitch(AbcWriter out, Expr insn_switch, int code_start, Map<Block, Integer> pos)
+	{
+		int emit_lookupswitch_trace_phase = pushTracePhase("emitLookupswitch");
+		
+		//  "The base location is the address of the lookupswitch instruction itself." - AVM2 
+		int base_loc = out.size();
+		addTraceAttr("baseLoc", base_loc);
+		
+		out.write(OP_lookupswitch);
+		int case_size = insn_switch.succ.length - 2;
+		addTraceAttr("case_size", case_size);
+		
+		int default_target = code_start + pos.get(insn_switch.succ[case_size + 1].to) - base_loc;
+		traceEntry("default", "target", default_target);
+		addTraceAttr("Block", insn_switch.succ[case_size + 1].to);
+		out.writeS24(default_target);
+		out.writeU30(case_size);
+		for ( int i = 0; i <= case_size; i++ )
+		{
+			int case_target = code_start + pos.get(insn_switch.succ[i].to) - base_loc;
+			traceEntry("case", "target", case_target);
+			addTraceAttr("Block", insn_switch.succ[i].to);
+			out.writeS24(case_target);
+		}
+		unwindTrace(emit_lookupswitch_trace_phase);
 	}
 	
 	boolean defaultValueChanged(Binding b)
@@ -3953,6 +4006,8 @@ public class GlobalOptimizer
 		if(m.entry == null)
 			return;
 		
+		int optimize_trace_phase = pushTracePhase("optimize");
+		addTraceAttr("Method", m);
 		verboseStatus("BEFORE OPT");		
 		verboseStatus("BEFORE OPT");
 		print(dfs(m.entry.to));
@@ -3983,6 +4038,7 @@ public class GlobalOptimizer
 		remove_phi(m);
 		printabc(schedule(m.entry.to));
 		verboseStatus("");
+		unwindTrace(optimize_trace_phase);
 	}
 	
 	public static byte[] optimize( byte[] raw_abc, java.util.Vector<String> imports, boolean legacy_verifier )
@@ -4185,7 +4241,7 @@ public class GlobalOptimizer
 				if (isJump(last) && sameExScope(b, taken=last.succ[0].to))
 				{
 					Edge s = last.succ[0];
-					if (containsOnly(pred.get(taken), s))
+					if (containsOnly(pred.get(taken), s) && !taken.must_isolate_block)
 					{
 						// phi nodes can only occur in nodes with more than one predecessor
 						assert(taken.first().op != OP_phi);
@@ -4692,6 +4748,19 @@ public class GlobalOptimizer
 	
 	Expr unwrapScope(Expr e, int i)
 	{
+		//  Phi pseudo-Exprs may appear in the scope stack
+		//  if the block immediately follows a try/catch,
+		//  or if the block is the fall-through alternative
+		//  of a conditional jump.  In either of these cases,
+		//  the compiler set up all phi inputs to refer back
+		//  to the same underlying object, so just traverse
+		//  back along the first dataflow edge.
+		while ( e.scopes[i].op == OP_phi )
+		{
+			assert(e.scopes[i].args != null && e.scopes[i].args[0] != null);
+			e.scopes[i] = e.scopes[i].args[0];
+		}
+		
 		assert(e.scopes[i].onScope());
 		return e.scopes[i].args[0];
 	}
@@ -4738,6 +4807,9 @@ public class GlobalOptimizer
 	 */
 	void sccp(Method m)
 	{
+		int sccp_trace_phase = pushTracePhase("sccp");
+		addTraceAttr("Method", m);
+		
 		// first build the SSA Edges.
 		Deque<Block> code = dfs(m.entry.to);
 		EdgeMap<Expr> uses = findUses(code);
@@ -4778,6 +4850,7 @@ public class GlobalOptimizer
 		dce(m);
 		//verboseStatus("after sccp");
 		//print(dfs(m.entry.to));
+		unwindTrace(sccp_trace_phase);
 	}
 
 	void sccp_cfgopt(Map<Expr, Object> values, Map<Expr,Typeref> types, Set<Edge> reached)
@@ -5315,6 +5388,9 @@ public class GlobalOptimizer
 
 	void sccp_rename(EdgeMap<Expr> uses, Expr e, Expr[]args)
 	{
+		int sccp_rename_trace_phase = pushTracePhase("sccp_rename");
+		addTraceAttr(e);
+		
 		for (int i=args.length-1; i >= 0; i--)
 		{
 			Expr a = args[i];
@@ -5322,9 +5398,13 @@ public class GlobalOptimizer
 			{
 				uses.get(a).remove(e);
 				a = args[i] = a.locals[0];
+				traceEntry("renamedLocal");
+				addTraceAttr(a);
 				uses.get(a).add(e);
 			}
 		}
+		
+		unwindTrace(sccp_rename_trace_phase);
 	}
 	
 	Map<Expr,Typeref> verify_types(Method m, Deque<Block> code, Map<Block,Block> idom)
@@ -5353,6 +5433,9 @@ public class GlobalOptimizer
 
 	void sccp_analyze(Method m, EdgeMap<Expr> uses, Map<Expr, Object> values, Map<Expr, Typeref> types, Set<Edge> reached)
 	{
+		int sccp_analyze_trace_phase = pushTracePhase("sccp_analyze");
+		addTraceAttr("Method", m);
+	
 		Set<Edge> flowWork = new WorkSet<Edge>();
 		Set<Expr> ssaWork = new WorkSet<Expr>();
 		Set<Expr> ready = new WorkSet<Expr>();
@@ -5377,10 +5460,16 @@ public class GlobalOptimizer
 			{
 				Expr e = remove(ssaWork);
 				if (ready.contains(e))
+				{
+					int sccp_eval_trace_phase = pushTracePhase("sccp_eval");
+					addTraceAttr("Expr", e);
 					sccp_eval(m, e, values, types, flowWork, ssaWork, uses);
+					unwindTrace(sccp_eval_trace_phase);
+				}
 			}
 		}
 		while (!flowWork.isEmpty());
+		unwindTrace(sccp_analyze_trace_phase);
 	}
 	
 	boolean isCopy(Expr e, Map<Expr,Type>types, Set<Expr>upcasts)
@@ -6949,6 +7038,9 @@ public class GlobalOptimizer
 		verboseStatus("BEFORE SCHED");
 		print(code);
 		
+		int remove_phi_trace_phase = pushTracePhase("remove_phi");
+		addTraceAttr(m);
+		
 		restused:
 		if (m.needsArguments() || m.needsRest())
 		{
@@ -7065,6 +7157,7 @@ public class GlobalOptimizer
 		
 		// some of the edges we split didn't need to be.
 		cfgopt(m);
+		unwindTrace(remove_phi_trace_phase);
 	}
 	
 	/**
@@ -7075,6 +7168,9 @@ public class GlobalOptimizer
 	 */
 	void killCruftyLocals(Method m)
 	{
+		int kill_cruft_trace_phase = pushTracePhase("killCruftyLocals");
+		addTraceAttr(m);
+		
 		Deque<Block> code = dfs(m.entry.to);
 		SetMap<Block, Edge>pred = preds(code);
 		
@@ -7129,6 +7225,8 @@ public class GlobalOptimizer
 						{
 							if ( ! (current_state.isPhiInput(p, suspect_local) || current_state.getLivein().get(suspect_local) || killed_vars.get(b).get(suspect_local)) )
 							{	
+								traceEntry("killed");
+								addTraceAttr("variable", suspect_local.intValue());
 								p.to.exprs.addFirst(new Expr(m, OP_kill, suspect_local.intValue()));
 								killed_vars.get(b).set(suspect_local);
 							}
@@ -7145,11 +7243,22 @@ public class GlobalOptimizer
 		for (Block b: code)
 			for (Expr e: b)
 				if (locals.containsKey(e.id))
+				{
+					int alloc1_phase = pushTracePhase("alloc1");
+					addTraceAttr(e);
 					alloc1(e,conflicts,locals);
+					unwindTrace(alloc1_phase);
+					
+				}
 		for (Block b: code)
 			for (Expr e: b)
 				if (locals.containsKey(e.id))
+				{
+					int alloc2_phase = pushTracePhase("alloc2");
+					addTraceAttr(e);
 					alloc2(e,conflicts,locals);
+					unwindTrace(alloc2_phase);
+				}
 
 		verboseStatus("CONFLICTS " + conflicts);
 		verboseStatus("LOCALS "+locals);
@@ -7170,6 +7279,9 @@ public class GlobalOptimizer
 	
 	void allocate(int id, int loc, Map<Integer,Integer>locals, ConflictGraph conflicts)
 	{
+		traceEntry("allocate");
+		addTraceAttr("id", id);
+		addTraceAttr("loc", loc);
 		assert(locals.get(id) == -1 && loc != -1);
 		locals.put(id, loc);
 		
@@ -7245,16 +7357,18 @@ public class GlobalOptimizer
 		int loc;
 		if (e.locals.length == 1 && e.inLocal() && locals.containsKey(e.locals[0].id) && (loc=locals.get(e.locals[0].id)) != -1)
 		{
+			addTraceAttr("MustUseLoc", loc);
 			// must use same local as arg
 			assert(!used.get(loc));
 			allocate(e.id, loc, locals, conflicts);
-			//return;
+			return;
 		}
 		
 		if (e.args.length != 0 && locals.containsKey(e.args[0].id) && (loc=locals.get(e.args[0].id)) != -1 &&
 				!used.get(loc))
 		{
 			// try to use same local as arg
+			addTraceAttr("MayUseLoc", loc);
 			allocate(e.id, loc, locals, conflicts);
 			return;
 		}
@@ -7447,7 +7561,7 @@ public class GlobalOptimizer
 			ConflictGraph cg)
 	{
 		int sched_greedy_phase = pushTracePhase("sched_greedy");
-		addTraceAttr("Method", m);
+		addTraceAttr(m);
 		
 		SetMap<Block,Expr> liveout = new SetMap<Block,Expr>();
 		Map<Block,Deque<Expr>> stkout = new TreeMap<Block,Deque<Expr>>();
@@ -7479,7 +7593,7 @@ public class GlobalOptimizer
 			Set<Expr> out_of_order = new TreeSet<Expr>();
 			
 			int block_phase = pushTracePhase("Block");
-			addTraceAttr("block", b.toString());
+			addTraceAttr(b);
 
 			live.addAll(liveout.get(b));
 			for (Expr l: live)
@@ -7496,7 +7610,8 @@ public class GlobalOptimizer
 					
 					Expr e = remove_dup(stk, m, out, verbose);
 					int pop_stack_phase = pushTracePhase("PopStack");
-					addTraceAttr("Expr", formatExpr(e));
+					addTraceAttr(e);
+					addTraceAttr("formattedExpr", formatExpr(e));
 					
 					if (e.inLocal() || e.op == OP_phi ||
 						e != in.peekLast() || stk.contains(e))
@@ -7512,7 +7627,7 @@ public class GlobalOptimizer
 						*/
 						{
 							int force_load_phase = pushTracePhase("ForceLoad");
-							addTraceAttr("expr", e);
+							addTraceAttr(e);
 							if ( e.inLocal() ) addTraceAttr("inLocal");
 							else if ( e.op == OP_phi ) addTraceAttr("OP_phi");
 							else if ( e != in.peekLast() ) addTraceAttr("stackMismatch", e.toString() + " != last Expr: " + formatExpr(in.peekLast()) );
@@ -7554,7 +7669,8 @@ public class GlobalOptimizer
 					showstate(live, stk, scp, verbose);
 					Expr e = in.removeLast();
 					int process_insn_phase = pushTracePhase("ProcessInsn");
-					addTraceAttr("Expr", formatExpr(e));
+					addTraceAttr(e);
+					addTraceAttr("formattedExpr", formatExpr(e));
 					if ( out_of_order.contains(e) )
 					{
 						traceEntry("IssuedOutOfOrder", e );
@@ -7574,7 +7690,8 @@ public class GlobalOptimizer
 					{
 						if (live.contains(e))
 						{
-							traceEntry("LiveExpr", e);
+							traceEntry("LiveExpr");
+							addTraceAttr(e);
 							define(e,live,cg);
 							if (e.onStack())
 							{
@@ -7597,7 +7714,7 @@ public class GlobalOptimizer
 						else
 						{
 							int non_live_phase = pushTracePhase("NonLiveExpr");
-							addTraceAttr("Expr", e);
+							addTraceAttr(e);
 							if (e.onStack())
 							{
 								traceEntry("StackPop", e);
@@ -7653,7 +7770,8 @@ public class GlobalOptimizer
 	
 	static void traceEntry(String traceTag, String attrName, Object attrValue)
 	{
-		tm.traceEntry(traceTag, attrName, attrValue.toString());
+		tm.traceEntry(traceTag);
+		addTraceAttr(attrName, attrValue);
 	}
 	
 	static void traceEntry(String traceTag, int attrValue)
@@ -7661,11 +7779,12 @@ public class GlobalOptimizer
 		tm.traceEntry(traceTag, attrValue);
 	}
 	
-	static void traceEntry(String traceTag, Object attrValue)
-	{
-		tm.traceEntry(traceTag, attrValue.toString());
-	}
 	
+	static void traceEntry(String traceTag, Expr expr)
+	{
+		traceEntry(traceTag);
+		addTraceAttr(expr);
+	}
 	
 	static void unwindTrace(int phase_level)
 	{
@@ -7677,9 +7796,31 @@ public class GlobalOptimizer
 		tm.addAttr(attrName, "true");
 	}
 	
+	static void addTraceAttr(Object o)
+	{
+		if ( o instanceof Block )
+			addTraceAttr("Block", o);
+		else if ( o instanceof Edge)
+			addTraceAttr("Edge", o);
+		else if ( o instanceof Expr)
+			addTraceAttr("Expr", o);
+		else if ( o instanceof Method )
+			addTraceAttr("Method", o);
+		else
+			addTraceAttr(o.getClass().getSimpleName(), o);
+	}
+	
 	static void addTraceAttr(String attrName, Object attr) 
 	{
 		tm.addAttr(attrName, attr);
+		
+		if ( attr != null && 
+				( attrName.equalsIgnoreCase("Expr") || 
+				attrName.equalsIgnoreCase("Method") || 
+				attrName.equalsIgnoreCase("Block")))
+		{
+			tm.addAttr("HashCode", Integer.toHexString(attr.hashCode()));
+		}
 	}
 	
 	static void addTraceAttr(String attrName, int attr) 
@@ -8014,16 +8155,23 @@ public class GlobalOptimizer
 	
 	void define(Expr e, Set<Expr> live, ConflictGraph cg)
 	{
-		traceEntry("Define", "killed", e.toString());
+		int define_trace_phase = pushTracePhase("define");
+		addTraceAttr(e);
 		live.remove(e);
 		for (Expr l: live)
+		{
 			cg.add(e,l);
+			traceEntry("conflict");
+			addTraceAttr(e);
+			addTraceAttr("conflictsWith", l);
+		}
+		unwindTrace(define_trace_phase);
 	}
 
 	void issue_expr(Expr e, Method m, Deque<Expr>out, Deque<Object> verbose, Deque<Expr>stk, Deque<Expr>scp, Set<Expr>live, Map<Integer,Integer> locals)
 	{
 		int issue_phase = pushTracePhase("issue_expr");
-		addTraceAttr("Expr", e);
+		addTraceAttr(e);
 		if (!e.isSynthetic())
 			out.addFirst(e);
 		verbose.addFirst(e);
@@ -8080,7 +8228,7 @@ public class GlobalOptimizer
 	void use(Expr e, Set<Expr> live, Map<Integer, Integer> locals)
 	{
 		traceEntry("use");
-		addTraceAttr("Expr", e);
+		addTraceAttr(e);
 		live.add(e);
 		locals.put(e.id, e.op == OP_arg ? e.imm[0] : -1);
 		addTraceAttr("locals_entry", locals.get(e.id));
@@ -8088,16 +8236,25 @@ public class GlobalOptimizer
 	
 	void rename(Expr e, Expr[] args, Map<Expr,Expr> map, EdgeMap<Expr> ssaSucc)
 	{
+		int rename_trace_phase = pushTracePhase("rename");
+		addTraceAttr(e);
+		
 		for (int i=0, n=args.length; i<n; i++)
 		{
 			Expr a = args[i];
 			while (map.containsKey(a))
 			{
 				ssaSucc.get(a).remove(e);
+				traceEntry("renamedArg");
+				addTraceAttr("i", i);
+				addTraceAttr("orig", args[i]);
 				a = args[i] = map.get(a);
+				addTraceAttr("new", args[i]);
 				ssaSucc.get(a).add(e);
 			}
 		}
+		
+		unwindTrace(rename_trace_phase);
 	}
 	
 	/**
@@ -8126,11 +8283,15 @@ public class GlobalOptimizer
 		EdgeMap<Expr> uses = findUses(code);
 		Map<Expr,Expr> map = new HashMap<Expr,Expr>();
 		Set<Expr> work = new WorkSet<Expr>();
+		
 		for (Block b: code)
 		{
-			for (Expr e: b)
-				if (e.op == OP_phi || e.op == OP_dup)
-					work.add(e);
+			if ( ! b.must_isolate_block)
+			{
+				for (Expr e: b)
+					if (e.op == OP_phi || e.op == OP_dup)
+						work.add(e);
+			}
 		}
 		
 		while (!work.isEmpty())
@@ -8489,6 +8650,13 @@ public class GlobalOptimizer
 		int postorder; // postorder number
 		Edge[] xsucc = noedges; // in-scope handlers for this block.
 		
+		/** 
+		 *  Don't change control flow/data flow to this block when set.
+		 *  Indicates a construct such as hasnext2 is present and should
+		 *  be left as the original compiler emitted it. 
+		 */
+		boolean must_isolate_block = false;
+		
 		Block(Method m)
 		{
 			this.id = m.blockId++;
@@ -8609,6 +8777,9 @@ public class GlobalOptimizer
 			this.op = op;
 			flags = flagTable[op];
 			id = m.exprId++;
+			traceEntry("NewExpr");
+			addTraceAttr("op", opNames[op]);
+			addTraceAttr(this);
 		}
 		
 		Expr(Method m, int op, int imm1)
@@ -9184,6 +9355,15 @@ public class GlobalOptimizer
 	{
 		Expr[] args = new Expr[len];
 		System.arraycopy(frame, top-len, args, 0, len);
+		int capture_trace_phase = pushTracePhase("capture");
+		addTraceAttr("stackPtr", top);
+		addTraceAttr("len", len);
+		for ( int i = 0; i < len; i++)
+		{
+			traceEntry("PopStack");
+			addTraceAttr(args[i]);
+		}
+		unwindTrace(capture_trace_phase);
 		return args;
 	}
 	
@@ -9784,6 +9964,30 @@ public class GlobalOptimizer
 				write(v >> 14 | 0x80);
 				write(v >> 21 | 0x80);
 				write(v >> 28);
+			}
+		}
+		
+		int sizeOfU30(int v)
+		{
+			if (v < 128 && v >= 0)
+			{
+				return 1;
+			}
+			else if (v < 16384 && v >= 0)
+			{
+				return 2;
+			}
+			else if (v < 2097152 && v >= 0)
+			{
+				return 3;
+			}
+			else if (v < 268435456 && v >= 0)
+			{
+				return 4;
+			}
+			else
+			{
+				return 5;
 			}
 		}
 	}
