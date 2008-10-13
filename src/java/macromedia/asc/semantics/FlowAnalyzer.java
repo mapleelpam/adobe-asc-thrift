@@ -3335,9 +3335,6 @@ else
                 slot.setConst(is_const);
                 slot.setTypeRef(node.typeref);
 
-                if( is_const && loop_index > 0)
-                    cx.error(node.pos(), kError_AssignmentToConstVar);
-
                 if( (node.block != null) ||  // node.block is null for defintions at the top level of the method 
                 	(node.initializer == null) )
                 {
