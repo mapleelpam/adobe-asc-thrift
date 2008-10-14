@@ -3612,6 +3612,7 @@ public class GlobalOptimizer
 			
 			traceEntry("Expr", "Expr", e);
 			addTraceAttr("op", opNames[e.op]);
+			addTraceAttr("pos", out.size());
 			
 			out.write(e.op);
 			switch (e.op)
@@ -7080,9 +7081,14 @@ public class GlobalOptimizer
 					break;
 				if (!locals.containsKey(e.id))
 					continue;
+				int remove_phi_phase = pushTracePhase("removePhi");
+				addTraceAttr(e);
 				int lhs = locals.get(e.id);
 				for (int i=e.args.length-1; i>=0; i--)
 				{
+					traceEntry("PhiInput");
+					addTraceAttr("i", i);
+					addTraceAttr(e.args[i]);
 					int rhs = locals.get(e.args[i].id);
 					if (lhs != rhs)
 					{
@@ -7092,11 +7098,15 @@ public class GlobalOptimizer
 							split(p,m,pred);
 							splits.add(p = e.pred[i]);
 						}
+						traceEntry("copyPhiInput");
+						addTraceAttr("lhs", lhs);
+						addTraceAttr("rhs", rhs);
 						Expr get = getlocal(m, rhs);
 						prepend(p, get);
 						append(p, setlocal(m,lhs,get));
 					}
 				}
+				unwindTrace(remove_phi_phase);
 			}
 			
 			// now swap in the scheduled code and renumber the get/setlocals we have in there.
@@ -7183,15 +7193,12 @@ public class GlobalOptimizer
 			//  Work around legacy verifier restrictions:
 			//  Kill predecessor blocks' locals if they're
 			//  active on more than one path and not phi inputs.
-			killed_vars.put(b, new BitSet() );
 			
 			Set<Edge> current_preds = pred.get(b);
+			LocalVarState current_state = local_state.get(b);
 			
 			if ( current_preds.size() > 1)
-			{
-				LocalVarState current_state = local_state.get(b);
-				// BitSet current_livein = current_state.getLivein();
-				
+			{	
 				//  Find variables that come in on multiple paths.
 				Map<Integer, Set<Edge>> livein_edges = new TreeMap<Integer,Set<Edge>>();
 				
@@ -7223,12 +7230,12 @@ public class GlobalOptimizer
 					{
 						for ( Edge p: livein_edges.get(suspect_local))
 						{
-							if ( ! (current_state.isPhiInput(p, suspect_local) || current_state.getLivein().get(suspect_local) || killed_vars.get(b).get(suspect_local)) )
+							if ( ! (current_state.isPhiInput(p, suspect_local) || current_state.getLivein().get(suspect_local) || killed_vars.get(p.to).get(suspect_local)) )
 							{	
 								traceEntry("killed");
 								addTraceAttr("variable", suspect_local.intValue());
 								p.to.exprs.addFirst(new Expr(m, OP_kill, suspect_local.intValue()));
-								killed_vars.get(b).set(suspect_local);
+								killed_vars.get(p.to).set(suspect_local);
 							}
 						}
 					}
@@ -7236,6 +7243,8 @@ public class GlobalOptimizer
 				
 			}
 		}
+		
+		unwindTrace(kill_cruft_trace_phase);
 	}
 
 	void alloc_locals(Deque<Block> code, Map<Integer, Integer> locals, ConflictGraph conflicts)
@@ -7596,6 +7605,7 @@ public class GlobalOptimizer
 			addTraceAttr(b);
 
 			live.addAll(liveout.get(b));
+			live.addAll(b.getLiveOut());
 			for (Expr l: live)
 				locals.put(l.id, l.op == OP_arg ? l.imm[0] : -1);
 			exprs.put(b,out);
@@ -7693,6 +7703,7 @@ public class GlobalOptimizer
 							traceEntry("LiveExpr");
 							addTraceAttr(e);
 							define(e,live,cg);
+							//  ISSUE: Why not just issue a dup before the store?
 							if (e.onStack())
 							{
 								traceEntry("StoreLiveExprFromStack ", e);
@@ -7798,7 +7809,9 @@ public class GlobalOptimizer
 	
 	static void addTraceAttr(Object o)
 	{
-		if ( o instanceof Block )
+		if ( null == o )
+			return;
+		else if ( o instanceof Block )
 			addTraceAttr("Block", o);
 		else if ( o instanceof Edge)
 			addTraceAttr("Edge", o);
@@ -7861,12 +7874,22 @@ public class GlobalOptimizer
 	
 	void issue_phi(Expr e, Deque<Object>verbose, Set<Expr>phis, Set<Expr>live, ConflictGraph cg)
 	{
+		int phi_trace_phase = pushTracePhase("issue_phi");
+		addTraceAttr(e);
+		addTraceAttr("live", live.contains(e));
+
 		verbose.addFirst(e);
 		phis.add(e);
 		if (live.contains(e))
 			for (Expr l: live)
 				if (l != e)
+				{
+					traceEntry("conflict");
+					addTraceAttr(e);
+					addTraceAttr("conflictsWith", l);
 					cg.add(l,e);
+				}
+		unwindTrace(phi_trace_phase);
 	}
 
 	ConflictGraph sched_lazy(Method m, 
@@ -8249,6 +8272,7 @@ public class GlobalOptimizer
 				addTraceAttr("i", i);
 				addTraceAttr("orig", args[i]);
 				a = args[i] = map.get(a);
+				a.is_live_out  = a.onStack() || a.inLocal();
 				addTraceAttr("new", args[i]);
 				ssaSucc.get(a).add(e);
 			}
@@ -8280,6 +8304,7 @@ public class GlobalOptimizer
 	 */
 	void cp(Deque<Block> code)
 	{
+		int cp_trace_phase = pushTracePhase("cp");
 		EdgeMap<Expr> uses = findUses(code);
 		Map<Expr,Expr> map = new HashMap<Expr,Expr>();
 		Set<Expr> work = new WorkSet<Expr>();
@@ -8331,6 +8356,21 @@ public class GlobalOptimizer
 				}
 			}
 		}
+		
+		//  Marshall live-out exprs by block.
+		for ( Block b: code)
+		{
+			for ( Expr e: b.exprs)
+			{
+				if ( e.is_live_out )
+				{
+					b.addLiveOut(e);
+				}
+			}
+				
+		}
+		
+		unwindTrace(cp_trace_phase);
 	}
 
 	boolean hasSideEffect(Expr e)
@@ -8645,6 +8685,7 @@ public class GlobalOptimizer
 		
 	class Block implements Iterable<Expr>, Comparable<Block>, Indexable
 	{
+		private Set<Expr> live_out = new HashSet<Expr>();
 		Deque<Expr> exprs = new ArrayDeque<Expr>();
 		int id;
 		int postorder; // postorder number
@@ -8697,11 +8738,6 @@ public class GlobalOptimizer
 			exprs.add(e);
 		}
 		
-		/*void add(int i, Expr e)
-		{
-			exprs.add(i, e);
-		}*/
-		
 		void addAll(Block b)
 		{
 			exprs.addAll(b.exprs);
@@ -8717,11 +8753,6 @@ public class GlobalOptimizer
 			return exprs.size();
 		}
 		
-		/*Expr get(int i)
-		{
-			return exprs.get(i);
-		}*/
-		
 		void remove(Expr e)
 		{
 			exprs.remove(e);
@@ -8730,6 +8761,17 @@ public class GlobalOptimizer
 		public int compareTo(Block b)
 		{
 			return this.id - b.id;
+		}
+		
+		public void addLiveOut(Expr e)
+		{
+			assert(exprs.contains(e));
+			this.live_out.add(e);
+		}
+		
+		public Set<Expr> getLiveOut()
+		{
+			return this.live_out;
 		}
 	}
 	
@@ -8758,6 +8800,7 @@ public class GlobalOptimizer
 
 	static class Expr implements Comparable<Expr>, Indexable
 	{
+		public boolean is_live_out = false;
 		int op;
 		Expr[] args = noexprs;   // args taken from operand stack
 		Expr[] scopes = noexprs; // args taken from scope stack
