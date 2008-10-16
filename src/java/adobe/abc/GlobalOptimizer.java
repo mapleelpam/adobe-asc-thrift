@@ -1865,17 +1865,6 @@ public class GlobalOptimizer
 		}
 	}
 	
-	static class StrictComparator<T> implements Comparator
-	{
-		public int compare(Object o1, Object o2)
-		{
-			if ( o1 != o2)
-				return 1;
-			else
-				return 0;
-		}
-	}
-	
 	static class Binding
 	{
 		final InputAbc abc;
@@ -2413,12 +2402,13 @@ public class GlobalOptimizer
 	 * If Method.hashCode() is modified, then Method will need a unique ID to 
 	 * make this set work.
 	 */
-	Set<Method> already_processed = new TreeSet<Method>(new StrictComparator<Method>());
+	Set<Method> already_processed = new HashSet<Method>();
 	
 	
 	void readyType(Type t)
 	{
-		ready.add(t.init);
+		readyMethod(t.init);
+
 		for (Binding b1: t.defs.values())
 			if (b1.method != null)
 				readyMethod(b1.method);
@@ -2426,8 +2416,11 @@ public class GlobalOptimizer
 	
 	void readyMethod(Method m)
 	{
+		traceEntry("readyMethod");
+		addTraceAttr(m);
 		if (m.entry != null && ! already_processed.contains(m) )
 		{
+			addTraceAttr("process", true);
 			ready.add(m);
 			already_processed.add(m);
 		}
@@ -5498,6 +5491,8 @@ public class GlobalOptimizer
 		Map<Block,Block> idom = idoms(code, pred);
 		Map<Expr,Typeref> types = verify_types(m, code, idom);
 		
+		int insert_casts_trace_phase = pushTracePhase("insert_casts");
+		
 		// TODO this fixes things by inserting upcasts only.  We could use
 		// the types we know from sccp_analyze and insert casts that tell
 		// the verifier what we know that it can't figure out on its own.
@@ -5519,6 +5514,10 @@ public class GlobalOptimizer
 				{
 					Expr a = e.args[i];
 					Edge p = e.pred[i];
+					
+					if ( a.onScope() )
+						continue;
+
 					Typeref atype = types.get(a);
 					if (isLoop(p, idom) ? !etype.equals(atype) : isAtom(etype.t) != isAtom(atype.t))
 					{
@@ -5542,6 +5541,8 @@ public class GlobalOptimizer
 		}
 		
 		verboseStatus("VERIFY TYPES "+types);
+		
+		unwindTrace(insert_casts_trace_phase);
 	}
 	
 	Expr upcast(Expr a, Method m, Type t)
@@ -7715,6 +7716,15 @@ public class GlobalOptimizer
 							{
 								traceEntry("IssueExprFromLocal", e);
 								issue_expr(e, m, out, verbose, stk, scp, live, locals);
+							}
+							else if (e.onScope())
+							{
+								traceEntry("IssueScopeExpr", e);
+								issue_expr(e, m, out, verbose, stk, scp, live, locals);
+							}
+							else
+							{
+								assert(false);
 							}
 						}
 						else if (e.op == OP_xarg)
