@@ -27,9 +27,7 @@ import macromedia.asc.util.graph.Vertex;
 
 import static macromedia.asc.embedding.avmplus.Features.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -63,6 +61,8 @@ public class ScriptCompiler
 	private static boolean debugFlag;
 	private static boolean optimize;
     private static boolean check_version;
+
+    private static boolean debug = false;
 
     public static void main(String[] args) throws Throwable
 	{
@@ -128,6 +128,19 @@ public class ScriptCompiler
         boolean useas3 = false;
 
         int target = TARGET_AVM2;
+
+        args = expandArguments(args);
+
+        if( debug )
+        {
+            System.out.print("Running with expanded args \'");
+            for( int i = 0;i < args.length; ++i )
+            {
+                System.out.print(args[i] + " ");
+            }
+            System.out.println("\'");
+        }
+
 
         for (int i = 0, length = args.length; i < length; i++)
 		{
@@ -295,33 +308,74 @@ public class ScriptCompiler
         expr = new HashSet<Pair>();
     }
 
-	private static void parse(int start, int end) throws Throwable
-	{
-		for (int i = start; i < end; i++)
-		{
-			Context cxi = cx.get(i);
-			cxi.setEmitter(emitter.get(i));
-			cxi.setScriptName(file.get(i).getName());
-			cxi.setPath(file.get(i).getParent());
+    public static String[] expandArguments(String[] args) throws IOException {
+        boolean has_expanded_args = false;
+        ObjectList<String> exp_args = new ObjectList<String>(args.length);
+        for( int i = 0, length = args.length; i < length; ++i )
+        {
+            // Expand @<filename> arguments
+            if( args[i].startsWith("@") )
+            {
+                String filename = args[i].substring(1);
+                BufferedReader bf = new BufferedReader(new FileReader(filename));
+                String s = null;
+                String expanded_args = "";
+                while ( (s = bf.readLine()) != null)
+                {
+                    if( ! s.startsWith("#"))
+                        expanded_args += s + " ";
+                }
+                String[] a = expanded_args.split("\\s+", -1);
+                for( int q = 0; q < a.length; ++q)
+                {
+                    String arg = a[q].trim();
+                    if( arg.length() != 0)
+                    {
+                        exp_args.add(a[q]);
+                    }
+                }
+                has_expanded_args = true;
+            }
+            else
+            {
+                exp_args.add(args[i]);
+            }
+        }
 
-			ProgramNode program;
+        if( has_expanded_args)
+        {
+            args = exp_args.toArray(args);
+        }
+        return args;
+    }
+
+    private static void parse(int start, int end) throws Throwable
+    {
+        for (int i = start; i < end; i++)
+        {
+            Context cxi = cx.get(i);
+            cxi.setEmitter(emitter.get(i));
+            cxi.setScriptName(file.get(i).getName());
+            cxi.setPath(file.get(i).getParent());
+
+            ProgramNode program;
             if (file.get(i).getName().endsWith(".as"))
-			{
-				program = new Parser(cxi, new FileInputStream(file.get(i)), file.get(i).getPath(), null).parseProgram();
-			}
-			else
-			{
-				program = new AbcParser(cxi, file.get(i).getPath()).parseAbc();
-			}
-			node.add(program);
+            {
+                program = new Parser(cxi, new FileInputStream(file.get(i)), file.get(i).getPath(), null).parseProgram();
+            }
+            else
+            {
+                program = new AbcParser(cxi, file.get(i).getPath()).parseAbc();
+            }
+            node.add(program);
 
-			cxi.getNodeFactory().pkg_defs.clear();
+            cxi.getNodeFactory().pkg_defs.clear();
             cxi.getNodeFactory().compound_names.clear();
-            
-        	ConfigurationEvaluator ce = new ConfigurationEvaluator();
-        	program.evaluate(cxi, ce);
-		}
-	}
+
+            ConfigurationEvaluator ce = new ConfigurationEvaluator();
+            program.evaluate(cxi, ce);
+        }
+    }
 
 	private static void fa_part1(int start, int end)
 	{

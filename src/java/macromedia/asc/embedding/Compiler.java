@@ -771,10 +771,10 @@ public class Compiler implements ErrorConstants
             {
                 out = new PrintWriter(new FileWriter(new File(cx.path(), scriptname + ".h")));
                 out.write(str);
-                out.println("const int "+scriptname+"_abc_length = "+count+";");
-                out.println("const int "+scriptname+"_abc_method_count = " + (emitter.native_method_count) + ";");
-                out.println("const int "+scriptname+"_abc_class_count = " + (emitter.native_class_count) + ";");
-                out.println("const int "+scriptname+"_abc_script_count = " + (emitter.native_package_count) + ";");
+                out.println("extern const int "+scriptname+"_abc_length;");
+                out.println("extern const int "+scriptname+"_abc_method_count;");
+                out.println("extern const int "+scriptname+"_abc_class_count;");
+                out.println("extern const int "+scriptname+"_abc_script_count;");
                 out.println("extern const unsigned char "+scriptname+"_abc_data[];");
             }
             catch (IOException ex)
@@ -793,6 +793,10 @@ public class Compiler implements ErrorConstants
             try
             {
                 out = new PrintWriter(new FileWriter(new File(cx.path(), scriptname + ".cpp")));
+                out.println("const int "+scriptname+"_abc_length = "+count+";");
+                out.println("const int "+scriptname+"_abc_method_count = " + (emitter.native_method_count) + ";");
+                out.println("const int "+scriptname+"_abc_class_count = " + (emitter.native_class_count) + ";");
+                out.println("const int "+scriptname+"_abc_script_count = " + (emitter.native_package_count) + ";");
                 out.println("const unsigned char "+scriptname+"_abc_data["+count+"] = {");
 				
                 for (int i=0; i < count; i++)
