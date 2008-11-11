@@ -21,12 +21,14 @@ import static macromedia.asc.parser.Tokens.*;
 public class DocCommentNode extends MetaDataNode
 {
     MetaDataNode metaData; // some comments are associated with other metadata (in addition to a definition)
+    boolean is_default;
 
-	 DocCommentNode(LiteralArrayNode data)
+     DocCommentNode(LiteralArrayNode data)
 	{
 		super(data);
         metaData = null;
-	}
+        is_default = false;
+    }
      
 	public Value evaluate( Context cx, Evaluator evaluator )
 	{
@@ -291,17 +293,6 @@ public class DocCommentNode extends MetaDataNode
 		if( this.def instanceof ClassDefinitionNode )
 		{
 			ClassDefinitionNode cd = (ClassDefinitionNode)this.def;
-            // if there are multiple comments for a classdefinition, each will generate a DocCommentNode for that def.
-            //  to avoid writting out three records for this:
-            //   /** comment one */
-            //   /** comment two */
-            //   /** comment three */
-            //   class foo { }
-            //
-            //  we purposfully ignore docComments whose first metaData element is not == this.  The metaData is
-            //   ordered in the reverse order as it is listed in the code.
-            if (cd.metaData.items.at(0) != this)
-                return buf;
 
             // Special case for comments preceeding an [Event] / [Style ] / or [Effect] metadata element.
 			//  Doccomments associated with these metadata elements are output as a seperate metaData doc entry,

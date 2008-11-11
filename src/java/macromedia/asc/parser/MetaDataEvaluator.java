@@ -93,7 +93,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 	{
 		current = node;
 
-		if (node.data == null || 
+		if (node.data == null ||
 			node.data.elementlist == null)
 		{
 		}
@@ -169,11 +169,30 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 
 	public ObjectList<DocCommentNode> doccomments = new ObjectList<DocCommentNode>();
 
-	public Value evaluate(Context cx, DocCommentNode node)
+    public Value evaluate(Context cx, DocCommentNode node)
 	{
 		this.evaluate(cx, (MetaDataNode)node);
-		doccomments.push_back(node);
-		return null;
+
+        boolean add_node = true;
+        int size = doccomments.size();
+        if( size > 0 )
+        {
+            DocCommentNode dcn = doccomments.at(size-1);
+            if( dcn.def == node.def )
+            {
+                if( node.is_default && ( dcn.metaData == null || !("Event".equals(dcn.metaData.id)
+                                            || "Style".equals(dcn.metaData.id)
+                                            || "Effect".equals(dcn.metaData.id) ) ) )
+                    add_node = false;
+                else
+                    doccomments.remove(size-1);
+            }
+            
+        }
+        if( add_node )
+            doccomments.push_back(node);
+
+        return null;
 	}
 
 	public Value evaluate(Context cx, LiteralArrayNode node)
@@ -609,12 +628,12 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 
     	if (node.initializer != null)
 			node.initializer.evaluate(cx,this);
-    	
+
     	if( cx.statics.es4_nullability && cx.scope().builder instanceof InstanceBuilder )
     	{
     		cx.scope().setInitOnly(false);
     	}
-    	
+
 		return null;
 	};
 
@@ -831,7 +850,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 	{
 		return null;
 	};
-	
+
 	public Value evaluate(Context cx, PackageDefinitionNode node)
 	{
 		return null;
@@ -886,7 +905,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 	{
 		return null;
 	}
-	
+
 	public Value evaluate(Context cx, BoxNode node)
 	{
 		return null;

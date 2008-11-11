@@ -1954,6 +1954,7 @@ public final class NodeFactory implements ErrorConstants
                     DocCommentNode dcn = docComment(literalArray(null),pos);
                     DefinitionNode def = (DefinitionNode) item;
                     dcn.def = def;
+                    dcn.is_default = true;
                     // cn: ensure docComment is the first piece of metaData.  Necessary for DocCommentNode.emit to skip over duplicates when more than one
                     //  docComment is specified for a single definition.
                     if (def.metaData == null)
@@ -1986,6 +1987,7 @@ public final class NodeFactory implements ErrorConstants
                 DocCommentNode dcn = docComment(literalArray(null),pos);
                 DefinitionNode def = (DefinitionNode)item;
                 dcn.def = def;
+                dcn.is_default = true;
                 def.addMetaDataNode(dcn);
 
                 node = new StatementListNode(dcn);

@@ -257,8 +257,6 @@ public class Compiler implements ErrorConstants
             for(int x = 0; x < numComments; x++)
 			{
                 DocCommentNode d = comments.get(x);
-                if( d.def == prev && d.values == null && d.id ==null)
-                    continue;
                 d.emit(cx,out);
                 prev = d.def;
             }
