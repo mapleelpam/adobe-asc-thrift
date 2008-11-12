@@ -7901,8 +7901,8 @@ public class GlobalOptimizer
 			Deque<Expr> in = new ArrayDeque<Expr>(b.exprs);
 			Deque<Expr> stk = new ArrayDeque<Expr>();
 			Deque<Expr> scp = new ArrayDeque<Expr>();
-			Deque<Object> verbose = new LinkedList<Object>();
-			Deque<Expr> out = new LinkedList<Expr>();
+			Deque<Object> verbose = new LinkedDeque<Object>();
+			Deque<Expr> out = new LinkedDeque<Expr>();
 
 			Set<Expr> out_of_order = new TreeSet<Expr>();
 			
@@ -8239,8 +8239,8 @@ public class GlobalOptimizer
 			Deque<Expr> in = new ArrayDeque<Expr>(b.exprs);
 			Deque<Expr> stk = new ArrayDeque<Expr>();
 			Deque<Expr> scp = new ArrayDeque<Expr>();
-			Deque<Object> verbose = new LinkedList<Object>();
-			Deque<Expr> out = new LinkedList<Expr>();
+			Deque<Object> verbose = new LinkedDeque<Object>();
+			Deque<Expr> out = new LinkedDeque<Expr>();
 
 			// if any succ has defined an expected stack, use it.
 			// if more than one have then they all have to match.
@@ -8718,7 +8718,7 @@ public class GlobalOptimizer
 	
 	Deque<Block> dfs(Block entry)
 	{
-		return dfs_visit(entry, new BitSet(), new LinkedList<Block>());
+		return dfs_visit(entry, new BitSet(), new LinkedDeque<Block>());
 	}
 	
 	void schedule_loop(Block b, EdgeMap<Block> loops, Deque<Block> scheduled)
@@ -11315,6 +11315,65 @@ public class GlobalOptimizer
     "OP_0xFE",
     "OP_0xFF"
 	};
+
+	/**
+	 *   Deque isn't present on pre 1.6 systems,
+	 *   so the GlobalOptimizer needs its own
+	 *   interface and implementations.
+	 */
+	static interface Deque<E> extends List<E>
+	{
+		E removeFirst();
+		E peekFirst();
+		E removeLast();
+		E peekLast();
+		void addFirst(E e);
+	}
+	
+	static class ArrayDeque<E> extends ArrayList<E> implements Deque<E>
+	{
+		ArrayDeque()
+		{
+		}
+		ArrayDeque(Collection<E> c)
+		{
+			addAll(c);
+		}
+		public void addFirst(E e)
+		{
+			add(0, e);
+		}
+		public E removeFirst()
+		{
+			return remove(0);
+		}
+		public E peekFirst()
+		{
+			return isEmpty() ? null : get(0);
+		}
+		public E removeLast()
+		{
+			return remove(size()-1);
+		}
+		public E peekLast()
+		{
+			return isEmpty() ? null : get(size()-1);
+		}
+		public static final long serialVersionUID = 0;
+	}
+	
+	static class LinkedDeque<E> extends LinkedList<E> implements Deque<E>
+	{
+		public E peekFirst()
+		{
+			return isEmpty() ? null : getFirst();
+		}
+		public E peekLast()
+		{
+			return isEmpty() ? null : getLast();
+		}
+		public static final long serialVersionUID = 0;
+	}
 }
 
 /**
