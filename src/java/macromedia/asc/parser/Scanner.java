@@ -43,103 +43,8 @@ public final class Scanner implements ErrorConstants
     private boolean isFirstTokenOnLine;
     private boolean save_comments;
     private Context ctx;
-
     public InputBuffer input;
-
-    private static final String[][] rsvd = {
-        {"as"},
-        {"break"},
-        {"case","catch","class","const","continue"},
-        {"default","delete","do"},
-        {"else","extends"},
-        {"false","finally","for","function"},
-        {"get"},
-        {""},//h
-        {"if","implements","import","in","include","instanceof","interface","is"},
-        {""},//j
-        {""},//k
-        {""},//l
-        {""},//m
-        {"namespace","new","null"},
-        {""},//o
-        {"package","private","protected","public"},
-        {""},//q
-        {"return"},
-        {"set","super","switch"},
-        {"this","throw","true","try","typeof"},
-        {"use"},
-        {"var","void"},
-        {"while","with"},
-        {""},//x
-        {""},//y
-        {""}//z
-    };
-    
-    // ??? too fragile...come up with a better way
-    
-    private static final int[][] rsvd_token = {
-        {AS_TOKEN},
-        {BREAK_TOKEN},
-        {CASE_TOKEN,CATCH_TOKEN,CLASS_TOKEN,CONST_TOKEN,CONTINUE_TOKEN},
-        {DEFAULT_TOKEN,DELETE_TOKEN,DO_TOKEN},
-        {ELSE_TOKEN,EXTENDS_TOKEN},
-        {FALSE_TOKEN,FINALLY_TOKEN,FOR_TOKEN,FUNCTION_TOKEN},
-        {GET_TOKEN},
-        {},//h
-        {IF_TOKEN,IMPLEMENTS_TOKEN,IMPORT_TOKEN,IN_TOKEN,INCLUDE_TOKEN,INSTANCEOF_TOKEN,INTERFACE_TOKEN,IS_TOKEN},
-        {},//j
-        {},//k
-        {},//l
-        {},//m
-        {NAMESPACE_TOKEN,NEW_TOKEN,NULL_TOKEN},
-        {},//o
-        {PACKAGE_TOKEN,PRIVATE_TOKEN,PROTECTED_TOKEN,PUBLIC_TOKEN},
-        {},//q
-        {RETURN_TOKEN},
-        {SET_TOKEN,SUPER_TOKEN,SWITCH_TOKEN},
-        {THIS_TOKEN,THROW_TOKEN,TRUE_TOKEN,TRY_TOKEN,TYPEOF_TOKEN},
-        {USE_TOKEN},
-        {VAR_TOKEN,VOID_TOKEN},
-        {WHILE_TOKEN,WITH_TOKEN},
-        {},//x
-        {},//y
-        {}//z
-    };
-    
-    private final int screen_rsvd()
-    {
-        char c;
-        int row;
-        int row_length;
-        int text_length = input.markLength();
-        int i,j;
-        
-        if ( text_length < 2 )
-            return 0;
-        
-        c = input.markCharAt(0);
-        assert(c >= 'a' && c <= 'z');
-        row = (int) c - 'a';
-        assert(row >= 0 && row < rsvd.length);
-        row_length = rsvd[row].length;
-        
-        for (i = 0; i < row_length; i++ )
-        {
-            if ( rsvd[row][i].length() != text_length )
-                continue;
-            
-            for ( j = 1; j < text_length; j++ )
-            {
-                c = input.markCharAt(j);
-                if ( c != rsvd[row][i].charAt(j) )
-                    break;
-            }
-            if ( j == text_length )
-                return rsvd_token[row][i];
-        }
-        return 0;
-    }
-    
+   
     private static final ConcurrentHashMap<String,Integer> reservedWord;
     
     static {
@@ -898,12 +803,7 @@ public final class Scanner implements ErrorConstants
                         Integer i = reservedWord.get(s); 
                         if ( i != null )
                             return (int) i;
-
-                        //int r = screen_rsvd();
-                        //if ( r != 0 )
-                        //    return r;
                     }
-                    //String s = input.copy(); 
                     return makeTokenInstance(IDENTIFIER_TOKEN,s);
                 }
                 

@@ -14,6 +14,7 @@ package macromedia.asc.util;
 import java.util.Set;
 import java.util.Map;
 import java.util.TreeMap;
+
 import macromedia.asc.semantics.ObjectValue;
 import static macromedia.asc.parser.Tokens.*;
 
@@ -21,159 +22,199 @@ import static macromedia.asc.parser.Tokens.*;
  * @author Jeff Dyer
  */
 public final class Names
-{
-	private String[] names;
-	private ObjectValue[] namespaces;
-	private int[] bindings;
-	private int size;
-	private Names delegate;
-	
+{   
+    
+    // Some counters that help in evaluating performance (only used if profile is true)
+    private static int tables;
+    private static int lookups;
+    private static int misses;
+    private static int collisions;
+    private static int named_collisions;
+    private static int entries;
+    private static int grows;
+    private static boolean profile = false;
+    
+    // The name structure is represented as 5 primitive arrays for efficiency
+    
+    private String [] name;
+    private ObjectValue [] namespace;
+    private int [] slot;
+    private byte[] type;
+    private int [] next; // hash bucket linked list via array...welcome to FORTRAN
+    
+    private int namesUsed;
+    
+    private int[] hashTable;
+    private int hashTableMask; // mod value for hash, currently must be a power of two
+    
 	public static final int GET_NAMES          =  0x0;
 	public static final int SET_NAMES          =  0x1;
 	public static final int VAR_NAMES          =  0x2;
 	public static final int METHOD_NAMES       =  0x3;
-	public static final int LOCAL_METHOD_NAMES = 0x4;
+	public static final int LOCAL_METHOD_NAMES =  0x4;
 	
 	private static final int INITIAL_CAPACITY = 8;
 	public static final Names EMPTY_NAMES = new Names();
-
+    
 	public Names()
 	{
-		delegate = EMPTY_NAMES;
-	}
-	
-	public void setDelegate(Names names)
-	{
-		names.size();
-		delegate = names;
+        if (profile) tables++;
 	}
 
-	private int hash(String name, int type)
+    /**
+     * The hash function must be based on the name only, 
+     * so that searches for {name,type} entries can be found in the same bucket.
+     */
+	private int hash(String name)
 	{
 		assert name.intern() == name;
-		return name.hashCode() * (type+1);
+		return name.hashCode() & (hashTableMask);
 	}
 	
-	private int find(String name, int type, int m)
+	private int find(String name, int ty)
 	{
-        int n = 7;
-		int bitmask = (m - 1);
-        int i = hash(name, type) & bitmask;
-        String k;
-        while ((k = names[i]) != null && (k != name || type != (bindings[i]&7)))
+        int i = hash(name);
+        
+        if (profile) lookups++;
+        
+        for (int id = hashTable[i]; id != -1; id = next[id])
         {
-			i = (i + (n++)) & bitmask;			// quadratic probe
-		}
-        return i;
+            if (this.name[id] == name && type[id] == ty)
+                return id;
+            
+            if (profile) {collisions++; if (this.name[id] == name) named_collisions++;}
+        }
+        
+        if (profile) {misses++; collisions--;}
+        
+        return -1;
 	}
 	
-	private int find(String name, ObjectValue namespace, int type, int m)
+    private int enter(String name, ObjectValue namespace, int type, int hash)
+    {
+        if (profile) entries++;
+        
+        int id = namesUsed;
+        
+        if ( namesUsed >= this.name.length)
+            growNames();
+        
+        this.name[id] = name;
+        this.namespace[id] = namespace;
+        next[id] = hashTable[hash];
+        this.type[id] = (byte) type;
+        slot[id] = -1;
+        hashTable[hash] = id;
+        
+        namesUsed++;
+        
+        return id;
+    }
+    
+	private int find(String name, ObjectValue namespace, int type, boolean enter)
 	{
-        int n = 7;
-		int bitmask = (m - 1);
-        int i = hash(name, type) & bitmask;
-        String k;
+	    int hv = hash(name);
+        int id = hashTable[hv];
+     
+        if (profile) lookups++;
+        
+        if ( id == -1 )
+        {
+            if ( enter )
+            {
+                return enter(name,namespace,type,hv);
+            }
+            if (profile) misses++;
+            return -1;
+        }
+        
         String namespaceName = namespace.name;
+        byte namespaceKind = namespace.getNamespaceKind();
         assert namespaceName == namespaceName.intern();
-        while ((k = names[i]) != null && !(k == name && type == (bindings[i]&7) && namespaceName == namespaces[i].name
-                && namespace.getNamespaceKind()== namespaces[i].getNamespaceKind() ))
+        
+        do {   
+            if (this.name[id] == name && this.type[id] == type &&  
+                namespaceName == this.namespace[id].name && 
+                namespaceKind == this.namespace[id].getNamespaceKind() )
+            {
+                return id;
+            }  
+            if (profile) {collisions++;if (this.name[id] == name) named_collisions++;}
+            id = next[id];
+		} while (id != -1);
+        
+        if ( enter )
         {
-			i = (i + (n++)) & bitmask;			// quadratic probe
-		}
-        return i;
+            return enter(name,namespace,type,hv);
+        }
+        if (profile) misses++;
+        return -1;
 	}
 
 	public int size()
 	{
 		if(this == EMPTY_NAMES)
 			return 0;
-		return size + delegate.size();
+		return namesUsed;
 	}
 	
 	private boolean isFull()
 	{ 
 		// 0.80 load factor
-		return 5*(size+1) >= capacity()*4;
+		return 5*(namesUsed+1) >= capacity()*4;
 	}
 	
 	private final int capacity()
 	{
-		return (names != null) ? names.length : 0;
+		return (hashTable != null) ? hashTable.length : 0;
 	}
 
 	private int put(String name, ObjectValue namespace, int type)
 	{
-		if (names == null)
+		if (hashTable == null || isFull())
 		{
-			names = new String[INITIAL_CAPACITY];
-			namespaces = new ObjectValue[INITIAL_CAPACITY];
-			bindings = new int[INITIAL_CAPACITY];			
+            grow();
 		}
 		
-		if (isFull())
-		{
-			grow();
-		}
-		
-		int i = find(name, namespace, type, capacity());
-		if (name.equals(names[i]))
-		{
-			// This <name,ns,type> tuple is already in the table
-		}
-		else
-		{
-			// New table entry for this <name,ns,type> tuple
-			size++;
-			names[i] = name;
-			namespaces[i] = namespace;
-		}		
-		return i;
+		return find(name, namespace, type, true);
 	}
 	
 	public void putMask(String name, ObjectValue namespace, int type)
 	{		
-		int i = put(name, namespace, type);
-		bindings[i] = bindings[i] | type;
+		//int id = 
+            put(name, namespace, type);
+        //type[id] |= (byte) ty; // ??? this accumulates type bits...which cant be right (types are 0..4, not a bitmask)
 	}
 	
 	public void put(String name, ObjectValue namespace, int type, int slot)
 	{		
-		int i = put(name, namespace, type);
-		bindings[i] = (slot<<3) | type;
+		int id = put(name, namespace, type);
+        this.slot[id] = slot;
 	}	
 
 	public boolean containsKey(String name, int type)
 	{
-		if (this == EMPTY_NAMES)
+		if (this == EMPTY_NAMES || hashTable == null)
 		{
 			return false;
 		}
 		
-		boolean hasIt = false;
-		if(names != null) {
-			int i = find(name, type, capacity());
-			hasIt = names[i] != null && names[i] == name && (bindings[i]&7) == type && (bindings[i]>>3) != -1;
-		}
-		if(!hasIt)
-			hasIt = delegate.containsKey(name, type); 	
+		int id = find(name, type);
+        
+		boolean hasIt = id != -1 && slot[id] != -1;
 		return hasIt;
 	}
 
 	public int get(String name, ObjectValue namespace, int type)
 	{
-		if (this == EMPTY_NAMES)
+		if (this == EMPTY_NAMES || hashTable == null)
 		{
 			return -1;
 		}
 		
-		int index = -1;
-		if(names != null) {
-			int i = find(name, namespace, type, capacity());
-			index = (names[i] == name && (bindings[i]&7) == type) ? (bindings[i]>>3) : -1;
-		}
-		if(index == -1)
-			index = delegate.get(name, namespace, type);
-		return index;
+		int id = find(name, namespace, type, false);
+		int slot = (id != -1) ? this.slot[id] : -1;
+		return slot;
 	}
 
 	public Set<Map.Entry<String, Qualifiers>> entrySet(int type)
@@ -181,23 +222,44 @@ public final class Names
 		// ISSUE This method is going to be a performance hit
 		// since it creates a copy of the entire map.
 		// Callers should be adjusted to no longer use this method.
+        
+        //FIXME --this is called in one place and should be restructured as a single iteration over the name table, except that it's really not used...
+        // It would get used if Builder.removeBuilderNames == false --which is currently hardwired true...
+        
 		TreeMap<String, Qualifiers> map = new TreeMap<String, Qualifiers>();
-		for (int i=0, n=capacity(); i<n; i++)
+		for (int i=0; i<namesUsed; i++)
 		{
-			if (names[i] != null && (bindings[i]&7) == type)
+            String n = name[i];
+			if (n != null && this.type[i] == type)
 			{
-				Qualifiers q = map.get(names[i]);
+				Qualifiers q = map.get(n);
 				if (q == null)
 				{
 					q = new Qualifiers();
-					map.put(names[i], q);
+					map.put(n, q);
 				}
-				q.put(namespaces[i], bindings[i]>>3);
+				q.put(namespace[i], slot[i]);
 			}
 		}
 		return map.entrySet();
 	}
 	
+    public boolean exist(String name, int type)
+    {
+        if (this == EMPTY_NAMES)
+        {
+            return false;
+        }
+        int hv = hash(name);
+
+        for (int id=hashTable[hv]; id != -1; id = next[id])
+        {
+            if (this.name[id] == name && this.type[id] == type)
+                return true;
+        }
+        return false;
+    }
+    
 	public Qualifiers get(String name, int type)
 	{
 		if (this == EMPTY_NAMES)
@@ -206,115 +268,114 @@ public final class Names
 		}
 		
 		Qualifiers q = null;
+        int hv = hash(name);
+        int id;
+        
+        // ??? for all entries {name,type} put {namespace,slot} => q
+        // ??? FOR ALL ENTRIES ??? --simplified to just chase this bucket.
+        // ??? could be better, if we chained names, but it costs a word.
 
-		int m = capacity();
-        int n = 7;
-		int bitmask = (m - 1);
-        int i = hash(name, type) & bitmask;
-        String k;
-        while ((k = names[i]) != null)
+        for (id=hashTable[hv]; id != -1; id = next[id])
         {
-        	if (k == name && (bindings[i]&7) == type)
+        	if (this.name[id] == name && this.type[id] == type)
         	{
         		if (q == null)
         		{
         			q = new Qualifiers();
-        		}        			
-        		q.put(namespaces[i], bindings[i]>>3);
+        		}  
+        		q.put(namespace[id], slot[id]);
+                if (profile) lookups++;
         	}
-        	
-			i = (i + (n++)) & bitmask;			// quadratic probe
+            else if (profile) {collisions++;if (this.name[id] == name) named_collisions++;}
 		}
-		
-        if(q != null) {
-        	Qualifiers q2 = delegate.get(name, type); 
-        	if(q2 != null)
-        		q.putAll(q2);
-        } else
-        	q = delegate.get(name, type);
-        
+        if (profile) {if (q==null) misses++;}
 		return q;
 	}
 
 	public void putAll(Names names)
 	{
-		if (names == null)
+		for (int i=0; i<names.namesUsed; i++)
 		{
-			int capacity = names.capacity();
-			this.names = new String[capacity];
-			namespaces = new ObjectValue[capacity];
-			bindings = new int[capacity];
-		}
-
-		for (int i=0, n=names.capacity(); i<n; i++)
-		{
-			if (names.names[i] != null)
-			{
-				put(names.names[i], names.namespaces[i], names.bindings[i]&7, names.bindings[i]>>3);
-			}
-		}	
-	}
-
-	public void putAll(Names names, int type)
-	{
-		if (names == null)
-		{
-			int capacity = names.capacity();
-			this.names = new String[capacity];
-			namespaces = new ObjectValue[capacity];
-			bindings = new int[capacity];
-		}
-
-		for (int i=0, n=names.capacity(); i<n; i++)
-		{
-			if (names.names[i] != null && (names.bindings[i]&7) == type)
-			{
-				put(names.names[i], names.namespaces[i], names.bindings[i]&7, names.bindings[i]>>3);
-			}
+            put(names.name[i], names.namespace[i], names.type[i], names.slot[i]);
 		}	
 	}
 	
 	public boolean containsKey(String name, ObjectValue namespace, int type)
 	{
-		if (this == EMPTY_NAMES)
+		if (this == EMPTY_NAMES || hashTable == null)
 		{			
 			return false;
 		}
 		
-		boolean hasIt = false;
-		if(names != null) {
-			int i = find(name, namespace, type, capacity());
-			hasIt = names[i] == name && (bindings[i]>>3) != -1;
-		}
-		if(!hasIt)
-			hasIt = delegate.containsKey(name, namespace, type);
+		int id = find(name, namespace, type, false);
+		boolean hasIt = id != -1 && slot[id] != -1;
 		return hasIt;
 	}
 
+    private void newHashTable(int size)
+    {
+        hashTable = new int[size];
+        hashTableMask = hashTable.length - 1;
+        
+        for(int i = 0; i < hashTable.length; i++)
+            hashTable[i] = -1;
+    }
+    
+    private void growNames()
+    {
+       if (name == null)
+       {
+           name = new String[INITIAL_CAPACITY];
+           namespace = new ObjectValue[INITIAL_CAPACITY];
+           slot = new int[INITIAL_CAPACITY];
+           next = new int[INITIAL_CAPACITY];
+           type = new byte[INITIAL_CAPACITY]; 
+           return;
+       }
+       
+       int l = name.length < 256 ? name.length*2: name.length+256;
+       String[] newName = new String[l];
+       ObjectValue[] newNamespace = new ObjectValue[l];
+       int[] newSlot = new int[l];
+       int[] newNext = new int[l];
+       byte[] newType = new byte[l];
+       
+       for (int i=0; i < namesUsed; i++)
+       {
+           newName[i] = name[i];
+           newNamespace[i] = namespace[i];
+           newSlot[i] = slot[i];
+           newType[i] = type[i];
+           newNext[i] = next[i];
+       }
+       
+       name = newName;
+       namespace = newNamespace;
+       slot = newSlot;
+       type = newType;
+       next = newNext;
+    }
+    
 	private void grow()
-	{
-		// double our table
-		int capacity = capacity()*2;
-
-		String oldNames[] = names;
-		ObjectValue oldNamespaces[] = namespaces;
-		int oldBindings[] = bindings;
-		
-		names = new String[capacity];
-		namespaces = new ObjectValue[capacity];
-		bindings = new int[capacity];
-		
-        for (int i=0, n=oldNames.length; i < n; i++)
+	{   
+        if ( hashTable == null )
         {
-            String oldName = oldNames[i];
-            if (oldName != null)
-            {
-                // inlined & simplified version of put()
-                int j = find(oldName, oldNamespaces[i], oldBindings[i]&7, capacity);
-                names[j] = oldName;
-                namespaces[j] = oldNamespaces[i];
-                bindings[j] = oldBindings[i];
-			}
+            newHashTable(INITIAL_CAPACITY);
+            growNames();
+            return;
+        }
+        
+		// double our table size (its all we can do, since the hashmod function is a simple mask)
+
+        newHashTable(capacity()*2);
+        	
+        if (profile) grows++;
+        
+        for (int i=0; i < namesUsed; i++)
+        {
+            int hv = hash(name[i]);
+            next[i] = hashTable[hv];
+            hashTable[hv] = i;
         }
 	}
 	
@@ -335,34 +396,29 @@ public final class Names
 
 	public String getName(int i)
 	{
-		return names[i];
+		return name[i];
 	}
 
 	public ObjectValue getNamespace(int i)
 	{
-		return namespaces[i];
+		return namespace[i];
 	}
 
 	public int getSlot(int i)
 	{
-		return bindings[i]>>3;
+		return slot[i];
 	}
 
 	public int getType(int i)
 	{
-		return bindings[i]&7;
+		return type[i];
 	}
 
 	public int hasNext(int index)
 	{
-		int n = capacity();
-		for (; index < n; index++)
-		{
-			if (names[index] != null)
-			{
-				return index;
-			}
-		}
-		return -1;
-	}
+        if ( index < namesUsed )
+            return index;
+        
+        return -1;
+    }
 }
