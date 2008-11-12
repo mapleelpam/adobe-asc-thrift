@@ -4634,7 +4634,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
             node.prev_cx = null;
         }
 
-        setOrigin(cx.getErrorOrigin());
+        setOrigin(cx.getQualifiedErrorOrigin());
 
         return null;
     }
