@@ -10581,7 +10581,6 @@ public class GlobalOptimizer
 			this.coercions.add(new Coercion(reg, ty));
 		}
 
-		@Override
 		public int compareTo(Object arg0)
 		{
 			return compare_constraints((TypeConstraints) arg0, DestinationInPlay.CONSIDER_DEST_BLOCK);
