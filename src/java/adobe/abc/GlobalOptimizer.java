@@ -110,11 +110,14 @@ public class GlobalOptimizer
 	// default configuration flags
 	final boolean PRESERVE_METHOD_NAMES = false;
 	final boolean USE_CALLMETHOD = false;
-	final boolean OUTPUT_DOT = false;
-	final boolean SHOW_DFG =  false;
-	final boolean SHOW_CODE = false;
+	final boolean SHOW_CODE = true;
+	final boolean SHOW_DOMINATORS=false;
+	
+	//  Configuration flags settable by options
+	boolean OUTPUT_DOT = false;
+	boolean SHOW_DFG =  false;
 	boolean STRIP_DEBUG_INFO = true;
-	boolean ALLOW_NATIVE_CTORS = false;	// not final, AbcThunkGen needs to set this to true
+	boolean ALLOW_NATIVE_CTORS = false;
 	
 	boolean verbose_mode=false;
 	boolean legacy_verifier=false;  
@@ -180,6 +183,16 @@ public class GlobalOptimizer
 				addTraceAttr("timestamp", new Date());
 				continue;
 			}
+			if ( args[i].equals("-dot") )
+			{
+				go.OUTPUT_DOT = true;
+				continue;
+			}
+			if ( args[i].equals("-dfg"))
+			{
+				go.SHOW_DFG = go.OUTPUT_DOT =  true;
+				continue;
+			}
 			if(args[i].equals("--")) {
 				first_exported_file = a.size();
 				continue;
@@ -243,7 +256,7 @@ public class GlobalOptimizer
 			System.out.println("After optimization:  "+after.length);
 			int delta = before_length - after.length;
 			long percent = Math.round(delta/(double)before_length*100);
-			System.out.println("Saved:  "+delta+ " "+percent+"%");
+			System.out.println("Difference:  "+delta+ " "+percent+"%");
 		}
 	}
 
@@ -357,6 +370,20 @@ public class GlobalOptimizer
 			NUMBER.defaultValue = Double.NaN;
 			INT.defaultValue = 0;
 			UINT.defaultValue = 0;
+			
+			builtinTypes.add(CLASS);
+			builtinTypes.add(FUNCTION);
+			builtinTypes.add(ARRAY);
+			builtinTypes.add(INT);
+			builtinTypes.add(UINT);
+			builtinTypes.add(NUMBER);
+			builtinTypes.add(BOOLEAN);
+			builtinTypes.add(STRING);
+			builtinTypes.add(NAMESPACE);
+			builtinTypes.add(XML);
+			builtinTypes.add(XMLLIST);
+			builtinTypes.add(QNAME);
+			builtinTypes.add(VOID);
 		}
 		
 		Type lookup(int id)
@@ -725,19 +752,26 @@ public class GlobalOptimizer
 		{
 			toResolve.add(t);
 			t.defs = new Symtab<Binding>();
-			int slot_id = 0;
-			if (t.base != null)
-				slot_id = t.base.slotCount;
+			
+			//  Start counting slots either from
+			//  the base type's last-used slot 
+			//  or from zero if there's no base.
+			int slot_id = (t.base != null)? t.base.slotCount: 0;
+
+			//  Slots used by this type.
 			int count = p.readU30();
+			
 			for (int i = 0; i < count; i++)
 			{
-				Name name = names[p.readU30()]; // name
+				Name name = names[p.readU30()];
 				Binding b = new Binding(p.readU8(), name, this);
 				Binding old = t.defs.get(name);
+				
 				while (old != null && old.peer != null)
 					old = old.peer;
 				if (old != null)
 					old.peer = b;
+
 				t.defs.put(name, b);
 				int slot = p.readU30(); // slot_id | disp_id
 				b.id = p.readU30(); // typename | class_id | method_id
@@ -893,8 +927,16 @@ public class GlobalOptimizer
 		Type readInstance(Reader p)
 		{
 			Type t = new Type();
-			t.name = names[p.readU30()]; // name (qname)
-			t.base = lookup(p.readU30()); // base (multiname)
+
+			//  Qualified name of the type.
+			t.name = names[p.readU30()];
+			//  Base name of the type is in the ABC;
+			//  resolve it, and note that the base type
+			//  has been used as a base, so it won't be
+			//  emitted as *.
+			t.base = lookup(p.readU30());
+			baseTypes.add(t.base);
+			
 			t.flags = p.readU8();
 			if (t.hasProtectedNs())
 				t.protectedNs = namespaces[p.readU30()];
@@ -1060,7 +1102,7 @@ public class GlobalOptimizer
 					{
 						assert(!catchlabels.get(pos-code_start));
 						Edge succ[] = b.succ();
-						if (succ == null)
+						if (0 == succ.length)
 						{
 							b.add(e = new Expr(m,OP_jump));
 							e.succ = new Edge[] { edge = new Edge(m,b,0,blocks.get(pos)) };
@@ -1356,8 +1398,10 @@ public class GlobalOptimizer
 				case OP_coerce:
 				case OP_astype:
 				case OP_istype:
+				{
 					b.add(e = frame[sp-1] = new Expr(m, op, names[p.readU30()], frame, sp, 1));
 					break;
+				}
 					
 				case OP_dxns:
 					b.add(new Expr(m,op, strings[p.readU30()]));
@@ -1827,6 +1871,8 @@ public class GlobalOptimizer
 		
 		Typeref activation;
 		Handler[] handlers = nohandlers;
+		
+		Map<Expr,Typeref> verifier_types = null;
 		
 		Method(int id, InputAbc abc)
 		{
@@ -2346,6 +2392,9 @@ public class GlobalOptimizer
 	Type INT, UINT, NUMBER, BOOLEAN, STRING, NAMESPACE;
 	Type XML, XMLLIST, QNAME;
 	Type NULL, VOID;
+	
+	Set<Type>builtinTypes = new HashSet<Type>();
+	Set<Type>baseTypes    = new HashSet<Type>();
 	
 	static class Metadata implements Comparable
 	{
@@ -3606,7 +3655,7 @@ public class GlobalOptimizer
 			traceEntry("Expr", "Expr", e);
 			addTraceAttr("op", opNames[e.op]);
 			addTraceAttr("pos", out.size());
-			
+
 			out.write(e.op);
 			switch (e.op)
 			{
@@ -3625,7 +3674,7 @@ public class GlobalOptimizer
 			case OP_coerce:
 			case OP_astype:
 			case OP_finddef:
-				out.writeU30(abc.namePool.id(e.ref));
+					out.writeU30(abc.namePool.id(e.ref));
 				break;
 			case OP_callproperty:
 			case OP_callproplex:
@@ -3960,7 +4009,10 @@ public class GlobalOptimizer
 			{
 			case TRAIT_Var:
 			case TRAIT_Const:
-				out.writeU30(b.slot); // abc format slot_id's count from 1
+				if ( t.base == null || 0 == t.base.slotCount )
+					out.writeU30(b.slot);
+				else
+					out.write(0);
 				out.writeU30(abc.typeRef(b.type));
 				if (!defaultValueChanged(b))
 				{
@@ -4025,13 +4077,26 @@ public class GlobalOptimizer
 		verboseStatus("AFTER FOLD");
 		print(dfs(m.entry.to));
 
-		if (OUTPUT_DOT)
-			dot("-after",m);
+
 		
 		insert_casts(m);
 		remove_phi(m);
-		printabc(schedule(m.entry.to));
-		verboseStatus("");
+		
+		if (OUTPUT_DOT)
+			dot("-after",m);
+		
+		if ( legacy_verifier )
+		{
+			appeaseLegacyVerifier(m);
+			if (OUTPUT_DOT)
+				dot("-appeased",m);
+		}
+		
+		if ( verbose_mode )
+		{
+			printabc(schedule(m.entry.to));
+		}
+		
 		unwindTrace(optimize_trace_phase);
 	}
 	
@@ -4131,6 +4196,21 @@ public class GlobalOptimizer
 			}
 		}
 		dce(m);
+	}
+	
+	/**
+	 * Cast a BitSet, so to speak, to an iterable Set.
+	 * @param x - the set to be iterated over.
+	 * @return the same numbers in a sorted Set.
+	 */
+	Set<Integer> foreach(BitSet x)
+	{
+		Set<Integer> result = new TreeSet<Integer>();
+		for ( int i = 0; i < x.length(); i++ )
+			if ( x.get(i) )
+				result.add(i);
+		
+		return result;
 	}
 	
 	SetMap<Block,Edge> preds(Deque<Block> code)
@@ -4268,7 +4348,7 @@ public class GlobalOptimizer
 						last.op = r.op;
 						last.args = new Expr[] { first.args[i] };
 						last.succ = noedges;
-						first.remove(i);
+						first.removePhiInput(i);
 						changed = true;
 						break blocks;
 					}
@@ -4290,7 +4370,7 @@ public class GlobalOptimizer
 							// we want to retarget the branch: and adjust any phi nodes that are affected.
 							Edge before = br.op == last.op ? br.succ[1] : br.succ[0];
 							verboseStatus("SKIPTEST old "+out+" new "+before);
-							phi.remove(i);
+							phi.removePhiInput(i);
 							copyTargetPhi(phi, cond, before, out);
 							changed = true;
 							break blocks;
@@ -4445,7 +4525,18 @@ public class GlobalOptimizer
 		Block to;
 		int label;
 		int id;
-		Handler handler; // if this is an exception edge.
+
+		/**
+		 *  Exception edge's handler.
+		 */
+		Handler handler;
+		
+		/**
+		 *  Set when the block scheduler finds
+		 *  a backwards branch, which changes
+		 *  the verifier's type logic.
+		 */
+		boolean backwards_branch;
 		
 		Edge(Method m, Block f, int i)
 		{
@@ -4864,7 +4955,7 @@ public class GlobalOptimizer
 					{
 						Edge p = e.pred[j];
 						if (!reached.contains(p))
-							e.remove(j);
+							e.removePhiInput(j);
 					}
 				}
 				else if (e.succ != null)
@@ -4885,7 +4976,7 @@ public class GlobalOptimizer
 									Edge in = phi.pred[i];
 									Edge out = e.succ[j];
 									copyTarget(out, in);
-									phi.remove(i);
+									phi.removePhiInput(i);
 								}
 							}
 						}
@@ -5489,7 +5580,7 @@ public class GlobalOptimizer
 		Deque<Block> code = dfs(m.entry.to);
 		SetMap<Block,Edge> pred = preds(code);
 		Map<Block,Block> idom = idoms(code, pred);
-		Map<Expr,Typeref> types = verify_types(m, code, idom);
+		m.verifier_types = verify_types(m, code, idom);
 		
 		int insert_casts_trace_phase = pushTracePhase("insert_casts");
 		
@@ -5507,40 +5598,43 @@ public class GlobalOptimizer
 		{
 			for (Expr e: b)
 			{
-				if (e.op != OP_phi)
-					break;
-				Typeref etype = types.get(e);  // merged type, possibly mdb of arg types
-				for (int i=e.args.length-1; i >= 0; i--)
+				if (e.op == OP_phi)
 				{
-					Expr a = e.args[i];
-					Edge p = e.pred[i];
-					
-					if ( a.onScope() )
-						continue;
-
-					Typeref atype = types.get(a);
-					if (isLoop(p, idom) ? !etype.equals(atype) : isAtom(etype.t) != isAtom(atype.t))
+					Typeref etype = m.verifier_types.get(e);  // merged type, possibly mdb of arg types
+					for (int i=e.args.length-1; i >= 0; i--)
 					{
-						// skip String->String?
-						if((etype.t == atype.t) && etype.nullable)
-							continue;
+						Expr a = e.args[i];
+						Edge p = e.pred[i];
 						
-						verboseStatus("MISSING CAST " + a + " " + atype+"->"+etype+" on " + p);
-						if (isCritical(p,pred))
+						if ( a.onScope() )
+							continue;
+	
+						Typeref atype = m.verifier_types.get(a);
+						if (isLoop(p, idom) ? !etype.equals(atype) : isAtom(etype.t) != isAtom(atype.t))
 						{
-							split(p, m, pred);
-							p = e.pred[i];
+							// skip String->String?
+							if((etype.t == atype.t) && etype.nullable)
+								continue;
+							
+							verboseStatus("MISSING CAST " + a + " " + atype+"->"+etype+" on " + p);
+
+							if (isCritical(p,pred))
+							{
+								split(p, m, pred);
+								p = e.pred[i];
+							}
+							// TODO best to insert this right after a?
+							Expr upcast = upcast(a, m, etype.t);
+							append(p, upcast);
+							e.args[i] = upcast;
+
 						}
-						// TODO best to insert this right after a?
-						Expr upcast = upcast(a, m, etype.t);
-						append(p, upcast);
-						e.args[i] = upcast;
 					}
 				}
 			}
 		}
 		
-		verboseStatus("VERIFY TYPES "+types);
+		verboseStatus("VERIFY TYPES "+m.verifier_types);
 		
 		unwindTrace(insert_casts_trace_phase);
 	}
@@ -6129,9 +6223,18 @@ public class GlobalOptimizer
 
 			case OP_coerce_a:
 			{
-				// ignore upcast.
-				v = values.get(e.args[0]);
-				tref = types.get(e.args[0]);
+				//  This cast has meaning if it's casting from void.
+				//  Otherwise, it's an upcast and can be removed;
+				//  casts will be re-inserted as appropriate.
+				if ( ! (types.get(e.args[0]).equals(VOID.ref) ) )
+				{
+					v = values.get(e.args[0]);
+					tref = types.get(e.args[0]);
+				}
+				else
+				{
+					tref = ANY.ref;
+				}
 				break;
 			}
 			
@@ -6140,12 +6243,9 @@ public class GlobalOptimizer
 				Typeref t0 = types.get(e.args[0]);
 				Object v0 = values.get(e.args[0]);
 				Type t = namedTypes.get(e.ref);
-				if ( null == t )
-				{
-					//  The type wasn't imported.  Fake it.
-					t = ANY;
-				}
-				else if (t == STRING)
+				assert ( t != null );
+				
+				if (t == STRING)
 				{
 					tref = eval_coerce_s(t0);
 					v = eval_coerce_s(v0);
@@ -6850,9 +6950,9 @@ public class GlobalOptimizer
 	
 	/**
 	 * most derived base
-	 * @param a
-	 * @param b
-	 * @return
+	 * @param a - first type
+	 * @param b - second type
+	 * @return Typeref to the "nearest" common base type.
 	 */
 	Typeref mdb(Typeref a, Typeref b)
 	{
@@ -6957,21 +7057,30 @@ public class GlobalOptimizer
 		return e.from.succ().length > 1 && pred.get(e.to).size() > 1;
 	}
 	
-	void split(Edge e, Method m, SetMap<Block,Edge>pred)
+	/**
+	 * 
+	 * @param e - the edge to split.
+	 * @post e points at the new block.
+	 * @param m - the containing Method.
+	 * @param pred - predecessors.  Not entirely relevant...
+	 * @return the Edge from the new block to e's original "to."
+	 */
+	Edge split(Edge e, Method m, SetMap<Block,Edge>pred)
 	{
 		assert(e.handler == null); // can't split exception edges
-		verboseStatus("SPLIT "+e);
 		Expr j = new Expr(m, OP_jump);
 		Block d = new Block(m);
 		Block to = e.to;
 		Edge e2 = new Edge(m,d,0,to);
 		j.succ = new Edge[] { e2 };
 		d.add(j);
+		verboseStatus("SPLIT "+e + " ... " + d + ", " + e2);
 		e.to = d;
 		pred.get(d).add(e);
 		pred.get(to).remove(e);
 		pred.get(to).add(e2);
 		replacePred(to,e,e2);
+		return e2;
 	}
 	
 	void replacePred(Block b, Edge before, Edge after)
@@ -6989,10 +7098,7 @@ public class GlobalOptimizer
 	
 	Expr append(Edge edge, Expr e)
 	{
-		Deque<Expr> exprs = edge.from.exprs;
-		Expr last = exprs.removeLast();
-		exprs.add(e);
-		exprs.add(last);
+		edge.from.appendExpr(e);
 		return e;
 	}
 	Expr prepend(Edge edge, Expr e)
@@ -7157,8 +7263,8 @@ public class GlobalOptimizer
 				update_depth(s.to, 1, stkin, 0, scpin);
 		}
 		
-		if ( legacy_verifier )
-			killCruftyLocals(m); 
+		// some of the edges we split didn't need to be.
+		cfgopt(m);
 		
 		m.local_count = max_local+1;
 		m.max_stack = max_stack;
@@ -7166,8 +7272,6 @@ public class GlobalOptimizer
 		
 		verboseStatus("AFTER SCHED "+m.name+" local_count="+m.local_count+" max_stack="+max_stack+" max_scope="+max_scope);
 		
-		// some of the edges we split didn't need to be.
-		cfgopt(m);
 		unwindTrace(remove_phi_trace_phase);
 	}
 	
@@ -7177,75 +7281,244 @@ public class GlobalOptimizer
 	 *  on more than one path and not live in to a block.
 	 *  @param m - the Method under analysis.
 	 */
-	void killCruftyLocals(Method m)
+	void appeaseLegacyVerifier(Method m)
 	{
-		int kill_cruft_trace_phase = pushTracePhase("killCruftyLocals");
+		int kill_cruft_trace_phase = pushTracePhase("appeaseLegacyVerifier");
 		addTraceAttr(m);
 		
-		Deque<Block> code = dfs(m.entry.to);
+		Deque<Block> code = schedule(m.entry.to);
 		SetMap<Block, Edge>pred = preds(code);
 		
-		Map<Block,LocalVarState> local_state = getLocalVarState(code, pred);
+		Map<Block,LocalVarState> reg_state_by_block = getLocalVarState(m);
 		
-		Map<Block, BitSet> killed_vars = new TreeMap<Block, BitSet>();
-		
+		//  Apply type constraints:
+		//  Find edges where locals' types
+		//  conflict with the expected type, which
+		//  may be the consensus type for the local
+		//  in the block or may be specific to the
+		//  block.  Apply coercions as necessary.
 		for ( Block b: code)
 		{
-			//  Work around legacy verifier restrictions:
-			//  Kill predecessor blocks' locals if they're
-			//  active on more than one path and not phi inputs.
+			verboseStatus("Building constraints for " + b);
 			
-			Set<Edge> current_preds = pred.get(b);
-			LocalVarState current_state = local_state.get(b);
+			if ( b.succ().length == 0 )
+			{
+				//  No successors, no conflicts.
+				//  NOTE: From this point forward, b.succ() is
+				//  taken to have at least an element [0].
+				verboseStatus("...no successors");
+				continue;
+			}
+
+			LocalVarState local_state = reg_state_by_block.get(b);			
+			assert ( local_state != null);
 			
-			if ( current_preds.size() > 1)
-			{	
-				//  Find variables that come in on multiple paths.
-				Map<Integer, Set<Edge>> livein_edges = new TreeMap<Integer,Set<Edge>>();
+			BitSet active  = local_state.getActiveVariables();
+			
+			//  Check the block's successors to see if
+			//  local type fixups are required.
+			TypeConstraints[] edge_constraints = new TypeConstraints[b.succ().length];
+			int succ_idx = 0;
+			
+			for ( Edge p: b.succ())
+			{
+				verboseStatus(p);
+				TypeConstraints tc = edge_constraints[succ_idx++] = new TypeConstraints(p);
 				
-				for ( Edge p: current_preds )
+				LocalVarState to_state = reg_state_by_block.get(p.to);
+				if ( null == to_state )
+					//  Previously split block.
+					continue;
+				
+				BitSet livein  = reg_state_by_block.get(p.to).getLivein();
+				
+				for ( Integer r : foreach(active) )
 				{
-					BitSet pred_liveout = local_state.get(p.from).getLiveout();
+					Typeref from_ty = local_state.getFinalType(r);
+					Typeref to_ty   = to_state.getInitialType(r);
 					
-					for ( int varnum = 0; varnum < pred_liveout.length(); varnum++)
-					{
-						if ( pred_liveout.get(varnum) )
+					assert(from_ty != null);
+					assert(to_ty != null);
+					
+					if ( livein.get(r) )
+					{	
+						//  TODO: This check can be smarter; if the edge is not a
+						//  backedge by the verifier's logic, and the types have
+						//  a suitable merge, then the JIT can do this, possibly
+						//  more efficiently.
+						if ( to_state.hard_coercions[r] != null /* && ! from_ty.equals(to_state.hard_coercions[r]) */ )
 						{
-							if ( livein_edges.get(varnum) == null )
-							{
-								livein_edges.put(varnum, new TreeSet<Edge>());
-							}
-							
-							livein_edges.get(varnum).add(p);
+							assert(livein.get(r));
+							tc.addCoercion(r, to_state.hard_coercions[r]);
 						}
+						else if ( needsCoercion(m, to_ty, from_ty, p.backwards_branch) )
+						{
+							verboseStatus ("\tfix livein type conflict " + from_ty + "," + to_ty);
+							tc.addCoercion(r, to_ty);
+						}
+						
+					}
+					else
+					{
+						//  TODO: These can be largely eliminated
+						//  when the verifier gets smarter.
+						tc.addKill(r);
 					}
 				}
+			}
+			
+			//  Fix constraints.  If all edges' constraints agree, 
+			//  then they can be fixed in the defining block, else
+			//  split the edges and apply constraints individually.
+			//  TODO: Sort the constraints so that split edges
+			//  can be shared.
+			boolean all_edges_agree = true;
+			TypeConstraints tc_prime = edge_constraints[0];
+			
+			for ( int i = 1; all_edges_agree && i < edge_constraints.length; i++)
+				all_edges_agree &= tc_prime.compareTo(edge_constraints[i]) == 0;
+			
+			if ( all_edges_agree )
+			{
+				fixConstraints(m, b, tc_prime);
+			}
+			else
+			{
+				int constraint_idx = 0;
 				
-				//  Find locals coming from more than one predecessor
-				//  whose types don't match; these need to be killed
-				//  if they're not in the current block's livein set
-				//  (in which case they will have been a phi input).
-				for ( Integer suspect_local: livein_edges.keySet() )
+				for ( Edge p:b.succ() )
 				{
-					if ( livein_edges.get(suspect_local).size() > 1 )
+					//  Split the liveout block, and apply
+					//  the constraints to the split block.
+					TypeConstraints tc = edge_constraints[constraint_idx++]; 
+					if ( tc.killregs.size() > 0 || tc.coercions.size() > 0 )
 					{
-						for ( Edge p: livein_edges.get(suspect_local))
-						{
-							if ( ! (current_state.isPhiInput(p, suspect_local) || current_state.getLivein().get(suspect_local) || killed_vars.get(p.to).get(suspect_local)) )
-							{	
-								traceEntry("killed");
-								addTraceAttr("variable", suspect_local.intValue());
-								p.to.exprs.addFirst(new Expr(m, OP_kill, suspect_local.intValue()));
-								killed_vars.get(p.to).set(suspect_local);
-							}
-						}
+						split(p, m, pred);
+						fixConstraints(m, p.to, tc);
 					}
 				}
-				
 			}
 		}
 		
 		unwindTrace(kill_cruft_trace_phase);
+	}	
+
+	boolean needsCoercion(Method m, Typeref to_ty, Typeref from_ty, boolean backwards_branch)
+	{
+		if (  to_ty.equals(from_ty) || ignoreTypeConflict(m, to_ty, from_ty) || isNumericType(to_ty) )
+			return false;
+	
+		
+		Typeref merged_type = typeMeet(to_ty, from_ty);
+		
+		boolean needs_coercion;
+		
+		if ( null == merged_type )
+		{
+			//  No sensible meet of these types,
+			//  coercion necessary.
+			needs_coercion = true;
+		}
+		else if ( backwards_branch )
+		{
+			needs_coercion = ! to_ty.equals(merged_type);
+		}
+		else if ( merged_type.equals(to_ty.t) )
+		{
+			needs_coercion = false;
+		}
+		else
+		{
+			needs_coercion = true;
+		}
+		
+		return needs_coercion;
+		
+	}
+
+	private boolean isNumericType(Typeref to_ty)
+	{
+		Type t = to_ty.t;
+		return INT.equals(t) || UINT.equals(t) || NUMBER.equals(t);
+	}
+
+	/**
+	 * Ignore type conflicts that are probably due to other bugs.
+	 * @param m 
+	 * @param liveinType - the suspect type.
+	 * @param from_ty 
+	 * @return true if the type appears to be bogus.
+	 * @warn this routine is bogus.
+	 */
+	boolean ignoreTypeConflict(Method m, Typeref to_ty, Typeref from_ty)
+	{
+		boolean result = to_ty.t.name.name.startsWith("global") && from_ty.t.name.name.startsWith("global");
+		result |= from_ty.t.equals(m.activation.t) && to_ty.t.equals(m.activation.t);
+		return result;
+	}
+	
+
+	void fixConstraints(Method m, Block b, TypeConstraints bc)
+	{
+		verboseStatus("fixConstraints " + b );
+		
+		Expr last = b.exprs.size() > 0? b.exprs.removeLast(): null;
+		
+		for ( int i = 0; i < bc.coercions.size(); i++ )
+		{
+			int regnum = bc.coercions.elementAt(i).reg;
+			
+			if ( bc.coercions.elementAt(i).ty.equals(VOID.ref) )
+			{
+				Expr void_expr = new Expr(m, OP_pushundefined);
+				b.exprs.add(void_expr);
+				b.exprs.add(setlocal(m, regnum, void_expr));
+			}
+			else
+			{
+				Expr getlocal = getlocal(m, regnum);
+				b.exprs.add(getlocal);
+				
+				Expr coerce_expr = coerceExpr(m, bc.coercions.elementAt(i).ty.t, getlocal);
+				b.exprs.add(coerce_expr);
+				b.exprs.add(setlocal(m, regnum, coerce_expr));
+			}
+			verboseStatus("\tlocal " + regnum);
+
+		}
+		
+		for ( Integer k: bc.killregs )
+		{
+			b.exprs.add(new Expr(m, OP_kill, k.intValue()));
+			verboseStatus("kill " + k);
+		}
+		
+		if ( last != null )
+			b.exprs.add(last);
+	}
+	
+	Expr coerceExpr(Method m, Type t, Expr a)
+	{
+		Expr result = null;
+		
+		assert(t != null);
+		
+		if ( ANY.equals(t))
+			result = new Expr(m, OP_coerce_a, a);
+		else if ( INT.equals(t))
+			result = new Expr(m, OP_convert_i, a);
+		else if ( OBJECT.equals(t))
+			result = new Expr(m, OP_coerce_o, a);
+		else if ( STRING.equals(t))
+			result = new Expr(m, OP_coerce_s, a);
+		else
+		{
+			result = new Expr(m, OP_coerce, t.name, a);
+		}
+		
+		verboseStatus("coerceExpr " + formatExpr(result));
+		
+		return result;
 	}
 
 	void alloc_locals(Deque<Block> code, Map<Integer, Integer> locals, ConflictGraph conflicts)
@@ -7390,14 +7663,28 @@ public class GlobalOptimizer
 		allocate(e.id, loc, locals, conflicts);
 	}
 	
-	Map<Block,LocalVarState> getLocalVarState(Deque<Block> code, SetMap<Block,Edge> pred)
+	Map<Block,LocalVarState> getLocalVarState(Method m)
 	{
-		
 		Map<Block,LocalVarState> result = new TreeMap<Block,LocalVarState>();
-				
-		for ( Block b: code)
+		
+		Deque<Block> code = schedule(m.entry.to);
+
+		//  Verifier's initial frame state:
+		//  Parameters have known types,
+		//  locals are type ANY.
+		Typeref[] frame_state = new Typeref[m.local_count];
+		
+		for ( int i = 0; i < m.params.length; i++ )
+			frame_state[i] = m.params[i];
+			
+		for (int i = m.params.length; i < frame_state.length; i++)
+			frame_state[i] = ANY.ref;
+		
+		verboseStatus("FRAME_STATE");
+		
+		for ( Block b: code )
 		{
-			buildLocalMap(b, result, pred);
+			frame_state = buildLocalState(m, b, frame_state, result);
 		}
 		
 		//  Compute liveout sets.
@@ -7406,31 +7693,58 @@ public class GlobalOptimizer
 		return result;
 	}
 	
-	LocalVarState buildLocalMap(Block b, Map<Block,LocalVarState> local_map, SetMap<Block,Edge> preds)
-	{
-	
-		LocalVarState result = local_map.get(b);
-		
-		if ( null == result )
+	Typeref[] buildLocalState(Method m, Block b, Typeref[] frame_state, Map<Block,LocalVarState> local_map)
+	{	
+		LocalVarState block_state = local_map.get(b);
+			
+		if ( null == block_state )
 		{
-			result = new LocalVarState(b);
-			local_map.put(b, result);
+			block_state =  new LocalVarState(m, b, frame_state);
+			local_map.put(b, block_state);
+			
+			switch (b.exprs.peekLast().op)
+			{
+			
+			default:
+			{
+				break;
+			}
+
+			case OP_ifnlt:
+			case OP_ifnle:
+			case OP_ifngt:
+			case OP_ifnge:
+			case OP_ifne:
+			case OP_ifstrictne:
+			case OP_iftrue:
+			case OP_iffalse:
+			case OP_ifeq:
+			case OP_iflt:
+			case OP_ifle:
+			case OP_ifgt:
+			case OP_ifge:
+			case OP_ifstricteq:
+			    {
+			    	buildLocalState(m, b.succ()[1].to, block_state.fs_out, local_map);
+			    	//  Leading edge is always the fall-through.
+			    	break;
+			    }
+			}
 		}
 		
-		return result;
+		return local_map.get(b).fs_out;
 	}
 	
 	/**
 	 *  Compute variable live-out sets for a control-flow graph.
 	 *  Follows Cooper & Torczon's [section 9.2.2] Round-robin, iterative solver
-	 * @param code - The CFG.  Presumed to be in DFS order (not a precondition).
+	 * @param code - The CFG.  Not required to be in any particular order.
 	 * @param live_map - the result map of blocks to sets of live-out variables.
 	 * @pre live_map must already have per-block data 
 	 *   for upwardly exposed vars, defines, and kills.
 	 */
 	void computeLiveout(Deque<Block> code, Map<Block,LocalVarState> live_map)
 	{
-		//  
 		boolean changed = true;
 		
 		while ( changed )
@@ -7448,63 +7762,14 @@ public class GlobalOptimizer
 					next_liveout.or(live_map.get(p.to).getLivein());
 				}
 				
+				for ( Edge x:b.xsucc)
+				{
+					next_liveout.or(live_map.get(x.to).getLivein());
+				}
+				
 				changed |= current_state.mergeLiveout(next_liveout);
 			}
 		}
-	}
-	
-	static interface Deque<E> extends List<E>
-	{
-		E removeFirst();
-		E peekFirst();
-		E removeLast();
-		E peekLast();
-		void addFirst(E e);
-	}
-	
-	static class ArrayDeque<E> extends ArrayList<E> implements Deque<E>
-	{
-		ArrayDeque()
-		{
-		}
-		ArrayDeque(Collection<E> c)
-		{
-			addAll(c);
-		}
-		public void addFirst(E e)
-		{
-			add(0, e);
-		}
-		public E removeFirst()
-		{
-			return remove(0);
-		}
-		public E peekFirst()
-		{
-			return isEmpty() ? null : get(0);
-		}
-		public E removeLast()
-		{
-			return remove(size()-1);
-		}
-		public E peekLast()
-		{
-			return isEmpty() ? null : get(size()-1);
-		}
-		public static final long serialVersionUID = 0;
-	}
-	
-	static class LinkedDeque<E> extends LinkedList<E> implements Deque<E>
-	{
-		public E peekFirst()
-		{
-			return isEmpty() ? null : getFirst();
-		}
-		public E peekLast()
-		{
-			return isEmpty() ? null : getLast();
-		}
-		public static final long serialVersionUID = 0;
 	}
 	
 	static class ConflictGraph
@@ -7541,6 +7806,45 @@ public class GlobalOptimizer
 		if (e == null || e.op == OP_arg)
 			return true;
 		return e.onStack() || e.args.length > 0;
+	}
+	
+	Typeref typeMeet(Typeref t1, Typeref t2)
+	{
+		Typeref result = null;
+		
+		Type merged_type = typeMeet(t1.t, t2.t);
+
+		if ( null != merged_type)
+			result = new Typeref ( merged_type, t1.nullable || t2.nullable);
+		
+		return result;
+	}
+
+	/**
+	 *  Type-meet as per the AVM verifier.
+	 *  @param t1 a type.  May be null. 
+	 *  @param t2 a type.  May be null.
+	 *  @return the type meet of these types.  Returns null iff both inputs are null.
+	 */
+	Type typeMeet(Type t1, Type t2)
+	{
+		//  Trivial cases.
+		if ( ANY.equals(t1) )
+			return t2;
+		else if ( ANY.equals(t2) )
+			return t1;
+		else if ( t1.equals(t2))
+			return t1;
+		else if ( builtinTypes.contains(t1) || builtinTypes.contains(t2))
+			return null;
+		
+		//  We have two UDTs.  Do they share a base type?
+		Type common_base = mdb(t1.ref, t2.ref).t;
+		
+		if ( ! ANY.equals(common_base) )
+			return common_base;
+		
+		return null;
 	}
 	
 	/**
@@ -7597,8 +7901,8 @@ public class GlobalOptimizer
 			Deque<Expr> in = new ArrayDeque<Expr>(b.exprs);
 			Deque<Expr> stk = new ArrayDeque<Expr>();
 			Deque<Expr> scp = new ArrayDeque<Expr>();
-			Deque<Object> verbose = new LinkedDeque<Object>();
-			Deque<Expr> out = new LinkedDeque<Expr>();
+			Deque<Object> verbose = new LinkedList<Object>();
+			Deque<Expr> out = new LinkedList<Expr>();
 
 			Set<Expr> out_of_order = new TreeSet<Expr>();
 			
@@ -7607,8 +7911,10 @@ public class GlobalOptimizer
 
 			live.addAll(liveout.get(b));
 			live.addAll(b.getLiveOut());
+
 			for (Expr l: live)
 				locals.put(l.id, l.op == OP_arg ? l.imm[0] : -1);
+
 			exprs.put(b,out);
 			listings.put(b,verbose);
 
@@ -7661,6 +7967,7 @@ public class GlobalOptimizer
 					}
 					else if (e.op == OP_xarg)
 					{
+						assert(stk.isEmpty());
 						while (!stk.isEmpty())
 							loadTOS(m, stk, scp, out, verbose, live, locals);
 						verbose.addFirst(in.removeLast());
@@ -7932,8 +8239,8 @@ public class GlobalOptimizer
 			Deque<Expr> in = new ArrayDeque<Expr>(b.exprs);
 			Deque<Expr> stk = new ArrayDeque<Expr>();
 			Deque<Expr> scp = new ArrayDeque<Expr>();
-			Deque<Object> verbose = new LinkedDeque<Object>();
-			Deque<Expr> out = new LinkedDeque<Expr>();
+			Deque<Object> verbose = new LinkedList<Object>();
+			Deque<Expr> out = new LinkedList<Expr>();
 
 			// if any succ has defined an expected stack, use it.
 			// if more than one have then they all have to match.
@@ -8345,7 +8652,7 @@ public class GlobalOptimizer
 				assert(e.args.length == e.pred.length);
 				for (int j=e.pred.length-1; j >= 0; j--)
 					if (!code.contains(e.pred[j].from))
-						e.remove(j);
+						e.removePhiInput(j);
 				Expr a = null;
 				for (int j=e.pred.length-1; j >= 0; j--)
 				{
@@ -8411,19 +8718,19 @@ public class GlobalOptimizer
 	
 	Deque<Block> dfs(Block entry)
 	{
-		return dfs_visit(entry, new BitSet(), new LinkedDeque<Block>());
+		return dfs_visit(entry, new BitSet(), new LinkedList<Block>());
 	}
 	
-	void schedule_loop(Block b, EdgeMap<Block> loops, Deque<Block> done)
+	void schedule_loop(Block b, EdgeMap<Block> loops, Deque<Block> scheduled)
 	{
 		Set<Block> loop = loops.get(b);
 		for (Block lb: dfs(b))
 		{
-			if (!done.contains(lb) && loop.contains(lb))
+			if (!scheduled.contains(lb) && loop.contains(lb))
 			{
-				done.add(lb);
+				scheduled.add(lb);
 				if (loops.containsKey(lb))
-					schedule_loop(lb, loops, done);
+					schedule_loop(lb, loops, scheduled);
 			}
 		}
 	}
@@ -8438,33 +8745,51 @@ public class GlobalOptimizer
 	Deque<Block> schedule(Block entry)
 	{
 		Deque<Block>code = dfs(entry);
-		Deque<Block>done = new ArrayDeque<Block>();
+		Deque<Block>scheduled = new ArrayDeque<Block>();
 		SetMap<Block,Edge> pred = preds(code);
 		Map<Block,Block> idom = idoms(code,pred);
 		EdgeMap<Block> loops = findLoops(code,idom,pred);
+		
 		if (!loops.isEmpty())
 			verboseStatus("LOOPS "+loops);
 		
 		for (Block b: code)
 		{
-			if (!done.contains(b))
-				done.add(b);
+			//  TODO: Post-test loops  fail the AVM verifier
+			//  under certain conditions (not well understood).
+			if (!scheduled.contains(b))
+				scheduled.add(b);
 			if (loops.containsKey(b))
-				schedule_loop(b, loops, done);
+				schedule_loop(b, loops, scheduled);
 		}
 		
-		code.clear();
-		code.addAll(done);
-		while (code.size()>1)
+		//  Rearrange conditional branches so that fall-through edges
+		//  occur in the optimizer's natural flow, and flag any
+		//  backwards branch targets.
+		Deque<Block> branch_analysis = new ArrayDeque<Block>();
+		branch_analysis.addAll(scheduled);
+		Set<Block> already_seen = new HashSet<Block>();
+		
+		while (branch_analysis.size()>1)
 		{
-			Block b = code.removeFirst();
+			Block b = branch_analysis.removeFirst();
+			
 			Expr last = b.last();
-			Block next = code.peekFirst();
+			
+			Block next = branch_analysis.peekFirst();
 			if (isBranch(last) && last.succ[0].to != next &&
 					last.succ[1].to == next)
 				invert(last);
+			
+			//  Check for backwards branches.
+			already_seen.add(b);
+			b.is_backwards_branch_target = false;
+			for ( Edge s: b.succ())
+			{
+				s.to.is_backwards_branch_target |= s.backwards_branch = already_seen.contains(s.to);
+			}
 		}
-		return done;
+		return scheduled;
 	}
 	
 	boolean isJump(Expr e)
@@ -8690,16 +9015,40 @@ public class GlobalOptimizer
 		for (Block b: code)
 			for (Iterator<Expr> i = b.iterator(); i.hasNext();)
 				if (!marked.get(i.next().id))
+				{
 					i.remove();
+				}
 	}
 		
 	class Block implements Iterable<Expr>, Comparable<Block>, Indexable
 	{
-		private Set<Expr> live_out = new HashSet<Expr>();
+		/**
+		 *  The statement-level expressions that make up this block's code. 
+		 */
 		Deque<Expr> exprs = new ArrayDeque<Expr>();
+
+		/**
+		 *  Expressions known to be used in successor blocks.
+		 *  They're known to be used because they're inputs
+		 *  to a phi expression.
+		 */
+		Set<Expr> live_out = new HashSet<Expr>();
+		
+		/**
+		 *   Block ID number, unique within a Method.
+		 */
 		int id;
-		int postorder; // postorder number
-		Edge[] xsucc = noedges; // in-scope handlers for this block.
+
+		/**
+		 *   Post-order walk number.
+		 *   More interesting than the Block's id. 
+		 */
+		int postorder;
+		
+		/**
+		 * in-scope handlers for this block.
+		 */
+		Edge[] xsucc = noedges;
 		
 		/** 
 		 *  Don't change control flow/data flow to this block when set.
@@ -8708,11 +9057,38 @@ public class GlobalOptimizer
 		 */
 		boolean must_isolate_block = false;
 		
+		/**
+		 *  Set if any edge coming into this block is a back-edge
+		 *  as determined by the block scheduler.
+		 *  @pre schedule() sets this, it's not meaningful 'til then.
+		 */
+		boolean is_backwards_branch_target = false;
+		
 		Block(Method m)
 		{
 			this.id = m.blockId++;
 		}
 		
+		public void appendExpr(Expr e)
+		{	
+			if ( (exprs.peekLast().succ != null) )
+			{
+				Expr last = exprs.removeLast();
+				exprs.add(e);
+				exprs.add(last);
+			}
+			else
+			{
+				exprs.add(e);
+			}
+		}
+
+		public void killRegister(Method m, int regnum)
+		{
+			appendExpr(new Expr(m, OP_kill, regnum));
+			
+		}
+
 		public int id()
 		{
 			return id;
@@ -8735,7 +9111,10 @@ public class GlobalOptimizer
 		
 		Edge[] succ()
 		{
-			return last().succ;
+			if ( last().succ != null )
+				return last().succ;
+			else
+				return new Edge[0];
 		}
 		
 		public Iterator<Expr> iterator()
@@ -8810,7 +9189,7 @@ public class GlobalOptimizer
 
 	static class Expr implements Comparable<Expr>, Indexable
 	{
-		public boolean is_live_out = false;
+
 		int op;
 		Expr[] args = noexprs;   // args taken from operand stack
 		Expr[] scopes = noexprs; // args taken from scope stack
@@ -8824,6 +9203,7 @@ public class GlobalOptimizer
 		Object value; // only if pushconst
 		Type c; // only if OP_newclass
 		Method m; // only if OP_newfunction | callstatic
+		boolean is_live_out = false;
 
 		Expr(Method m, int op)
 		{
@@ -8834,7 +9214,7 @@ public class GlobalOptimizer
 			addTraceAttr("op", opNames[op]);
 			addTraceAttr(this);
 		}
-		
+
 		Expr(Method m, int op, int imm1)
 		{
 			this(m,op);
@@ -8892,8 +9272,15 @@ public class GlobalOptimizer
 			pred[pred.length-1] = p;
 		}
 		
-		void remove(int j)
+		/**
+		 *  Remove an input expression/edge from a phi node.
+		 *  This occurs when the input is copy-propagated, 
+		 *  or if the input edge is unreachable.
+		 *  @param j -- the input index.
+		 */
+		void removePhiInput(int j)
 		{
+			assert(OP_phi == this.op);
 			Expr[] a = new Expr[args.length-1];
 			System.arraycopy(args, 0, a, 0, j);
 			System.arraycopy(args, j+1, a, j, args.length-j-1);
@@ -9053,7 +9440,7 @@ public class GlobalOptimizer
 			this.obscure_natives = false;
 			this.ctype = CTYPE_OBJECT;
 		}
-		
+
 		Type(Name name, Type base)
 		{
 			this();
@@ -9066,7 +9453,7 @@ public class GlobalOptimizer
 		boolean emitAsAny()
 		{
 			// not sure about this, attempting to coerce native class as *
-			return base == null && this != VOID && defs.size() == 0;
+			return base == null && this != VOID && defs.size() == 0 && ! builtinTypes.contains(this) && !baseTypes.contains(this);
 		}
 		
 		public String toString()
@@ -9591,12 +9978,12 @@ public class GlobalOptimizer
 				if (SHOW_DFG)
 				{
 					out.println("ranksep=.1; nodesep=.1;");
-					out.println("node [shape=plaintext,width=.05,height=.05,fontsize=7];");
+					out.println("node [shape=plaintext,width=.05,height=.05,fontsize=12];");
 				}
 				else
 				{
 					out.println("ranksep=.25; nodesep=.25;");
-					out.println("node [shape=box,width=.1,height=.1,fontsize=7];");
+					out.println("node [shape=box,width=.1,height=.1,fontsize=12];");
 				}
 					
 				out.println("edge [arrowsize=.5,fontsize=8,labelfontsize=8];");
@@ -9607,16 +9994,19 @@ public class GlobalOptimizer
 					else
 						dot(b,out);
 				
-				Map<Block,Block> doms = idoms(code,allpreds(code));
-				out.println("node [shape=box];");
-				out.println("subgraph cluster1 { label=\"Dominators\"; color=white; ");
-				for (Block b: dfs(m.entry.to))
+				if ( SHOW_DOMINATORS )
 				{
-					out.println("D"+b+" [label="+b+"];");
-					if (doms.containsKey(b))
-						out.println("D"+doms.get(b)+" -> D"+b);
+					Map<Block,Block> doms = idoms(code,allpreds(code));
+					out.println("node [shape=box];");
+					out.println("subgraph cluster1 { label=\"Dominators\"; color=white; ");
+					for (Block b: dfs(m.entry.to))
+					{
+						out.println("D"+b+" [label="+b+"];");
+						if (doms.containsKey(b))
+							out.println("D"+doms.get(b)+" -> D"+b);
+					}
+					out.println("}");
 				}
-				out.println("}");
 				
 				out.println("}");
 			}
@@ -9767,6 +10157,19 @@ public class GlobalOptimizer
 	class LocalVarState
 	{
 		/**
+		 *  Simulated verifier frame state;
+		 *  only locals are simulated.
+		 */
+		Typeref[] fs_out;
+		
+		/**
+		 *  Expected types of input registers.
+		 */
+		Typeref[] fs_in;
+
+		Typeref[] hard_coercions;
+
+		/**
 		 *  Live-Out variables are variables that are
 		 *  used (without being redefined) in a successor
 		 *  block.  Note: the relationship is transitive.
@@ -9776,12 +10179,13 @@ public class GlobalOptimizer
 		/** 
 		 *  Variables killed in this block via explicit OP_kill insn. 
 		 */
-		private BitSet kills   = new BitSet();
+		private BitSet killed_vars = new BitSet();
 		
 		/**
-		 *  Variables defined in this block via setlocal.
+		 *  Variables defined in this block.
+		 *  @warn denormalized from defining_exprs
 		 */
-		private BitSet def     = new BitSet();
+		private BitSet def = new BitSet();
 		
 		/**
 		 *  Upwardly-exposed variables, read in this block
@@ -9790,12 +10194,97 @@ public class GlobalOptimizer
 		 */
 		private BitSet ue_vars = new BitSet();
 		
-		Map<Edge, BitSet> phi_inputs = new TreeMap<Edge, BitSet>();
+		/**
+		 *  Set on backwards branch targets, catch
+		 *  targets, etc -- the verifier will use
+		 *  more conservative type assumptions.
+		 */
+		private boolean conservative_verifier_rules;
 		
-		LocalVarState(Block b)
+		private Method m;
+		private Block b;
+		
+		/**
+		 * Construct a LocalVariableState; compute its
+		 * def, kill, and upwardly-exposed sets; and 
+		 * compute its frame state.
+		 * @param m - the Method under analysis.
+		 * @param b - the Block to which this analysis applies.
+		 * @param initial_frame_state - the previously computed frame state.
+		 * @param is_scheduled_backedge 
+		 */
+		LocalVarState(Method m, Block b, Typeref[] initial_frame_state)
 		{
-			for ( Expr e: b.exprs)
+			this.conservative_verifier_rules = b.is_backwards_branch_target;
+			
+			this.fs_in = new Typeref[initial_frame_state.length];
+			if ( ! this.conservative_verifier_rules )
 			{
+				System.arraycopy(initial_frame_state, 0, this.fs_in, 0, initial_frame_state.length);
+			}
+			else
+			{
+				for ( int i = 0; i < m.local_count; i ++ )
+				{
+					this.fs_in[i] = new Typeref(initial_frame_state[i].t, true);
+				}
+				for ( int i = m.local_count + m.max_scope; i < this.fs_in.length; i++)
+				{
+					this.fs_in[i] = new Typeref(initial_frame_state[i].t, true);
+				}
+			}
+			
+			
+			this.fs_out = new Typeref[initial_frame_state.length];
+			System.arraycopy(this.fs_in, 0, this.fs_out, 0, this.fs_in.length);
+			
+			
+			this.hard_coercions = new Typeref[initial_frame_state.length];
+			
+			this.m = m;
+			this.b = b;
+			
+			//  Keep a shadow of the frame state so that it's only dumped when it changes.
+			Typeref[] saved_fs = null;
+			
+			if ( verbose_mode )
+			{
+				verboseStatus(b);
+				StringBuffer verbose_succ = new StringBuffer();
+				verbose_succ.append("\tsucc: ");
+				for ( Edge p: b.succ())
+				{
+					verbose_succ.append(p);
+					verbose_succ.append(" ");
+				}
+				verboseStatus(verbose_succ);
+				dumpFrameState();
+				saved_fs = new Typeref[initial_frame_state.length];
+				System.arraycopy(fs_out, 0, saved_fs, 0, fs_out.length);
+			}
+			
+			
+			for ( Expr e: b.exprs)
+			{	
+				if ( verbose_mode )
+				{
+					if ( OP_setlocal == e.op || OP_getlocal == e.op )
+					{
+						int local_num = e.imm[0];
+						
+						verboseStatus(opNames[e.op] + (local_num < 4? "":"  ") + local_num);
+						if ( OP_setlocal == e.op )
+							verboseStatus("\t" + formatExpr(e.args[0]));
+					}
+					else if ( OP_hasnext2 == e.op )
+					{
+						verboseStatus("hasnext_2" + " " + e.imm[0] + " " + e.imm[1]);
+					}
+					else
+					{
+						verboseStatus(opNames[e.op]);
+					}
+				}
 				switch(e.op)
 				{
 					case OP_getlocal0:
@@ -9803,7 +10292,7 @@ public class GlobalOptimizer
 					case OP_getlocal2:
 					case OP_getlocal3:
 					{
-						uses( e.op - OP_getlocal0 );
+						uses( e.op - OP_getlocal0);
 						break;
 					}
 					case OP_getlocal:
@@ -9817,66 +10306,178 @@ public class GlobalOptimizer
 					case OP_setlocal2:
 					case OP_setlocal3:
 					{
-						uses( e.op - OP_setlocal0 );
+						defines( e.op - OP_setlocal0, e );
 						break;
 					}
 					
 					case OP_setlocal:
 					{
-						defines(e.imm[0]);
+						defines(e.imm[0], e);
+						break;
+					}
+					
+					case OP_hasnext2:
+					{
+						uses(e.imm[0]);
+						uses(e.imm[1]);
+						
+						expectsType(e.imm[0], ANY.ref);
+						expectsType(e.imm[1], INT.ref);
+						hard_coercions[e.imm[0]] = ANY.ref;
+						
+						defines(e.imm[0], e);
 						break;
 					}
 	
 					case OP_kill:
 					{
-						//  Just kills the variable
-						int varnum = e.imm[0];
-						kills.set(varnum);
+						setKilled(e.imm[0]);
+						break;
+					}
+
+					case OP_inclocal:
+					case OP_inclocal_i:
+					case OP_declocal:
+					case OP_declocal_i:
+					{
+						uses(e.imm[0]);
 						break;
 					}
 					
-					case OP_phi:
+					case OP_getslot:
+					case OP_setslot:
 					{
-						defines(e.id);
-						
-						for (int i=e.args.length-1; i >= 0; i--)
+						Expr stem = e.args[0];
+						if ( stem.inLocal() )
 						{
-							addPhiInput(e.pred[i], e.args[i].id);
+							expectsType(stem.imm[0], m.verifier_types.get(stem));
 						}
 						break;
+					}
+
+					case OP_nextvalue:
+					case OP_nextname:
+					{
+						//  TODO: Anything to do here?
+						break;
+					}
+						
+					default:
+						assert(!e.inLocal());
+				}
+				
+				if ( verbose_mode )
+				{
+					for ( int i = 0; i < fs_out.length; i++ )
+					{
+						if ( saved_fs[i] != fs_out[i] )
+						{
+							dumpFrameState();
+							System.arraycopy(fs_out, 0, saved_fs, 0, fs_out.length);
+							break;
+						}
 					}
 				}
 			}
 		}
 		
-		public boolean mergeLiveout(BitSet next_liveout) 
+		private void dumpFrameState()
+		{
+			if ( verbose_mode )
+			{
+				StringBuffer frame_state_buffer = new StringBuffer();
+				frame_state_buffer.append("\tLocals: ");
+				for ( int i = 0; i < fs_out.length; i++)
+				{
+					frame_state_buffer.append(fs_out[i].toString());
+					frame_state_buffer.append(" ");
+				}
+				verboseStatus(frame_state_buffer);
+			}
+		}
+		
+		private void expectsType(int i, Typeref expected_type)
+		{
+			//  If the variable's defined in this block,
+			//  then it doesn't need coercion.
+			if ( !def.get(i) )
+			{
+				//  TODO: Constraint could be loosened if we knew if the
+				//  block wasn't the target of a backedge.
+				assert(expected_type != null);
+				//  TODO: track these coerced locals with a new bit set
+				//  and cross check to ensure they're all livein.
+				verboseStatus("\texpectsType " + i + " " + expected_type);
+				this.fs_in[i] = this.fs_out[i] = expected_type;
+			}
+		}
+
+		/**
+		 * @param reg - the local of interest.
+		 * @return the live-in type the verifier will expect
+		 *   to see on entry to the block. 
+		 */
+		public Typeref getInitialType(int reg)
+		{
+			return fs_in[reg];
+		}
+		
+		/**
+		 * @param reg - the local of interest.
+		 * @return the type the local has at the end of this block.
+		 */
+		public Typeref getFinalType(int reg)
+		{
+			return fs_out[reg];
+		}
+
+		public BitSet getKilled()
+		{
+			return (BitSet)this.killed_vars.clone();
+		}
+
+		private boolean mergeLiveout(BitSet next_liveout) 
 		{
 			next_liveout.or(this.liveout);
 			boolean result = !this.liveout.equals(next_liveout);
 			
 			if ( result )
 			{
-				verboseStatus(this.toString() + " replacing " + this.liveout.toString() + " with " + next_liveout.toString());
 				this.liveout = next_liveout;
 			}
 			
 			return result;
 		}
 
-		boolean isPhiInput(Edge pred_edge, int var_index)
-		{
-			if ( null == phi_inputs.get(pred_edge))
-				return false;
-			else
-				return phi_inputs.get(pred_edge).get(var_index);
-		}
-		
+		/**
+		 *  Registers contributed by predecessor blocks. 
+		 *  @return (liveout - def) + UE
+		 */
 		BitSet getLivein()
 		{
-			BitSet result = (BitSet)this.liveout.clone();
-			result.andNot(this.def);
-			result.andNot(this.kills);
-			result.or(this.ue_vars);
+			 BitSet result = (BitSet)this.liveout.clone();
+			 result.andNot(this.def);
+			 result.or(this.ue_vars);
+			 return result;
+		}
+		
+		/**
+		 * Locals still active at the end of a block.
+		 * @note changes as variables are killed.
+		 * @return (UE + def) - killed
+		 */
+		BitSet getActiveVariables()
+		{
+			BitSet result = getLivein();
+			result.or(this.def);
+			
+			if ( b.equals(m.entry.to))
+			{
+				//  Note parameters as active.
+				for ( int i = 0; i < m.params.length; i++)
+					result.set(i);
+			}
+			result.andNot(this.killed_vars);
 			return result;
 		}
 		
@@ -9885,27 +10486,169 @@ public class GlobalOptimizer
 			return (BitSet)liveout.clone();
 		}
 		
-		private void addPhiInput(Edge pred_edge, int var_index)
+		BitSet getDefined()
 		{
-			if ( null == phi_inputs.get(pred_edge))
-			{
-				phi_inputs.put(pred_edge, new BitSet());
-			}
-			
-			phi_inputs.get(pred_edge).set(var_index);
+			return (BitSet)this.def.clone();
 		}
 		
 		private void uses(int varnum)
 		{
-			if ( !def.get(varnum) )
+			if ( !def.get(varnum) && !isAPriori(varnum) )
 				ue_vars.set(varnum);
 		}
 		
-		private void defines(int varnum)
+		/**
+		 * Is this local a routine parameter?
+		 * If so, it is a priori present and 
+		 * shouldn't be considered upwardly exposed.
+		 * @param varnum - the local of interest.
+		 * @return true if the local's a parameter.
+		 */
+		private boolean isAPriori(int varnum)
 		{
+			return (this.b.equals(this.m.entry.to) && varnum < this.m.params.length);
+		}
+		
+		private void defines(int varnum, Expr e)
+		{
+			fs_out[varnum] = definingType(e);
 			def.set(varnum);
 		}
+		
+		private Typeref definingType(Expr e)
+		{
+			Typeref result = null;
+
+			if ( OP_hasnext2 == e.op )
+			{
+				result = ANY.ref;
+			}
+			else if ( OP_setlocal == e.op )
+			{
+				Expr value = e.args[0];
+
+				if ( OP_getlocal == value.op )
+				{
+					result = fs_out[value.imm[0]];
+				}
+				else
+				{
+					result = verify_eval(this.m, value, m.verifier_types, null);
+				}
+			}
+			else
+			{
+				assert(false);
+			}
+
+			assert ( result != null );
+			return result;
+		}
+		
+		public void setKilled(int varnum)
+		{
+			assert(!killed_vars.get(varnum));
+			killed_vars.set(varnum);
+		}
 	}
+	
+	
+	static class TypeConstraints implements Comparable
+	{
+		enum DestinationInPlay { CONSIDER_DEST_BLOCK, IGNORE_DEST_BLOCK};
+		
+		Set<Integer> killregs = new TreeSet<Integer>();
+		Vector<Coercion> coercions = new Vector<Coercion>();
+		
+		/**
+		 *  Destination block.
+		 */
+		Edge path;
+		
+		TypeConstraints(Edge path)
+		{
+			this.path = path;
+		}
+		
+		
+		void addKill(int reg)
+		{
+			this.killregs.add(reg);
+		}
+		
+		void addCoercion(int reg, Typeref ty)
+		{
+			this.coercions.add(new Coercion(reg, ty));
+		}
+
+		@Override
+		public int compareTo(Object arg0)
+		{
+			return compare_constraints((TypeConstraints) arg0, DestinationInPlay.CONSIDER_DEST_BLOCK);
+		}
+		
+		public int compare_constraints(TypeConstraints other, DestinationInPlay consider_dest)
+		{
+			
+			if ( killregs.size() > other.killregs.size())
+				return 1;
+			else if ( other.killregs.size() > this.killregs.size())
+				return -1;
+			
+			if ( coercions.size() > other.coercions.size() )
+				return 1;
+			else if ( other.coercions.size() > this.coercions.size())
+				return -1;
+			
+			if ( path != null && DestinationInPlay.CONSIDER_DEST_BLOCK == consider_dest )
+			{
+				if ( path.id > other.path.id )
+					return 1;
+				else if ( other.path.id > this.path.id )
+					return -1;
+			}
+			else
+			{
+				assert(DestinationInPlay.IGNORE_DEST_BLOCK == consider_dest);
+			}
+			
+			for ( Integer x: this.killregs )
+				if ( ! other.killregs.contains(x))
+					return 1;
+			for ( Integer y: other.killregs )
+				if ( ! this.killregs.contains(y))
+					return -1;
+			
+			for ( int i = 0; i < coercions.size(); i++ )
+			{
+				Coercion this_c  = this.coercions.elementAt(i);
+				Coercion other_c = other. coercions.elementAt(i);
+				
+				if ( this_c.reg > other_c.reg)
+					return 1;
+				else if ( other_c.reg > this_c.reg)
+					return -1;
+				
+				if ( !this_c.ty.equals(other_c.ty) )
+					return ( this_c.ty.hashCode() > other_c.ty.hashCode() )? 1: -1;
+			}
+			
+			return 0;
+		}
+		
+		class Coercion
+		{
+			int reg;
+			Typeref ty;
+			
+			Coercion(int reg2, Typeref ty)
+			{
+				this.reg = reg2;
+				this.ty  = ty;
+			}
+		}
+	}
+
 	class Reader
 	{
 		int pos;
@@ -10083,7 +10826,7 @@ public class GlobalOptimizer
 	    EFFECT,//"ifstricteq",
 	    EFFECT,//"ifstrictne",
 	    EFFECT|PX,//"lookupswitch",
-	    PX|SCPVAL,//"pushwith",
+	    PX|SCPVAL|EFFECT,//"pushwith",
 	    EFFECT,//"popscope",
 	    STKVAL|PX,//"nextname",
 	    STKVAL|PX,//"hasnext",
@@ -10103,7 +10846,7 @@ public class GlobalOptimizer
 	    STKVAL,//"pushint",
 	    STKVAL,//"pushuint",
 	    STKVAL,//"pushdouble",
-	    PX|SCPVAL,//"pushscope",
+	    PX|SCPVAL|EFFECT,//"pushscope",
 	    STKVAL,//"pushnamespace",
 	    STKVAL|PX,//"hasnext2",
 	    LOCVAL|SYNTH,//"hasnext2_i",
