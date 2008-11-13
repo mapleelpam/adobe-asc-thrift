@@ -1030,7 +1030,6 @@ public class GlobalOptimizer
 			
 			if ( handlers.length > 0 )
 			{
-				int handler_setup_trace_phase = pushTracePhase("HandlerSetup");
 				for (int j = 0, n=handlers.length; j < n; j++)
 				{
 					Handler h = handlers[j] = new Handler();
@@ -1057,56 +1056,48 @@ public class GlobalOptimizer
 					{
 						h.activation = ANY.ref.nonnull();
 					}
-					
-					traceEntry("Handler");
-					addTraceAttr("from", from);
-					addTraceAttr("to", to);
-					addTraceAttr("target", target);
-					addTraceAttr("name", h.name);
-	
+
 					trylabels.set(from);
 					trylabels.set(to);
 					catchlabels.set(target);
 				}
-				unwindTrace(handler_setup_trace_phase);
 			}
-			
-			int block_trace_phase = pushTracePhase("Block");
-			addTraceAttr("Block", b);
-			
+		
 			boolean reachable = true;
+			boolean in_catch_block = false;
+			
 			while (p.pos < end_pos)
 			{
 				int pos = p.pos;
 				int op = p.readU8();
-				
-				boolean is_catch_block = catchlabels.get(pos-code_start);
 
-				if (op == OP_label || blocks.containsKey(p.pos-1) ||
-						trylabels.get(pos-code_start) || is_catch_block )
-				{
-					int new_block_phase = pushTracePhase("NewBlock");
-					if  ( OP_label == op )
-						addTraceAttr("OP_label");
-					if ( blocks.containsKey(p.pos-1) )
-						addTraceAttr("branchTarget");
-					if ( trylabels.get(pos-code_start) )
-						addTraceAttr("tryBoundary");
-					if ( is_catch_block )
-						addTraceAttr("catchTarget");
-					addTraceAttr("reachable", reachable);
-	
+				if (
+					OP_label == op || 
+					blocks.containsKey(pos) ||
+					trylabels.get(pos-code_start) || 
+					catchlabels.get(pos-code_start) 
+					)
+				{	
+					if ( catchlabels.get(pos-code_start) )
+					{
+						in_catch_block = true;
+					}
+					else
+					{
+						in_catch_block = false;
+					}
+
 					Edge edge = null;
 					
 					if (reachable)
 					{
-						assert(!catchlabels.get(pos-code_start));
+						assert(!in_catch_block);
+						
 						Edge succ[] = b.succ();
 						if (0 == succ.length)
 						{
 							b.add(e = new Expr(m,OP_jump));
 							e.succ = new Edge[] { edge = new Edge(m,b,0,blocks.get(pos)) };
-							addTraceAttr("SynthesizedJump", e);
 						}
 						else
 						{
@@ -1123,13 +1114,9 @@ public class GlobalOptimizer
 					//  set up by the catch handler is already present
 					//  and is known to be the correct starting state
 					//  of the block.
-					if (! is_catch_block)
+					if (! in_catch_block)
 					{
 						merge(m,edge, blocks, states, pos, frame, sp, scopep);
-					}
-					else
-					{
-						traceEntry("CatchBlock");
 					}
 
 					b = blocks.get(pos);
@@ -1139,16 +1126,8 @@ public class GlobalOptimizer
 					System.arraycopy(state.frame, 0, frame, 0, frame.length);
 					sp = state.sp;
 					scopep = state.scopep;
-
-					traceFrame("BlockStartingFrame", m, frame, scopep, sp);
 										
-					reachable = true;
-
-					unwindTrace(new_block_phase);
-					
-					unwindTrace(block_trace_phase);
-					block_trace_phase = pushTracePhase("Block");
-					addTraceAttr("Block", b);
+					reachable = true;	
 				}
 				// now we know what block we're in and pos is where it starts.
 				
@@ -1219,7 +1198,25 @@ public class GlobalOptimizer
 				{
 					// includes a null pointer check and moves value to scope stack, so this isn't just a copy
 					b.add(frame[scopep++] = e = new Expr(m, op, frame, sp--, 1));
-					traceEntry("scopep", scopep);
+					
+					//  The activation record saved for catch blocks' use
+					//  is live across regions of code that the optimizer
+					//  and verifier don't agree on, so it gets fixed into
+					//  a local and "conflicts" with everything.
+					if ( in_catch_block  && OP_phi == e.args[0].op  )
+					{
+						Expr activ = e.args[0];
+						while ( OP_phi == activ.op && activ.args != null && activ.args.length > 0)
+						{
+							activ = activ.args[0];
+						}
+						
+						if ( OP_newactivation == activ.op)
+						{
+							m.fixedLocals.put(activ, -1);
+						}
+							
+					}
 					break;
 				}
 
@@ -1227,7 +1224,6 @@ public class GlobalOptimizer
 					b.add(e = new Expr(m, op));
 					e.scopes = new Expr[] { frame[--scopep] };
 					frame[scopep] = null;
-					traceEntry("scopep", scopep);
 					break;
 					
 				case OP_nextname:
@@ -1816,8 +1812,8 @@ public class GlobalOptimizer
 				}
 				
 				unwindTrace(insn_process_phase);
-			}
-			
+			}			
+
 			dce(m);
 			
 			unwindTrace(read_code_phase);
@@ -1873,6 +1869,8 @@ public class GlobalOptimizer
 		Handler[] handlers = nohandlers;
 		
 		Map<Expr,Typeref> verifier_types = null;
+		
+		Map<Expr,Integer>fixedLocals = new HashMap<Expr,Integer>();
 		
 		Method(int id, InputAbc abc)
 		{
@@ -4584,7 +4582,7 @@ public class GlobalOptimizer
 		
 		public String toString()
 		{
-			return (isThrowEdge(this) ? handler.toString()+" ":"") + 
+			return (isThrowEdge() ? handler.toString()+" ":"") + 
 					(from != null ? label+":"+from : "") + "->" + to;
 		}
 		
@@ -4597,6 +4595,11 @@ public class GlobalOptimizer
 			if (from != null && (d = from.compareTo(e.from)) != 0)
 				return d;
 			return to.compareTo(e.to);
+		}
+		
+		public boolean isThrowEdge()
+		{
+			return handler != null;
 		}
 	}
 	
@@ -7165,7 +7168,7 @@ public class GlobalOptimizer
 
 		sched_greedy(m, code, locals, pred, exprs, conflicts);
 		
-		alloc_locals(code, locals, conflicts);
+		alloc_locals(code, locals, conflicts, m.fixedLocals);
 
 		int max_local = m.params.length-1;
 		int max_stack = 0;
@@ -7358,7 +7361,7 @@ public class GlobalOptimizer
 						}
 						
 					}
-					else
+					else if ( !m.fixedLocals.values().contains(r))
 					{
 						//  TODO: These can be largely eliminated
 						//  when the verifier gets smarter.
@@ -7521,10 +7524,12 @@ public class GlobalOptimizer
 		return result;
 	}
 
-	void alloc_locals(Deque<Block> code, Map<Integer, Integer> locals, ConflictGraph conflicts)
+	void alloc_locals(Deque<Block> code, Map<Integer, Integer> locals, ConflictGraph conflicts, Map<Expr, Integer> fixed_locals)
 	{
 		for (Block b: code)
+		{
 			for (Expr e: b)
+			{
 				if (locals.containsKey(e.id))
 				{
 					int alloc1_phase = pushTracePhase("alloc1");
@@ -7532,16 +7537,28 @@ public class GlobalOptimizer
 					alloc1(e,conflicts,locals);
 					unwindTrace(alloc1_phase);
 					
+					if ( fixed_locals.containsKey(e) && locals.get(e.id) != -1)
+						fixed_locals.put(e, locals.get(e.id));
 				}
+			}
+		}
+
 		for (Block b: code)
+		{
 			for (Expr e: b)
+			{
 				if (locals.containsKey(e.id))
 				{
 					int alloc2_phase = pushTracePhase("alloc2");
 					addTraceAttr(e);
 					alloc2(e,conflicts,locals);
 					unwindTrace(alloc2_phase);
+					
+					if ( fixed_locals.containsKey(e) && locals.get(e.id) != -1)
+						fixed_locals.put(e, locals.get(e.id));
 				}
+			}
+		}
 
 		verboseStatus("CONFLICTS " + conflicts);
 		verboseStatus("LOCALS "+locals);
@@ -7637,20 +7654,16 @@ public class GlobalOptimizer
 			if (locals.get(i) != -1)
 				used.set(locals.get(i));
 		
-		int loc;
-		if (e.locals.length == 1 && e.inLocal() && locals.containsKey(e.locals[0].id) && (loc=locals.get(e.locals[0].id)) != -1)
-		{
-			addTraceAttr("MustUseLoc", loc);
-			// must use same local as arg
-			assert(!used.get(loc));
-			allocate(e.id, loc, locals, conflicts);
-			return;
-		}
 		
+		//  Ensure that nothing leaked out of alloc1.
+		assert ( ! (e.locals.length == 1 && e.inLocal() && locals.containsKey(e.locals[0].id) && (locals.get(e.locals[0].id)) != -1) );
+	
+		int loc;
+
+		//  If an arg has a register allocated, try to re-use it.
 		if (e.args.length != 0 && locals.containsKey(e.args[0].id) && (loc=locals.get(e.args[0].id)) != -1 &&
 				!used.get(loc))
 		{
-			// try to use same local as arg
 			addTraceAttr("MayUseLoc", loc);
 			allocate(e.id, loc, locals, conflicts);
 			return;
@@ -7911,6 +7924,7 @@ public class GlobalOptimizer
 
 			live.addAll(liveout.get(b));
 			live.addAll(b.getLiveOut());
+			live.addAll(m.fixedLocals.keySet());
 
 			for (Expr l: live)
 				locals.put(l.id, l.op == OP_arg ? l.imm[0] : -1);
@@ -8345,11 +8359,6 @@ public class GlobalOptimizer
 		return cg;
 	}
 	
-	static boolean isThrowEdge(Edge e)
-	{
-		return e.handler != null;
-	}
-	
 	/** 
 	 * issue a load for whatever is on the stack top
 	 */
@@ -8649,13 +8658,14 @@ public class GlobalOptimizer
 			}
 			else if (e.op == OP_phi)
 			{
+				verboseStatus(formatExpr(e));
 				assert(e.args.length == e.pred.length);
 				for (int j=e.pred.length-1; j >= 0; j--)
 					if (!code.contains(e.pred[j].from))
 						e.removePhiInput(j);
 				Expr a = null;
 				for (int j=e.pred.length-1; j >= 0; j--)
-				{
+				{	
 					if (e.args[j] != e && e.args[j] != a)
 						if (a == null)
 							a = e.args[j];
@@ -9114,7 +9124,7 @@ public class GlobalOptimizer
 			if ( last().succ != null )
 				return last().succ;
 			else
-				return new Edge[0];
+				return noedges;
 		}
 		
 		public Iterator<Expr> iterator()
@@ -10124,7 +10134,7 @@ public class GlobalOptimizer
 	void dot(Edge e, PrintWriter out)
 	{
 		ArrayList<String> attrs = new ArrayList<String>();
-		if (isThrowEdge(e))
+		if (e.isThrowEdge())
 		{
 			attrs.add("style=dashed");
 		}
