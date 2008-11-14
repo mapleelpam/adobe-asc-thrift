@@ -4052,31 +4052,27 @@ public class GlobalOptimizer
 		
 		int optimize_trace_phase = pushTracePhase("optimize");
 		addTraceAttr("Method", m);
-		verboseStatus("BEFORE OPT");		
-		verboseStatus("BEFORE OPT");
-		print(dfs(m.entry.to));
+		printMethod(m, "BEFORE OPT");
 		
 		if (OUTPUT_DOT)
 			dot("-before",m);
 		
 		sccp(m);
 		dvn(m);
+		
 		if (cfgopt(m))
 		{
-			verboseStatus("AFTER CFGOPT");
-			print(dfs(m.entry.to));
+			printMethod(m, "AFTER CFGOPT");
+
 			sccp(m);
 			dvn(m);
 		}
 	
 		// find operations to fold together.
 		fold(m);
-		
-		verboseStatus("AFTER FOLD");
-		print(dfs(m.entry.to));
 
+		printMethod(m, "AFTER FOLD");
 
-		
 		insert_casts(m);
 		remove_phi(m);
 		
@@ -4393,12 +4389,6 @@ public class GlobalOptimizer
 						changed = true;
 						break blocks;
 					}
-				}
-
-				if (skip(m.entry))
-				{
-					changed = true;
-					break blocks;
 				}
 			}
 			
@@ -7146,8 +7136,7 @@ public class GlobalOptimizer
 		Map<Block,Deque<Expr>> exprs = new TreeMap<Block,Deque<Expr>>();
 		ConflictGraph conflicts = new ConflictGraph();
 		
-		verboseStatus("BEFORE SCHED");
-		print(code);
+		printMethod(m, "BEFORE SCHED");
 		
 		int remove_phi_trace_phase = pushTracePhase("remove_phi");
 		addTraceAttr(m);
@@ -7273,7 +7262,7 @@ public class GlobalOptimizer
 		m.max_stack = max_stack;
 		m.max_scope = max_scope;
 		
-		verboseStatus("AFTER SCHED "+m.name+" local_count="+m.local_count+" max_stack="+max_stack+" max_scope="+max_scope);
+		printMethod(m, "AFTER SCHED");
 		
 		unwindTrace(remove_phi_trace_phase);
 	}
@@ -7395,7 +7384,7 @@ public class GlobalOptimizer
 					//  the constraints to the split block.
 					TypeConstraints tc = edge_constraints[constraint_idx++]; 
 					if ( tc.killregs.size() > 0 || tc.coercions.size() > 0 )
-					{
+					{	
 						split(p, m, pred);
 						fixConstraints(m, p.to, tc);
 					}
@@ -8658,7 +8647,6 @@ public class GlobalOptimizer
 			}
 			else if (e.op == OP_phi)
 			{
-				verboseStatus(formatExpr(e));
 				assert(e.args.length == e.pred.length);
 				for (int j=e.pred.length-1; j >= 0; j--)
 					if (!code.contains(e.pred[j].from))
@@ -9919,16 +9907,29 @@ public class GlobalOptimizer
 			return(" "+ value);
 	}
 	
-	void print(Deque<Block> blocks)
+	void printMethod(Method m, String banner)
 	{
 		if ( ! verbose_mode )
 			return;
-		verboseStatus(blocks);
+		
 		PrintWriter pw = new PrintWriter(System.out);
+		
+		pw.println();
+		pw.println();
+		
+		pw.println(banner);
+		pw.println("\t"+m.name+" local_count="+m.local_count+" max_stack="+m.max_stack+" max_scope="+m.max_scope);
+		
+		Deque<Block> blocks = dfs(m.entry.to);
+
+		pw.println(blocks);
+
 		for (Block b: blocks)
 			print(b,pw);
+		pw.println();
 		pw.flush();
 	}
+
 	void printabc(Deque<Block> blocks)
 	{
 		if ( ! verbose_mode )
