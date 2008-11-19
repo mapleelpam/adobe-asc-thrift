@@ -108,7 +108,6 @@ import static java.lang.Boolean.FALSE;
 public class GlobalOptimizer
 {
 	// default configuration flags
-	final boolean PRESERVE_METHOD_NAMES = false;
 	final boolean USE_CALLMETHOD = false;
 	final boolean SHOW_CODE = true;
 	final boolean SHOW_DOMINATORS=false;
@@ -118,6 +117,7 @@ public class GlobalOptimizer
 	boolean SHOW_DFG =  false;
 	boolean STRIP_DEBUG_INFO = true;
 	boolean ALLOW_NATIVE_CTORS = false;
+	boolean PRESERVE_METHOD_NAMES = false;
 	
 	boolean verbose_mode=false;
 	boolean legacy_verifier=false;  
@@ -193,6 +193,12 @@ public class GlobalOptimizer
 				go.SHOW_DFG = go.OUTPUT_DOT =  true;
 				continue;
 			}
+			if ( args[i].equals("-preserve_method_names"))
+			{
+				go.PRESERVE_METHOD_NAMES = true;
+				continue;
+			}
+
 			if(args[i].equals("--")) {
 				first_exported_file = a.size();
 				continue;
@@ -647,12 +653,16 @@ public class GlobalOptimizer
 
 			p.readU30(); // debug name
 			p.readU8(); // flags
+			
 			if (m.hasOptional())
 			{
-				int optional_count = p.readU30();
+				m.optional_count = p.readU30();
+				
 				m.values = new Object[m.params.length];
-				int param_count = m.params.length - 1;
-				for (int j = param_count - optional_count+1; j <= param_count; j++)
+				
+				int first_optional_param = m.params.length - m.optional_count;
+				
+				for (int j = first_optional_param; j < m.params.length; j++)
 				{
 					m.values[j] = readArgDefault(p);
 					assert(m.values[j] != null);
@@ -695,15 +705,18 @@ public class GlobalOptimizer
 			m.debugName = new Name(strings[p.readU30()]); // debug name
 			m.name = m.debugName;
 			m.flags = p.readU8();
+
 			if (m.hasOptional())
 			{
+				//  Skip past optional parameters; they're re-read
+				//  and recorded in resolveSignatureType().
 				int optional_count = p.readU30();
 				assert(optional_count > 0);
-				while (optional_count-- > 0)
+
+				for (int j = 0; j < optional_count; j++)
+				{
 					readArgDefault(p);
-				m.values = new Object[m.params.length];
-				for (int j = param_count - optional_count+1; j <= param_count; j++)
-					m.values[j] = readArgDefault(p);
+				}
 			}
 			if (m.hasParamNames())
 			{
@@ -1848,6 +1861,7 @@ public class GlobalOptimizer
 		Edge entry;
 		Typeref[] params;
 		Object[] values;
+		int optional_count;
 		Typeref returns;
 		Name name;
 		Name debugName;
@@ -2713,6 +2727,12 @@ public class GlobalOptimizer
 				return doublePool.id(doubleValue(value));
 			case CONSTANT_Namespace:
 				return nsPool.id((Namespace)value);
+			case CONSTANT_True:
+				return CONSTANT_True;
+			case CONSTANT_False:
+				return CONSTANT_False;
+			case CONSTANT_Null:
+				return CONSTANT_Null;
 			}
 			return 0;
 		}
@@ -3584,17 +3604,12 @@ public class GlobalOptimizer
 		w.write(flags);
 		if (m.hasOptional())
 		{
-			int optional_count = 0;
-			for (Object v : m.values) 
-				if (v != null)
-					optional_count++;
-			assert(optional_count > 0);
-			w.writeU30(optional_count);
-			for (int j = m.params.length - optional_count; j < m.params.length; j++)
+			w.writeU30(m.optional_count);
+			for (int j = m.params.length - m.optional_count; j < m.params.length; j++)
 			{
 				int kind = abc.constKind(m.values[j]);
 				w.writeU30(abc.constId(kind, m.values[j])); // index
-				w.write(kind); // kind
+				w.write(kind);
 			}
 		}
 		if ((flags & METHOD_HasParamNames) != 0)
@@ -7582,10 +7597,7 @@ public class GlobalOptimizer
 			{
 				if (locals.containsKey(e.id))
 				{
-					int alloc1_phase = pushTracePhase("alloc1");
-					addTraceAttr(e);
 					alloc1(e,conflicts,locals);
-					unwindTrace(alloc1_phase);
 					
 					if ( fixed_locals.containsKey(e) && locals.get(e.id) != -1)
 						fixed_locals.put(e, locals.get(e.id));
@@ -7599,10 +7611,7 @@ public class GlobalOptimizer
 			{
 				if (locals.containsKey(e.id))
 				{
-					int alloc2_phase = pushTracePhase("alloc2");
-					addTraceAttr(e);
 					alloc2(e,conflicts,locals);
-					unwindTrace(alloc2_phase);
 					
 					if ( fixed_locals.containsKey(e) && locals.get(e.id) != -1)
 						fixed_locals.put(e, locals.get(e.id));
