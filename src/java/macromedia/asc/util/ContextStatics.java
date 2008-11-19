@@ -281,6 +281,18 @@ public class ContextStatics
 		}
 	}
 
+    /**
+     * This method allows Flex to reuse a ContextStatics instance when
+     * compiling multiple libraries and applications.  If we don't
+     * clear out the userDefined Map, definitions from one compilation
+     * could potentially spill over into others where they might not
+     * be defined or might be defined differently.
+     */
+    public void clearUserDefined()
+    {
+        userDefined.clear();
+    }
+
 	public void reuse()
 	{
 		emitter = null;
