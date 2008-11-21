@@ -648,8 +648,11 @@ public class GlobalOptimizer
 		void resolveSignatureType(Reader p, int i, Method m)
 		{
 			m.returns = lookup(p.readU30()).ref; // return type
+			
+			//  Parameter types must be nullable
+			//  to satisfy the AVM verifier.
 			for (int j = 1; j < m.params.length; j++)
-				m.params[j] = lookup(p.readU30()).ref; // param type
+				m.params[j] = lookup(p.readU30()).ref.nullable();
 
 			p.readU30(); // debug name
 			p.readU8(); // flags
@@ -702,8 +705,11 @@ public class GlobalOptimizer
 			p.readU30(); // return type
 			for (int j = 1; j <= param_count; j++)
 				p.readU30(); // param type
-			m.debugName = new Name(strings[p.readU30()]); // debug name
-			m.name = m.debugName;
+			
+			//  debugName is specified as a bare index into the string pool.
+			m.debugName = strings[p.readU30()]; 
+			m.name = new Name(m.debugName);
+			
 			m.flags = p.readU8();
 
 			if (m.hasOptional())
@@ -1864,7 +1870,7 @@ public class GlobalOptimizer
 		int optional_count;
 		Typeref returns;
 		Name name;
-		Name debugName;
+		String debugName;
 		Name[] paramNames;
 		int flags;
 		Type cx;
@@ -2550,6 +2556,7 @@ public class GlobalOptimizer
 		int id(T e)
 		{
 			assert(refs.containsKey(e));
+			assert(refs.get(e) < size());
 			return refs.get(e);
 		}
 		
@@ -2824,9 +2831,6 @@ public class GlobalOptimizer
 			for (int i=1, n=m.params.length; i < n; i++)
 				addTypeRef(m.params[i]);
 			
-			if (PRESERVE_METHOD_NAMES )	
-				addName(m.debugName); // debug name
-			
 			if (m.hasOptional())
 				for (Object v: m.values)
 					if (v != null)
@@ -2837,6 +2841,11 @@ public class GlobalOptimizer
 				if (m.hasParamNames())
 					for (int i=1; i < m.paramNames.length; i++)
 						addName(m.paramNames[i]);
+			}
+			
+			if ( PRESERVE_METHOD_NAMES )
+			{
+				addConst(m.debugName);
 			}
 			
 			for (Handler t: m.handlers)
@@ -3593,8 +3602,9 @@ public class GlobalOptimizer
 		w.writeU30(abc.typeRef(m.returns));
 		for (int i=1, n=m.params.length; i < n; i++)
 			w.writeU30(abc.typeRef(m.params[i]));
+		
 		if (PRESERVE_METHOD_NAMES)
-			w.writeU30(abc.namePool.id(m.debugName));
+			w.writeU30(abc.stringPool.id(m.debugName));
 		else
 			w.writeU30(0);
 		
@@ -4533,13 +4543,6 @@ public class GlobalOptimizer
 		 *  Exception edge's handler.
 		 */
 		Handler handler;
-		
-		/**
-		 *  Set when the block scheduler finds
-		 *  a backwards branch, which changes
-		 *  the verifier's type logic.
-		 */
-		boolean backwards_branch;
 		
 		Edge(Method m, Block f, int i)
 		{
@@ -7363,14 +7366,13 @@ public class GlobalOptimizer
 								tc.addCoercion(r, from_ty);
 							}
 						}
-						else if ( coerceTarget(m, to_ty, from_ty, p.backwards_branch) )
+						else if ( coerceTarget(m, to_ty, from_ty, p.to.is_backwards_branch_target) )
 						{
-							verboseStatus ("\tfix livein type conflict " + from_ty + "," + to_ty);
 							tc.addCoercion(r, to_ty);
 						}
 						
 					}
-					else if ( !m.fixedLocals.values().contains(r))
+					else if ( !m.fixedLocals.values().contains(r) )
 					{
 						//  TODO: These can be largely eliminated
 						//  when the verifier gets smarter.
@@ -7442,7 +7444,7 @@ public class GlobalOptimizer
 		Typeref from_ty = from_state.getFinalType(varnum);
 		Typeref to_ty   = to_state.getInitialType(varnum);
 		
-		boolean result = p.backwards_branch;
+		boolean result = p.to.is_backwards_branch_target;
 		result &= to_state.getLivein().get(varnum);
 		
 		result &= isWeakType(to_ty);
@@ -7464,9 +7466,9 @@ public class GlobalOptimizer
 		if ( isNumericType(from_ty) && isNumericType(to_ty))
 			return false;
 		
-		Typeref merged_type = typeMeet(to_ty, from_ty);
-		
 		boolean needs_coercion;
+		
+		Typeref merged_type = typeMeet(to_ty, from_ty);
 		
 		if ( null == merged_type )
 		{
@@ -7476,14 +7478,17 @@ public class GlobalOptimizer
 		}
 		else if ( backwards_branch )
 		{
-			needs_coercion = ! to_ty.equals(merged_type);
+			//  FIXME:  The type modeling in LocalVarState
+			//  needs to account for cross-block nullable changes.
+			needs_coercion = true;
+			//needs_coercion = ! merged_type.equals(to_ty);
 		}
 		else
 		{
 			//  TODO: This check can be loosened
 			//  to allow the type meets that the verifier
 			//  does for itself.
-			needs_coercion = ! merged_type.equals(to_ty.t);
+			needs_coercion = ! merged_type.equals(to_ty);
 		}
 		
 		return needs_coercion;
@@ -7746,8 +7751,7 @@ public class GlobalOptimizer
 		//  locals are type ANY.
 		Typeref[] frame_state = new Typeref[m.local_count];
 		
-		for ( int i = 0; i < m.params.length; i++ )
-			frame_state[i] = m.params[i];
+		System.arraycopy(m.params, 0, frame_state, 0, m.params.length);
 			
 		for (int i = m.params.length; i < frame_state.length; i++)
 			frame_state[i] = ANY.ref;
@@ -8851,12 +8855,20 @@ public class GlobalOptimizer
 			
 			//  Check for backwards branches.
 			already_seen.add(b);
+
 			b.is_backwards_branch_target = false;
+			
 			for ( Edge s: b.succ())
 			{
-				s.to.is_backwards_branch_target |= s.backwards_branch = already_seen.contains(s.to);
+				s.to.is_backwards_branch_target |= already_seen.contains(s.to);
 			}
 		}
+		
+		if ( verbose_mode )
+			for (Block b: code)
+				if ( b.is_backwards_branch_target )
+					verboseStatus(".. backwards branch target:" + b);
+		
 		return scheduled;
 	}
 	
@@ -9476,6 +9488,11 @@ public class GlobalOptimizer
 			return nullable ? new Typeref(t,false) : this;
 		}
 		
+		Typeref nullable()
+		{
+			return nullable? this: new Typeref(t, true);
+		}
+		
 		public boolean equals(Object o)
 		{
 			return (o instanceof Typeref) && ((Typeref)o).t == t && ((Typeref)o).nullable == nullable;
@@ -9550,6 +9567,7 @@ public class GlobalOptimizer
 		{
 			// not sure about this, attempting to coerce native class as *
 			return base == null && this != VOID && defs.size() == 0 && ! builtinTypes.contains(this) && !baseTypes.contains(this);
+			//  FIXME: need to account for interfaces now...
 		}
 		
 		public String toString()
@@ -10341,6 +10359,7 @@ public class GlobalOptimizer
 			this.conservative_verifier_rules = b.is_backwards_branch_target;
 			
 			this.fs_in = new Typeref[initial_frame_state.length];
+
 			if ( ! this.conservative_verifier_rules )
 			{
 				System.arraycopy(initial_frame_state, 0, this.fs_in, 0, initial_frame_state.length);
@@ -10349,11 +10368,11 @@ public class GlobalOptimizer
 			{
 				for ( int i = 0; i < m.local_count; i ++ )
 				{
-					this.fs_in[i] = new Typeref(initial_frame_state[i].t, true);
+					this.fs_in[i] = initial_frame_state[i].nullable();
 				}
 				for ( int i = m.local_count + m.max_scope; i < this.fs_in.length; i++)
 				{
-					this.fs_in[i] = new Typeref(initial_frame_state[i].t, true);
+					this.fs_in[i] = initial_frame_state[i].nullable();
 				}
 			}
 			
@@ -10523,11 +10542,8 @@ public class GlobalOptimizer
 		{
 			//  If the variable's defined in this block,
 			//  then it doesn't need coercion.
-			if ( !def.get(i) )
+			if ( !( def.get(i) || this.fs_in[i].t.equals(expected_type.t) ) )
 			{
-				//  TODO: Constraint could be loosened if we knew if the
-				//  block wasn't the target of a backedge.
-				assert(expected_type != null);
 				//  TODO: track these coerced locals with a new bit set
 				//  and cross check to ensure they're all livein.
 				verboseStatus("\texpectsType " + i + " " + expected_type);
