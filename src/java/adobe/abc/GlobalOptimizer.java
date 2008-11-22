@@ -7363,7 +7363,7 @@ public class GlobalOptimizer
 							for ( Edge loop_init: pred.get(p.to))
 							{
 								TypeConstraints loop_tc = constraints.getConstraints(loop_init);
-								tc.addCoercion(r, from_ty);
+								loop_tc.addCoercion(r, from_ty);
 							}
 						}
 						else if ( coerceTarget(m, to_ty, from_ty, p.to.is_backwards_branch_target) )
@@ -7481,14 +7481,12 @@ public class GlobalOptimizer
 			//  FIXME:  The type modeling in LocalVarState
 			//  needs to account for cross-block nullable changes.
 			needs_coercion = true;
-			//needs_coercion = ! merged_type.equals(to_ty);
+			//needs_coercion = ! from_ty.equals(to_ty);
 		}
 		else
 		{
-			//  TODO: This check can be loosened
-			//  to allow the type meets that the verifier
-			//  does for itself.
-			needs_coercion = ! merged_type.equals(to_ty);
+			//  FIXME: get type meet right, loosen this restriction
+			needs_coercion = ! from_ty.equals(to_ty);
 		}
 		
 		return needs_coercion;
@@ -7743,6 +7741,7 @@ public class GlobalOptimizer
 	Map<Block,LocalVarState> getLocalVarState(Method m)
 	{
 		Map<Block,LocalVarState> result = new TreeMap<Block,LocalVarState>();
+		Map<Block, Typeref[]> frames_by_block = new TreeMap<Block, Typeref[]>();
 		
 		Deque<Block> code = schedule(m.entry.to);
 
@@ -7760,7 +7759,10 @@ public class GlobalOptimizer
 		
 		for ( Block b: code )
 		{
-			frame_state = buildLocalState(m, b, frame_state, result);
+			if ( frames_by_block.containsKey(b))
+				frame_state = frames_by_block.get(b);
+
+			frame_state = buildLocalState(m, b, frame_state, result, frames_by_block);
 		}
 		
 		//  Compute liveout sets.
@@ -7769,7 +7771,7 @@ public class GlobalOptimizer
 		return result;
 	}
 	
-	Typeref[] buildLocalState(Method m, Block b, Typeref[] frame_state, Map<Block,LocalVarState> local_map)
+	Typeref[] buildLocalState(Method m, Block b, Typeref[] frame_state, Map<Block,LocalVarState> local_map, Map<Block, Typeref[]> states_by_block)
 	{	
 		LocalVarState block_state = local_map.get(b);
 			
@@ -7783,6 +7785,19 @@ public class GlobalOptimizer
 			
 			default:
 			{
+				break;
+			}
+			
+			case OP_lookupswitch:
+			{	
+				for ( Edge p: b.succ())
+					checkTarget(b, p.to, block_state.fs_out, states_by_block);
+				break;
+			}
+			
+			case OP_jump:
+			{
+				checkTarget(b, b.succ()[0].to, block_state.fs_out, states_by_block);
 				break;
 			}
 
@@ -7801,7 +7816,7 @@ public class GlobalOptimizer
 			case OP_ifge:
 			case OP_ifstricteq:
 			    {
-			    	buildLocalState(m, b.succ()[1].to, block_state.fs_out, local_map);
+			    	checkTarget(b, b.succ()[1].to, block_state.fs_out, states_by_block);
 			    	//  Leading edge is always the fall-through.
 			    	break;
 			    }
@@ -7809,6 +7824,36 @@ public class GlobalOptimizer
 		}
 		
 		return local_map.get(b).fs_out;
+	}
+	
+	void checkTarget(Block branching_block, Block target_block, Typeref[] current_frame_state, Map<Block, Typeref[]> frames_by_block)
+	{
+		if ( !frames_by_block.containsKey(target_block))
+		{
+			if ( verbose_mode )
+			{
+				verboseStatus ("    .. checkTarget(" + branching_block + "->" + target_block + ") copying frame state");
+				dumpFrameState(current_frame_state);
+			}
+			Typeref[] target_frame = new Typeref[current_frame_state.length];
+			System.arraycopy(current_frame_state, 0, target_frame, 0, current_frame_state.length);
+			frames_by_block.put(target_block, target_frame);
+		}
+	}
+	
+	void dumpFrameState(Typeref[] fs_out)
+	{
+		if ( verbose_mode )
+		{
+			StringBuffer frame_state_buffer = new StringBuffer();
+			frame_state_buffer.append("\tLocals: ");
+			for ( int i = 0; i < fs_out.length; i++)
+			{
+				frame_state_buffer.append(fs_out[i].toString());
+				frame_state_buffer.append(" ");
+			}
+			verboseStatus(frame_state_buffer);
+		}
 	}
 	
 	/**
@@ -9938,29 +9983,35 @@ public class GlobalOptimizer
 	
 	void printabc(Expr e, PrintWriter out)
 	{
-		if ( !verbose_mode )
-			return;
-		out.print("    " + opNames[e.op]);
+		if ( verbose_mode )
+			out.println(formatExprAsAbc(e));
+	}
+	
+	String formatExprAsAbc(Expr e)
+	{	
+		StringBuilder s = new StringBuilder();
+		s.append("    " + opNames[e.op]);
 		if (e.imm != null)
 		{
-			StringBuilder s = new StringBuilder();
 			s.append('<');
 			for (int i: e.imm)
 				s.append(i).append(',');
 			s.setCharAt(s.length()-1,'>');
-			out.print(s);
 		}
 		if (e.succ != null)
-			out.print(format('[',e.succ,']'));
+			s.append(format('[',e.succ,']'));
 		if (e.value != null)
 		{
-			out.print(" ");
-			print(e.value, out);
+			s.append(" ");
+			s.append(formatObject(e.value));
 		}
 		if (e.ref != null)
-			out.print(" "+e.ref);//.format()); // full name
+		{
+			s.append(" ");
+			s.append(e.ref);
+		}
 			
-		out.println();
+		return s.toString();
 	}
 	
 	void printssa(Expr e, PrintWriter out)
@@ -10376,7 +10427,6 @@ public class GlobalOptimizer
 				}
 			}
 			
-			
 			this.fs_out = new Typeref[initial_frame_state.length];
 			System.arraycopy(this.fs_in, 0, this.fs_out, 0, this.fs_in.length);
 			
@@ -10400,7 +10450,7 @@ public class GlobalOptimizer
 					verbose_succ.append(" ");
 				}
 				verboseStatus(verbose_succ);
-				dumpFrameState();
+				dumpFrameState(fs_out);
 				saved_fs = new Typeref[initial_frame_state.length];
 				System.arraycopy(fs_out, 0, saved_fs, 0, fs_out.length);
 			}
@@ -10409,24 +10459,8 @@ public class GlobalOptimizer
 			for ( Expr e: b.exprs)
 			{	
 				if ( verbose_mode )
-				{
-					if ( OP_setlocal == e.op || OP_getlocal == e.op )
-					{
-						int local_num = e.imm[0];
-						
-						verboseStatus(opNames[e.op] + (local_num < 4? "":"  ") + local_num);
-						if ( OP_setlocal == e.op )
-							verboseStatus("\t" + formatExpr(e.args[0]));
-					}
-					else if ( OP_hasnext2 == e.op )
-					{
-						verboseStatus("hasnext_2" + " " + e.imm[0] + " " + e.imm[1]);
-					}
-					else
-					{
-						verboseStatus(opNames[e.op]);
-					}
-				}
+					verboseStatus(formatExprAsAbc(e));
+
 				switch(e.op)
 				{
 					case OP_getlocal0:
@@ -10514,27 +10548,12 @@ public class GlobalOptimizer
 					{
 						if ( saved_fs[i] != fs_out[i] )
 						{
-							dumpFrameState();
+							dumpFrameState(fs_out);
 							System.arraycopy(fs_out, 0, saved_fs, 0, fs_out.length);
 							break;
 						}
 					}
 				}
-			}
-		}
-
-		private void dumpFrameState()
-		{
-			if ( verbose_mode )
-			{
-				StringBuffer frame_state_buffer = new StringBuffer();
-				frame_state_buffer.append("\tLocals: ");
-				for ( int i = 0; i < fs_out.length; i++)
-				{
-					frame_state_buffer.append(fs_out[i].toString());
-					frame_state_buffer.append(" ");
-				}
-				verboseStatus(frame_state_buffer);
 			}
 		}
 		
@@ -10660,6 +10679,8 @@ public class GlobalOptimizer
 			fs_out[varnum] = definingType(generating_expr);
 			def.set(varnum);
 			generating_exprs.put(varnum, generating_expr);
+			
+			killed_vars.clear(varnum);
 			read_after_def.clear(varnum);
 		}
 		
