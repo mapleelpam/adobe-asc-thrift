@@ -1009,6 +1009,7 @@ public class GlobalOptimizer
 			
 			{
 				int i;
+
 				for (i=0; i < m.params.length; i++)
 				{
 					// argument i
@@ -1049,6 +1050,9 @@ public class GlobalOptimizer
 			
 			if ( handlers.length > 0 )
 			{
+				//  TODO arg 0 only needs to be fixed if
+				//  this is an instance method.
+				m.fixedLocals.put(frame[0], -1);
 				for (int j = 0, n=handlers.length; j < n; j++)
 				{
 					Handler h = handlers[j] = new Handler();
