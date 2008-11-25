@@ -4115,6 +4115,8 @@ public class GlobalOptimizer
 				dot("-appeased",m);
 		}
 		
+		computeFrameCounts(m);
+		
 		if ( verbose_mode )
 		{
 			printabc(schedule(m.entry.to));
@@ -5759,12 +5761,8 @@ public class GlobalOptimizer
 	
 	Type type(Map<Expr,Typeref>types, Expr e)
 	{
+		assert(types.containsKey(e));
 		return types.get(e).t;
-	}
-	
-	boolean nullable(Expr e, Map<Expr,Typeref>types)
-	{
-		return types.get(e).nullable;
 	}
 
 	/**
@@ -6665,7 +6663,13 @@ public class GlobalOptimizer
 			
 			case OP_construct:
 			{
-				tref = OBJECT.ref.nonnull();
+				Type base_type = type(types,e.args[0]);
+				
+				if ( base_type.itype != null )
+					tref = base_type.itype.ref.nonnull();
+				else
+					tref = base_type.ref.nonnull();
+				
 				break;
 			}
 			
@@ -7177,17 +7181,11 @@ public class GlobalOptimizer
 			verboseStatus("IGNORE_REST for "+m.name);
 		}
 
+		int max_local = m.params.length-1;
+		
 		sched_greedy(m, code, locals, pred, exprs, conflicts);
 		
 		alloc_locals(code, locals, conflicts, m.fixedLocals);
-
-		int max_local = m.params.length-1;
-		int max_stack = 0;
-		int max_scope = 0;
-		Map<Block,Integer>stkin = new TreeMap<Block,Integer>();
-		Map<Block,Integer>scpin = new TreeMap<Block,Integer>();
-		stkin.put(m.entry.to, 0);
-		scpin.put(m.entry.to, 0);
 		
 		
 		// insert phi copies on edges where needed
@@ -7232,29 +7230,9 @@ public class GlobalOptimizer
 			
 			// now swap in the scheduled code and renumber the get/setlocals we have in there.
 			b.exprs = exprs.get(b);
-			int stkdepth = stkin.get(b);
-			int scpdepth = scpin.get(b);
-			for (Expr e: b)
+			
+			for ( Expr e: b.exprs)
 			{
-				assert(!e.isSynthetic());
-				
-				// compute max_stack
-				assert(stkdepth >= e.args.length);
-				stkdepth -= e.args.length;
-				if (e.onStack())
-					stkdepth++;
-				if (stkdepth > max_stack)
-					max_stack = stkdepth;
-				
-				// compute max_scope
-				assert(scpdepth >= e.scopes.length);
-				if (e.op == OP_popscope)
-					scpdepth--;
-				else if (e.onScope())
-					scpdepth++;
-				if (scpdepth > max_scope)
-					max_scope = scpdepth;
-				
 				// assign locals & update local_count
 				int loc = max_local;
 				if (e.op == OP_getlocal || e.op == OP_setlocal)
@@ -7271,22 +7249,74 @@ public class GlobalOptimizer
 				if (loc > max_local)
 					max_local = loc;
 			}
+		}
+		
+		m.local_count = max_local+1;
+		
+		// some of the edges we split didn't need to be.
+		cfgopt(m);
+		
+		printMethod(m, "AFTER SCHED");
+		
+		unwindTrace(remove_phi_trace_phase);
+	}
+	
+	/**
+	 *  Compute a Method's max_stack and max_scope settings.
+	 *  @param m - the Method of interest.
+	 *  @post m.max_stack and m_max_scope set.
+	 *  @note Factored out of remove_phi so that the verifier
+	 *    appeasment logic can safely issue getlocal insns.
+	 */
+	void computeFrameCounts(Method m)
+	{
+		Deque<Block> code = dfs(m.entry.to);
+		
+		
+		int max_stack = 0;
+		int max_scope = 0;
+		
+		Map<Block,Integer>stkin = new TreeMap<Block,Integer>();
+		Map<Block,Integer>scpin = new TreeMap<Block,Integer>();
+		stkin.put(m.entry.to, 0);
+		scpin.put(m.entry.to, 0);
+		
+		for ( Block b: code )
+		{
+			int stkdepth = stkin.get(b);
+			int scpdepth = scpin.get(b);
+
+			for (Expr e: b)
+			{
+				assert(!e.isSynthetic());
+				
+				// compute max_stack
+				assert(stkdepth >= e.args.length);
+				stkdepth -= e.args.length;
+				if (e.onStack())
+				{
+					stkdepth++;
+				}
+				if (stkdepth > max_stack)
+					max_stack = stkdepth;
+				
+				// compute max_scope
+				assert(scpdepth >= e.scopes.length);
+				if (e.op == OP_popscope)
+					scpdepth--;
+				else if (e.onScope())
+					scpdepth++;
+				if (scpdepth > max_scope)
+					max_scope = scpdepth;
+			}
 			for (Edge s: b.succ())
 				update_depth(s.to, stkdepth, stkin, scpdepth, scpin);
 			for (Edge s: b.xsucc)
 				update_depth(s.to, 1, stkin, 0, scpin);
 		}
 		
-		// some of the edges we split didn't need to be.
-		cfgopt(m);
-		
-		m.local_count = max_local+1;
 		m.max_stack = max_stack;
 		m.max_scope = max_scope;
-		
-		printMethod(m, "AFTER SCHED");
-		
-		unwindTrace(remove_phi_trace_phase);
 	}
 	
 	/**
@@ -9295,6 +9325,9 @@ public class GlobalOptimizer
 	
 	class TypeConstraintMap extends HashMap<Edge, TypeConstraints>
 	{
+		/** @see Serializable */
+		private static final long serialVersionUID = 1903880092224622848L;
+
 		TypeConstraintMap()
 		{
 			super();
