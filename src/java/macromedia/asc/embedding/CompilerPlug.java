@@ -51,6 +51,7 @@ public class CompilerPlug
     public int target;
     public boolean optimize;
     public ObjectList<ConfigVar> configs;
+    public ObjectList<ConfigVar> optimizer_configs;
 
 	public CompilerPlug()
 	{
@@ -71,6 +72,7 @@ public class CompilerPlug
         dialect = 7;
         target = 1;  // Default to FP10, constants in macromedia.asc.embedding.avmplus.Features
         optimize = false;
+        optimizer_configs = null;
         in = null;
 
 		filename = new String();

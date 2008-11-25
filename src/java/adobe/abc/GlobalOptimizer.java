@@ -14,6 +14,10 @@ package adobe.abc;
 import java.io.*;
 import java.util.*;
 
+import macromedia.asc.embedding.ConfigVar;
+import macromedia.asc.util.ByteList;
+import macromedia.asc.util.ObjectList;
+
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.*;
 import static adobe.abc.ActionBlockConstants.*;
 import static java.lang.Boolean.TRUE;
@@ -4125,22 +4129,52 @@ public class GlobalOptimizer
 		unwindTrace(optimize_trace_phase);
 	}
 	
-	public static byte[] optimize( byte[] raw_abc, java.util.Vector<String> imports, boolean legacy_verifier )
+	public static byte[] optimize( byte[] raw_abc, ObjectList<ConfigVar> optimizer_configs, ObjectList<String> import_filespecs )
 	throws java.io.IOException
 	{
 		GlobalOptimizer go = new GlobalOptimizer();
+		go.legacy_verifier = true;
+		
+		boolean quiet_mode = false;
 	
 		//  TODO: ASC and GO data structures need to interoperate.
 		//  For now, just redo the imports.
-		for ( String import_name: imports )
+		for ( ConfigVar config_var: optimizer_configs )
 		{
-			go.new InputAbc().readAbc(load(import_name));
+			if (config_var.name.equalsIgnoreCase("-IMPORT"))
+			{
+				go.new InputAbc().readAbc(load(config_var.value));
+			}
+			else if ( config_var.name.equalsIgnoreCase("-LEGACY_VERIFIER"))
+			{
+				go.legacy_verifier = !go.legacy_verifier;
+			}
+			else if ( config_var.name.equalsIgnoreCase("-PRESERVE_METHOD_NAMES"))
+			{
+				go.PRESERVE_METHOD_NAMES = true;
+			}
+			else if ( config_var.name.equalsIgnoreCase("-QUIET"))
+			{
+				quiet_mode = true;
+			}
+			else if ( config_var.name.equalsIgnoreCase("-ALLOW_NATIVE_CTORS"))
+			{
+				go.ALLOW_NATIVE_CTORS = true;
+			}
+			else
+			{
+				throw new IllegalArgumentException("Unknown -o2:configuration_value " + config_var.name);
+			}
+		}
+		
+		for ( String import_filespec: import_filespecs)
+		{
+			go.new InputAbc().readAbc(load(import_filespec));
 		}
 	
 		InputAbc input_abc = go.new InputAbc();
 		input_abc.readAbc(raw_abc);
 	
-		go.legacy_verifier = legacy_verifier;
 		go.optimize(input_abc);
 	
 		Abc abc = go.new Abc();
@@ -4152,7 +4186,16 @@ public class GlobalOptimizer
 		
 		abc.sort();
 		
-		return go.emitAbc(abc);
+		byte[] optimized_abc = go.emitAbc(abc);
+		
+		if ( !quiet_mode )
+		{
+			System.out.println("Original  ABC size: " + raw_abc.length);
+			System.out.println("Optimized ABC size: " + optimized_abc.length);
+		}
+		
+		return optimized_abc;
+		
 	}
 	
 	void fold(Method m)

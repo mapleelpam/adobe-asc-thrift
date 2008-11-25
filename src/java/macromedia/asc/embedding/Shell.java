@@ -460,6 +460,7 @@ public class Shell
 			macromedia.asc.embedding.Main.dialect = macromedia.asc.embedding.Main.default_dialect;
 
 		    macromedia.asc.embedding.Main.optimize = false;
+		    macromedia.asc.embedding.Main.optimizer_configs = null;
 
             macromedia.asc.embedding.Main.include_filespecs = new ObjectList<String>();
 			macromedia.asc.embedding.Main.import_filespecs = new ObjectList<String>();

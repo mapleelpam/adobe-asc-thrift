@@ -348,7 +348,8 @@ public class Compiler implements ErrorConstants
                                                     boolean save_comment_nodes/*=false*/,
                                                         int dialect /*=0*/,
                                                             int target,
-                                                                boolean optimize)
+                                                                boolean optimize,
+                                                                ObjectList<ConfigVar> optimizer_configs)
     {
         // Initialize the compiler before compiling anything
         init();
@@ -433,6 +434,21 @@ public class Compiler implements ErrorConstants
                     if( optimize )
                     {
                         bytes = Optimizer.optimize(bytes);
+                    }
+                    
+                    if ( optimizer_configs != null )
+                    {
+                    	try
+                    	{
+                    		byte[] optimized_abc = adobe.abc.GlobalOptimizer.optimize(bytes.toByteArray(), optimizer_configs, import_filespecs);
+                    		bytes.clear();
+                    		bytes.addAll(optimized_abc);
+                    	}
+                    	catch ( Exception ex )
+                    	{
+                    		System.err.println("Unable to optimize due to:");
+                    		ex.printStackTrace();
+                    	}
                     }
 					BufferedOutputStream code_out = null;
 					try
@@ -616,7 +632,8 @@ public class Compiler implements ErrorConstants
 			mainplug.save_comment_nodes,
 			mainplug.dialect,
             mainplug.target,
-            mainplug.optimize
+            mainplug.optimize,
+            mainplug.optimizer_configs
 				);
     }
 
@@ -652,7 +669,8 @@ public class Compiler implements ErrorConstants
             mainplug.save_comment_nodes,
             mainplug.dialect,
             mainplug.target,
-            mainplug.optimize);
+            mainplug.optimize,
+            mainplug.optimizer_configs);
     }
     
     static void createProjector(String avmplus_exe, String pathspec, String scriptname, ByteList bytes)

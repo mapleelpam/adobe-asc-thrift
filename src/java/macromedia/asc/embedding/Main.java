@@ -68,6 +68,7 @@ public class Main
 	static String avmplus_exe = null;
 
     static ObjectList<ConfigVar> config_vars = new ObjectList<ConfigVar>();
+    static ObjectList<ConfigVar> optimizer_configs = null;
 
 	public static void main(String[] args) throws Exception
 	{
@@ -256,7 +257,24 @@ public class Main
 						do_help = true;
 						break;
                     case 'o':
-                        optimize = true;
+                    	if ( "-O".equalsIgnoreCase(flag))
+                    	{
+                    		optimize = true;
+                    	}
+                    	else if (flag.substring(0, 3).equalsIgnoreCase("-O2") )
+                    	{
+                    		if ( null == optimizer_configs)
+                    		{
+                    			optimizer_configs = new ObjectList<ConfigVar>();
+                    		}
+                    		
+                    		if ( flag.length() > 4)
+                    		{
+                    			String option_name = flag.substring(4);
+                    		
+	                    		optimizer_configs.add(new ConfigVar("o2", option_name, ""));
+                    		}
+                    	}
                         break;
                     case 'A':
                     	if (flag.length() == 4 && "-AS3".equalsIgnoreCase(flag))
@@ -463,6 +481,7 @@ public class Main
             plug.dialect = dialect;
             plug.target = target;
             plug.optimize = optimize;
+            plug.optimizer_configs = optimizer_configs;
             plug.configs = config_vars;
 
 			if(sanity_mode)
