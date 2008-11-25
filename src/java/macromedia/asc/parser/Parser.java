@@ -134,7 +134,6 @@ public final class Parser
               };
     static final int xmlid_tokens_count = xmlid_tokens.length;
 
-    private int lastToken;
     private int nextToken;
     private int nextTokenClass;
     private Context ctx;
@@ -160,9 +159,9 @@ public final class Parser
      * Log a syntax error and recover
      */
 
-    Node error(int errCode)                          { return error(syntax_error, errCode,"","",-1); }
-    private Node error(int kind, int errCode)                { return error(kind,errCode,"","",-1); }
-    private Node error(int kind, int errCode, String arg1) { return error(kind,errCode,arg1,"",-1); }
+    Node error(int errCode)                                             { return error(syntax_error, errCode,"","",-1); }
+    private Node error(int kind, int errCode)                           { return error(kind,errCode,"","",-1); }
+    private Node error(int kind, int errCode, String arg1)              { return error(kind,errCode,arg1,"",-1); }
     private Node error(int kind, int errCode, String arg1, String arg2) { return error(kind,errCode,arg1,arg2,-1); }
     private Node error(int kind, int errCode, String arg1, String arg2,int pos)
     {
@@ -171,7 +170,7 @@ public final class Parser
         
         if(debug) out.append("[Parser] ");
         
-        // Just the arguments for sanities, no message (since they chang often)
+        // Just the arguments for sanities, no message (since they change often)
         if(ContextStatics.useSanityStyleErrors)
         {
             out.append("code=" + errCode + "; arg1=" + arg1 + "; arg2=" + arg2);
@@ -303,19 +302,17 @@ public final class Parser
                     break;
             }
         }
-        lastToken = ERROR_TOKEN;
     }
 
 	private void init(Context cx, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack)
 	{
 		ctx = cx;
-		lastToken = EMPTY_TOKEN;
 		nextToken = EMPTY_TOKEN;
 		create_doc_info = emit_doc_info;
         within_package = false;
 		this.save_comment_nodes = save_comment_nodes;
 		nodeFactory = cx.getNodeFactory();
-		nodeFactory.createDefaultDocComments(emit_doc_info); // for now, always create defualt comments for uncommented nodes in -doc
+		nodeFactory.createDefaultDocComments(emit_doc_info); // for now, always create default comments for uncommented nodes in -doc
 		if( block_kind_stack != null )
 		{
 		    this.block_kind_stack.addAll(block_kind_stack);
@@ -402,7 +399,6 @@ public final class Parser
     
     private final void shift()
     {
-    	lastToken = nextToken;
     	nextToken = EMPTY_TOKEN;
     }
 
@@ -415,10 +411,11 @@ public final class Parser
     private final int match(int expectedTokenClass)
     {
         int result = ERROR_TOKEN;
-
-        if (!lookahead(expectedTokenClass))
+        int lt = lookahead();
+   
+        if (lt != expectedTokenClass)
         {
-            if (!lookahead(ERROR_TOKEN))
+            if (lt != ERROR_TOKEN)
             {
                 if (expectedTokenClass == EOS_TOKEN)
                 {
@@ -435,7 +432,7 @@ public final class Parser
                 {
                     error(syntax_eos_error, kError_Parser_ExpectedToken,
                           Token.getTokenClassName(expectedTokenClass),
-                          scanner.getTokenText(nextToken));
+                          scanner.getCurrentTokenText(nextToken));
                     skiperror(expectedTokenClass);
                     result = nextToken;
                 }
@@ -443,7 +440,7 @@ public final class Parser
                 {
                     error(syntax_eos_error, kError_Parser_ExpectedToken,
                         Token.getTokenClassName(expectedTokenClass),
-                        scanner.getTokenText(nextToken));
+                        scanner.getCurrentTokenText(nextToken));
                     skiperror(expectedTokenClass);
                     result = nextToken;
                     nextToken = EMPTY_TOKEN;
@@ -458,7 +455,6 @@ public final class Parser
         else
         {
             result = nextToken;
-            lastToken = nextToken;
             nextToken = EMPTY_TOKEN;
         }
 
@@ -467,7 +463,7 @@ public final class Parser
 
     private final int match( final int expectedTokenClasses[], int count )
     {
-        int result = ERROR_TOKEN;
+        int result;
 
         if( !lookahead( expectedTokenClasses, count ) )
         {
@@ -475,18 +471,12 @@ public final class Parser
             {
                 error(syntax_error, kError_Parser_ExpectedToken,
                 Token.getTokenClassName(expectedTokenClasses[0]),
-                scanner.getTokenText(nextToken));
+                scanner.getCurrentTokenText(nextToken));
                 skiperror(expectedTokenClasses[0]);
             }
-            result    = nextToken;
-            nextToken = EMPTY_TOKEN;
         }
-        else
-        {
-            result    = nextToken;
-            lastToken = nextToken;
-            nextToken = EMPTY_TOKEN;
-        }
+        result    = nextToken;
+        nextToken = EMPTY_TOKEN;
 
         return result;
     }
@@ -534,11 +524,10 @@ public final class Parser
             }
             else
             {
-                error(syntax_error, kError_Parser_ExpectedSemicolon, scanner.getTokenText(nextToken));
+                error(syntax_error, kError_Parser_ExpectedSemicolon, scanner.getCurrentTokenText(nextToken));
                 skiperror(SEMICOLON_TOKEN);
             }
         }
-
         return result;
     }
 
@@ -566,7 +555,7 @@ public final class Parser
         }
         else
         {
-            error(syntax_error, kError_Parser_ExpectedSemicolon, scanner.getTokenText(nextToken));
+            error(syntax_error, kError_Parser_ExpectedSemicolon, scanner.getCurrentTokenText(nextToken));
             skiperror(SEMICOLON_TOKEN);
             return ERROR_TOKEN;
         }
@@ -582,13 +571,13 @@ public final class Parser
     private final void getNextToken()
     {
         int tok = scanner.nexttoken(true);
-        int tok_type = scanner.getTokenClass(tok);
+        int tok_type = scanner.getCurrentTokenClass(tok);
         
         while(tok_type == SLASHSLASHCOMMENT_TOKEN || tok_type == BLOCKCOMMENT_TOKEN || tok_type == DOCCOMMENT_TOKEN)
         {
             if( save_comment_nodes && (!ctx.scriptAssistParsing || tok_type != DOCCOMMENT_TOKEN))
             {
-                Node newComment = nodeFactory.comment(scanner.getTokenText(tok), tok_type, ctx.input.positionOfMark());
+                Node newComment = nodeFactory.comment(scanner.getCurrentTokenText(tok), tok_type, ctx.input.positionOfMark());
                 comments.push_back(newComment);
             }
 
@@ -596,7 +585,7 @@ public final class Parser
                 break;
 
             tok = scanner.nexttoken(false);
-            tok_type = scanner.getTokenClass(tok);
+            tok_type = scanner.getCurrentTokenClass(tok);
         }
         nextTokenClass = tok_type;
         nextToken = tok;
@@ -610,7 +599,7 @@ public final class Parser
     private final void changeLookahead(int tok)
     {
         nextToken = tok;
-        nextTokenClass = scanner.getTokenClass(nextToken);
+        nextTokenClass = scanner.getCurrentTokenClass(nextToken);
     }
     /*
      * Lookahead to the next token.
@@ -626,14 +615,14 @@ public final class Parser
             //printf("%s ",Token::getTokenClassName(scanner.getTokenClass(nextToken)).c_str());
             if (debug)
             {
-                System.err.println("\tnextToken() returning " + Token.getTokenClassName(scanner.getTokenClass(nextToken)));
+                System.err.println("\tnextToken() returning " + Token.getTokenClassName(scanner.getCurrentTokenClass(nextToken)));
             }
         }
 
         if (debug)
         {
             // System.err.println("\t" + Token::getTokenClassName(scanner.getTokenClass(nextToken)) + " lookahead(" + Token::getTokenClassName(expectedTokenClass) + ")");
-            System.err.println("\t" + Token.getTokenClassName(scanner.getTokenClass(nextToken)) + " lookahead(" + Token.getTokenClassName(expectedTokenClass) + ")");
+            System.err.println("\t" + Token.getTokenClassName(scanner.getCurrentTokenClass(nextToken)) + " lookahead(" + Token.getTokenClassName(expectedTokenClass) + ")");
         }
 
         // Compare the expected token class against the token class of
@@ -659,7 +648,7 @@ public final class Parser
         
         if (debug)
         {
-            System.err.println("\t" + Token.getTokenClassName(scanner.getTokenClass(nextToken)));
+            System.err.println("\t" + Token.getTokenClassName(scanner.getCurrentTokenClass(nextToken)));
         }
         return nextTokenClass; // scanner.getTokenClass(nextToken);
     }
@@ -756,7 +745,7 @@ public final class Parser
             break;
             
         default:
-            result = scanner.getTokenText(match(IDENTIFIER_TOKEN)).intern(); //???hmmm all identifiers are interned....
+            result = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN)).intern(); //???hmmm all identifiers are interned....
         }
 
         if (debug)
@@ -830,7 +819,7 @@ public final class Parser
         	}
         	else
         	{
-        	    result = scanner.getTokenText(match(IDENTIFIER_TOKEN)).intern();
+        	    result = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN)).intern();
         	}
         }
 
@@ -1068,13 +1057,13 @@ public final class Parser
             break;
         
         case NUMBERLITERAL_TOKEN:
-            result = nodeFactory.literalNumber(scanner.getTokenText(match(NUMBERLITERAL_TOKEN)),ctx.input.positionOfMark());
+            result = nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NUMBERLITERAL_TOKEN)),ctx.input.positionOfMark());
             break;
             
         case STRINGLITERAL_TOKEN:
         {
             boolean[] is_single_quoted = new boolean[1];
-            String enclosedText = scanner.getStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
+            String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
             result = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
             break;
         }
@@ -1116,7 +1105,7 @@ public final class Parser
             }
             else
             {
-                error(syntax_error,kError_Parser_ExpectedPrimaryExprBefore,scanner.getTokenText(nextToken));
+                error(syntax_error,kError_Parser_ExpectedPrimaryExprBefore,scanner.getCurrentTokenText(nextToken));
                 result = nodeFactory.error(ctx.input.positionOfMark(), kError_Parser_ExpectedPrimaryExprBefore);
             }
             skiperror(LEFTBRACE_TOKEN);
@@ -1125,7 +1114,7 @@ public final class Parser
             
         case CATCH_TOKEN: case FINALLY_TOKEN: case ELSE_TOKEN:
             error(syntax_error, kError_Parser_ExpectedPrimaryExprBefore,
-                      scanner.getTokenText(nextToken));
+                      scanner.getCurrentTokenText(nextToken));
             skiperror(LEFTBRACE_TOKEN);
             skiperror(RIGHTBRACE_TOKEN);
             result = nodeFactory.error(ctx.input.positionOfMark(), kError_Parser_ExpectedPrimaryExprBefore);
@@ -1139,7 +1128,7 @@ public final class Parser
             
         case REGEXPLITERAL_TOKEN:
             result = (HAS_REGULAREXPRESSIONS) 
-                ? nodeFactory.literalRegExp(scanner.getTokenText(match(REGEXPLITERAL_TOKEN)),ctx.input.positionOfMark())
+                ? nodeFactory.literalRegExp(scanner.getCurrentTokenText(match(REGEXPLITERAL_TOKEN)),ctx.input.positionOfMark())
                 : parseTypeIdentifier();
             break;
             
@@ -1166,7 +1155,7 @@ public final class Parser
         int pos = ctx.input.positionOfMark();
         if(lookahead()==XMLMARKUP_TOKEN)
         {
-            first  = nodeFactory.list(null,nodeFactory.literalString(scanner.getTokenText(match(XMLMARKUP_TOKEN)),pos));
+            first  = nodeFactory.list(null,nodeFactory.literalString(scanner.getCurrentTokenText(match(XMLMARKUP_TOKEN)),pos));
         }
         else
         {
@@ -1289,7 +1278,7 @@ public final class Parser
         {
             if( lookahead(xmlid_tokens,xmlid_tokens_count) )
             {
-                result  = concatXML(first,nodeFactory.literalString(scanner.getTokenText(match(xmlid_tokens,xmlid_tokens_count)),ctx.input.positionOfMark()));
+                result  = concatXML(first,nodeFactory.literalString(scanner.getCurrentTokenText(match(xmlid_tokens,xmlid_tokens_count)),ctx.input.positionOfMark()));
             }
             else
             {
@@ -1322,7 +1311,7 @@ public final class Parser
                 if( lookahead(xmlid_tokens,xmlid_tokens_count) )
                 {
                     result = concatXML(result,nodeFactory.literalString(separator_text,0));
-                    result = concatXML(result,nodeFactory.literalString(scanner.getTokenText(match(xmlid_tokens,xmlid_tokens_count)),ctx.input.positionOfMark()));
+                    result = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenText(match(xmlid_tokens,xmlid_tokens_count)),ctx.input.positionOfMark()));
                 }
                 else
                 {
@@ -1359,7 +1348,7 @@ public final class Parser
             if(lookahead()==STRINGLITERAL_TOKEN)
             {
                 boolean[] is_single_quoted = new boolean[1];
-                String enclosedText = scanner.getStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
+                String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
                 value = nodeFactory.literalString( enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
                 single_quote = is_single_quoted[0];
             }
@@ -1420,12 +1409,12 @@ public final class Parser
             else
             if(lt==XMLMARKUP_TOKEN)
             {
-                result  = concatXML(result,nodeFactory.literalString(scanner.getTokenText(match(XMLMARKUP_TOKEN)),ctx.input.positionOfMark()));
+                result  = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenText(match(XMLMARKUP_TOKEN)),ctx.input.positionOfMark()));
             }
             else
             if(lt==XMLTEXT_TOKEN)
             {
-                result  = concatXML(result,nodeFactory.literalString(scanner.getTokenText(match(XMLTEXT_TOKEN)),ctx.input.positionOfMark()));
+                result  = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenText(match(XMLTEXT_TOKEN)),ctx.input.positionOfMark()));
             }
             else
             {
@@ -1815,12 +1804,12 @@ XMLElementContent
         if (HAS_NONIDENTFIELDNAMES && lt==STRINGLITERAL_TOKEN)
         {
             boolean[] is_single_quoted = new boolean[1];
-            String enclosedText = scanner.getStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
+            String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
             result = nodeFactory.literalString( enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
         }
         else if (HAS_NONIDENTFIELDNAMES && lt==NUMBERLITERAL_TOKEN)
         {
-            result = nodeFactory.literalNumber(scanner.getTokenText(match(NUMBERLITERAL_TOKEN)),ctx.input.positionOfMark());
+            result = nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NUMBERLITERAL_TOKEN)),ctx.input.positionOfMark());
         }
         else if (HAS_NONIDENTFIELDNAMES && lt==LEFTPAREN_TOKEN)
         {
@@ -2799,7 +2788,7 @@ XMLElementContent
             shift();
             lookaheadInSlashRegExpContext();
             result = (lookahead()==NEGMINLONGLITERAL_TOKEN)
-                ? nodeFactory.unaryExpression(lt,nodeFactory.literalNumber(scanner.getTokenText(match(NEGMINLONGLITERAL_TOKEN)),ctx.input.positionOfMark()),scanner.input.positionOfMark())
+                ? nodeFactory.unaryExpression(lt,nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NEGMINLONGLITERAL_TOKEN)),ctx.input.positionOfMark()),scanner.input.positionOfMark())
                 : nodeFactory.unaryExpression(lt, parseUnaryExpression(), scanner.input.positionOfMark());
             break;
 
@@ -3792,7 +3781,7 @@ XMLElementContent
 
         Node result;
 
-        if( ctx.dialect(7) && nextToken == IDENTIFIER_TOKEN && scanner.getTokenText(nextToken).equals("Object") )
+        if( ctx.dialect(7) && nextToken == IDENTIFIER_TOKEN && scanner.getCurrentTokenText(nextToken).equals("Object") )
         {
             match(IDENTIFIER_TOKEN);
             result = null;  // means *
@@ -4148,7 +4137,7 @@ XMLElementContent
         if( lookahead()==DOCCOMMENT_TOKEN)
         {
             ListNode list = nodeFactory.list(null,nodeFactory.literalString(
-                    scanner.getTokenText(match(DOCCOMMENT_TOKEN)),ctx.input.positionOfMark()));
+                    scanner.getCurrentTokenText(match(DOCCOMMENT_TOKEN)),ctx.input.positionOfMark()));
             LiteralXMLNode first = nodeFactory.literalXML(list,false/*is_xmllist*/,ctx.input.positionOfMark());
             Node x = nodeFactory.memberExpression(null,nodeFactory.getExpression(first),pos);
             result = nodeFactory.docComment(nodeFactory.literalArray(nodeFactory.argumentList(null,x),pos),pos);
@@ -4473,7 +4462,7 @@ XMLElementContent
 
         if(lookahead()==IDENTIFIER_TOKEN)
         {
-            String id = scanner.getTokenText(match(IDENTIFIER_TOKEN));
+            String id = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN));
             if( !id.equals("each") )
             {
                 error(syntax_error,kError_Parser_ExpectedLeftParen);
@@ -4918,7 +4907,7 @@ XMLElementContent
             case DEFAULT_TOKEN:
             {
                 shift();
-                String id = scanner.getTokenText(match(IDENTIFIER_TOKEN));
+                String id = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN));
                 if( !id.equals("xml") && lookahead()==NAMESPACE_TOKEN )
                 {
                     error(kError_Parser_ExpectedXMLBeforeNameSpace);
@@ -4987,16 +4976,15 @@ XMLElementContent
             {
                 temp = parseLabeledOrExpressionStatement(mode);
             }
-            
-            String attributeString = this.scanner.getTokenText(lastToken); //??? this seems to be the only use of lastToken {pmd}
-            String directiveString = this.scanner.getTokenText(nextToken);
-
+ 
             if (temp.isLabeledStatement())
             {
                     result = temp; // no semi-colon necessary if labeled statement.
             }
             else 
-            {
+            {  
+                String directiveString = this.scanner.getCurrentTokenText(nextToken);
+
                 if (lookaheadSemicolon(mode) && !temp.isConfigurationName())
                 {
                     // If full mode then cannot be an attribute
@@ -5014,10 +5002,10 @@ XMLElementContent
                             temp = estmt.expr;
                         }
                     }
-                    boolean is_attribute_keyword = checkAttribute(block_kind_stack.last(),temp);
+                    boolean is_attribute_keyword = checkAttribute(temp);
                     if( is_attribute_keyword )
                     {
-                        error(syntax_error, kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes, attributeString, directiveString);
+                        error(syntax_error, kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes, which_attribute(temp), directiveString);
                     }
                 }
                 else if (temp.isAttribute())
@@ -5032,7 +5020,7 @@ XMLElementContent
                         temp = estmt.expr;
                     }
 
-                    boolean is_attribute_keyword = checkAttribute(block_kind_stack.last(),temp);
+                    boolean is_attribute_keyword = checkAttribute(temp);
 
                     AttributeListNode first;
                     lt = lookahead();
@@ -5069,7 +5057,7 @@ XMLElementContent
                         else if( is_attribute_keyword || first.size() > 1 )
                         {
                             error(syntax_error, kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes,
-                                    attributeString, directiveString);
+                                    which_attribute(temp), directiveString);
                             skiperror(SEMICOLON_TOKEN);
                         }
                         else if ( temp.isConfigurationName() )
@@ -5435,13 +5423,13 @@ XMLElementContent
         }
         else if (lookahead()==NUMBERLITERAL_TOKEN)
         {
-            argument = nodeFactory.literalNumber(scanner.getTokenText(match(NUMBERLITERAL_TOKEN)),
+            argument = nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NUMBERLITERAL_TOKEN)),
                                                ctx.input.positionOfMark());
         }
         else if (lookahead()==STRINGLITERAL_TOKEN)
         {
             boolean[] is_single_quoted = new boolean[1];
-            String enclosedText = scanner.getStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
+            String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
             argument = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
         }
         else argument = parseIdentifier();
@@ -5518,7 +5506,7 @@ XMLElementContent
         match(INCLUDE_TOKEN);
 
         boolean[] is_single_quoted = new boolean[1];
-        String filespec = scanner.getStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted).trim();
+        String filespec = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted).trim();
 
         CompilerHandler.FileInclude incl = null;
         if (ctx.handler != null)
@@ -5650,9 +5638,11 @@ XMLElementContent
      *     Attribute [no line break] Attributes
      */
 
-    private boolean checkAttribute( int block_kind, Node node )
+    private boolean checkAttribute( Node node )
     {
-        if( block_kind_stack.last() != ERROR_TOKEN  && block_kind_stack.last() != CLASS_TOKEN  && block_kind_stack.last() != INTERFACE_TOKEN)
+        int t = block_kind_stack.last();
+        
+        if( t != ERROR_TOKEN  && t != CLASS_TOKEN  && t != INTERFACE_TOKEN)
         {
             if( node.hasAttribute("private") )
             {
@@ -5669,12 +5659,12 @@ XMLElementContent
                 ctx.error(node.pos(), kError_InvalidStatic);
             }
             else
-            if( block_kind_stack.last() != PACKAGE_TOKEN && block_kind_stack.last() != EMPTY_TOKEN && node.hasAttribute("internal") )
+            if( t != PACKAGE_TOKEN && t != EMPTY_TOKEN && node.hasAttribute("internal") )
             {
                 ctx.error(node.pos(), kError_InvalidInternal);
             }
             else
-            if( block_kind_stack.last() != PACKAGE_TOKEN && node.hasAttribute("public") )
+            if( t != PACKAGE_TOKEN && node.hasAttribute("public") )
             {
                 ctx.error(node.pos(), kError_InvalidPublic);
             }
@@ -5696,6 +5686,45 @@ XMLElementContent
                 node.hasAttribute("prototype");
     }
 
+    private String which_attribute(Node t)
+    {
+        /*
+         * empirically derived, fragile code, since tree shapes may differ or change. {pmd}
+         */
+        if (t.isList())
+        {
+            Node t1 = ((ListNode) t).items.get(0);
+            if (t1.isMemberExpression())
+            {
+                MemberExpressionNode m1 = (MemberExpressionNode) t1;
+                IdentifierNode t2 = m1.selector.getIdentifier();
+                if (t2 != null)
+                    return t2.toIdentifierString();
+            }
+        }
+        
+        if (t.hasAttribute("static"))
+            return "static";
+        if (t.hasAttribute("public"))
+            return "public";
+        if (t.hasAttribute("private"))
+            return "private";
+        if (t.hasAttribute("protected"))
+            return "protected";
+        if (t.hasAttribute("internal"))
+            return "internal";
+        if (t.hasAttribute("natve"))
+            return "native";
+        if (t.hasAttribute("final"))
+            return "final";
+        if (t.hasAttribute("override"))
+            return "override";
+        if (t.hasAttribute("prototype"))
+            return "prototype";
+ 
+        return "<unknown>";
+    }
+    
     private AttributeListNode parseAttributes()
     {
 
@@ -5708,7 +5737,7 @@ XMLElementContent
 
         Node first = parseAttribute();
 
-        checkAttribute(block_kind_stack.last(),first);
+        checkAttribute(first);
 
         AttributeListNode second = null;
         final int lt=lookahead();
@@ -6684,20 +6713,20 @@ XMLElementContent
     {
         if (lookahead()==VOID_TOKEN)
         {
-            error(syntax_error, kError_Parser_keywordInsteadOfTypeExpr, scanner.getTokenText(nextToken));
+            error(syntax_error, kError_Parser_keywordInsteadOfTypeExpr, scanner.getCurrentTokenText(nextToken));
             match(VOID_TOKEN);
             return true;
         }
         else
         if (lookahead(xmlid_tokens, xmlid_tokens_count) && lookahead() != IDENTIFIER_TOKEN)
         {
-            error(syntax_error, kError_Parser_keywordInsteadOfTypeExpr, scanner.getTokenText(nextToken));
+            error(syntax_error, kError_Parser_keywordInsteadOfTypeExpr, scanner.getCurrentTokenText(nextToken));
             match(xmlid_tokens, xmlid_tokens_count);
             return true;
         }
         else
         {
-            if( ctx.dialect(8) && lookahead() == IDENTIFIER_TOKEN && scanner.getTokenText(nextToken).equals("Object") )
+            if( ctx.dialect(8) && lookahead() == IDENTIFIER_TOKEN && scanner.getCurrentTokenText(nextToken).equals("Object") )
             {
                 error(syntax_error, kError_ColonObjectAnnoOutOfService);
                 return true;
@@ -7089,7 +7118,7 @@ XMLElementContent
                 if(lookahead()==STRINGLITERAL_TOKEN)
                 {
                     boolean[] is_single_quoted = new boolean[1];
-                    String enclosedText = scanner.getStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
+                    String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
                     third = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
                 }
                 else
@@ -7297,7 +7326,6 @@ XMLElementContent
         {
             Scanner orig = scanner;
             InputBuffer input = ctx.input;
-            int orig_lastToken = lastToken;
             int orig_nextToken = nextToken;
             
             scanner = new Scanner(ctx, config_code, "");
@@ -7307,7 +7335,6 @@ XMLElementContent
 
             scanner = orig;
             ctx.input = input;
-            lastToken = orig_lastToken;
             nextToken = orig_nextToken;
         }
         return configs;
@@ -7331,7 +7358,7 @@ XMLElementContent
         if (lookahead()==STRINGLITERAL_TOKEN)
         {
             boolean[] is_single_quoted = new boolean[1];
-            String enclosedText = scanner.getStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
+            String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
             LiteralStringNode first = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0]);
             result = nodeFactory.packageName(first);
         }

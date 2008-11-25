@@ -34,11 +34,24 @@ import static macromedia.asc.embedding.avmplus.Features.*;
 public final class Scanner implements ErrorConstants
 {
     private static final boolean debug = false;
+    private static int token_count = 0;
 
     private static final int slashdiv_context = 0x1;
     private static final int slashregexp_context = 0x2;
 
-    private ObjectList<Token> tokens;   // vector of token instances.
+    /*
+     * Scanner maintains a notion of a single current token 
+     * (It used to keep an array of all pseudo-terminal tokens...)
+     * This means that the notion of 'tokenClass' as opposed to tokenID (an index to the pseudo-terminal array)
+     * can also go away.
+     * We should also upgrade a Token to contain source seekpos,line,column information, so we can throw away the line table,
+     * which would mean we also dont need to buffer source after scanning, since we could reread it if an error/warning/info
+     * line print was requested.
+     */
+    
+    private Token currentToken;
+    private int currentTokenId;
+    
     private IntList slash_context = new IntList();  // slashdiv_context or slashregexp_context
     private boolean isFirstTokenOnLine;
     private boolean save_comments;
@@ -104,7 +117,6 @@ public final class Scanner implements ErrorConstants
     private void init(Context cx, boolean save_comments)
     {
         ctx = cx;
-        tokens = new ObjectList<Token>(2048);
         state = start_state;
         level = 0;
         slash_context.add(slashregexp_context);
@@ -112,6 +124,9 @@ public final class Scanner implements ErrorConstants
         levels = new IntList();
         slashcontexts = new ObjectList<IntList>();
         this.save_comments = save_comments;
+        
+        currentToken = new Token(0,"");
+        currentTokenId = 0;
     }
 
     
@@ -211,40 +226,38 @@ public final class Scanner implements ErrorConstants
     }
 
     /*
-     * makeTokenInstance() --
      * Make an instance of the specified token class using the lexeme string.
      * Return the index of the token which is its identifier.
      */
 
     private int makeTokenInstance(int token_class, String lexeme)
     {
-        tokens.add(new Token(token_class, lexeme));
-        return tokens.size() - 1; /* return the tokenid */
+        token_count++;
+        currentToken.set(token_class, lexeme);
+        currentTokenId = token_count;
+        return token_count;
     }
     
     /*
-     * getTokenClass() --
      * Get the class of a token instance.
      */
 
-    public int getTokenClass(int token_id)
+    public int getCurrentTokenClass(int token_id)
     {
+        
         // if the token id is negative, it is a token_class.
         if (token_id < 0)
         {
             return token_id;
         }
-
-        // otherwise, get instance data from the instance vector.
-        return tokens.get(token_id).getTokenClass();
+        return currentToken.getTokenClass();
     }
 
     /*
-     * getTokenText() --
-     * Get the text of a token instance.
+     * Get the text of the current token
      */
 
-    public String getTokenText(int token_id)
+    public String getCurrentTokenText(int token_id)
     {
         // if the token id is negative, it is a token_class.
         if (token_id < 0)
@@ -252,19 +265,20 @@ public final class Scanner implements ErrorConstants
             return Token.getTokenClassName(token_id);
         }
 
-        // otherwise, get instance data from the instance vector.
-        return tokens.get(token_id).getTokenText();
+        if (token_id != currentTokenId)
+        {
+            error("Scanner internal: token id does not match current token id");   
+        }
+        return currentToken.getTokenText();
     }
 
     /*
-     * getStringTokenText
      * Get text of literal string token as well as info about whether it was single quoted or not
-     *
      */
     
-    public String getStringTokenText( int token_id, boolean[] is_single_quoted )
+    public String getCurrentStringTokenText( int token_id, boolean[] is_single_quoted )
     {
-        // if the token id is negative, it is a token_class.
+        // if the token id is negative, it is a token_class. ???if we know its a string, why are we doing this???
         if( token_id < 0 )
         {
             is_single_quoted[0] = false;
@@ -272,7 +286,7 @@ public final class Scanner implements ErrorConstants
         }
 
         // otherwise, get tokenSourceText (which includes string delimiters)
-        String fulltext = tokens.get( token_id ).getTokenSource();
+        String fulltext = currentToken.getTokenSource();
         is_single_quoted[0] = (fulltext.charAt(0) == '\'' ? true : false);
         String enclosedText = fulltext.substring(1, fulltext.length() - 1);
         
@@ -283,7 +297,7 @@ public final class Scanner implements ErrorConstants
      * Record an error.
      */
 
-    private void error(int kind, String arg, int tokenid)
+    private void error(int kind, String arg)
     {
         StringBuilder out = new StringBuilder();
 
@@ -311,12 +325,12 @@ public final class Scanner implements ErrorConstants
     private void error(String msg)
     {
         ctx.internalError(msg);
-        error(kError_Lexical_General, msg, ERROR_TOKEN);
+        error(kError_Lexical_General, msg);
     }
 
     private void error(int kind)
     {
-        error(kind, "", ERROR_TOKEN);
+        error(kind, "");
     }
 
     /*
