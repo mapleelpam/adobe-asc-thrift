@@ -15,7 +15,6 @@ import java.io.*;
 import java.util.*;
 
 import macromedia.asc.embedding.ConfigVar;
-import macromedia.asc.util.ByteList;
 import macromedia.asc.util.ObjectList;
 
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.*;
@@ -3155,7 +3154,7 @@ public class GlobalOptimizer
 		if (obscure_natives)
 			return;
 			
-		if (isAtom(b.type.t))
+		if (b.type.t.isAtom())
 		{
 			if (ctype != null)
 			{
@@ -3209,7 +3208,7 @@ public class GlobalOptimizer
 	{
 		Type t = tref.t;
 		if (t == VOID) return "void";
-		if (isAtom(t)) return "AvmBox";
+		if (t.isAtom()) return "AvmBox";
 		if (t == INT) return "int32_t";
 		if (t == BOOLEAN) return "bool";	// no, this would be bad.
 		if (t == UINT) return "uint32_t";
@@ -3279,7 +3278,7 @@ public class GlobalOptimizer
 
 			// create a C++ declaration for the native thunk.
 			createThunkArgs(out_h, impl, m, obscure_natives);
-			if(m.returns.t != VOID && m.returns.t.base == null && !isAtom(m.returns.t))
+			if(m.returns.t != VOID && m.returns.t.base == null && !m.returns.t.isAtom())
 				out_h.printf("AVMPLUS_NATIVE_METHOD_DECL_GCOBJ(%s, %s)\n", ctype(m.returns), impl);
 			else 
 				out_h.printf("AVMPLUS_NATIVE_METHOD_DECL(%s, %s)\n", ctype(m.returns), impl);
@@ -4137,8 +4136,6 @@ public class GlobalOptimizer
 		
 		boolean quiet_mode = false;
 	
-		//  TODO: ASC and GO data structures need to interoperate.
-		//  For now, just redo the imports.
 		for ( ConfigVar config_var: optimizer_configs )
 		{
 			if (config_var.name.equalsIgnoreCase("-IMPORT"))
@@ -4167,6 +4164,8 @@ public class GlobalOptimizer
 			}
 		}
 		
+		//  TODO: ASC and GO data structures need to interoperate.
+		//  For now, just redo the imports.
 		for ( String import_filespec: import_filespecs)
 		{
 			go.new InputAbc().readAbc(load(import_filespec));
@@ -4592,6 +4591,7 @@ public class GlobalOptimizer
 		 *  Exception edge's handler.
 		 */
 		Handler handler;
+		boolean is_backwards_branch = false;
 		
 		Edge(Method m, Block f, int i)
 		{
@@ -5670,7 +5670,7 @@ public class GlobalOptimizer
 							continue;
 	
 						Typeref atype = m.verifier_types.get(a);
-						if (isLoop(p, idom) ? !etype.equals(atype) : isAtom(etype.t) != isAtom(atype.t))
+						if (isLoop(p, idom) ? !etype.equals(atype) : etype.t.isAtom() != atype.t.isAtom())
 						{
 							// skip String->String?
 							if((etype.t == atype.t) && etype.nullable)
@@ -5713,14 +5713,9 @@ public class GlobalOptimizer
 		return new Expr(m, OP_coerce, t.name, a);
 	}
 	
-	boolean isAtom(Type t)
-	{
-		return t.atom;
-	}
-	
 	boolean isPointer(Type t)
 	{
-		return !isAtom(t) && !t.numeric;
+		return !t.isAtom() && !t.numeric;
 	}
 	
 	Object eval_convert_i(Object v0)
@@ -6872,7 +6867,7 @@ public class GlobalOptimizer
 			{
 				Typeref t0 = types.get(e.args[0]);
 				Type t = namedTypes.get(e.ref);
-				if (!istype(t0.t, t) || isAtom(t0.t) != isAtom(t))
+				if (!istype(t0.t, t) || t0.t.isAtom() != t.isAtom())
 				{
 					// TODO figure out what verifier is really doing here.
 					tref = t.ref;
@@ -7389,71 +7384,72 @@ public class GlobalOptimizer
 		for ( Block b: code)
 		{
 			verboseStatus("Building constraints for " + b);
-			
-			if ( b.succ().length == 0 )
-			{
-				//  No successors, no conflicts.
-				//  NOTE: From this point forward, b.succ() is
-				//  taken to have at least an element [0].
-				verboseStatus("...no successors");
-				continue;
-			}
 
-			LocalVarState local_state = reg_state_by_block.get(b);			
-			assert (local_state != null);
+			LocalVarState block_state = reg_state_by_block.get(b);			
+			assert (block_state != null);
 			
-			BitSet active  = local_state.getActiveVariables();
+			BitSet active  = block_state.getActiveVariables();
 			
-			//  Check the block's successors for type conflicts.
-			for ( Edge p: b.succ())
-			{	
-				LocalVarState to_state = reg_state_by_block.get(p.to);
-				if ( null == to_state )
-				{
-					//  Previously split block.
-					continue;
-				}
+			//  Kill active variables that aren't in a successor
+			//  block's live-in set.
+			for ( Edge s:b.succ())
+			{
+				LocalVarState to_state = reg_state_by_block.get(s.to);
+				assert ( to_state != null);
 				
-				TypeConstraints tc = constraints.getConstraints(p);
+				TypeConstraints tc = constraints.getConstraints(s);
 				BitSet livein  = to_state.getLivein();
 				
 				for ( Integer r : foreach(active) )
 				{
-					Typeref from_ty = local_state.getFinalType(r);
-					Typeref to_ty   = to_state.getInitialType(r);
-					
-					assert(from_ty != null);
-					assert(to_ty != null);
-					
-					if ( livein.get(r) )
-					{	
-						if ( to_state.hard_coercions[r] != null)
-						{
-							assert(livein.get(r));
-							tc.addCoercion(r, to_state.hard_coercions[r]);
-						}
-						else if ( isLoopInit(r, p, reg_state_by_block ) )
-						{
-							//  In this case, the type constraints go on 
-							//  the Edge(s) from the loop initialization 
-							//  block(s) to the loop head.
-							for ( Edge loop_init: pred.get(p.to))
-							{
-								TypeConstraints loop_tc = constraints.getConstraints(loop_init);
-								loop_tc.addCoercion(r, from_ty);
-							}
-						}
-						else if ( coerceTarget(m, to_ty, from_ty, p.to.is_backwards_branch_target) )
-						{
-							tc.addCoercion(r, to_ty);
-						}
-						
-					}
-					else if ( !m.fixedLocals.values().contains(r) )
+					if ( !( livein.get(r) || m.fixedLocals.values().contains(r) ) )
 					{
+						//  If the target block redefines this variable,
+						//  and there's only one incoming edge, then
+						//  this kill is redundant.
+						//  TODO: push this 'til all incoming edges agree.
+						if ( pred.get(s.to).size() == 1 && (to_state.def.get(r) || to_state.killed_vars.get(r)) )
+							continue;
+						
 						//  TODO: These can be largely eliminated
 						//  when the verifier gets smarter.
 						tc.addKill(r);
+					}
+				}
+			}
+			
+			//  Analyze the types of live-in variables; form an
+			//  objective input type, then coerce as necessary
+			//  to get to that type.
+			BitSet livein  = block_state.getLivein();
+			
+			for ( Integer r : foreach(livein) )
+			{
+				Typeref consensus_type = block_state.getInitialType(r);
+				assert(consensus_type != null);
+				
+				for ( Edge p: pred.get(b))
+				{
+					LocalVarState from_state = reg_state_by_block.get(p.from);
+					assert( from_state != null);
+					
+					consensus_type = typeMeet(consensus_type, from_state.getFinalType(r));
+				}
+				
+				for ( Edge p: pred.get(b))
+				{
+					LocalVarState from_state = reg_state_by_block.get(p.from);
+					assert( from_state != null);
+					
+					TypeConstraints tc = constraints.getConstraints(p);
+					
+					if ( block_state.hard_coercions[r] != null )
+					{
+						tc.addCoercion(r, block_state.hard_coercions[r]);
+					}
+					else if ( needsCoercion(m, consensus_type, from_state.getFinalType(r), b.is_backwards_branch_target ))
+					{
+						tc.addCoercion(r, consensus_type);
 					}
 				}
 			}
@@ -7535,7 +7531,7 @@ public class GlobalOptimizer
 		return ty.t.equals(NULL) || ty.t.equals(VOID);
 	}
 
-	boolean coerceTarget(Method m, Typeref to_ty, Typeref from_ty, boolean backwards_branch)
+	boolean needsCoercion(Method m, Typeref to_ty, Typeref from_ty, boolean backwards_branch)
 	{
 		if ( to_ty.equals(from_ty) || ignoreTypeConflict(m, to_ty, from_ty) )
 			return false;
@@ -7545,7 +7541,7 @@ public class GlobalOptimizer
 		
 		boolean needs_coercion;
 		
-		Typeref merged_type = typeMeet(to_ty, from_ty);
+		Typeref merged_type = typeMerge(to_ty, from_ty);
 		
 		if ( null == merged_type )
 		{
@@ -7562,18 +7558,16 @@ public class GlobalOptimizer
 		}
 		else
 		{
-			//  FIXME: get type meet right, loosen this restriction
-			needs_coercion = ! from_ty.equals(to_ty);
+			needs_coercion = !to_ty.t.isMachineCompatible(merged_type.t);
 		}
 		
 		return needs_coercion;
 		
 	}
 
-	private boolean isNumericType(Typeref to_ty)
+	private boolean isNumericType(Typeref ty)
 	{
-		Type t = to_ty.t;
-		return INT.equals(t) || UINT.equals(t) || NUMBER.equals(t);
+		return ty.t.numeric;
 	}
 
 	/**
@@ -7907,15 +7901,30 @@ public class GlobalOptimizer
 	{
 		if ( !frames_by_block.containsKey(target_block))
 		{
-			if ( verbose_mode )
-			{
-				verboseStatus ("    .. checkTarget(" + branching_block + "->" + target_block + ") copying frame state");
-				dumpFrameState(current_frame_state);
-			}
+			verboseStatus ("    .. checkTarget(" + branching_block + "->" + target_block + ") copying frame state");
+			
 			Typeref[] target_frame = new Typeref[current_frame_state.length];
 			System.arraycopy(current_frame_state, 0, target_frame, 0, current_frame_state.length);
 			frames_by_block.put(target_block, target_frame);
 		}
+		else
+		{
+			Typeref[] previous_state = frames_by_block.get(target_block);
+			
+			verboseStatus("    .. checkTarget(" + branching_block + "->" + target_block + ") merging frame state");
+			
+			for ( int i = 0; i < previous_state.length; i++)
+			{
+				Typeref merged_type = typeMeet(previous_state[i], current_frame_state[i]); 
+				
+				if ( target_block.is_backwards_branch_target)
+					previous_state[i] = merged_type.nullable();
+				else
+					previous_state[i] = merged_type;
+			}
+		}
+		
+		dumpFrameState(current_frame_state);
 	}
 	
 	void dumpFrameState(Typeref[] fs_out)
@@ -8006,44 +8015,55 @@ public class GlobalOptimizer
 		return e.onStack() || e.args.length > 0;
 	}
 	
+	Typeref typeMerge(Typeref t1, Typeref t2)
+	{
+		Typeref result = null;
+		
+		Type merged_type = typeMeet(t1.t, t2.t);
+
+		if (!merged_type.equals(ANY) || (t1.t.equals(ANY) && t2.t.equals(ANY)))
+			result = new Typeref ( merged_type, t1.nullable || t2.nullable);
+
+		return result;
+	}
+
+	
 	Typeref typeMeet(Typeref t1, Typeref t2)
 	{
 		Typeref result = null;
 		
 		Type merged_type = typeMeet(t1.t, t2.t);
 
-		if ( null != merged_type)
-			result = new Typeref ( merged_type, t1.nullable || t2.nullable);
+		result = new Typeref ( merged_type, t1.nullable | t2.nullable);
 		
 		return result;
 	}
-
+	
 	/**
 	 *  Type-meet as per the AVM verifier.
 	 *  @param t1 a type.  May be null. 
 	 *  @param t2 a type.  May be null.
-	 *  @return the type meet of these types.  Returns null iff both inputs are null.
+	 *  @return the type meet of these types.
+	 *  @return null if no common type exists.
 	 */
 	Type typeMeet(Type t1, Type t2)
 	{
-		//  Trivial cases.
-		if ( ANY.equals(t1) )
+		if ( t1.equals(t2) )
+			return t1;
+		else if ( isNumericType(t1.ref) && isNumericType(t2.ref))
+			return NUMBER;
+		else if ( VOID.equals(t1) && !t2.isMachineType() )
 			return t2;
-		else if ( ANY.equals(t2) )
+		else if ( VOID.equals(t2) && !t1.isMachineType() )
 			return t1;
-		else if ( t1.equals(t2))
-			return t1;
-		else if ( builtinTypes.contains(t1) || builtinTypes.contains(t2))
-			return null;
-		
-		//  We have two UDTs.  Do they share a base type?
+
+		//  Return the common base type or ANY.
 		Type common_base = mdb(t1.ref, t2.ref).t;
 		
-		if ( ! ANY.equals(common_base) )
-			return common_base;
-		
-		return null;
+		return common_base;
 	}
+	
+	
 	
 	/**
 	 * Schedule the expressions in the method to maximize use of the operand
@@ -8982,7 +9002,7 @@ public class GlobalOptimizer
 			
 			for ( Edge s: b.succ())
 			{
-				s.to.is_backwards_branch_target |= already_seen.contains(s.to);
+				s.to.is_backwards_branch_target |= s.is_backwards_branch = already_seen.contains(s.to);
 			}
 		}
 		
@@ -9749,6 +9769,35 @@ public class GlobalOptimizer
 		boolean hasProtectedNs()
 		{
 			return (flags & CLASS_FLAG_protected) != 0;
+		}
+		
+		boolean isMachineCompatible(Type t)
+		{
+			boolean result;
+			
+			result  = equals(t);
+			result |= equals(NULL) && !t.isMachineType();
+			result |= t.equals(NULL) && !isMachineType();
+			result |= !isMachineType() && !t.isMachineType() && !equals(ANY) && !t.equals(ANY);
+			
+			return result;
+		}
+		
+		boolean isMachineType() 
+		{
+			return
+				equals(OBJECT) ||
+				equals(VOID) ||
+				equals(INT) ||
+				equals(UINT) ||
+				equals(BOOLEAN) ||
+				equals(ARRAY) ||  // TODO: AVM doesn't make this a machine type, but it acts like one.
+				equals(NUMBER);
+		}
+		
+		boolean isAtom()
+		{
+			return this.atom;
 		}
 	}
 	
