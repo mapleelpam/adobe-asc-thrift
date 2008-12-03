@@ -3957,9 +3957,24 @@ public class GlobalOptimizer
 			unwindTrace(write_block_trace_phase);
 		}
 
-		out.writeU30(m.handlers.length);
+		//  Input code occasionally contains
+		//  an empty (or non-effecting, and 
+		//  thus effectively empty) try block.
+		//  Elide these.
+		
+		int valid_handlers_count = 0;
 		for (Handler h: m.handlers)
 		{
+			if ( h.entry != null )
+				valid_handlers_count++;
+		}
+		
+		out.writeU30(valid_handlers_count);
+		for (Handler h: m.handlers)
+		{
+			if ( null == h.entry )
+				continue;
+			
 			int from = code_len;
 			int to = 0;
 			for (Block b: code)
@@ -3978,17 +3993,7 @@ public class GlobalOptimizer
 			out.writeU30(from);
 			out.writeU30(to);
 			
-			int off;
-			if ( h.entry != null )
-				off = pos.get(h.entry);
-			else
-			{
-				//  TODO: This is a handler for an empty try block.
-				//  It can be skipped, along with the corresponding
-				//  catch block (but not the finally block).  This
-				//  should happen when the ABC's read.
-				off = 0;
-			}
+			int off = pos.get(h.entry);
 	
 			verboseStatus("handler "+h.entry+ " ["+from+","+to+")->"+off);
 			out.writeU30(off);
