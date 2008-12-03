@@ -7370,7 +7370,8 @@ public class GlobalOptimizer
 		
 		Deque<Block> code = schedule(m.entry.to);
 		SetMap<Block, Edge> pred = preds(code);
-		
+		Set<Edge> single_path_to_exit = new HashSet<Edge>();
+	
 		Map<Block,LocalVarState> reg_state_by_block = getLocalVarState(m);
 		
 		TypeConstraintMap constraints = new TypeConstraintMap();
@@ -7393,27 +7394,67 @@ public class GlobalOptimizer
 			//  Kill active variables that aren't in a successor
 			//  block's live-in set.
 			for ( Edge s:b.succ())
-			{
-				LocalVarState to_state = reg_state_by_block.get(s.to);
+			{	
+				if ( singlePathToExit(s, pred, single_path_to_exit))
+				{
+					//  No possibliity of conflict.
+					continue;
+				}
+				
+				Block successor = s.to;
+				
+				LocalVarState to_state = reg_state_by_block.get(successor);
 				assert ( to_state != null);
 				
 				TypeConstraints tc = constraints.getConstraints(s);
-				BitSet livein  = to_state.getLivein();
+				BitSet to_livein  = to_state.getLivein();
 				
 				for ( Integer r : foreach(active) )
 				{
-					if ( !( livein.get(r) || m.fixedLocals.values().contains(r) ) )
-					{
+					if ( !( to_livein.get(r) || m.fixedLocals.values().contains(r) ) )
+					{	
 						//  If the target block redefines this variable,
-						//  and there's only one incoming edge, then
-						//  this kill is redundant.
-						//  TODO: push this 'til all incoming edges agree.
-						if ( pred.get(s.to).size() == 1 && (to_state.def.get(r) || to_state.killed_vars.get(r)) )
-							continue;
-						
-						//  TODO: These can be largely eliminated
-						//  when the verifier gets smarter.
-						tc.addKill(r);
+						//  and all incoming types agree, then the kill
+						//  is redundant.
+						if ( to_state.def.get(r) || to_state.killed_vars.get(r) )
+						{
+							Typeref first_incoming_type = to_state.getInitialType(r);
+							
+							for ( Edge p: pred.get(successor) )
+							{	
+								boolean needs_kill;
+								
+								//  TODO: It should be possible to extend this 
+								//  "zone of protection" to more than one
+								//  predecessor block, but the verifier rejects it.
+								needs_kill = pred.get(successor).size() > 1;
+								
+								/*
+								Typeref pred_incoming_type = reg_state_by_block.get(p.from).getFinalType(r);
+								
+								if ( successor.is_backwards_branch_target )
+									needs_kill = !first_incoming_type.equals(pred_incoming_type);
+								else
+									needs_kill = !first_incoming_type.t.isMachineCompatible(pred_incoming_type.t);
+							
+								//  TODO: Need better analysis of when ANY means ANY and when it means "low."
+								needs_kill |= pred_incoming_type.t.equals(ANY);
+								*/
+
+								if ( needs_kill )
+								{
+									//  TODO: These can be largely eliminated
+									//  when the verifier gets smarter.
+									tc.addKill(r);
+									break;
+								}
+
+							}
+						}
+						else
+						{
+							tc.addKill(r);
+						}
 					}
 				}
 			}
@@ -7455,80 +7496,107 @@ public class GlobalOptimizer
 			}
 		}
 		
+		//  Find kills and coercions that can be done in the 
+		//  in the source block instead of the target blocks.
+		//  TODO: Reach back through exblocks?
 		for ( Block b: code )
 		{	
-			//  Fix constraints.  If all edges' constraints agree, 
-			//  then they can be fixed in the defining block, else
-			//  split the edges and apply constraints individually.
-			//  TODO: Sort the constraints so that split edges
-			//  can be shared.
-			boolean all_edges_agree = true;
-			TypeConstraints tc_prime = null;
+			LocalVarState block_state = reg_state_by_block.get(b);			
+			assert (block_state != null);
 			
-			for ( Edge p: b.succ() )
+			BitSet active  = block_state.getActiveVariables();
+			
+			TypeConstraints source_block_constraints = null;
+			
+			for ( Integer r: foreach(active))
 			{
-				TypeConstraints tc = constraints.get(p);
+				TypeConstraints first_constraint = null;
+				boolean all_constraints_agree = true;
 				
-				if ( null == tc )
-					continue;
+				for ( Edge s:b.succ() )
+				{
+					TypeConstraints tc = constraints.getConstraints(s); 
+					if ( null == first_constraint )
+					{
+						first_constraint = tc;
+					}
+
+					//  If the active register isn't in the constraint set,
+					//  then this will be false, and thus it's necessary to
+					//  ask the first constraint if it agrees with itself.
+					all_constraints_agree = first_constraint.agreesWith(tc, r);
+					if ( !all_constraints_agree )
+						break;
+				}
 				
-				if ( null == tc_prime )
-					tc_prime = tc;
-				else
-					all_edges_agree &= tc_prime.compareTo(tc) == 0;
-				
-				if ( ! all_edges_agree )
-					break;
+				if ( all_constraints_agree )
+				{
+					if ( null == source_block_constraints )
+						source_block_constraints = new TypeConstraints(null);
+					
+					for ( Edge s: b.succ())
+					{
+						source_block_constraints.takeConstraintFrom(constraints.get(s), r);
+					}
+				}
 			}
 			
-			if ( tc_prime != null )
+			if ( source_block_constraints != null )
+				fixConstraints(m, b, source_block_constraints, block_state);
+		}
+		
+		//  Fix any remaining constraints by
+		//  splitting the affected edge and applying
+		//  constraints to the new block.
+		//  TODO: These blocks should be amenable to pooling.
+		for ( Block b: code )
+		{	
+			for ( Edge p:b.succ() )
 			{
-				if ( all_edges_agree )
+				//  Split the liveout block, and apply
+				//  the constraints to the split block.
+				TypeConstraints tc = constraints.getConstraints(p); 
+	
+				if ( tc != null && tc.killregs.size() > 0 || tc.coercions.size() > 0 )
 				{
-					fixConstraints(m, b, tc_prime);
-				}
-				else
-				{	
-					for ( Edge p:b.succ() )
-					{
-						//  Split the liveout block, and apply
-						//  the constraints to the split block.
-						TypeConstraints tc = constraints.get(p); 
-			
-						if ( tc != null && tc.killregs.size() > 0 || tc.coercions.size() > 0 )
-						{	
-							//if ( isCritical(p, pred) )
-								split(p, m, pred);
-							fixConstraints(m, p.to, tc);
-						}
-					}
+						split(p, m, pred);
+						p.to.must_isolate_block = true;
+						fixConstraints(m, p.to, tc, null);
 				}
 			}
 		}
 		
 		unwindTrace(kill_cruft_trace_phase);
-	}	
-
-	boolean isLoopInit(int varnum, Edge p, Map<Block, LocalVarState> state_by_block)
-	{
-		LocalVarState from_state = state_by_block.get(p.from);
-		LocalVarState to_state   = state_by_block.get(p.to);
-		
-		Typeref from_ty = from_state.getFinalType(varnum);
-		Typeref to_ty   = to_state.getInitialType(varnum);
-		
-		boolean result = p.to.is_backwards_branch_target;
-		result &= to_state.getLivein().get(varnum);
-		
-		result &= isWeakType(to_ty);
-		result &= !isWeakType(from_ty);
-		
-		return result;
 	}
-	
-	boolean isWeakType(Typeref ty)
+
+	boolean singlePathToExit(Edge s, SetMap<Block, Edge> pred, Set<Edge> known_single_paths)
 	{
-		return ty.t.equals(NULL) || ty.t.equals(VOID);
+		Block b = s.to;
+
+		if ( pred.get(b).size() > 1 )
+			return false;
+		else if ( known_single_paths.contains(s) )
+			return true;
+		
+		boolean single_path = false;	//  not a control value, compiler appeasement
+		
+		if ( b.succ() == noedges  )
+			single_path =  true;
+		else 
+		{
+			for ( Edge s_prime: b.succ() )
+			{
+				single_path = singlePathToExit(s_prime, pred, known_single_paths);
+				if ( !single_path )
+					break;
+			}
+		}
+		
+		if ( single_path )
+		{
+			known_single_paths.add(s);
+		}
+		return single_path;
 	}
 
 	boolean needsCoercion(Method m, Typeref to_ty, Typeref from_ty, boolean backwards_branch)
@@ -7593,24 +7661,69 @@ public class GlobalOptimizer
 	 *  @param m - the Method that contains the Block.
 	 *  @param b - the Block to be fixed.
 	 *  @param bc - the Block's constraints.
+	 * @param block_state 
 	 */
-	void fixConstraints(Method m, Block b, TypeConstraints bc)
+	void fixConstraints(Method m, Block b, TypeConstraints bc, LocalVarState block_state)
 	{
 		verboseStatus("fixConstraints " + b );
 		
-		Expr last = b.exprs.size() > 0? b.exprs.removeLast(): null;
+		//  A fair number of expressions can be coerced
+		//  when they're defined.
+		Map<Expr,Expr> coerce_in_place = new HashMap<Expr,Expr>();
 		
-		for ( int i = 0; i < bc.coercions.size(); i++ )
+		if ( block_state != null )
 		{
-			int regnum = bc.coercions.elementAt(i).reg;
+			Set<Integer> coerced_locals = new HashSet<Integer>(bc.coercions.keySet());
 			
-			if ( bc.coercions.elementAt(i).ty.equals(VOID.ref) )
+			for ( Integer r: coerced_locals )
+			{
+				if ( ! block_state.read_after_def.get(r))
+				{
+					Expr generator = block_state.generating_exprs.get(r);
+					
+					if ( generator != null )
+					{
+						coerce_in_place.put(generator, coerceExpr(m, bc.coercions.get(r).t, generator));
+						bc.coercions.remove(r);
+					}
+				}
+			}
+			
+			if ( !coerce_in_place.isEmpty() )
+			{
+				Deque<Expr> replaced_exprs = new ArrayDeque<Expr>();
+				
+				while ( !b.exprs.isEmpty())
+				{
+					Expr ex = b.exprs.removeFirst();
+
+					if ( coerce_in_place.containsKey(ex))
+					{
+						replaced_exprs.add(coerce_in_place.get(ex));
+						coerce_in_place.remove(ex);
+					}
+					
+					replaced_exprs.add(ex);
+				}
+			
+				assert(coerce_in_place.isEmpty());
+				b.exprs = replaced_exprs;
+			}
+		}
+
+		Expr last = b.succ().length > 0? b.exprs.removeLast(): null;
+		
+		for ( Integer regnum: bc.coercions.keySet() )
+		{
+			Typeref ty = bc.coercions.get(regnum);
+			
+			if ( ty.equals(VOID.ref) )
 			{
 				Expr void_expr = new Expr(m, OP_pushundefined);
 				b.exprs.add(void_expr);
 				b.exprs.add(setlocal(m, regnum, void_expr));
 			}
-			if ( bc.coercions.elementAt(i).ty.equals(NULL.ref) )
+			if ( ty.equals(NULL.ref) )
 			{
 				Expr void_expr = new Expr(m, OP_pushnull);
 				b.exprs.add(void_expr);
@@ -7621,7 +7734,7 @@ public class GlobalOptimizer
 				Expr getlocal = getlocal(m, regnum);
 				b.exprs.add(getlocal);
 				
-				Expr coerce_expr = coerceExpr(m, bc.coercions.elementAt(i).ty.t, getlocal);
+				Expr coerce_expr = coerceExpr(m, ty.t, getlocal);
 				b.exprs.add(coerce_expr);
 				b.exprs.add(setlocal(m, regnum, coerce_expr));
 			}
@@ -7647,6 +7760,10 @@ public class GlobalOptimizer
 		
 		if ( ANY.equals(t))
 			result = new Expr(m, OP_coerce_a, a);
+		else if (VOID.equals(t) )
+			result = new Expr(m, OP_pushundefined);
+		else if ( NULL.equals(t) )
+			result = new Expr(m, OP_pushnull);
 		else if ( INT.equals(t))
 			result = new Expr(m, OP_convert_i, a);
 		else if ( OBJECT.equals(t))
@@ -8052,9 +8169,9 @@ public class GlobalOptimizer
 			return t1;
 		else if ( isNumericType(t1.ref) && isNumericType(t2.ref))
 			return NUMBER;
-		else if ( VOID.equals(t1) && !t2.isMachineType() )
+		else if ( VOID.equals(t1) || NULL.equals(t1))
 			return t2;
-		else if ( VOID.equals(t2) && !t1.isMachineType() )
+		else if ( VOID.equals(t2) || NULL.equals(t2) )
 			return t1;
 
 		//  Return the common base type or ANY.
@@ -10853,42 +10970,95 @@ public class GlobalOptimizer
 	
 	
 	static class TypeConstraints implements Comparable
-	{
-		public static final boolean PUSH_COERCION_TO_DEFINITION = true;
-
-		enum DestinationInPlay { CONSIDER_DEST_BLOCK, IGNORE_DEST_BLOCK};
-		
+	{	
 		Set<Integer> killregs = new TreeSet<Integer>();
-		Vector<Coercion> coercions = new Vector<Coercion>();
+		Map<Integer, Typeref> coercions = new HashMap<Integer, Typeref>();
 		
 		/**
-		 *  Destination block.
+		 *  Path to the destination block.
 		 */
 		Edge path;
+		
+		/**
+		 * The original destination block.
+		 * May be different than path.to if
+		 * the path is split during fixup.
+		 * @see compareTo
+		 */
+		Block dest_block;
 		
 		TypeConstraints(Edge path)
 		{
 			this.path = path;
+			if ( path != null)
+				this.dest_block = path.to;
 		}
 		
-		
+		void takeConstraintFrom(TypeConstraints tc, Integer r) 
+		{
+			if ( killregs.contains(r) )
+			{
+				assert(tc.killregs.contains(r));
+				tc.killregs.remove(r);
+			}
+			else if ( coercions.containsKey(r) )
+			{
+				assert(tc.coercions.containsKey(r) && tc.coercions.get(r).t.isMachineCompatible(this.coercions.get(r).t));
+				tc.coercions.remove(r);
+			}
+			else if ( tc.killregs.contains(r) )
+			{
+				this.killregs.add(r);
+				tc.killregs.remove(r);
+			}
+			else if ( tc.coercions.containsKey(r) )
+			{
+				this.coercions.put(r, tc.coercions.get(r));
+				tc.coercions.remove(r);
+			}
+			else
+				throw new IllegalStateException("neither constraint set contains local " + r);
+		}
+
+		boolean agreesWith(TypeConstraints tc, Integer r) 
+		{
+			if ( this.killregs.contains(r))
+				return tc.killregs.contains(r);
+			else if ( this.coercions.containsKey(r))
+				return tc.coercions.containsKey(r) && this.coercions.get(r).t.isMachineCompatible((tc.coercions.get(r).t));
+
+			//  Local not found in this constraint set;
+			//  by definition, the sets are in conflict
+			//  with respect to this local.
+			return false;
+		}
+
 		void addKill(int reg)
 		{
+			assert(!coercions.containsKey(reg));
 			this.killregs.add(reg);
 		}
 		
 		void addCoercion(int reg, Typeref ty)
 		{
-			this.coercions.add(new Coercion(reg, ty));
+			assert(!coercions.containsKey(reg) && !killregs.contains(reg));
+			coercions.put(reg, ty);
+		}
+		
+		public boolean equals(Object o)
+		{
+			return 0 == compareTo(o);
 		}
 
 		public int compareTo(Object arg0)
 		{
-			return compare_constraints((TypeConstraints) arg0, DestinationInPlay.CONSIDER_DEST_BLOCK);
-		}
-		
-		public int compare_constraints(TypeConstraints other, DestinationInPlay consider_dest)
-		{
+			if ( ! ( arg0 instanceof TypeConstraints ) )
+				return -1;
+			
+			TypeConstraints other = (TypeConstraints) arg0;
+			
+			if ( dest_block.id != other.dest_block.id )
+				return (dest_block.id > other.dest_block.id)? 1:-1;
 			
 			if ( killregs.size() > other.killregs.size())
 				return 1;
@@ -10900,17 +11070,6 @@ public class GlobalOptimizer
 			else if ( other.coercions.size() > this.coercions.size())
 				return -1;
 			
-			if ( path != null && DestinationInPlay.CONSIDER_DEST_BLOCK == consider_dest )
-			{
-				if ( path.id > other.path.id )
-					return 1;
-				else if ( other.path.id > this.path.id )
-					return -1;
-			}
-			else
-			{
-				assert(DestinationInPlay.IGNORE_DEST_BLOCK == consider_dest);
-			}
 			
 			for ( Integer x: this.killregs )
 				if ( ! other.killregs.contains(x))
@@ -10919,33 +11078,23 @@ public class GlobalOptimizer
 				if ( ! this.killregs.contains(y))
 					return -1;
 			
-			for ( int i = 0; i < coercions.size(); i++ )
+			for ( Integer r: this.coercions.keySet() )
 			{
-				Coercion this_c  = this.coercions.elementAt(i);
-				Coercion other_c = other. coercions.elementAt(i);
+				Typeref this_ctype = coercions.get(r);
+				Typeref other_ctype = other.coercions.get(r);
 				
-				if ( this_c.reg > other_c.reg)
+				if ( null == other_ctype )
 					return 1;
-				else if ( other_c.reg > this_c.reg)
-					return -1;
 				
-				if ( !this_c.ty.equals(other_c.ty) )
-					return ( this_c.ty.hashCode() > other_c.ty.hashCode() )? 1: -1;
+				if ( !this_ctype.equals(other_ctype) )
+					return ( this_ctype.hashCode() > other_ctype.hashCode() )? 1: -1;
 			}
+			
+			for ( Integer o_r: other.coercions.keySet())
+				if ( !this.coercions.containsKey(o_r))
+					return -1;
 			
 			return 0;
-		}
-		
-		class Coercion
-		{
-			int reg;
-			Typeref ty;
-			
-			Coercion(int reg2, Typeref ty)
-			{
-				this.reg = reg2;
-				this.ty  = ty;
-			}
 		}
 	}
 
