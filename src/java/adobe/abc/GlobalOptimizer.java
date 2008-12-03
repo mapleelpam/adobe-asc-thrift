@@ -750,7 +750,8 @@ public class GlobalOptimizer
 				assert(count == 1);			// all we support for now
 				int typeparm = p.readU30();	// Multinames for the type parameters, i.e. String for a Vector.<String>
 				Name mn = this.names[index];
-				return new Name(kind, mn.name, mn.nsset, typeparm);
+				Name type_param = this.names[typeparm];
+				return new Name(kind, mn.name, mn.nsset, type_param.name);
 			}
 			case CONSTANT_Qname:
 			case CONSTANT_QnameA:
@@ -2295,7 +2296,7 @@ public class GlobalOptimizer
 		final int kind;
 		private final Nsset nsset;
 		final String name;
-		final int type_param;	// 0 if none
+		final String type_param;	// null if none
 
 		Name(int kind)
 		{
@@ -2307,19 +2308,19 @@ public class GlobalOptimizer
 		}
 		Name(int kind, Namespace ns, String name)
 		{
-			this(kind, name, new Nsset(new Namespace[] { ns }), 0);
+			this(kind, name, new Nsset(new Namespace[] { ns }), null);
 		}
 		Name(int kind, String name, Nsset nsset)
 		{
-			this(kind, name, nsset, 0);
+			this(kind, name, nsset, null);
 		}
-		Name(int kind, String name, Nsset nsset, int type_param)
+		Name(int kind, String name, Nsset nsset, String type_param_name)
 		{
 			assert(nsset != null);
 			this.kind = kind;
 			this.nsset = nsset;
 			this.name = name;
-			this.type_param = type_param;
+			this.type_param = type_param_name;
 		}
 		Name(String name)
 		{
@@ -3477,7 +3478,19 @@ public class GlobalOptimizer
 			switch (n.kind)
 			{
 			case CONSTANT_TypeName:
-				throw new RuntimeException("TODO CONSTANT_TypeName is not supported on output yet, only input");
+				/*
+				 * TODO:  this code is correct in isolation,
+				 * but until the rest of the type plumbing
+				 * supports parameterized types, the resulting
+				 * bytecode fails.  So fail fast instead.
+				w.writeU30(abc.stringPool.id(n.name));
+				//  TODO: replace with the parameter count
+				//  when we begin supporting it.
+				w.writeU30(1);
+				w.writeU30(abc.stringPool.id(n.type_param));
+				break;
+				*/
+				throw new IllegalArgumentException("CONSTANT_TypeName is only allowed in an import file.");
 			case CONSTANT_Qname:
 			case CONSTANT_QnameA:
 				w.writeU30(abc.nsPool.id(n.nsset(0)));
@@ -3964,7 +3977,19 @@ public class GlobalOptimizer
 			}
 			out.writeU30(from);
 			out.writeU30(to);
-			int off = pos.get(h.entry);
+			
+			int off;
+			if ( h.entry != null )
+				off = pos.get(h.entry);
+			else
+			{
+				//  TODO: This is a handler for an empty try block.
+				//  It can be skipped, along with the corresponding
+				//  catch block (but not the finally block).  This
+				//  should happen when the ABC's read.
+				off = 0;
+			}
+	
 			verboseStatus("handler "+h.entry+ " ["+from+","+to+")->"+off);
 			out.writeU30(off);
 			out.writeU30(abc.typeRef(h.type));
@@ -6036,27 +6061,32 @@ public class GlobalOptimizer
 					if (b.type.t.itype == INT) 
 					{
 						tref = INT.ref;
-						v = eval_convert_i(values.get(e.args[1]));
+						if ( e.args.length > 1)
+							v = eval_convert_i(values.get(e.args[1]));
 					}
 					else if (b.type.t.itype == UINT) 
 					{
 						tref = UINT.ref;
-						v = eval_convert_u(values.get(e.args[1]));
+						if ( e.args.length > 1)
+							v = eval_convert_u(values.get(e.args[1]));
 					}
 					else if (b.type.t.itype == STRING)
 					{
 						tref = STRING.ref.nonnull();
-						v = eval_convert_s(values.get(e.args[1]));
+						if ( e.args.length > 1)
+							v = eval_convert_s(values.get(e.args[1]));
 					}
 					else if (b.type.t.itype == BOOLEAN)
 					{
 						tref = BOOLEAN.ref;
-						v = eval_convert_b(values.get(e.args[1]));
+						if ( e.args.length > 1)
+							v = eval_convert_b(values.get(e.args[1]));
 					}
 					else if (b.type.t.itype == NUMBER)
 					{
 						tref = NUMBER.ref;
-						v = eval_convert_d(values.get(e.args[1]));
+						if ( e.args.length > 1)
+							v = eval_convert_d(values.get(e.args[1]));
 					}
 				}
 				break;
