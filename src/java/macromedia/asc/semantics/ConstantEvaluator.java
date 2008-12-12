@@ -1287,7 +1287,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         int slot_index = 0;
         Value val = node.expr.evaluate(cx, this);
         TypeInfo[] type = new TypeInfo[1];
-        type[0] = val.getType(cx);
+        
+        type[0] = (val != null) ? val.getType(cx) : null;
         
         TypeValue currentNumberType = cx.doubleType();
         if (node.numberUsage != null)
@@ -1370,8 +1371,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
             {
                 ObjectValue global = cx.builtinScope();
-                if (type[0].getTypeValue() != cx.uintType()) // overloading not working correctly for uints
+                if (type[0] != null && type[0].getTypeValue() != cx.uintType()) // overloading not working correctly for uints
                     slot_index  = global.getOverloadIndex(cx,slot_index,type[0].getTypeValue());
+                
                 slot = global.getSlot(cx, slot_index);
 
                 // Now we know the type expected by the unary operator. Coerce it.
