@@ -16,7 +16,7 @@ import java.util.*;
 
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.*;
 import adobe.abc.GlobalOptimizer.*;
-import static adobe.abc.ActionBlockConstants.*;
+import static adobe.abc.OptimizerConstants.*;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.FALSE;
  
@@ -279,25 +279,25 @@ public class AbcThunkGen
 	{
 		switch (ctype)
 		{
-			case GlobalOptimizer.CTYPE_OBJECT:	
+			case CTYPE_OBJECT:	
 				if (allowObject)
 					return "AvmObject";
 				// else fall thru
-			case GlobalOptimizer.CTYPE_ATOM:		
+			case CTYPE_ATOM:		
 				return "AvmBox";
-			case GlobalOptimizer.CTYPE_VOID:		
+			case CTYPE_VOID:		
 				return "void";
-			case GlobalOptimizer.CTYPE_BOOLEAN:		
+			case CTYPE_BOOLEAN:		
 				return "AvmBoolArg";
-			case GlobalOptimizer.CTYPE_INT:			
+			case CTYPE_INT:			
 				return "int32_t";
-			case GlobalOptimizer.CTYPE_UINT:		
+			case CTYPE_UINT:		
 				return "uint32_t";
-			case GlobalOptimizer.CTYPE_DOUBLE:		
+			case CTYPE_DOUBLE:		
 				return "double";
-			case GlobalOptimizer.CTYPE_STRING:		
+			case CTYPE_STRING:		
 				return "AvmString";
-			case GlobalOptimizer.CTYPE_NAMESPACE:	
+			case CTYPE_NAMESPACE:	
 				return "AvmNamespace";
 			default:
 				assert(false);
@@ -340,31 +340,31 @@ public class AbcThunkGen
 	int defValCType(Object value)
 	{
 		if (value instanceof Integer)
-			return GlobalOptimizer.CTYPE_INT;
+			return CTYPE_INT;
 		if (value instanceof Long)
-			return GlobalOptimizer.CTYPE_UINT;
+			return CTYPE_UINT;
 		if (value instanceof Double)
 		{
 			double d = (Double)value;
 			if (d == (int)(d))
-				return GlobalOptimizer.CTYPE_INT;
+				return CTYPE_INT;
 			if (d == (long)(d))
-				return GlobalOptimizer.CTYPE_UINT;
-			return GlobalOptimizer.CTYPE_DOUBLE;
+				return CTYPE_UINT;
+			return CTYPE_DOUBLE;
 		}
 		if (value instanceof String)
-			return GlobalOptimizer.CTYPE_STRING;
+			return CTYPE_STRING;
 // sorry, not supported in natives
 //		if (value instanceof Namespace)
-//			return GlobalOptimizer.CTYPE_NAMESPACE;
+//			return CTYPE_NAMESPACE;
 		if (value == TRUE)
-			return GlobalOptimizer.CTYPE_BOOLEAN;
+			return CTYPE_BOOLEAN;
 		if (value == FALSE)
-			return GlobalOptimizer.CTYPE_BOOLEAN;
+			return CTYPE_BOOLEAN;
 		if (value.toString() == "undefined")
-			return GlobalOptimizer.CTYPE_ATOM;
+			return CTYPE_ATOM;
 		if (value.toString() == "null")
-			return GlobalOptimizer.CTYPE_ATOM;
+			return CTYPE_ATOM;
 		throw new RuntimeException("unsupported default-value type "+value.toString());
 	}
 
@@ -422,25 +422,25 @@ public class AbcThunkGen
 	{
 		switch (ctype)
 		{
-			case GlobalOptimizer.CTYPE_OBJECT:		
+			case CTYPE_OBJECT:		
 				if (allowObject)
 					return "o";
 				// else fall thru
-			case GlobalOptimizer.CTYPE_ATOM:		
+			case CTYPE_ATOM:		
 				return "a";
-			case GlobalOptimizer.CTYPE_VOID:		
+			case CTYPE_VOID:		
 				return "v";
-			case GlobalOptimizer.CTYPE_BOOLEAN:		
+			case CTYPE_BOOLEAN:		
 				return "b";
-			case GlobalOptimizer.CTYPE_INT:			
+			case CTYPE_INT:			
 				return "i";
-			case GlobalOptimizer.CTYPE_UINT:		
+			case CTYPE_UINT:		
 				return "u";
-			case GlobalOptimizer.CTYPE_DOUBLE:		
+			case CTYPE_DOUBLE:		
 				return "d";
-			case GlobalOptimizer.CTYPE_STRING:		
+			case CTYPE_STRING:		
 				return "s";
-			case GlobalOptimizer.CTYPE_NAMESPACE:	
+			case CTYPE_NAMESPACE:	
 				return "n";
 			default:
 				assert(false);
@@ -451,10 +451,10 @@ public class AbcThunkGen
 	String thunkSig(Method m)
 	{
 		String sig = sigChar(m.returns.t.ctype, false)+"2";
-		if (m.returns.t.ctype == GlobalOptimizer.CTYPE_DOUBLE)
-			sig += sigChar(GlobalOptimizer.CTYPE_DOUBLE, false);
+		if (m.returns.t.ctype == CTYPE_DOUBLE)
+			sig += sigChar(CTYPE_DOUBLE, false);
 		else
-			sig += sigChar(GlobalOptimizer.CTYPE_ATOM, false);
+			sig += sigChar(CTYPE_ATOM, false);
 		sig += "_";
 		for (int i = 0; i < m.params.length; ++i)
 		{
@@ -565,7 +565,7 @@ public class AbcThunkGen
 		out_c.println("AVMTHUNK_DEBUG_ENTER(env)");
 		
 		String call = "";
-		if (m.returns.t.ctype != GlobalOptimizer.CTYPE_VOID)
+		if (m.returns.t.ctype != CTYPE_VOID)
 			call += "const "+ret+" ret = ";		
 		call += "AVMTHUNK_CALL_FUNCTION_"+(argvals.length-1)+"(AVMTHUNK_GET_HANDLER(env), "+ret;
 		out_c.println(call);

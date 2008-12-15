@@ -175,8 +175,9 @@ public class TraceManager
 			String xml_escaped_value = attrValue.replaceAll("&", "&amp;");
 			xml_escaped_value = xml_escaped_value.replaceAll("<", "&lt;");
 			//  Should be done, but it makes the -> edge descriptions hard to read
-			// xml_escaped_value = xml_escaped_value.replaceAll(">", "&gt;");
+			xml_escaped_value = xml_escaped_value.replaceAll(">", "&gt;");
 			xml_escaped_value = xml_escaped_value.replaceAll("\"", "&quot;");
+			xml_escaped_value = xml_escaped_value.replaceAll("\r", "\\r");
 			print(" " + attrName + "=\"" + xml_escaped_value + "\"");
 		}
 	}
