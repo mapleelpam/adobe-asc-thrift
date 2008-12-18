@@ -4,66 +4,66 @@ import static adobe.abc.OptimizerConstants.*;
 
 public class Expr implements Comparable<Expr>
 {
-	int op;
-	Expr[] args = noexprs;   // args taken from operand stack
-	Expr[] scopes = noexprs; // args taken from scope stack
-	Expr[] locals = noexprs; // args taken from local variables
-	int[] imm;
-	Edge[] pred=noedges; // phi nodes only
-	Edge[] succ; // branch nodes only
-	int id;
-	int flags;
-	Name ref;
-	Object value; // only if pushconst
-	Type c; // only if OP_newclass
-	Method m; // only if OP_newfunction | callstatic
+	public int op;
+	public Expr[] args = noexprs;   // args taken from operand stack
+	public Expr[] scopes = noexprs; // args taken from scope stack
+	public Expr[] locals = noexprs; // args taken from local variables
+	public int[] imm;
+	public Edge[] pred=noedges; // phi nodes only
+	public Edge[] succ; // branch nodes only
+	public int id;
+	public int flags;
+	public Name ref;
+	public Object value; // only if pushconst
+	public Type c; // only if OP_newclass
+	public Method m; // only if OP_newfunction | callstatic
 	boolean is_live_out = false;
 	Typeref inferred_type = null;
 
-	Expr(Method m, int op)
+	public Expr(Method m, int op)
 	{
 		this.op = op;
 		flags = flagTable[op];
-		id = m.exprId++;
+		id = m.getNextExprId();
 	}
 
-	Expr(Method m, int op, int imm1)
+	public Expr(Method m, int op, int imm1)
 	{
 		this(m,op);
 		this.imm = new int[] { imm1 };
 	}
 
-	Expr(Method m, int op, Object value)
+	public Expr(Method m, int op, Object value)
 	{
 		this(m, op);
 		this.value = value;
 	}
 	
-	Expr(Method m, int op, Expr arg)
+	public Expr(Method m, int op, Expr arg)
 	{
 		this(m, op);
 		args = new Expr[] { arg };
 	}
 
-	Expr(Method m, int op, Expr[] frame, int sp, int argc)
+	public Expr(Method m, int op, Expr[] frame, int sp, int argc)
 	{
 		this(m, op);
 		args = GlobalOptimizer.capture(frame, sp, argc);
 	}
 
-	Expr(Method m, int op, int imm1, Expr[] frame, int sp, int argc)
+	public Expr(Method m, int op, int imm1, Expr[] frame, int sp, int argc)
 	{
 		this(m,op,frame,sp,argc);
 		this.imm = new int[] { imm1 };
 	}
 
-	Expr(Method m, int op, Name ref, Expr[] frame, int sp, int argc)
+	public Expr(Method m, int op, Name ref, Expr[] frame, int sp, int argc)
 	{
 		this(m, op,frame,sp,argc);
 		this.ref = ref;
 	}
 
-	Expr(Method m, int op, Name ref, Expr arg)
+	public Expr(Method m, int op, Name ref, Expr arg)
 	{
 		this(m, op);
 		this.ref = ref;
@@ -119,48 +119,48 @@ public class Expr implements Comparable<Expr>
 		flags &= ~PX;
 	}
 	
-	void setPure()
+	public void setPure()
 	{
 		clearEffect();
 		clearPx();
 	}
 	
-	boolean hasEffect()
+	public boolean hasEffect()
 	{
 		return (flags & EFFECT) != 0;
 	}
 	
-	boolean isPx()
+	public boolean isPx()
 	{
 		return (flags & PX) != 0;
 	}
 
-	boolean isSynthetic()
+	public boolean isSynthetic()
 	{
 		return (flags & SYNTH) != 0;
 	}
 	
-	boolean onStack()
+	public boolean onStack()
 	{
 		return (flagTable[op] & STKVAL) != 0;
 	}
 
-	boolean isOper()
+	public boolean isOper()
 	{
 		return (flagTable[op] & OPER) != 0;
 	}
 	
-	boolean onScope()
+	public boolean onScope()
 	{
 		return (flagTable[op] & SCPVAL) != 0;
 	}
 	
-	boolean inLocal()
+	public boolean inLocal()
 	{
 		return (flagTable[op] & LOCVAL) != 0;
 	}
 
-	boolean isCoerce()
+	public boolean isCoerce()
 	{
 		return (flagTable[op] & COERCE) != 0;
 	}

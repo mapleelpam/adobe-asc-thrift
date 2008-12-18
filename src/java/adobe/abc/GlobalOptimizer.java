@@ -12,13 +12,34 @@
 package adobe.abc;
 
 import java.io.*;
-import java.util.*;
+
+//  Note: java.util imports must be explicitly called out because
+//  "import java.util.*" conflicts with adobe.abc.Algorithms.Deque
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
+
 
 import macromedia.asc.embedding.ConfigVar;
 import macromedia.asc.util.ObjectList;
 
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.*;
+import static adobe.abc.Algorithms.*;
 import static adobe.abc.OptimizerConstants.*;
+import static adobe.abc.TypeAnalysis.*;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.FALSE;
 
@@ -399,15 +420,15 @@ public class GlobalOptimizer
 		Type lookup(String name, Type base)
 		{
 			Name n = new Name(name);
-			Type t = namedTypes.get(n);
+			Type t = TypeCache.instance().namedTypes.get(n);
 			if (t == null)
 			{
 				Name n2 = new Name(CONSTANT_Qname, new Namespace(CONSTANT_PackageNamespace, ""), name);
-				t = namedTypes.get(n2);
+				t = TypeCache.instance().namedTypes.get(n2);
 				if (t == null)
 				{
 					t = new Type(n2, base);
-					namedTypes.put(n2, t);
+					TypeCache.instance().namedTypes.put(n2, t);
 				}
 			}
 			return t;
@@ -443,13 +464,13 @@ public class GlobalOptimizer
 		{
 			if (id == 0)
 				return ANY();
-			if (!namedTypes.contains(names[id]))
+			if (!TypeCache.instance().containsNamedType(names[id]))
 			{
 				// external reference.  create placeholder type.
 				Name n = new Name(CONSTANT_Qname, names[id].nsset(0), names[id].name);
-				namedTypes.put(n, new Type(n,null));
+				TypeCache.instance().namedTypes.put(n, new Type(n,null));
 			}
-			return namedTypes.get(names[id]);
+			return TypeCache.instance().namedTypes.get(names[id]);
 		}
 
 		void readAbc(byte[] abc) throws IOException
@@ -698,12 +719,12 @@ public class GlobalOptimizer
 			
 			//  Parameter types must be nullable
 			//  to satisfy the AVM verifier.
-			for (int j = 1; j < m.params.length; j++)
+			for (int j = 1; j < m.getParams().length; j++)
 			{
 				int idx = p.readU30();
 				Type ptype = lookup(idx);
 				assert(ptype != null);
-				m.params[j] = ptype.ref.nullable();
+				m.getParams()[j] = ptype.ref.nullable();
 			}
 
 			p.readU30(); // debug name
@@ -713,11 +734,11 @@ public class GlobalOptimizer
 			{
 				m.optional_count = p.readU30();
 				
-				m.values = new Object[m.params.length];
+				m.values = new Object[m.getParams().length];
 				
-				int first_optional_param = m.params.length - m.optional_count;
+				int first_optional_param = m.getParams().length - m.optional_count;
 				
-				for (int j = first_optional_param; j < m.params.length; j++)
+				for (int j = first_optional_param; j < m.getParams().length; j++)
 				{
 					m.values[j] = readArgDefault(p);
 					assert(m.values[j] != null);
@@ -740,8 +761,8 @@ public class GlobalOptimizer
 			Type act = new Type();
 			m.activation = act.ref.nonnull();
 			act.base = ANY();
-			if (m.name != null)
-				act.name = m.name.append(" activation");
+			if (m.getName() != null)
+				act.name = (m.getName().append(" activation"));
 			readTraits(p, act);
 			unwindTrace(body_phase);
 		}
@@ -752,7 +773,7 @@ public class GlobalOptimizer
 			Method m = new Method(i, this);
 			int param_count = p.readU30();
 			m.params = new Typeref[param_count+1];
-			m.params[0] = ANY().ref;
+			m.getParams()[0] = ANY().ref;
 			methodpos[i] = p.pos;
 			p.readU30(); // return type
 			for (int j = 1; j <= param_count; j++)
@@ -863,7 +884,7 @@ public class GlobalOptimizer
 						b.value = readSlotDefault(p);
 						b.type = ANY().ref;
 						if (b.value instanceof Namespace)
-							namespaceNames.put((Namespace)b.value, name);
+							TypeCache.instance().namespaceNames.put((Namespace)b.value, name);
 					}
 
 					// TODO add vm's logic to accept or ignore compiler-assigned slot_id
@@ -879,7 +900,7 @@ public class GlobalOptimizer
 					b.slot = 0;
 					Method m = b.method = methods[b.id];
 					m.cx = t;
-					m.params[0] = t.ref.nonnull();
+					m.getParams()[0] = t.ref.nonnull();
 					m.kind = isMethod(b) ? "function" : isGetter(b) ? "get" : "set";
 					m.name = name;
 					// ignore compiler-assigned disp_id's
@@ -969,12 +990,12 @@ public class GlobalOptimizer
 			Method init = s.init = methods[p.readU30()]; // init_id
 			init.cx = s;
 			Typeref sref = s.ref.nonnull();
-			init.params[0] = sref;
-			init.name = s.name;
+			init.getParams()[0] = sref;
+			init.name = s.getName();
 			init.kind = "init";
 			readTraits(p, s);
 			for (Binding b : s.defs.values())
-				globals.put(b.name, sref);
+				TypeCache.instance().globals.put(b.getName(), sref);
 			s.setFinal();
 			return s;
 		}
@@ -985,11 +1006,11 @@ public class GlobalOptimizer
 			assert(CLASS() != null);
 			c.base = CLASS();
 			c.itype = it;
-			c.name = it.name.append("$");
+			c.name = it.getName().append("$");
 			Method init = c.init = methods[p.readU30()]; // init_id
 			init.cx = c;
-			init.params[0] = c.ref.nonnull();
-			init.name = c.name;
+			init.getParams()[0] = c.ref.nonnull();
+			init.name = c.getName();
 			init.kind = "init";
 			readTraits(p, c);
 			c.setFinal();
@@ -1019,13 +1040,13 @@ public class GlobalOptimizer
 			if(t.init.isNative() && !ALLOW_NATIVE_CTORS)
 				throw new RuntimeException("Constructors can't be native: "+t);
 			t.init.cx = t;
-			t.init.params[0] = t.ref.nonnull();
+			t.init.getParams()[0] = t.ref.nonnull();
 			t.init.kind = "init";
-			t.init.name = t.name;
+			t.init.name = t.getName();
 			readTraits(p, t);
-			namedTypes.put(t.name, t);
+			TypeCache.instance().namedTypes.put(t.getName(), t);
 			
-			if (t.name.equals(new Name(Name.PKG_PUBLIC,"Object")))
+			if (t.getName().equals(new Name(Name.PKG_PUBLIC,"Object")))
 			{
 				containsObject = true;
 				TypeCache.instance().OBJECT = t;
@@ -1063,7 +1084,7 @@ public class GlobalOptimizer
 			{
 				int i;
 
-				for (i=0; i < m.params.length; i++)
+				for (i=0; i < m.getParams().length; i++)
 				{
 					// argument i
 					b.add(e = frame[i] = new Expr(m, OP_arg, i));
@@ -1894,193 +1915,22 @@ public class GlobalOptimizer
 			
 			unwindTrace(read_code_phase);
 		}
-	}
-	
-	// vm-wide lookup tables
-	Symtab<Type> namedTypes = new Symtab<Type>();
-	Symtab<Typeref> globals = new Symtab<Typeref>();
-	Map<Namespace,Name> namespaceNames = new HashMap<Namespace,Name>();
-	
-	static class Binding
-	{
-		final InputAbc abc;
-		final Name name;
-		final private int flags_kind;
-		int slot;
-		int id;
-		int offset; // if slot
 		
-		// var, const, class
-		Object value;// default value if any
-		Typeref type; // if slot
-		
-		// function, getter, setter, method
-		Method method;	
-		
-		// metadata
-		Metadata[] md = nometadata;
-		
-		// if this is a get/set, points to corresponding set/get, if any.
-		Binding peer = null;
-
-		Binding(int kind, Name name, InputAbc abc)
+		public int nameIndex(Name n)
 		{
-			this.name = name;
-			this.flags_kind = kind;
-			this.abc = abc;
-		}
-		
-		int kind()
-		{
-			return flags_kind & 15;
-		}
-		
-		boolean isFinal()
-		{
-			return ((flags_kind>>4) & TRAIT_FLAG_final) != 0;
-		}
-
-		boolean isOverride()
-		{
-			return ((flags_kind>>4) & TRAIT_FLAG_override) != 0;
-		}
-		
-		boolean hasMetadata()
-		{
-			return ((flags_kind>>4) & TRAIT_FLAG_metadata) != 0;
-		}
-		
-		public String toString()
-		{
-			switch (kind())
+			int idx = 0;
+			for (Name x: names)
 			{
-			case TRAIT_Class: return "["+slot+"] class";
-			case TRAIT_Var: return "["+slot+"] var";
-			case TRAIT_Const: return "["+slot+"] const";
-			case TRAIT_Method: return "["+slot+"] method";
-			case TRAIT_Getter: return "["+slot+"] get";
-			case TRAIT_Setter: return "["+slot+"] set";
-			default:
-				assert(false);
+				if ( x != null && ( x == n || x.equals(n) ) )
+					return idx;
+				idx++;
 			}
-			return null;
-		}
-	}
-
-	/**
-	 * compare two names.  this implements the multiname->name matching rules.
-	 * 
-	 * @param other
-	 * @return
-	 */
-	static public int match(Name a, Name b)
-	{
-		if (a == b) return 0;
-		
-		// @names can't ever match regular names
-		int d;
-		if ((d = a.attr() - b.attr()) != 0) return d;
-		if ((d = a.name.compareTo(b.name)) != 0) return d;
-		
-		if (a.isQname() && b.isQname())
-			return a.nsset(0).compareTo(b.nsset(0));
-		
-		else if (b.isQname() && !b.isQname())
-		{
-			for (Namespace ns: b.nsset)
-				if (ns.equals(a.nsset(0)))
-					return 0;
-		}
-		else if (b.isQname() && !a.isQname())
-		{
-			for (Namespace ns: a.nsset)
-				if (ns.equals(b.nsset(0)))
-					return 0;
-		}
-
-		return a.nsset.compareTo(b.nsset);
-	}
-	
-	static class Symtab<E>
-	{
-		private List<Name> names = new ArrayList<Name>();
-		private List<E> values = new ArrayList<E>();
-		
-		E get(Name name)
-		{
-			if (name.nsset != null && name.name != null)
-			{
-				if (name.nsset.length == 1)
-				{
-					for (int i=0, n=names.size(); i < n; i++)
-						if (0 == match(name, names.get(i)))
-							return values.get(i);
-				}
-				else
-				{
-					for (Namespace ns : name.nsset)
-					{
-						E e = get(new Name(name.kind,ns,name.name));
-						if (e != null)
-							return e;
-					}
-				}
-			}
-			return null;
-		}
-		
-		Name getName(Name n)
-		{
-			// return the matching name from the symbol table
-			if (n.nsset.length > 1)
-			{
-				for (Namespace ns : n.nsset)
-				{
-					Name k = new Name(n.kind,ns,n.name);
-					if (names.contains(k))
-						return k;
-				}
-			}
-			return n;
-		}
-		
-		boolean contains(Name n)
-		{
-			return n != null && get(n) != null;
-		}
-		
-		void put(Name n, E e)
-		{
-			assert(n.nsset.length == 1);
-			names.add(n);
-			values.add(e);
-		}
-		
-		public String toString()
-		{
-			StringBuilder b = new StringBuilder();
-			b.append('[');
-			for (int i=0, n=size(); i < n; i++)
-			{
-				b.append(names.get(i)).append('=').append(values.get(i));
-				if (i+1 < n)
-					b.append(", ");
-			}
-			b.append(']');
-			return b.toString();
-		}
-		
-		public Collection<E> values()
-		{
-			return values;
-		}
-		
-		int size()
-		{
-			return names.size();
+			
+			return -1;
 		}
 	}
 	
+		
 	static int rtcounter;
 	static String unique()
 	{
@@ -2094,10 +1944,6 @@ public class GlobalOptimizer
 	{
 		return new Namespace(unique("ns"));
 	}
-		
-	static final Object UNDEFINED = new Object() { public String toString() { return "undefined"; }};
-	static final Object BOTTOM = new Object() { public String toString() { return "?"; }};
-	static final Double NAN = Double.NaN;
 	
 	Type OBJECT()    { return TypeCache.instance().OBJECT;}
 	Type FUNCTION()  { return TypeCache.instance().FUNCTION;}
@@ -2155,8 +2001,6 @@ public class GlobalOptimizer
 			return 0;
 		}
 	}
-	
-	static final Metadata[] nometadata = new Metadata[0];
 
 	/**
 	 * Methods ready for optimization.
@@ -2202,76 +2046,7 @@ public class GlobalOptimizer
 			readyType(t);
 		
 		while (!ready.isEmpty())
-			optimize(remove(ready));
-	}
-	
-	static class Ranker<T> implements Comparable
-	{
-		T value;
-		int rank;
-		Ranker(T value, int rank)
-		{
-			this.value = value;
-			this.rank = rank;
-		}
-		public int compareTo(Object o)
-		{
-			return ((Ranker)o).rank - rank;
-		}
-	}
-	
-	static class Pool<T extends Comparable>
-	{
-		Map<T,Integer> refs = new HashMap<T,Integer>();
-		ArrayList<T> values;
-		int countFrom;
-		
-		Pool(int countFrom)
-		{
-			this.countFrom = countFrom;
-		}
-		
-		int add(T e)
-		{
-			int n = !refs.containsKey(e) ? 1 : refs.get(e) + 1;
-			refs.put(e, n);
-			return n;
-		}
-		
-		@SuppressWarnings("unchecked")
-		void sort()
-		{
-			Ranker<T>[] arr = new Ranker[refs.size()];
-			int i=0;
-			for (T e: refs.keySet())
-				arr[i++] = new Ranker<T>(e,refs.get(e));
-			assert(i==refs.size());
-			Arrays.sort(arr);
-			values = new ArrayList<T>();
-			i=countFrom;
-			for (Ranker<T> r: arr)
-			{
-				values.add(r.value);
-				refs.put(r.value, i++);
-			}
-		}
-		
-		int id(T e)
-		{
-			assert(refs.containsKey(e));
-			assert(refs.get(e) < size());
-			return refs.get(e);
-		}
-		
-		public String toString()
-		{
-			return String.valueOf(refs);
-		}
-		
-		int size()
-		{
-			return countFrom + refs.size();
-		}
+			optimize(getMethod(ready));
 	}
 	
 	/**
@@ -2313,7 +2088,7 @@ public class GlobalOptimizer
 				verboseStatus("Emitting: " + t + " as any");
 				return 0;
 			} else
-				return namePool.id(t.name);
+				return namePool.id(t.getName());
 		}
 		
 		Pool<Method> poolFor(Method m)
@@ -2339,7 +2114,7 @@ public class GlobalOptimizer
 		{
 			// instance type
 			Type t = c.itype;
-			addName(t.name);
+			addName(t.getName());
 			if (t.base != NULL())
 				addTypeRef(t.base);
 			if (t.hasProtectedNs())
@@ -2369,7 +2144,7 @@ public class GlobalOptimizer
 		{
 			for (Binding b: defs.values())
 			{
-				addName(b.name);
+				addName(b.getName());
 				switch (b.kind())
 				{
 				case TRAIT_Class:
@@ -2519,7 +2294,7 @@ public class GlobalOptimizer
 		void addTypeRef(Type t)
 		{
 			if (t != ANY() && !t.emitAsAny())
-				addName(t.name);
+				addName(t.getName());
 		}
 		
 		void addMethod(Method m)
@@ -2531,8 +2306,8 @@ public class GlobalOptimizer
 				bodyCount++;
 			
 			addTypeRef(m.returns.t);
-			for (int i=1, n=m.params.length; i < n; i++)
-				addTypeRef(m.params[i]);
+			for (int i=1, n=m.getParams().length; i < n; i++)
+				addTypeRef(m.getParams()[i]);
 			
 			if (m.hasOptional())
 				for (Object v: m.values)
@@ -2815,7 +2590,7 @@ public class GlobalOptimizer
 		assert(!s.init.isNative());
 		for (Binding b: s.defs.values())
 		{
-			Namespace ns = b.name.nsset(0);
+			Namespace ns = b.getName().nsset(0);
 			String id = prefix + propLabel(b, ns);
 			boolean isNative = false;
 			String ctype = null;
@@ -2884,10 +2659,10 @@ public class GlobalOptimizer
 	void emitSourceClass(Abc abc, PrintWriter out_h, PrintWriter out_c, Map<Integer,String>impls, PrintWriter out_t,
 			Binding b, Namespace ns, boolean obscure_natives)
 	{
-		String label = (ns.isPublic()||ns.isInternal()) ? b.name.name : 
-			ns.isProtected() ? "protected_"+b.name.name :
-			namespaceNames.containsKey(ns) ? namespaceNames.get(ns)+"_"+b.name.name : 
-			(ns.uri.replace(' ', '_').replace('.','_').replace('$','_')+'_'+b.name.name);
+		String label = (ns.isPublic()||ns.isInternal()) ? b.getName().name : 
+			ns.isProtected() ? "protected_"+b.getName().name :
+			TypeCache.instance().namespaceNames.containsKey(ns) ? TypeCache.instance().namespaceNames.get(ns)+"_"+b.getName().name : 
+			(ns.uri.replace(' ', '_').replace('.','_').replace('$','_')+'_'+b.getName().name);
 
 		Type c = b.type.t;
 
@@ -2986,10 +2761,10 @@ public class GlobalOptimizer
 
 	String propLabel(Binding b, Namespace ns)
 	{
-		return (ns.isPublic()||ns.isInternal()) ? b.name.name : 
-			ns.isPrivate() ? "private_"+b.name.name : 
-			ns.isProtected() ? "protected_"+b.name.name :
-				namespaceNames.get(ns)+"_"+b.name.name;
+		return (ns.isPublic()||ns.isInternal()) ? b.getName().name : 
+			ns.isPrivate() ? "private_"+b.getName().name : 
+			ns.isProtected() ? "protected_"+b.getName().name :
+				TypeCache.instance().namespaceNames.get(ns)+"_"+b.getName().name;
 	}
 
 	/**
@@ -3002,7 +2777,7 @@ public class GlobalOptimizer
 	void createThunkArgs(PrintWriter out_h, String id, Method m, boolean obscure_natives)
 	{
 
-		if (!m.hasParamNames() && m.params.length > 1)
+		if (!m.hasParamNames() && m.getParams().length > 1)
 		{
 			throw new RuntimeException("native method " + id + " must be generated with debug info (have no fear, it will be stripped)");
 		}
@@ -3019,26 +2794,26 @@ public class GlobalOptimizer
 
 		// args
 		int i=0;
-		for (int n=m.params.length; i < n; i++)
+		for (int n=m.getParams().length; i < n; i++)
 		{
 			String argname = (i == 0) ? 
-								((m.params[i].toString().indexOf("$") >= 0) ? "classself" : "self") : 
+								((m.getParams()[i].toString().indexOf("$") >= 0) ? "classself" : "self") : 
 								m.paramNames[i].name;
-			if (m.params[i].t==NUMBER())
+			if (m.getParams()[i].t==NUMBER())
 			{
 				out_h.printf("    public: double %s;\n", argname);
 			}
-			else if (m.params[i].t==BOOLEAN())
+			else if (m.getParams()[i].t==BOOLEAN())
 			{
 				out_h.printf("    public: int32_t %s_b; private: int32_t %s_pad; public: inline bool %s() const { return %s_b != 0; }\n", argname, argname, argname, argname);
 			}
-			else if (m.params[i].t==OBJECT() || m.params[i].t==ANY())
+			else if (m.getParams()[i].t==OBJECT() || m.getParams()[i].t==ANY())
 			{
 				out_h.printf("    public: AvmBoxArg %s;\n", argname);
 			}
 			else
 			{
-				out_h.printf("    public: %s %s; private: int32_t %s_pad; \n", ctype(m.params[i]), argname, argname);
+				out_h.printf("    public: %s %s; private: int32_t %s_pad; \n", ctype(m.getParams()[i]), argname, argname);
 			}
 		}
 
@@ -3051,7 +2826,7 @@ public class GlobalOptimizer
 			PrintWriter out_h, PrintWriter out_c)
 	{
 		Method m = b.method;
-		String impl = ns.uri.replace('.', '_') + "_" + b.name.name;
+		String impl = ns.uri.replace('.', '_') + "_" + b.getName().name;
 		writeCallin(m, class_id, impl, out_h, out_c);
 	}	
 
@@ -3083,13 +2858,13 @@ public class GlobalOptimizer
 		
 		decl.printf("%s %s(AvmInstance vm", ctype(m.returns), impl);
 		body.print("\n{\n");
-		if(m.params.length > 1)
-			body.printf("\tAvmBox _args[%d];\n", m.params.length - 1);
+		if(m.getParams().length > 1)
+			body.printf("\tAvmBox _args[%d];\n", m.getParams().length - 1);
 		// args
 		int i=1;
-		for (int n=m.params.length; i < n; i++)
+		for (int n=m.getParams().length; i < n; i++)
 		{
-			Typeref t = m.params[i];
+			Typeref t = m.getParams()[i];
 			decl.printf(", %s %s", ctype(t), m.paramNames[i]);
 			body.printf("\t_args[%d] = AvmBox%s(%s);\n", i-1, boxSetter(t.t), m.paramNames[i]);
 		}
@@ -3099,7 +2874,7 @@ public class GlobalOptimizer
 			body.print("const AvmBox _returnBox = ");
 		
 		body.printf("\tAvmInvokeCallin(vm, %d, %d, %d, %s);\n", 
-				script_id, m.emit_id, m.params.length - 1, m.params.length > 1 ? "(AvmBox*)&_args" : "NULL");
+				script_id, m.emit_id, m.getParams().length - 1, m.getParams().length > 1 ? "(AvmBox*)&_args" : "NULL");
 		
 		if(m.returns.t != VOID())			
 			body.printf("\treturn AvmUnBox%s(_returnBox);\n", boxSetter(m.returns.t));
@@ -3236,7 +3011,7 @@ public class GlobalOptimizer
 		for (Type c: abc.classes)
 		{
 			Type t = c.itype;
-			w.writeU30(abc.namePool.id(t.name));
+			w.writeU30(abc.namePool.id(t.getName()));
 			w.writeU30(abc.typeRef(t.base));
 			w.write(t.flags);
 			if (t.hasProtectedNs())
@@ -3313,10 +3088,10 @@ public class GlobalOptimizer
 	{
 		m.emit_id = method_id;
 		verboseStatus("METHOD " + method_id + " was " + m.id);
-		w.writeU30(m.params.length-1);
+		w.writeU30(m.getParams().length-1);
 		w.writeU30(abc.typeRef(m.returns));
-		for (int i=1, n=m.params.length; i < n; i++)
-			w.writeU30(abc.typeRef(m.params[i]));
+		for (int i=1, n=m.getParams().length; i < n; i++)
+			w.writeU30(abc.typeRef(m.getParams()[i]));
 		
 		if (PRESERVE_METHOD_NAMES)
 			w.writeU30(abc.stringPool.id(m.debugName));
@@ -3330,7 +3105,7 @@ public class GlobalOptimizer
 		if (m.hasOptional())
 		{
 			w.writeU30(m.optional_count);
-			for (int j = m.params.length - m.optional_count; j < m.params.length; j++)
+			for (int j = m.getParams().length - m.optional_count; j < m.getParams().length; j++)
 			{
 				int kind = abc.constKind(m.values[j]);
 				w.writeU30(abc.constId(kind, m.values[j])); // index
@@ -3342,38 +3117,6 @@ public class GlobalOptimizer
 			for (int i=1; i < m.paramNames.length; i++)
 				w.writeU30(abc.stringPool.id(m.paramNames[i].name));
 		}
-	}
-	
-	int intValue(Object o)
-	{
-		return ((Number)o).intValue();
-	}
-	
-	long uintValue(Object o)
-	{
-		return ((Number)o).longValue() & 0xFFFFFFFFL;
-	}
-	
-	double doubleValue(Object o)
-	{
-		return o instanceof Number ? ((Number)o).doubleValue() : Double.NaN;
-	}
-	
-	boolean booleanValue(Object o)
-	{
-		if (o instanceof Boolean)
-			return o == TRUE;
-		if (o instanceof String || o instanceof Namespace)
-			return true;
-		if (o == NULL() || o == UNDEFINED)
-			return false;
-		return doubleValue(o) != 0;
-	}
-	
-	String stringValue(Object v0)
-	{
-		// TODO ES3 compatible double format
-		return String.valueOf(v0);
 	}
 
 	void emitBlock(AbcWriter out, Block b, Abc abc)
@@ -3747,18 +3490,13 @@ public class GlobalOptimizer
 		unwindTrace(emit_lookupswitch_trace_phase);
 	}
 	
-	boolean defaultValueChanged(Binding b)
-	{
-		return b.type.t.defaultValue != null && !b.type.t.defaultValue.equals(b.value);
-	}
-	
 	void emitTraits(AbcWriter out, Abc abc, Type t)
 	{
 		Symtab<Binding> defs = t.defs;
 		out.writeU30(defs.size());
 		for (Binding b: defs.values())
 		{
-			out.writeU30(abc.namePool.id(b.name));
+			out.writeU30(abc.namePool.id(b.getName()));
 			out.write(b.flags_kind & ~(TRAIT_FLAG_metadata<<4));
 			switch (b.kind())
 			{
@@ -3769,7 +3507,7 @@ public class GlobalOptimizer
 				else
 					out.write(0);
 				out.writeU30(abc.typeRef(b.type));
-				if (!defaultValueChanged(b))
+				if (!b.defaultValueChanged())
 				{
 					// vm fills in default value based on type
 					out.writeU30(0);
@@ -3802,7 +3540,7 @@ public class GlobalOptimizer
 
 	void optimize(Method m)
 	{
-		verboseStatus("OPTIMIZE "+m.id + " "+ m.name);
+		verboseStatus("OPTIMIZE "+m.id + " "+ m.getName());
 
 		if(m.entry == null)
 			return;
@@ -3990,57 +3728,7 @@ public class GlobalOptimizer
 		dce(m);
 	}
 	
-	/**
-	 * Cast a BitSet, so to speak, to an iterable Set.
-	 * @param x - the set to be iterated over.
-	 * @return the same numbers in a sorted Set.
-	 */
-	Set<Integer> foreach(BitSet x)
-	{
-		Set<Integer> result = new TreeSet<Integer>();
-		for ( int i = 0; i < x.length(); i++ )
-			if ( x.get(i) )
-				result.add(i);
-		
-		return result;
-	}
 	
-	SetMap<Block,Edge> preds(Deque<Block> code)
-	{
-		SetMap<Block,Edge> pred = new SetMap<Block,Edge>();
-		for (Block b: code)
-			for (Edge s: b.succ())
-				pred.get(s.to).add(s);
-		
-		for (Block b: code)
-			for (Expr e: b)
-				if (e.op != OP_phi)
-					break;
-				else
-				{
-					// make sure each PHI has the same set of incoming
-					// edges as the block does.
-					Set<Edge>phi_in = new TreeSet<Edge>();
-					for (Edge p: e.pred) phi_in.add(p);
-					Set<Edge>blk_in = pred.get(b);
-					assert(phi_in.equals(blk_in));
-				}
-		
-		return pred;
-	}
-
-	SetMap<Block,Edge> allpreds(Deque<Block> code)
-	{
-		SetMap<Block,Edge> pred = new SetMap<Block,Edge>();
-		for (Block b: code)
-		{
-			for (Edge s: b.succ())
-				pred.get(s.to).add(s);
-			for (Edge x: b.xsucc)
-				pred.get(x.to).add(x);
-		}
-		return pred;
-	}
 	
 	int findPhiArg(Expr phi, Edge e)
 	{
@@ -4307,7 +3995,7 @@ public class GlobalOptimizer
 	
 	boolean equiv(Name a, Name b)
 	{
-		return match(a,b) == 0;
+		return a.match(b) == 0;
 	}
 	
 	boolean equiv(Expr[] a, Expr[] b)
@@ -4360,7 +4048,7 @@ public class GlobalOptimizer
 				// TODO unsafe -- ignores intervening stores & side effects
 				return equiv(a.ref, b.ref) && equiv(a.args,b.args);*/
 			case OP_finddef:
-				return equiv(a.ref, b.ref);
+				return 0 == a.ref.match(b.ref);
 			}
 		}
 		return false;
@@ -4513,7 +4201,7 @@ public class GlobalOptimizer
 		e.op = op;
 		e.args = new Expr[] { e.args[1] };
 		e.flags = flagTable[op];
-		if (type(types,e.args[0]).primitive) 
+		if (type(types,e.args[0]).isPrimitive()) 
 			e.setPure();
 		return true;
 	}
@@ -4690,8 +4378,8 @@ public class GlobalOptimizer
 				else if (e.isOper() && e.onStack())
 				{
 					boolean pure = true;
-					for (Expr a: e.args) if (!type(types,a).primitive) pure = false;
-					for (Expr a: e.locals) if (!type(types,a).primitive) pure = false;
+					for (Expr a: e.args) if (!type(types,a).isPrimitive()) pure = false;
+					for (Expr a: e.locals) if (!type(types,a).isPrimitive()) pure = false;
 					if (pure)
 						e.setPure();
 					constify(e, values.get(e));
@@ -4756,7 +4444,7 @@ public class GlobalOptimizer
 			{
 				Method f = e.m;
 				// TODO makeIntoPrototypeFunction()
-				Type t = new Type(m.name, FUNCTION());
+				Type t = new Type(m.getName(), FUNCTION());
 				t.scopes = copyOf(m.cx.scopes, m.cx.scopes.length+e.scopes.length);
 				int i = m.cx.scopes.length;
 				for (Expr s: e.scopes)
@@ -4808,10 +4496,10 @@ public class GlobalOptimizer
 			case OP_istypelate:
 			{
 				Type t1 = type(types,e.args[1]);
-				if (t1.itype != null && namedTypes.contains(t1.itype.name))
+				if (t1.itype != null && TypeCache.instance().containsNamedType(t1.itype))
 				{
 					e.op = OP_istype;
-					e.ref = t1.itype.name;
+					e.ref = t1.itype.getName();
 					e.args = new Expr[] { e.args[0] };
 					e.clearPx();
 					changed = true;
@@ -4821,7 +4509,7 @@ public class GlobalOptimizer
 			
 			case OP_istype:
 			{
-				if (namedTypes.contains(e.ref))
+				if (TypeCache.instance().containsNamedType(e.ref))
 					e.clearPx();
 				break;
 			}
@@ -4855,7 +4543,7 @@ public class GlobalOptimizer
 					}
 					else
 					{
-						if (namedTypes.get(e.ref) == OBJECT())
+						if (TypeCache.instance().namedTypes.get(e.ref) == OBJECT())
 						{
 							e.op = OP_coerce_o;
 							e.clearEffect();
@@ -4898,12 +4586,12 @@ public class GlobalOptimizer
 						// TODO - early bind e.ref
 					}
 				}
-				else if (globals.contains(e.ref))
+				else if (TypeCache.instance().globals.contains(e.ref))
 				{
 					e.op = OP_finddef;
 					e.flags = flagTable[e.op];
 					e.scopes = noexprs;
-					e.ref = globals.getName(e.ref);
+					e.ref = TypeCache.instance().globals.getName(e.ref);
 					for (Expr s: e.scopes)
 						uses.get(s).remove(e);
 					changed = true;
@@ -4944,7 +4632,7 @@ public class GlobalOptimizer
 					e.clearEffect();
 					if (!t0.nullable)
 						e.clearPx();
-					e.ref = bind.name;
+					e.ref = bind.getName();
 					if (canEarlyBindSlot(m, bind))
 					{
 						if (!isConst(bind) || !constify(e, values.get(e)))
@@ -4958,7 +4646,7 @@ public class GlobalOptimizer
 				else if (bind != null)
 				{
 					// narrow the binding
-					e.ref = bind.name;
+					e.ref = bind.getName();
 				}
 				break;
 			}
@@ -4971,7 +4659,7 @@ public class GlobalOptimizer
 				if (bind != null)
 				{
 					// narrow the binding
-					e.ref = bind.name;
+					e.ref = bind.getName();
 					// isSlot() is to aggressive, breaks (at least) zlib
 					if (isConst(bind) && bind.value != null && bind.value.equals(v1))
 					{
@@ -4998,7 +4686,7 @@ public class GlobalOptimizer
 				Binding bind = t0.find(e.ref);
 				if (isSlot(bind))
 				{
-					e.ref = bind.name;
+					e.ref = bind.getName();
 					if (canEarlyBindSlot(m, bind))
 					{
 						e.op = OP_setslot;
@@ -5009,7 +4697,7 @@ public class GlobalOptimizer
 				else if (bind != null)
 				{
 					// narrow the binding
-					e.ref = bind.name;
+					e.ref = bind.getName();
 				}
 				break;
 			}
@@ -5026,10 +4714,10 @@ public class GlobalOptimizer
 				if (b0 != null)
 				{
 					// narrow the binding
-					e.ref = b0.name;
+					e.ref = b0.getName();
 					if (e.op == OP_callproperty && isMethod(b0))
 					{
-						if (t0.primitive && e.args.length==1 && e.ref.equals(AS3_TOSTRING) && type(types,e) == STRING())
+						if (t0.isPrimitive() && e.args.length==1 && e.ref.equals(AS3_TOSTRING) && type(types,e) == STRING())
 						{
 							// TODO this may open up further reductions.  how to iterate?
 							// or, need to add similar logic in sccp_eval
@@ -5357,97 +5045,7 @@ public class GlobalOptimizer
 			return new Expr(m, OP_coerce_o, a);
 		}
 
-		return new Expr(m, OP_coerce, t.name, a);
-	}
-	
-	boolean isPointer(Type t)
-	{
-		return !t.isAtom() && !t.numeric;
-	}
-	
-	Object eval_convert_i(Object v0)
-	{
-		return v0 instanceof Number ? intValue(v0) :
-			   v0 == TRUE ? 1 :
-			   v0 == FALSE ? 0 :
-			   BOTTOM;
-	}
-
-	Object eval_convert_u(Object v0)
-	{
-		return v0 instanceof Number ? uintValue(v0) :
-			   v0 == TRUE ? 1 :
-			   v0 == FALSE ? 0 :
-			   BOTTOM;
-	}
-
-	Object eval_convert_d(Object v0)
-	{
-		return v0 instanceof Number ? doubleValue(v0) :
-			   v0 == TRUE ? 1 :
-			   v0 == FALSE ? 0 :
-			   BOTTOM;
-	}
-
-	Object eval_convert_b(Object v0)
-	{
-		return v0 == BOTTOM ? BOTTOM :
-			   booleanValue(v0) ? TRUE : FALSE;
-	}
-	
-	Object eval_convert_s(Object v0)
-	{
-		return v0 != BOTTOM ? stringValue(v0) : BOTTOM;
-	}
-	
-	Typeref eval_coerce_s(Typeref t0)
-	{
-		if (t0.nullable)
-			return t0.t == VOID() || t0.t == NULL() ? NULL().ref : STRING().ref;
-		else
-			return STRING().ref.nonnull();
-	}
-	
-	Object eval_coerce_s(Object v0)
-	{
-		return v0 == UNDEFINED || v0 == NULL() ? NULL() :
-			   v0 != BOTTOM ? stringValue(v0) :
-			   BOTTOM;
-	}
-	
-	Typeref eval_coerce_o(Typeref t0)
-	{
-		if (t0.nullable)
-			return istype(t0.t, OBJECT()) ? t0 :
-			   t0.t == VOID() || t0.t == NULL() ? NULL().ref :
-			   OBJECT().ref;
-		else
-			return istype(t0.t, OBJECT()) ? t0 : OBJECT().ref.nonnull();
-	}
-	
-	Object eval_coerce_o(Object v0, Type t0)
-	{
-		return istype(t0, OBJECT()) ? v0 :
-			   t0 == VOID() || t0 == NULL() ? NULL() :
-			   BOTTOM;
-	}
-	
-	boolean lessthan(Object v0, Object v1)
-	{
-		if (v0 instanceof String && v1 instanceof String)
-		{
-			return ((String)v0).compareTo((String)v1) < 0;
-		}
-		else
-		{
-			return doubleValue(v0) < doubleValue(v1);
-		}
-	}
-	
-	Type type(Map<Expr,Typeref>types, Expr e)
-	{
-		assert(types.containsKey(e));
-		return types.get(e).t;
+		return new Expr(m, OP_coerce, t.getName(), a);
 	}
 
 	/**
@@ -5579,8 +5177,8 @@ public class GlobalOptimizer
 				break;
 				
 			case OP_finddef:
-				if (globals.contains(e.ref))
-					tref = globals.get(e.ref);
+				if (TypeCache.instance().globals.contains(e.ref))
+					tref = TypeCache.instance().globals.get(e.ref);
 				break;
 				
 			case OP_findpropstrict:
@@ -5596,9 +5194,9 @@ public class GlobalOptimizer
 				{
 					tref = m.cx.scopes[i];
 				}
-				else if (globals.contains(e.ref))
+				else if (TypeCache.instance().globals.contains(e.ref))
 				{
-					tref = globals.get(e.ref);
+					tref = TypeCache.instance().globals.get(e.ref);
 				}
 				else
 				{
@@ -5622,7 +5220,7 @@ public class GlobalOptimizer
 				int i = findInner(e.ref, e.scopes, types);
 				Typeref stref = i >= 0 ? types.get(e.scopes[i]) : 
 					(i=findOuter(e.ref, m.cx.scopes)) >= 0 ? m.cx.scopes[i] :
-						globals.contains(e.ref) ? globals.get(e.ref) :
+						TypeCache.instance().globals.contains(e.ref) ? TypeCache.instance().globals.get(e.ref) :
 							m.cx.scopes.length > 0 ? m.cx.scopes[0] :
 								types.get(e.scopes[0]);
 	
@@ -5634,7 +5232,7 @@ public class GlobalOptimizer
 					// it would be more correct if we knew whether the initializer
 					// changed the const value.  (consts can be computed in init).
 					tref = b.type;
-					if (isConst(b) && defaultValueChanged(b))
+					if (isConst(b) && b.defaultValueChanged())
 						v = b.value;
 				}
 				else if (isMethod(b))
@@ -5723,9 +5321,9 @@ public class GlobalOptimizer
 				break;
 			
 			case OP_arg:
-				if (e.imm[0] < m.params.length)
-					tref = m.params[e.imm[0]];
-				else if (m.needsArguments()||m.needsRest() && e.imm[0] == m.params.length)
+				if (e.imm[0] < m.getParams().length)
+					tref = m.getParams()[e.imm[0]];
+				else if (m.needsArguments()||m.needsRest() && e.imm[0] == m.getParams().length)
 					tref = ARRAY().ref.nonnull();
 				else
 					tref = VOID().ref;
@@ -5754,7 +5352,7 @@ public class GlobalOptimizer
 					// it would be more correct if we knew whether the initializer
 					// changed the const value.  (consts can be computed in init).
 					tref = b.type;
-					if (isConst(b) && defaultValueChanged(b))
+					if (isConst(b) && b.defaultValueChanged())
 						v = b.value;
 				}
 				else if (isMethod(b))
@@ -5945,7 +5543,7 @@ public class GlobalOptimizer
 			{
 				Typeref t0 = types.get(e.args[0]);
 				Object v0 = values.get(e.args[0]);
-				Type t = namedTypes.get(e.ref);
+				Type t = TypeCache.instance().namedTypes.get(e.ref);
 				assert ( t != null );
 				
 				if (t == STRING())
@@ -6001,7 +5599,7 @@ public class GlobalOptimizer
 			
 			case OP_astype:
 				// TODO constant folding
-				tref = namedTypes.get(e.ref).ref;
+				tref = TypeCache.instance().namedTypes.get(e.ref).ref;
 				break;
 			
 			case OP_astypelate:
@@ -6301,8 +5899,8 @@ public class GlobalOptimizer
 				break;
 				
 			case OP_finddef:
-				if (globals.contains(e.ref))
-					tref = globals.get(e.ref);
+				if (TypeCache.instance().globals.contains(e.ref))
+					tref = TypeCache.instance().globals.get(e.ref);
 				break;
 				
 			case OP_findpropstrict:
@@ -6317,9 +5915,9 @@ public class GlobalOptimizer
 				{
 					tref = m.cx.scopes[i];
 				}
-				else if (globals.contains(e.ref))
+				else if (TypeCache.instance().globals.contains(e.ref))
 				{
-					tref = globals.get(e.ref);
+					tref = TypeCache.instance().globals.get(e.ref);
 				}
 				else
 				{
@@ -6342,7 +5940,7 @@ public class GlobalOptimizer
 				int i = findInner(e.ref, e.scopes, types);
 				Typeref stref = i >= 0 ? types.get(e.scopes[i]) : 
 					(i=findOuter(e.ref, m.cx.scopes)) >= 0 ? m.cx.scopes[i] :
-						globals.contains(e.ref) ? globals.get(e.ref) :
+						TypeCache.instance().globals.contains(e.ref) ? TypeCache.instance().globals.get(e.ref) :
 							m.cx.scopes.length > 0 ? m.cx.scopes[0] :
 								types.get(e.scopes[0]);
 	
@@ -6413,9 +6011,9 @@ public class GlobalOptimizer
 				break;
 			
 			case OP_arg:
-				if (e.imm[0] < m.params.length)
-					tref = m.params[e.imm[0]];
-				else if (m.needsArguments()||m.needsRest() && e.imm[0] == m.params.length)
+				if (e.imm[0] < m.getParams().length)
+					tref = m.getParams()[e.imm[0]];
+				else if (m.needsArguments()||m.needsRest() && e.imm[0] == m.getParams().length)
 					tref = ARRAY().ref.nonnull();
 				else
 					tref = VOID().ref;
@@ -6512,13 +6110,13 @@ public class GlobalOptimizer
 			}
 			
 			case OP_coerce:
-				tref = namedTypes.get(e.ref).ref;
+				tref = TypeCache.instance().namedTypes.get(e.ref).ref;
 				break;
 			
 			case OP_astype:
 			{
 				Typeref t0 = types.get(e.args[0]);
-				Type t = namedTypes.get(e.ref);
+				Type t = TypeCache.instance().namedTypes.get(e.ref);
 				if (!istype(t0.t, t) || t0.t.isAtom() != t.isAtom())
 				{
 					// TODO figure out what verifier is really doing here.
@@ -6637,124 +6235,6 @@ public class GlobalOptimizer
 		}
 		return tref;
 	}
-
-	/**
-	 * find the set of def->use edges.  These are the opposite of the
-	 * use->def edges encoded in Expr.args[] and scopes[]. 
-	 * @param code
-	 * @return
-	 */
-	EdgeMap<Expr> findUses(Deque<Block> code)
-	{
-		EdgeMap<Expr> uses = new EdgeMap<Expr>();
-		for (Block b : code)
-			for (Expr e : b)
-			{
-				for (Expr a : e.args) uses.get(a).add(e);
-				for (Expr a : e.locals) uses.get(a).add(e);
-				for (Expr a : e.scopes) uses.get(a).add(e);
-			}
-		return uses;
-	}
-	
-	/**
-	 * most derived base
-	 * @param a - first type
-	 * @param b - second type
-	 * @return Typeref to the "nearest" common base type.
-	 */
-	Typeref mdb(Typeref a, Typeref b)
-	{
-		// TODO support interfaces
-		assert(a != b && a != null && b != null);
-		
-		// null is compatible with pointer types
-		if (a.t == NULL() && isPointer(b.t)) return b;
-		if (b.t == NULL() && isPointer(a.t)) return a;
-		
-		Set<Type> bases = new HashSet<Type>();
-		for (Type t = a.t; t != null; t = t.base)
-			bases.add(t);
-		for (Type t = b.t; t != null; t = t.base)
-			if (bases.contains(t))
-				return new Typeref(t, a.nullable | b.nullable);
-		return new Typeref(ANY(), a.nullable | b.nullable);
-	}
-	
-	/**
-	 * find inner scope.  returns index of object or -1 if not found.
-	 * @param ref
-	 * @param scopes
-	 * @param types
-	 * @return
-	 */
-	int findInner(Name ref, Expr[] scopes, Map<Expr,Typeref> types)
-	{
-		for (int i=scopes.length-1; i >= 0; i--)
-		{
-			Type st = type(types,scopes[i]);
-			//verboseStatus("finding "+ref);
-			Binding b = st.find(ref);
-			if (b != null)
-				return i;
-		}
-		return -1;
-	}
-	
-	/**
-	 * find outer scope.  returns index, or -1 if not found, in which
-	 * case caller can look in globals.
-	 * 
-	 * @param ref
-	 * @param scopes
-	 * @return
-	 */
-	int findOuter(Name ref, Typeref[] scopes)
-	{
-		for (int i=scopes.length-1; i >= 1; i--)
-		{
-			Type st = scopes[i].t;
-			Binding b = st.find(ref);
-			if (b != null)
-				return i;
-		}
-		Typeref st = globals.get(ref);
-		if (st != null)
-			return -1; // how to identify which global?
-		if (scopes.length > 0 && scopes[0].t.find(ref) != null)
-			return 0;
-		return -1; // can't find it (caller can search globals, will return null).
-	}
-	
-	boolean istype(Type t, Type c)
-	{
-		// TODO add interface support
-		for (; t != null; t = t.base)
-			if (t == c) 
-				return true;
-		return false;
-	}
-	
-	static class SetMap<K,V> extends TreeMap<K, Set<V>>
-	{
-		public Set<V> get(K e)
-		{
-			Set<V> s = super.get(e);
-			if (s == null)
-				put(e,s = new TreeSet<V>());
-			return s;
-		}
-		static final long serialVersionUID=0;
-	}
-	
-	static class EdgeMap<E> extends SetMap<E,E>
-	{
-		public Set<E> get(E e)
-		{
-			return super.get(e);
-		}
-		static final long serialVersionUID=0;
-	}
 	
 	boolean isCritical(Edge e, SetMap<Block,Edge>pred)
 	{
@@ -6857,16 +6337,16 @@ public class GlobalOptimizer
 		{
 			// if we have a rest param or arguments and we don't use it,
 			// clear those flags and set the ignore-extra-args flag. 
-			int rest = m.params.length;
+			int rest = m.getParams().length;
 			for (Expr e: m.entry.to)
 				if (e.op == OP_arg && e.imm[0] == rest)
 					break restused;
 			m.flags &= ~(METHOD_Arguments|METHOD_Needrest);
 			m.flags |= METHOD_IgnoreRest;
-			verboseStatus("IGNORE_REST for "+m.name);
+			verboseStatus("IGNORE_REST for "+m.getName());
 		}
 
-		int max_local = m.params.length-1;
+		int max_local = m.getParams().length-1;
 		
 		sched_greedy(m, code, locals, pred, exprs, conflicts);
 		
@@ -7295,7 +6775,7 @@ public class GlobalOptimizer
 	 */
 	boolean ignoreTypeConflict(Method m, Typeref to_ty, Typeref from_ty)
 	{
-		boolean result = to_ty.t.name.name.startsWith("global") && from_ty.t.name.name.startsWith("global");
+		boolean result = to_ty.t.getName().name.startsWith("global") && from_ty.t.getName().name.startsWith("global");
 		result |= from_ty.t.equals(m.activation.t) && to_ty.t.equals(m.activation.t);
 		return result;
 	}
@@ -7419,7 +6899,7 @@ public class GlobalOptimizer
 			result = new Expr(m, OP_coerce_s, a);
 		else
 		{
-			result = new Expr(m, OP_coerce, t.name, a);
+			result = new Expr(m, OP_coerce, t.getName(), a);
 		}
 		
 		verboseStatus("coerceExpr " + formatExpr(result));
@@ -7585,9 +7065,9 @@ public class GlobalOptimizer
 		//  locals are type ANY.
 		Typeref[] frame_state = new Typeref[m.local_count];
 		
-		System.arraycopy(m.params, 0, frame_state, 0, m.params.length);
+		System.arraycopy(m.getParams(), 0, frame_state, 0, m.getParams().length);
 			
-		for (int i = m.params.length; i < frame_state.length; i++)
+		for (int i = m.getParams().length; i < frame_state.length; i++)
 			frame_state[i] = ANY().ref;
 		
 		verboseStatus("FRAME_STATE");
@@ -8673,32 +8153,6 @@ public class GlobalOptimizer
 		return e.isPx() || e.hasEffect();
 	}
 	
-	static void dfs_visit_el(Edge[] el, BitSet visited, Deque<Block>list)
-	{
-		for (int i=el.length-1; i >= 0; i--)
-			dfs_visit(el[i].to, visited, list);
-	}
-	
-	static Deque<Block> dfs_visit(Block b, BitSet visited, Deque<Block>list)
-	{
-		if (!visited.get(b.id))
-		{
-			visited.set(b.id);
-			
-			dfs_visit_el(b.xsucc, visited, list);
-			dfs_visit_el(b.succ(), visited, list);
-
-			b.postorder = list.size();
-			list.addFirst(b);
-		}
-		return list;
-	}
-	
-	static Deque<Block> dfs(Block entry)
-	{
-		return dfs_visit(entry, new BitSet(), new LinkedDeque<Block>());
-	}
-	
 	void schedule_loop(Block b, EdgeMap<Block> loops, Deque<Block> scheduled)
 	{
 		Set<Block> loop = loops.get(b);
@@ -8788,91 +8242,6 @@ public class GlobalOptimizer
 		return e.succ != null && e.succ.length == 2 && e.op != OP_lookupswitch;
 	}
 	
-	/**
-	 * find the nearest common dominator of b1 and b2
-	 *
-	 * @param b1
-	 * @param b2
-	 * @param doms
-	 * @return
-	 */
-	Block intersect(Block b1, Block b2, Block[] doms)
-	{
-		while (b1 != b2)
-		{
-			while (b1.postorder < b2.postorder)
-				b1 = doms[b1.postorder];
-			while (b2.postorder < b1.postorder)
-				b2 = doms[b2.postorder];
-		}
-		return b1;
-	}
-	
-	/**
-	 * compute idom(b) for each b in the flow graph using the
-	 * classic iterative algorithm with the dom set formed by
-	 * the list of idom(b) from b to entry, as presented by
-	 * Cooper, Harvey, and Kennedy:
-	 * http://citeseer.ist.psu.edu/cooper01simple.html
-	 * @return
-	 */
-	Map<Block,Block> idoms(Deque<Block> all, SetMap<Block,Edge>pred)
-	{
-		Block entry = all.peekFirst();
-		Block[] doms = new Block[entry.postorder+1];
-		
-		doms[entry.postorder] = entry;
-		boolean changed;
-		do
-		{
-			changed = false;
-			for (Block b: all)
-			{
-				if (b == entry)
-					continue;
-				Block new_idom = null;
-				// pick any pred that is processed already
-				for (Edge e: pred.get(b))
-				{
-					Block p = e.from;
-					if (doms[p.postorder] != null)
-					{
-						new_idom = p;
-						break;
-					}
-				}
-				// intersect with all other processed preds
-				for (Edge e: pred.get(b))
-				{
-					Block p = e.from;
-					if (p != new_idom && doms[p.postorder] != null)
-						new_idom = intersect(p, new_idom, doms);
-				}
-				// if new dominator found then do another pass
-				if (doms[b.postorder] != new_idom)
-				{
-					doms[b.postorder] = new_idom;
-					changed = true;
-				}
-			}
-		}
-		while (changed);
-		
-		Map<Block,Block> map = new TreeMap<Block,Block>();
-		for (Block b: all)
-			if (b != entry)
-				map.put(b, doms[b.postorder]);
-		
-		return map;
-	}
-	
-	boolean dominates(Block p, Block s, Map<Block,Block>idom)
-	{
-		for (Block b = s; b != null; b = idom.get(b))
-			if (b == p)
-				return true;
-		return false;
-	}
 	
 	/**
 	 * returns true if P->S is a loop back edge.  This is the
@@ -8887,35 +8256,6 @@ public class GlobalOptimizer
 	boolean isLoop(Edge e, Map<Block,Block>idom)
 	{
 		return e.isBackedge() && dominates(e.to, e.from, idom);
-	}
-	
-	Block getBlock(Set<Block>work)
-	{
-		Iterator<Block> i = work.iterator();
-		Block b = i.next();
-		i.remove();
-		return b;
-	}
-	
-	Expr getExpr(Set<Expr>work)
-	{
-		Iterator<Expr> i = work.iterator();
-		Expr e = i.next();
-		i.remove();
-		return e;
-	}
-	
-	Edge getEdge(Set<Edge>work)
-	{
-		Iterator<Edge> i = work.iterator();
-		Edge e = i.next();
-		i.remove();
-		return e;
-	}
-	
-	Method remove(List<Method> list)
-	{
-		return list.remove(list.size()-1);
 	}
 	
 	EdgeMap<Block> findLoops(Deque<Block> code)
@@ -9053,39 +8393,27 @@ public class GlobalOptimizer
 		
 	static boolean isSlot(Binding b)
 	{
-		if (b == null) return false;
-		int tk = b.kind();
-		return tk == TRAIT_Var || tk == TRAIT_Const || tk == TRAIT_Class;
+		return (b != null)? b.isSlot(): false;
 	}
 	static boolean isConst(Binding b)
 	{
-		if (b == null) return false;
-		int tk = b.kind();
-		return tk == TRAIT_Const || tk == TRAIT_Getter;
+		return (b != null)? b.isConst(): false;
 	}
 	static boolean isClass(Binding b)
 	{
-		if (b == null) return false;
-		int tk = b.kind();
-		return tk == TRAIT_Class;
+		return (b != null)? b.isClass(): false;
 	}
 	static boolean isMethod(Binding b)
 	{
-		if (b == null) return false;
-		int tk = b.kind();
-		return tk == TRAIT_Method;
+		return (b != null)? b.isMethod() :false;
 	}
 	static boolean isGetter(Binding b)
 	{
-		if (b == null) return false;
-		int tk = b.kind();
-		return tk == TRAIT_Getter;
+		return (b != null)? b.isGetter(): false;
 	}
 	static boolean isSetter(Binding b)
 	{
-		if (b == null) return false;
-		int tk = b.kind();
-		return tk == TRAIT_Setter;
+		return (b != null)? b.isSetter(): false;
 	}
 	
 	/**
@@ -9458,7 +8786,7 @@ public class GlobalOptimizer
 		pw.println();
 		
 		pw.println(banner);
-		pw.println("\t"+m.name+" local_count="+m.local_count+" max_stack="+m.max_stack+" max_scope="+m.max_scope);
+		pw.println("\t"+m.getName()+" local_count="+m.local_count+" max_stack="+m.max_stack+" max_scope="+m.max_scope);
 		
 		Deque<Block> blocks = dfs(m.entry.to);
 
@@ -9515,14 +8843,14 @@ public class GlobalOptimizer
 		// save a dot file for the method
 		try
 		{
-			PrintWriter out = new PrintWriter(new FileWriter(m.name+suffix+".dot"));
+			PrintWriter out = new PrintWriter(new FileWriter(m.getName()+suffix+".dot"));
 			try
 			{
 				Deque<Block> code = dfs(m.entry.to);
 				
 				out.println("digraph {");
 				out.println("compound=true;");
-				out.println("label=\""+m.name+suffix+"\";");
+				out.println("label=\""+m.getName()+suffix+"\";");
 				out.println("labelloc=top;");
 				out.println("fontsize=10;");
 				
@@ -10005,7 +9333,7 @@ public class GlobalOptimizer
 			if ( b.equals(m.entry.to))
 			{
 				//  Note parameters as active.
-				for ( int i = 0; i < m.params.length; i++)
+				for ( int i = 0; i < m.getParams().length; i++)
 					result.set(i);
 			}
 			result.andNot(this.killed_vars);
@@ -10044,7 +9372,7 @@ public class GlobalOptimizer
 		 */
 		private boolean isAPriori(int varnum)
 		{
-			return (this.b.equals(this.m.entry.to) && varnum < this.m.params.length);
+			return (this.b.equals(this.m.entry.to) && varnum < this.m.getParams().length);
 		}
 		
 		private void defines(int varnum, Expr generating_expr)
@@ -10362,64 +9690,5 @@ public class GlobalOptimizer
 				return 5;
 			}
 		}
-	}
-	
-	/**
-	 *   Deque isn't present on pre 1.6 systems,
-	 *   so the GlobalOptimizer needs its own
-	 *   interface and implementations.
-	 */
-	static interface Deque<E> extends List<E>
-	{
-		E removeFirst();
-		E peekFirst();
-		E removeLast();
-		E peekLast();
-		void addFirst(E e);
-	}
-	
-	static class ArrayDeque<E> extends ArrayList<E> implements Deque<E>
-	{
-		ArrayDeque()
-		{
-		}
-		ArrayDeque(Collection<E> c)
-		{
-			addAll(c);
-		}
-		public void addFirst(E e)
-		{
-			add(0, e);
-		}
-		public E removeFirst()
-		{
-			return remove(0);
-		}
-		public E peekFirst()
-		{
-			return isEmpty() ? null : get(0);
-		}
-		public E removeLast()
-		{
-			return remove(size()-1);
-		}
-		public E peekLast()
-		{
-			return isEmpty() ? null : get(size()-1);
-		}
-		public static final long serialVersionUID = 0;
-	}
-	
-	static class LinkedDeque<E> extends LinkedList<E> implements Deque<E>
-	{
-		public E peekFirst()
-		{
-			return isEmpty() ? null : getFirst();
-		}
-		public E peekLast()
-		{
-			return isEmpty() ? null : getLast();
-		}
-		public static final long serialVersionUID = 0;
-	}
+	}	
 }

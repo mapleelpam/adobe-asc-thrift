@@ -1,5 +1,6 @@
 package adobe.abc;
 
+import static adobe.abc.Algorithms.*;
 import static adobe.abc.OptimizerConstants.*;
 
 import java.util.HashSet;
@@ -13,7 +14,7 @@ public class Block implements Iterable<Expr>, Comparable<Block>
 	/**
 	 *  The statement-level expressions that make up this block's code. 
 	 */
-	adobe.abc.GlobalOptimizer.Deque<Expr> exprs = new adobe.abc.GlobalOptimizer.ArrayDeque<Expr>();
+	public Deque<Expr> exprs = new ArrayDeque<Expr>();
 
 	/**
 	 *  Expressions known to be used in successor blocks.
@@ -25,18 +26,18 @@ public class Block implements Iterable<Expr>, Comparable<Block>
 	/**
 	 *   Block ID number, unique within a Method.
 	 */
-	int id;
+	public int id;
 
 	/**
 	 *   Post-order walk number.
 	 *   More interesting than the Block's id. 
 	 */
-	int postorder;
+	public int postorder;
 	
 	/**
 	 * in-scope handlers for this block.
 	 */
-	Edge[] xsucc = noedges;
+	public Edge[] xsucc = noedges;
 	
 	/** 
 	 *  Don't change control flow/data flow to this block when set.
@@ -52,9 +53,9 @@ public class Block implements Iterable<Expr>, Comparable<Block>
 	 */
 	boolean is_backwards_branch_target = false;
 	
-	Block(Method m)
+	public Block(Method m)
 	{
-		this.id = m.blockId++;
+		this.id = m.getNextBlockId();
 	}
 	
 	public void appendExpr(Expr e)
@@ -82,17 +83,17 @@ public class Block implements Iterable<Expr>, Comparable<Block>
 		return 'B'+String.valueOf(id); 
 	}
 	
-	Expr first()
+	public Expr first()
 	{
 		return exprs.peekFirst();
 	}
 	
-	Expr last()
+	public Expr last()
 	{
 		return exprs.peekLast();
 	}
 	
-	Edge[] succ()
+	public Edge[] succ()
 	{
 		if ( last().succ != null )
 			return last().succ;
@@ -105,7 +106,7 @@ public class Block implements Iterable<Expr>, Comparable<Block>
 		return exprs.iterator();
 	}
 	
-	void add(Expr e)
+	public void add(Expr e)
 	{
 		exprs.add(e);
 	}
@@ -115,17 +116,17 @@ public class Block implements Iterable<Expr>, Comparable<Block>
 		exprs.addAll(b.exprs);
 	}
 	
-	boolean isEmpty()
+	public boolean isEmpty()
 	{
 		return exprs.isEmpty();
 	}
 	
-	int size()
+	public int size()
 	{
 		return exprs.size();
 	}
 	
-	void remove(Expr e)
+	public void remove(Expr e)
 	{
 		exprs.remove(e);
 	}

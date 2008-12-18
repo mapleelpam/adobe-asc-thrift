@@ -2,7 +2,9 @@ package adobe.abc;
 
 import static adobe.abc.OptimizerConstants.*;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class TypeCache 
@@ -14,8 +16,13 @@ public class TypeCache
 	public Type NULL, VOID;
 	public Type ANY;
 	
-	Set<Type>builtinTypes = new HashSet<Type>();
-	Set<Type>baseTypes    = new HashSet<Type>();
+	public Set<Type>builtinTypes = new HashSet<Type>();
+	public Set<Type>baseTypes    = new HashSet<Type>();
+
+	public Symtab<Type> namedTypes = new Symtab<Type>();
+	public Symtab<Typeref> globals = new Symtab<Typeref>();
+
+	public Map<Namespace,Name> namespaceNames = new HashMap<Namespace,Name>();
 	
 	private static TypeCache the_instance = new TypeCache();
 	
@@ -83,5 +90,15 @@ public class TypeCache
 		builtinTypes.add(XMLLIST);
 		builtinTypes.add(QNAME);
 		builtinTypes.add(VOID);
+	}
+
+	public boolean containsNamedType(Type at) 
+	{
+		return containsNamedType(at.getName());
+	}
+	
+	public boolean containsNamedType(Name n) 
+	{
+		return namedTypes.contains(n);
 	}
 }

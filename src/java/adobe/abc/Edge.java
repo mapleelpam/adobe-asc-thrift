@@ -2,8 +2,8 @@ package adobe.abc;
 
 public class Edge implements Comparable<Edge>
 {
-	Block from;
-	Block to;
+	public Block from;
+	public Block to;
 	int label;
 	int id;
 
@@ -20,7 +20,7 @@ public class Edge implements Comparable<Edge>
 		id = m.edgeId++;
 	}
 	
-	Edge(Method m, Block f, int i, Block t)
+	public Edge(Method m, Block f, int i, Block t)
 	{
 		this(m,f,i);
 		to = t;
@@ -67,5 +67,10 @@ public class Edge implements Comparable<Edge>
 	public boolean isThrowEdge()
 	{
 		return handler != null;
+	}
+
+	public int getLabel() 
+	{
+		return label;
 	}
 }

@@ -1,10 +1,8 @@
 package adobe.abc;
 
-import adobe.abc.GlobalOptimizer.Binding;
-
 public class Typeref
 {
-	final Type t;
+	public final Type t;
 	final boolean nullable;
 	
 	Typeref(Type t, boolean nullable)
@@ -44,5 +42,10 @@ public class Typeref
 		return !t.ref.nullable || t==TypeCache.instance().NULL || t==TypeCache.instance().VOID || t==TypeCache.instance().ANY ? t.toString() :
 				nullable ? t.toString() + "?" :
 				t.toString();
+	}
+	
+	public Type getType()
+	{
+		return t;
 	}
 }

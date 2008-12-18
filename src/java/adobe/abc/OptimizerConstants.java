@@ -1,5 +1,7 @@
 package adobe.abc;
 
+import adobe.abc.GlobalOptimizer.Metadata;
+
 public interface OptimizerConstants 
 {
 	static final Expr[] noexprs = new Expr[] {};
@@ -7,6 +9,11 @@ public interface OptimizerConstants
 	static final Handler[] nohandlers = new Handler[] {};
 	static Type[] notypes = new Type[] {};
 	static Typeref[] notyperefs = new Typeref[] {};
+	static final Metadata[] nometadata = new Metadata[0];
+	
+	static final Object UNDEFINED = new Object() { public String toString() { return "undefined"; }};
+	static final Object BOTTOM = new Object() { public String toString() { return "?"; }};
+	static final Double NAN = Double.NaN;
 
 	int OP_arg = 0x00; // argument provided by the vm in a pre-assigned local var.
     int OP_phi = 0x0a; // compiler only

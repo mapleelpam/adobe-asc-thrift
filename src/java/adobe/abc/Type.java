@@ -1,16 +1,12 @@
 package adobe.abc;
 
-import adobe.abc.GlobalOptimizer.Binding;
-import adobe.abc.GlobalOptimizer.Symtab;
-
-
 import static adobe.abc.OptimizerConstants.*;
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.*;
 
 public class Type
 {
 	Name name;
-	Type base;
+	public Type base;
 	Type[] interfaces = notypes;
 	Symtab<Binding> defs;
 	Method init;
@@ -22,7 +18,7 @@ public class Type
 	boolean primitive;
 	boolean atom;
 	Object defaultValue;
-	Typeref ref;
+	public Typeref ref;
 	int size;
 	int slotCount;
 	int ctype;
@@ -63,7 +59,7 @@ public class Type
 		return String.valueOf(name);
 	}
 	
-	boolean isFinal()
+	public boolean isFinal()
 	{
 		return (flags & CLASS_FLAG_final) != 0;
 	}
@@ -99,7 +95,7 @@ public class Type
 		return first;
 	}
 	
-	Binding findSlot(int slot)
+	public Binding findSlot(int slot)
 	{
 		for (Binding b: defs.values())
 		{
@@ -109,7 +105,7 @@ public class Type
 		return null;
 	}
 	
-	boolean hasProtectedNs()
+	public boolean hasProtectedNs()
 	{
 		return (flags & CLASS_FLAG_protected) != 0;
 	}
@@ -138,8 +134,22 @@ public class Type
 			equals(TypeCache.instance().NUMBER);
 	}
 	
-	boolean isAtom()
+	public boolean isAtom()
 	{
 		return this.atom;
+	}
+
+	public Name getName() {
+		return name;
+	}
+
+
+	public boolean isPrimitive() {
+		return primitive;
+	}
+
+	public boolean isNumeric() 
+	{
+		return numeric;
 	}
 }

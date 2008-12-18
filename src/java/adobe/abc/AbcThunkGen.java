@@ -84,7 +84,7 @@ public class AbcThunkGen
 		}
 		
 		String scriptname = filename.substring(0,filename.lastIndexOf('.'));
-		emitNatives(ia, abcdata, scriptname, go.namespaceNames);
+		emitNatives(ia, abcdata, scriptname, TypeCache.instance().namespaceNames);
 	}
 
 	static byte[] load(String filename) throws IOException
@@ -167,7 +167,7 @@ public class AbcThunkGen
 			for (Binding bb : s.defs.values())
 			{
 				if (bb.method != null && bb.method.isNative())
-					out_h.println("const uint32_t abcscript_"+ bb.name + " = " + i + ";");
+					out_h.println("const uint32_t abcscript_"+ bb.getName() + " = " + i + ";");
 			}
 			emitSourceTraits("", s);
 		}
@@ -218,12 +218,12 @@ public class AbcThunkGen
 	{
 		if (s.init != null && s.init.isNative())
 		{
-			String native_name = prefix + s.name;
+			String native_name = prefix + s.getName();
 			gatherThunk(native_name, s.init);
 		}
 		for (Binding b: s.defs.values())
 		{
-			Namespace ns = b.name.nsset(0);
+			Namespace ns = b.getName().nsset(0);
 			String id = prefix + propLabel(b, ns);
 			String ctype = null;
 
@@ -264,7 +264,7 @@ public class AbcThunkGen
 
 	void emitSourceClass(Binding b, Namespace ns)
 	{
-		String label = ns_prefix(ns, true) + to_cname(b.name.name);
+		String label = ns_prefix(ns, true) + to_cname(b.getName().name);
 
 		Type c = b.type.t;
 		
@@ -334,7 +334,7 @@ public class AbcThunkGen
 	
 	String propLabel(Binding b, Namespace ns)
 	{
-		return ns_prefix(ns, false) + b.name.name;
+		return ns_prefix(ns, false) + b.getName().name;
 	}
 
 	int defValCType(Object value)
@@ -456,13 +456,13 @@ public class AbcThunkGen
 		else
 			sig += sigChar(CTYPE_ATOM, false);
 		sig += "_";
-		for (int i = 0; i < m.params.length; ++i)
+		for (int i = 0; i < m.getParams().length; ++i)
 		{
-			sig += sigChar(m.params[i].t.ctype, true);
+			sig += sigChar(m.getParams()[i].t.ctype, true);
 		}
 		if (m.hasOptional())
 		{
-			int param_count = m.params.length - 1;
+			int param_count = m.getParams().length - 1;
 			int optional_count = get_optional_count(m);
 			for (int i = param_count - optional_count + 1; i <= param_count; i++)
 			{
@@ -500,15 +500,15 @@ public class AbcThunkGen
 		out_c.println("{");
 		out_c.indent++;
 
-		int param_count = m.params.length-1;
+		int param_count = m.getParams().length-1;
 		assert(param_count >= 0);
 		int optional_count = get_optional_count(m);
 		assert(optional_count <= param_count);
 
 		String argszprev = "0";
-		for (int i = 0; i < m.params.length; ++i)
+		for (int i = 0; i < m.getParams().length; ++i)
 		{
-			String cts = ctype_i(m.params[i].t.ctype, true);
+			String cts = ctype_i(m.getParams()[i].t.ctype, true);
 			if (i == 0)
 				out_c.println("const uint32_t argoff0 = 0;");
 			else
@@ -517,16 +517,16 @@ public class AbcThunkGen
 		}
 		if (m.needsRest())
 		{
-			out_c.println("const uint32_t argoffV = argoff"+(m.params.length-1)+" + "+argszprev+";");
+			out_c.println("const uint32_t argoffV = argoff"+(m.getParams().length-1)+" + "+argszprev+";");
 		}
 		
-		int argct = m.params.length + (cookie?1:0) + (m.needsRest()?2:0);
+		int argct = m.getParams().length + (cookie?1:0) + (m.needsRest()?2:0);
 		String[] argvals = new String[argct];
 		String[] argtypes = new String[argct];
 		int argsidx = 0;
-		for (int i = 0; i < m.params.length; ++i)
+		for (int i = 0; i < m.getParams().length; ++i)
 		{
-			String cts = ctype_i(m.params[i].t.ctype, true);
+			String cts = ctype_i(m.getParams()[i].t.ctype, true);
 			String val = "AvmThunkUnbox_"+cts+"(argv[argoff" + i + "])";
 			if (i > param_count - optional_count)
 			{

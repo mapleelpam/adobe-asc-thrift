@@ -5,17 +5,19 @@ import adobe.abc.GlobalOptimizer.InputAbc;
 import static adobe.abc.OptimizerConstants.*;
 import static macromedia.asc.embedding.avmplus.ActionBlockConstants.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Method implements Comparable<Method>
 {
 	InputAbc abc;
-	final int id;
+	public final int id;
 	int emit_id;
-	Edge entry;
+	public Edge entry;
 	Typeref[] params;
-	Object[] values;
+	public Object[] values;
 	int optional_count;
 	Typeref returns;
 	Name name;
@@ -23,8 +25,8 @@ public class Method implements Comparable<Method>
 	Name[] paramNames;
 	int flags;
 	Type cx;
-	int blockId;
-	int exprId;
+	private int blockId;
+	private int exprId;
 	int edgeId;
 	String kind;
 	
@@ -35,7 +37,7 @@ public class Method implements Comparable<Method>
 	int code_len;
 	
 	Typeref activation;
-	Handler[] handlers = nohandlers;
+	public Handler[] handlers = nohandlers;
 	
 	Map<Expr,Typeref> verifier_types = null;
 	
@@ -46,25 +48,66 @@ public class Method implements Comparable<Method>
 		this.id = id;
 		this.abc = abc;
 	}
-	boolean needsRest()
+	public boolean needsRest()
 	{
 		return (flags & METHOD_Needrest) != 0;
 	}
-	boolean needsArguments()
+	public boolean needsArguments()
 	{
 		return (flags & METHOD_Arguments) != 0;
 	}
-	boolean hasParamNames()
+	public boolean hasParamNames()
 	{
 		return (flags & METHOD_HasParamNames) != 0;
 	}
-	boolean hasOptional()
+	public boolean hasOptional()
 	{
 		return (flags & METHOD_HasOptional) != 0;
 	}
-	boolean isNative()
+	public boolean isNative()
 	{
 		return (flags & METHOD_Native) != 0;
+	}
+	
+	public int nameIndex(Name n)
+	{
+		return abc.nameIndex(n);
+	}
+	
+	public Name getName(int idx)
+	{
+		return abc.names[idx];
+	}
+	
+	public int stringIndex(Object s)
+	{
+		//  TODO: Delegate to InputAbc
+		return Arrays.asList(abc.strings).indexOf(s);
+	}
+	
+	public String getString(int idx)
+	{
+		return abc.strings[idx];
+	}
+	
+	public int typeIndex(Type t)
+	{
+		return Arrays.asList(abc.classes).indexOf(t);
+	}
+	
+	public Type getType(int idx)
+	{
+		return abc.classes[idx];
+	}
+	
+	public int methodIndex(Method m)
+	{
+		return Arrays.asList(abc.methods).indexOf(m);
+	}
+	
+	public Method getMethod(int idx)
+	{
+		return abc.methods[idx];
 	}
 	
 	public int compareTo(Method m)
@@ -74,7 +117,61 @@ public class Method implements Comparable<Method>
 	
 	public String toString()
 	{
-		return kind + " " + String.valueOf(name);
+		return kind + " " + String.valueOf(getName());
+	}
+	
+	public Name getParameterName(int idx)
+	{
+		if ( paramNames != null )
+			return paramNames[idx];
+		else if ( 0 == idx )
+			return new Name("this");
+		else
+			return new Name("arg" + idx);
+	}
+	
+	public Name getName() 
+	{
+		return name;
+	}
+	
+	public Typeref[] getParams()
+	{
+		return params;
+	}
+	
+	public Typeref getReturnType()
+	{
+		return returns;
+	}
+	
+	public Algorithms.Deque<Block> depthFirstCfg()
+	{
+		return Algorithms.dfs(entry.to);
+	}
+	
+
+	/**
+	 * @return the next block serial number.
+	 * @post Serial number incremented.
+	 */
+	public int getNextBlockId() 
+	{
+		return blockId++;
+	}
+	
+	
+	/**
+	 * @return the next expression serial number.
+	 * @post Serial number incremented.
+	 */
+	public int getNextExprId() 
+	{
+		return exprId++;
+	}
+	public List<Name> getAllNames()
+	{
+		return Arrays.asList(this.abc.names);
 	}
 }
 

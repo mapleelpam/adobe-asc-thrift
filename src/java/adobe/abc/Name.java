@@ -24,14 +24,17 @@ public class Name implements Comparable<Name>
 	{
 		this(CONSTANT_Qname, ns, name);
 	}
-	Name(int kind, Namespace ns, String name)
+	
+	public Name(int kind, Namespace ns, String name)
 	{
 		this(kind, name, new Nsset(new Namespace[] { ns }), null);
 	}
+	
 	Name(int kind, String name, Nsset nsset)
 	{
 		this(kind, name, nsset, null);
 	}
+	
 	Name(int kind, String name, Nsset nsset, String type_param_name)
 	{
 		assert(nsset != null);
@@ -40,12 +43,13 @@ public class Name implements Comparable<Name>
 		this.name = name;
 		this.type_param = type_param_name;
 	}
-	Name(String name)
+	
+	public Name(String name)
 	{
 		this(CONSTANT_Qname, PUBLIC, name);
 	}
 	
-	Namespace nsset(int i)
+	public Namespace nsset(int i)
 	{
 		return nsset.nsset[i];
 	}
@@ -78,7 +82,7 @@ public class Name implements Comparable<Name>
 		return new Name(kind, s+name, nsset);
 	}
 	
-	int hc(Object o)
+	private int hc(Object o)
 	{
 		return o != null ? o.hashCode() : 0;
 	}
@@ -109,16 +113,51 @@ public class Name implements Comparable<Name>
 		return nsset.compareTo(other.nsset);
 	}
 	
-	int attr()
+	public int attr()
 	{
 		return kind == CONSTANT_MultinameA || kind == CONSTANT_QnameA ||
 			kind == CONSTANT_RTQnameA || kind == CONSTANT_RTQnameLA || kind == CONSTANT_MultinameLA ? 1 : 0;
 	}
 	
-	boolean isQname()
+	public boolean isQname()
 	{
 		return kind == CONSTANT_Qname || kind == CONSTANT_QnameA ||
 			kind == CONSTANT_RTQname || kind == CONSTANT_RTQnameA ||
 			kind == CONSTANT_RTQnameL || kind == CONSTANT_RTQnameLA;
 	}
+	
+	/**
+	 * compare two names.  this implements the multiname->name matching rules.
+	 * 
+	 * @param other
+	 * @return
+	 */
+	public int match(Name b)
+	{
+		if (this == b) return 0;
+		
+		// @names can't ever match regular names
+		int d;
+		if ((d = this.attr() - b.attr()) != 0) return d;
+		if ((d = this.name.compareTo(b.name)) != 0) return d;
+		
+		if (this.isQname() && b.isQname())
+			return this.nsset(0).compareTo(b.nsset(0));
+		
+		else if (this.isQname() && !b.isQname())
+		{
+			for (Namespace ns: b.nsset)
+				if (ns.equals(this.nsset(0)))
+					return 0;
+		}
+		else if (b.isQname() && !this.isQname())
+		{
+			for (Namespace ns: this.nsset)
+				if (ns.equals(b.nsset(0)))
+					return 0;
+		}
+
+		return this.nsset.compareTo(b.nsset);
+	}
+	
 }

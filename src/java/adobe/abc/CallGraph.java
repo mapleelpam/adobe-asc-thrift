@@ -1,6 +1,5 @@
 package adobe.abc;
 
-import adobe.abc.GlobalOptimizer.Binding;
 import adobe.abc.GlobalOptimizer.InputAbc;
 
 
@@ -49,7 +48,7 @@ public class CallGraph
 		
 		traversed_methods.add(m);
 		
-		for ( Block b: GlobalOptimizer.dfs(m.entry.to))
+		for ( Block b: Algorithms.dfs(m.entry.to))
 		{
 			for ( Expr e: b.exprs )
 			{
