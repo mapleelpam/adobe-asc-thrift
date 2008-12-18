@@ -271,8 +271,17 @@ public class Main
                     		if ( flag.length() > 4)
                     		{
                     			String option_name = flag.substring(4);
+                    			String option_value = "";
+                    			
+                    			int eq_pos = option_name.indexOf('=');
+                    			
+                    			if ( eq_pos != -1 )
+                    			{
+                    				option_value = option_name.substring(eq_pos+1);  //  Skip the "=" char
+                    				option_name  = option_name.substring(0, eq_pos);
+                    			}
                     		
-	                    		optimizer_configs.add(new ConfigVar("o2", option_name, ""));
+	                    		optimizer_configs.add(new ConfigVar("o2", option_name, option_value));
                     		}
                     	}
                         break;

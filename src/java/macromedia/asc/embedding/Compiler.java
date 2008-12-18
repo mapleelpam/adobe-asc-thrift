@@ -440,7 +440,7 @@ public class Compiler implements ErrorConstants
                     {
                     	try
                     	{
-                    		byte[] optimized_abc = adobe.abc.GlobalOptimizer.optimize(bytes.toByteArray(), optimizer_configs, import_filespecs);
+                    		byte[] optimized_abc = adobe.abc.GlobalOptimizer.optimize(bytes.toByteArray(), filename, optimizer_configs, import_filespecs);
                     		bytes.clear();
                     		bytes.addAll(optimized_abc);
                     	}

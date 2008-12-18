@@ -272,11 +272,8 @@ public class GlobalOptimizer
 			int load_phase = pushTracePhase("LoadFile");
 			addTraceAttr("filename", filename);
 			
-			before = load(filename);
-			
-			lengths.add(before.length);
 			InputAbc ia = go.new InputAbc();
-			ia.readAbc(before);
+			lengths.add(ia.readAbc(filename));
 			a.add(ia);
 			if(obscure_natives) {
 				ia.obscure_natives();
@@ -314,12 +311,6 @@ public class GlobalOptimizer
 		byte[] after = null;
 
 		pushTracePhase("Optimize");
-		
-		for ( PluginData plugin: go.analysis_phase_plugins.values())
-		{
-			CallGraph cg = new CallGraph(first);
-			plugin.plugin.runPlugin(filename, cg);
-		}
 
 		go.optimize(first);
 		after = go.emit(first, filename, initScripts, no_c_gen);
@@ -411,6 +402,7 @@ public class GlobalOptimizer
 		boolean containsObject;
 		Set<Type> toResolve;
 		List<InputAbc> mergedAbcs = new ArrayList<InputAbc>();
+		public String src_filename;
 		
 		InputAbc()
 		{
@@ -471,6 +463,14 @@ public class GlobalOptimizer
 				TypeCache.instance().namedTypes.put(n, new Type(n,null));
 			}
 			return TypeCache.instance().namedTypes.get(names[id]);
+		}
+
+		int readAbc(String src_file) throws IOException
+		{
+			byte[] file_buffer = load(src_file);
+			readAbc(file_buffer);
+
+			return file_buffer.length;
 		}
 
 		void readAbc(byte[] abc) throws IOException
@@ -2042,6 +2042,13 @@ public class GlobalOptimizer
 	
 	void optimize(InputAbc a)
 	{
+		
+		for ( PluginData plugin: this.analysis_phase_plugins.values())
+		{
+			CallGraph cg = new CallGraph(a);
+			plugin.plugin.runPlugin(a.src_filename, cg);
+		}
+		
  		for (Type t: a.scripts)
 			readyType(t);
 		
@@ -3591,7 +3598,7 @@ public class GlobalOptimizer
 		unwindTrace(optimize_trace_phase);
 	}
 	
-	public static byte[] optimize( byte[] raw_abc, ObjectList<ConfigVar> optimizer_configs, ObjectList<String> import_filespecs )
+	public static byte[] optimize( byte[] raw_abc, String filename, ObjectList<ConfigVar> optimizer_configs, ObjectList<String> import_filespecs )
 	throws java.io.IOException
 	{
 		GlobalOptimizer go = new GlobalOptimizer();
@@ -3621,6 +3628,45 @@ public class GlobalOptimizer
 			{
 				go.ALLOW_NATIVE_CTORS = true;
 			}
+			if ( config_var.name.equalsIgnoreCase("-plugin") )
+			{
+				go.loadPlugin(config_var.value);
+				continue;
+			}
+			if ( config_var.name.startsWith("-") && config_var.name.contains(":"))
+			{
+				int delim_pos = config_var.name.indexOf(':');
+				String plugin_name   = config_var.name.substring(1, delim_pos);
+				String plugin_option = config_var.name.substring(delim_pos+1);
+				
+				PluginData plugin_data = go.analysis_phase_plugins.get(plugin_name);
+				
+				if ( null == plugin_data )
+				{
+					//  Iterate over the plugins and find a short
+					//  name that matches this monster.
+					
+					for ( PluginData search_plugin: go.analysis_phase_plugins.values() )
+					{
+						if ( search_plugin.plugin.getClass().getSimpleName().equals(plugin_name))
+						{
+							plugin_data = search_plugin;
+							break;
+						}
+					}
+				}
+				
+				if ( null != plugin_data )
+				{
+					plugin_data.options.add(plugin_option);
+				}
+				else
+				{
+					throw new IllegalArgumentException("No plugin named " + plugin_name + " is loaded.");		
+				}
+				
+				continue;
+			}
 			else
 			{
 				throw new IllegalArgumentException("Unknown -o2:configuration_value " + config_var.name);
@@ -3631,12 +3677,15 @@ public class GlobalOptimizer
 		//  For now, just redo the imports.
 		for ( String import_filespec: import_filespecs)
 		{
-			go.new InputAbc().readAbc(load(import_filespec));
+			go.new InputAbc().readAbc(import_filespec);
 		}
 	
 		InputAbc input_abc = go.new InputAbc();
+		input_abc.src_filename = filename;
+		
 		input_abc.readAbc(raw_abc);
 	
+		go.initializePlugins();
 		go.optimize(input_abc);
 	
 		Abc abc = go.new Abc();
