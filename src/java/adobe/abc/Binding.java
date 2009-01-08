@@ -99,7 +99,10 @@ public class Binding
 	
 	public boolean defaultValueChanged()
 	{
-		return this.type.t.defaultValue != null && !this.type.t.defaultValue.equals(this.value);
+		if ( this.type.t.defaultValue != null )
+			return !this.type.t.defaultValue.equals(this.value);
+		else
+			return this.value != null;
 	}
 	
 	public String toString()
