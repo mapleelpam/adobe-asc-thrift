@@ -1,6 +1,9 @@
 package adobe.abc;
 
 import static adobe.abc.OptimizerConstants.*;
+import static java.lang.Boolean.FALSE;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_PackageNamespace;
+import static macromedia.asc.embedding.avmplus.ActionBlockConstants.CONSTANT_Qname;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,8 +45,57 @@ public class TypeCache
 		return this.ANY;
 	}
 	
-	void polishBuiltins( Object undefined, Object boolean_false, Object numeric_nan)
+	Type lookup(Name n, Type base)
 	{
+		Type t = namedTypes.get(n);
+
+		if (t == null)
+		{
+			Name n2 = new Name(CONSTANT_Qname, new Namespace(CONSTANT_PackageNamespace, ""), n.name);
+			t = namedTypes.get(n2);
+			
+			if (t == null)
+			{
+				t = new Type(n2, base);
+				TypeCache.instance().namedTypes.put(n2, t);
+			}
+		}
+		return t;
+	}
+	
+	Type lookup(String name, Type base)
+	{
+		return lookup(new Name(name), base);
+	}
+	
+	Type lookup(String name)
+	{
+		return lookup(name, OBJECT);
+	}
+	
+	void setupBuiltins()
+	{
+		assert(null == OBJECT);
+
+		OBJECT = this.namedTypes.get(new Name(Name.PKG_PUBLIC, "Object"));
+		assert(null != OBJECT);
+		
+		NULL = lookup("null");
+		CLASS = lookup("Class");
+		FUNCTION = lookup("Function");
+		ARRAY = lookup("Array");
+		INT = lookup("int");
+		UINT = lookup("uint");
+		NUMBER = lookup("Number");
+		BOOLEAN = lookup("Boolean");
+		STRING = lookup("String");
+		NAMESPACE = lookup("Namespace");
+		XML = 	lookup("XML");
+		XMLLIST =lookup("XMLList");
+		QNAME =	lookup("QName");
+		
+		VOID =	lookup("void", null);
+		
 		OBJECT.ctype = CTYPE_ATOM;
 		NULL.ctype = CTYPE_ATOM;
 		VOID.ctype = CTYPE_VOID;
@@ -70,10 +122,10 @@ public class TypeCache
 		
 		OBJECT.defaultValue = NULL;
 		NULL.defaultValue = NULL;
-		ANY.defaultValue = undefined;
-		VOID.defaultValue = undefined;
-		BOOLEAN.defaultValue = boolean_false;
-		NUMBER.defaultValue = numeric_nan;
+		ANY.defaultValue = UNDEFINED;
+		VOID.defaultValue = UNDEFINED;
+		BOOLEAN.defaultValue = FALSE;
+		NUMBER.defaultValue = NAN;
 		INT.defaultValue = 0;
 		UINT.defaultValue = 0;
 		

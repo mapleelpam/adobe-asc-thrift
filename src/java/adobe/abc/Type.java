@@ -152,4 +152,27 @@ public class Type
 	{
 		return numeric;
 	}
+	
+	public boolean extendsBase(Type c)
+	{
+		Type t = this.base;
+		
+		for (; t != null; t = t.base)
+			if (t == c) 
+				return true;
+		return false;
+	}
+	
+	public boolean implementsInterface(Type i)
+	{
+		for ( Type x: this.interfaces )
+			if ( x == i )
+				return true;
+		return false;
+	}
+	
+	public boolean isDerivedFrom(Type x)
+	{
+		return this.extendsBase(x) || this.implementsInterface(x);
+	}
 }

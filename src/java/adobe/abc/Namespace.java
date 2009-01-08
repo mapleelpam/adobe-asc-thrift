@@ -62,7 +62,7 @@ class Namespace implements Comparable<Namespace>
 		if (!(o instanceof Namespace))
 			return false;
 		Namespace other = (Namespace) o;
-		return kind == other.kind && comparableUri.equals(comparableUri);
+		return kind == other.kind && comparableUri.equals(other.comparableUri);
 	}
 
 	public int compareTo(Namespace other)

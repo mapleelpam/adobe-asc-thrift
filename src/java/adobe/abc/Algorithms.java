@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -391,4 +392,69 @@ public abstract class Algorithms
 		return list.remove(list.size()-1);
 	}
 	
+	public static class TopologicalSort<T>
+	{
+		public interface DependencyChecker<T>
+		{
+			public boolean depends(T dep, T parent);
+		}
+		
+		public List<T> toplogicalSort(List<T> unsorted, DependencyChecker<T> checker)
+		{	
+			//  Create a dependency graph.
+			Map<T,Set<T>> dep = new HashMap<T,Set<T>>(unsorted.size());
+			
+			for ( T x: unsorted)
+			{
+				Set<T> parents = new HashSet<T>(); 
+				dep.put(x, parents);
+				
+				for ( T y: unsorted )
+				{
+					if ( x != y && checker.depends(x, y))
+					{
+						if(checker.depends(y,x))
+							throw new IllegalArgumentException("Cyclical graphs can't be topologically sorted.");
+
+						parents.add(y);
+					}
+				}
+			}
+			
+			//  Sort the dependency graph.
+			List<T> sorted = new ArrayList<T>(unsorted.size());
+			
+			while ( dep.size() > 0 )
+			{
+				boolean found_sorted_element = false;
+				
+				for ( T x: dep.keySet() )
+				{	
+					if ( 0 == dep.get(x).size() )
+					{
+						//  No unsorted parents; add it to the sorted list.
+						sorted.add(x);
+						found_sorted_element = true;
+
+						//  Remove this dependency from the remaining elements.
+						for ( T y: unsorted )
+						{
+							if ( dep.containsKey(y) )
+							{
+								dep.get(y).remove(x);
+							}
+						}
+						
+						dep.remove(x);
+						break;
+					}
+				}
+				
+				if ( !found_sorted_element )
+					throw new IllegalArgumentException("Cyclical graphs can't be topologically sorted.");
+			}
+
+			return sorted;
+		}
+	}
 }

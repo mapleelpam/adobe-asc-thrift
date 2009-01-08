@@ -146,6 +146,17 @@ public class GlobalOptimizer
 	boolean verbose_mode=false;
 	boolean legacy_verifier=false;  
 	
+	//  TODO: Needs more work to get right --
+	//  reading everything in-line means we're
+	//  never really sure if something's an
+	//  import or not b/c $GLOBALABC is processed
+	//  as a target in its own right during 
+	//  the tamarin build.
+	//  Have to organize the files list ahead
+	//  of the read phase, would also help 
+	//  integration with the ASC entry point.
+	boolean reading_imports = true;
+	
 	static TraceManager tm = new TraceManager();
 
 	public static void main(String[] args) throws IOException
@@ -263,7 +274,9 @@ public class GlobalOptimizer
 				continue;
 			}
 
-			if(args[i].equals("--")) {
+			if(args[i].equals("--")) 
+			{
+				go.reading_imports = false;
 				first_exported_file = a.size();
 				continue;
             }
@@ -399,7 +412,8 @@ public class GlobalOptimizer
 		Metadata metadata[];
 		Type classes[];
 		Type scripts[];
-		boolean containsObject;
+		boolean containsObject = false;
+		
 		Set<Type> toResolve;
 		List<InputAbc> mergedAbcs = new ArrayList<InputAbc>();
 		public String src_filename;
@@ -409,60 +423,12 @@ public class GlobalOptimizer
 			mergedAbcs.add(this);
 		}
 		
-		Type lookup(String name, Type base)
-		{
-			Name n = new Name(name);
-			Type t = TypeCache.instance().namedTypes.get(n);
-			if (t == null)
-			{
-				Name n2 = new Name(CONSTANT_Qname, new Namespace(CONSTANT_PackageNamespace, ""), name);
-				t = TypeCache.instance().namedTypes.get(n2);
-				if (t == null)
-				{
-					t = new Type(n2, base);
-					TypeCache.instance().namedTypes.put(n2, t);
-				}
-			}
-			return t;
-		}
-		
-		Type lookup(String name)
-		{
-			return lookup(name,OBJECT());
-		}
-
-		void lookupBuiltins()
-		{
-			assert(containsObject);
-
-			TypeCache.instance().CLASS = lookup("Class");
-			TypeCache.instance().FUNCTION = lookup("Function");
-			TypeCache.instance().ARRAY = lookup("Array");
-			TypeCache.instance().INT = lookup("int");
-			TypeCache.instance().UINT = lookup("uint");
-			TypeCache.instance().NUMBER = lookup("Number");
-			TypeCache.instance().BOOLEAN = lookup("Boolean");
-			TypeCache.instance().STRING = lookup("String");
-			TypeCache.instance().NAMESPACE = lookup("Namespace");
-			TypeCache.instance().XML = lookup("XML");
-			TypeCache.instance().XMLLIST = lookup("XMLList");
-			TypeCache.instance().QNAME = lookup("QName");
-			TypeCache.instance().VOID = lookup("void",null);
-			
-			TypeCache.instance().polishBuiltins(UNDEFINED, FALSE, NAN);
-		}
-		
 		Type lookup(int id)
 		{
-			if (id == 0)
+			if (0 == id)
 				return ANY();
-			if (!TypeCache.instance().containsNamedType(names[id]))
-			{
-				// external reference.  create placeholder type.
-				Name n = new Name(CONSTANT_Qname, names[id].nsset(0), names[id].name);
-				TypeCache.instance().namedTypes.put(n, new Type(n,null));
-			}
-			return TypeCache.instance().namedTypes.get(names[id]);
+			else
+				return TypeCache.instance().lookup(names[id], OBJECT());
 		}
 
 		int readAbc(String src_file) throws IOException
@@ -516,7 +482,9 @@ public class GlobalOptimizer
 		
 			names = new Name[p.readU30() + 1];
 			for (int i = 1, n = names.length-1; i < n; i++)
+			{
 				names[i] = readName(p);
+			}
 		
 			methods = new Method[p.readU30()];
 			int[] methodpos = new int[methods.length];
@@ -531,11 +499,11 @@ public class GlobalOptimizer
 		
 			Type[] instances = new Type[p.readU30()];
 			for (int i = 0, n = instances.length; i < n; i++)
-				instances[i] = readInstance(p); 
-		
-			if (containsObject)
-				lookupBuiltins();
-		
+				instances[i] = readInstance(p);
+			
+			if ( containsObject )
+				TypeCache.instance().setupBuiltins();
+				
 			// finish resolving methods using mp we saved earlier
 			for (int i=0, n = methods.length; i < n; i++)
 				resolveSignatureType(new Reader(methodpos[i], p.abc), i, methods[i]);
@@ -1035,7 +1003,9 @@ public class GlobalOptimizer
 				t.protectedNs = namespaces[p.readU30()];
 			t.interfaces = new Type[p.readU30()];
 			for (int j = 0, n = t.interfaces.length; j < n; j++)
-				t.interfaces[j] = lookup(p.readU30()); // interface
+			{
+				t.interfaces[j] = lookup(p.readU30());
+			}
 			t.init = methods[p.readU30()]; // init_id
 			if(t.init.isNative() && !ALLOW_NATIVE_CTORS)
 				throw new RuntimeException("Constructors can't be native: "+t);
@@ -1049,8 +1019,6 @@ public class GlobalOptimizer
 			if (t.getName().equals(new Name(Name.PKG_PUBLIC,"Object")))
 			{
 				containsObject = true;
-				TypeCache.instance().OBJECT = t;
-				TypeCache.instance().NULL = lookup("null", TypeCache.instance().OBJECT);
 			}
 			return t;
 		}
@@ -2078,7 +2046,7 @@ public class GlobalOptimizer
 		Pool<Metadata> metaPool = new Pool<Metadata>(0);
 		int bodyCount;
 		boolean haveNatives;
-		
+
 		List<Type> scripts = new ArrayList<Type>();
 		List<Type> classes = new ArrayList<Type>();
 		
@@ -2127,7 +2095,7 @@ public class GlobalOptimizer
 			if (t.hasProtectedNs())
 				addNamespace(t.protectedNs);
 			for (Type i: t.interfaces)
-				addTypeRef(i);
+				addInterfaceRef(i);
 			addMethod(t.init);
 			addTraits(t.defs);
 
@@ -2136,7 +2104,7 @@ public class GlobalOptimizer
 			addTraits(c.defs);
 			classes.add(c);
 		}
-		
+
 		int classId(Type c)
 		{
 			return classes.indexOf(c);
@@ -2298,10 +2266,16 @@ public class GlobalOptimizer
 		{
 			addTypeRef(tref.t);
 		}
+		
 		void addTypeRef(Type t)
 		{
 			if (t != ANY() && !t.emitAsAny())
 				addName(t.getName());
+		}
+		
+		void addInterfaceRef(Type t) 
+		{
+			addName(t.getName());
 		}
 		
 		void addMethod(Method m)
@@ -2410,24 +2384,45 @@ public class GlobalOptimizer
 			verboseStatus("NAMES " + namePool.values);
 			
 			// topological sort of the classes, base classes come first
-			TreeSet<Type> cs = new TreeSet<Type>(new Comparator<Type>()
+			if ( legacy_verifier )
 			{
-				public int compare(Type a, Type b)
+			classes = new Algorithms.TopologicalSort<Type>().toplogicalSort(
+					classes, 
+					new Algorithms.TopologicalSort.DependencyChecker<Type>()
+					{
+						public boolean depends(Type dep, Type parent)
+						{
+							return (dep.itype.isDerivedFrom(parent.itype));
+						}
+					}
+				);
+			}
+			else
+			{
+				TreeSet<Type> cs = new TreeSet<Type>(new Comparator<Type>()
 				{
-					if (a == b) return 0;
+					public int compare(Type a, Type b)
+					{
+						if (a == b) return 0;
 // no, this is subtly wrong: we might be comparing two classes that have no parent-child relationship
 // (eg SyntaxError and EvalError). this logic will push UP subclasses and push DOWN no-rel-classes and superclasses.
 // it's more reliable to push DOWN superclasses and UP subclasses and no-rel-classes. (we can't just return 0
 // for no-rel because TreeSet will assume they are identical and eliminate one...)
 //					else if (istype(a.itype, b.itype)) return 1;
 //					else return -1;
-					else if (istype(b.itype, a.itype)) return -1;
-					else return 1;
-				}
-			});
-			cs.addAll(classes);
-			classes.clear();
-			classes.addAll(cs);
+						else if (b.itype.extendsBase(a.itype)) return -1;
+						else return 1;
+					}
+				});
+				cs.addAll(classes);
+				classes.clear();
+				classes.addAll(cs);
+			}
+		}
+
+		public int interfaceRef(Type t) 
+		{
+			return namePool.id(t.getName());
 		}
 	}
 	
@@ -3025,7 +3020,7 @@ public class GlobalOptimizer
 				w.writeU30(abc.nsPool.id(t.protectedNs));
 			w.writeU30(t.interfaces.length);
 			for (Type i: t.interfaces)
-				w.writeU30(abc.typeRef(i));
+				w.writeU30(abc.interfaceRef(i));
 			w.writeU30(abc.methodId(t.init));
 			emitTraits(w, abc, t);
 		}
@@ -4511,7 +4506,7 @@ public class GlobalOptimizer
 				else
 				{
 					Type t0 = type(types,e.args[0]);
-					if (istype(t0, m.returns.t))
+					if (t0.extendsBase(m.returns.t))
 					{
 						Expr a0 = e.args[0];
 						if (m.returns.t == INT() && a0.op == OP_convert_i)
@@ -4999,24 +4994,6 @@ public class GlobalOptimizer
 		}
 		while (!flowWork.isEmpty());
 		unwindTrace(sccp_analyze_trace_phase);
-	}
-	
-	boolean isCopy(Expr e, Map<Expr,Type>types, Set<Expr>upcasts)
-	{
-		Type t = types.get(e);
-		Type t0 = types.get(e.args[0]);
-		return t == t0 || isUpcast(e,types) && !upcasts.contains(e);
-	}
-	
-	boolean isUpcast(Expr e, Map<Expr,Type>types)
-	{
-		if (e.isCoerce())
-		{
-			Type t0 = types.get(e.args[0]);
-			Type t = types.get(e);
-			return t != t0 && istype(t0, t);
-		}
-		return false;
 	}
 
 	void insert_casts(Method m)
@@ -5628,7 +5605,7 @@ public class GlobalOptimizer
 				else
 				{
 					// pointer style cast
-					if (istype(t0.t, t))
+					if (t0.t.extendsBase(t))
 					{
 						// ignore upcasts
 						tref = t0;
@@ -5675,15 +5652,15 @@ public class GlobalOptimizer
 					v = "number";
 				else if (t0 == STRING())
 					v = "string";
-				else if (istype(t0,XML()) || istype(t0,XMLLIST()))
+				else if (t0.extendsBase(XML()) || t0.extendsBase(XMLLIST()))
 					v = "xml";
 				else if (t0 == VOID())
 					v = "undefined";
 				else if (t0 == BOOLEAN())
 					v = "boolean";
-				else if (istype(t0, FUNCTION()))
+				else if (t0.extendsBase(FUNCTION()))
 					v = "function";
-				else if (t0 != OBJECT() && istype(t0,OBJECT()))
+				else if (t0 != OBJECT() && t0.extendsBase(OBJECT()))
 					v = "object";
 				tref = STRING().ref.nonnull();
 				break;
@@ -6166,7 +6143,7 @@ public class GlobalOptimizer
 			{
 				Typeref t0 = types.get(e.args[0]);
 				Type t = TypeCache.instance().namedTypes.get(e.ref);
-				if (!istype(t0.t, t) || t0.t.isAtom() != t.isAtom())
+				if (!t0.t.extendsBase(t) || t0.t.isAtom() != t.isAtom())
 				{
 					// TODO figure out what verifier is really doing here.
 					tref = t.ref;

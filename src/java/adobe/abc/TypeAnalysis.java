@@ -623,7 +623,7 @@ public abstract class TypeAnalysis
 				else
 				{
 					// pointer style cast
-					if (istype(t0.t, t))
+					if (t0.t.extendsBase(t))
 					{
 						// ignore upcasts
 						tref = t0;
@@ -670,15 +670,15 @@ public abstract class TypeAnalysis
 					v = "number";
 				else if (t0 == TypeCache.instance().STRING)
 					v = "string";
-				else if (istype(t0,TypeCache.instance().XML) || istype(t0,TypeCache.instance().XMLLIST))
+				else if (t0.extendsBase(TypeCache.instance().XML) || t0.extendsBase(TypeCache.instance().XMLLIST))
 					v = "xml";
 				else if (t0 == TypeCache.instance().VOID)
 					v = "undefined";
 				else if (t0 == TypeCache.instance().BOOLEAN)
 					v = "boolean";
-				else if (istype(t0, TypeCache.instance().FUNCTION))
+				else if (t0.extendsBase(TypeCache.instance().FUNCTION))
 					v = "function";
-				else if (t0 != TypeCache.instance().OBJECT && istype(t0,TypeCache.instance().OBJECT))
+				else if (t0 != TypeCache.instance().OBJECT && t0.extendsBase(TypeCache.instance().OBJECT))
 					v = "object";
 				tref = TypeCache.instance().STRING.ref.nonnull();
 				break;
@@ -890,16 +890,16 @@ public abstract class TypeAnalysis
 	public static Typeref eval_coerce_o(Typeref t0)
 	{
 		if (t0.nullable)
-			return istype(t0.t, TypeCache.instance().OBJECT) ? t0 :
+			return t0.t.extendsBase(TypeCache.instance().OBJECT) ? t0 :
 			   t0.t == TypeCache.instance().VOID || t0.t == TypeCache.instance().NULL ? TypeCache.instance().NULL.ref :
 			   TypeCache.instance().OBJECT.ref;
 		else
-			return istype(t0.t, TypeCache.instance().OBJECT) ? t0 : TypeCache.instance().OBJECT.ref.nonnull();
+			return t0.t.extendsBase(TypeCache.instance().OBJECT) ? t0 : TypeCache.instance().OBJECT.ref.nonnull();
 	}
 	
 	public static Object eval_coerce_o(Object v0, Type t0)
 	{
-		return istype(t0, TypeCache.instance().OBJECT) ? v0 :
+		return t0.extendsBase(TypeCache.instance().OBJECT) ? v0 :
 			   t0 == TypeCache.instance().VOID || t0 == TypeCache.instance().NULL ? TypeCache.instance().NULL :
 			   BOTTOM;
 	}
@@ -922,14 +922,6 @@ public abstract class TypeAnalysis
 		return types.get(e).t;
 	}
 	
-	public static boolean istype(Type t, Type c)
-	{
-		// TODO add interface support
-		for (; t != null; t = t.base)
-			if (t == c) 
-				return true;
-		return false;
-	}
 
 	public static int intValue(Object o)
 	{
