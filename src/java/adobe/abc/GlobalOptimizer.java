@@ -214,7 +214,7 @@ public class GlobalOptimizer
 			{
 				i++;
 				tm.enable(new PrintWriter(new FileWriter(args[i])));
-				pushTracePhase("GlobalOptimizer");
+
 				addTraceAttr("timestamp", new Date());
 				continue;
 			}
@@ -282,7 +282,7 @@ public class GlobalOptimizer
             }
 
 			filename = args[i];
-			int load_phase = pushTracePhase("LoadFile");
+
 			addTraceAttr("filename", filename);
 			
 			InputAbc ia = go.new InputAbc();
@@ -293,7 +293,7 @@ public class GlobalOptimizer
 				obscure_natives = false;
 			}
 			
-			unwindTrace(load_phase);
+
 		}
 
 		if ( 0 == args.length || first_exported_file >= a.size() )
@@ -323,12 +323,12 @@ public class GlobalOptimizer
 		// Optimize the combined ABC file and emit.
 		byte[] after = null;
 
-		pushTracePhase("Optimize");
+
 
 		go.optimize(first);
 		after = go.emit(first, filename, initScripts, no_c_gen);
 		
-		unwindTrace(0);
+
 
 		
 		//  Print summary statistics.
@@ -717,7 +717,7 @@ public class GlobalOptimizer
 		void readBody(Reader p)
 		{
 			Method m = methods[p.readU30()];
-			int body_phase = pushTracePhase("readBody");
+
 			addTraceAttr("method", m);
 			m.max_stack = p.readU30();
 			m.local_count = p.readU30();
@@ -732,7 +732,7 @@ public class GlobalOptimizer
 			if (m.getName() != null)
 				act.name = (m.getName().append(" activation"));
 			readTraits(p, act);
-			unwindTrace(body_phase);
+
 		}
 
 
@@ -1026,7 +1026,7 @@ public class GlobalOptimizer
 		void readCode(Method m, Reader p, Reader ptry)
 		{
 			
-			int read_code_phase = pushTracePhase("readCode");
+
 			addTraceAttr("Method", m);
 			addTraceAttr("code_start", p.pos);
 
@@ -1201,7 +1201,7 @@ public class GlobalOptimizer
 				{
 					// start of new block, add handlers.
 					
-					int handlers_resolution_trace_phase = pushTracePhase("HandlerResolution");
+
 					addTraceAttr("offset", pos - code_start);
 					
 					List<Edge> xsucc = new ArrayList<Edge>();
@@ -1232,10 +1232,10 @@ public class GlobalOptimizer
 					}
 					
 					b.xsucc = xsucc.toArray(new Edge[xsucc.size()]);
-					unwindTrace(handlers_resolution_trace_phase);
+
 				}
 				
-				int insn_process_phase = pushTracePhase("Insn");
+
 				addTraceAttr("offset", pos-code_start);
 				addTraceAttr("op", op);
 				addTraceAttr("opName", opNames[op]);
@@ -1740,7 +1740,7 @@ public class GlobalOptimizer
 				
 				case OP_hasnext2:
 				{
-					int hasnext2_trace_phase = pushTracePhase("OP_hasnext2");
+
 					int oloc = p.readU30();
 					int iloc = p.readU30();
 					Expr index = frame[iloc];
@@ -1755,7 +1755,7 @@ public class GlobalOptimizer
 					e.locals = new Expr[] { index };
 					sp++;
 					b.must_isolate_block = true;
-					unwindTrace(hasnext2_trace_phase);
+
 					break;
 				}
 				
@@ -1876,12 +1876,12 @@ public class GlobalOptimizer
 					assert (false);
 				}
 				
-				unwindTrace(insn_process_phase);
+
 			}			
 
 			dce(m);
 			
-			unwindTrace(read_code_phase);
+
 		}
 		
 		public int nameIndex(Name n)
@@ -3125,7 +3125,7 @@ public class GlobalOptimizer
 
 	void emitBlock(AbcWriter out, Block b, Abc abc)
 	{
-		int emit_block_trace_phase = pushTracePhase("emitBlock");
+
 		addTraceAttr("Block", b);
 		
 		// emit all but the last instruction of each block.
@@ -3259,12 +3259,12 @@ public class GlobalOptimizer
 			}
 		}
 		
-		unwindTrace(emit_block_trace_phase);
+
 	}
 	
 	void emitCode(AbcWriter out, Abc abc, Method m) throws IOException
 	{
-		int emit_code_trace_phase = pushTracePhase("EmitCode");
+
 		addTraceAttr("Method", m);
 		
 		Map<Block,Integer> padding = new HashMap<Block,Integer>();
@@ -3296,7 +3296,7 @@ public class GlobalOptimizer
 		while (!work.isEmpty())
 		{
 			Block b = work.removeFirst();
-			int block_trace_phase = pushTracePhase("Block");
+
 			addTraceAttr("Block", b);
 			addTraceAttr("pos", code_len);
 			pos.put(b,code_len);
@@ -3354,7 +3354,7 @@ public class GlobalOptimizer
 				padding.put(b, switch_size);
 			}
 			blockends.put(b,code_len);
-			unwindTrace(block_trace_phase);
+
 		}
 
 		out.writeU30(code_len);
@@ -3362,7 +3362,7 @@ public class GlobalOptimizer
 		traceEntry("WriteCode", "Start", code_start);
 		for (Block b: code)
 		{
-			int write_block_trace_phase = pushTracePhase("WriteBlock");
+
 			addTraceAttr("Block", b);
 			addTraceAttr("postorder", b.postorder);
 			addTraceAttr("startPos", out.size());
@@ -3372,7 +3372,7 @@ public class GlobalOptimizer
 			{
 				Expr last = b.last();
 				
-				int trace_phase_jump = pushTracePhase("endOfBlockBranch");
+
 				addTraceAttr(last);
 				addTraceAttr("op", opNames[last.op]);
 				addTraceAttr("padding", padding.get(b));
@@ -3393,10 +3393,10 @@ public class GlobalOptimizer
 				{
 					emitLookupswitch(out, last, code_start, pos);
 				}
-				unwindTrace(trace_phase_jump);
+
 			}
 			
-			unwindTrace(write_block_trace_phase);
+
 		}
 
 		//  Input code occasionally contains
@@ -3449,7 +3449,7 @@ public class GlobalOptimizer
 				out.writeU30(0);
 		}
 
-		unwindTrace(emit_code_trace_phase);
+
 	}
 	
 
@@ -3469,7 +3469,7 @@ public class GlobalOptimizer
 	
 	void emitLookupswitch(AbcWriter out, Expr insn_switch, int code_start, Map<Block, Integer> pos)
 	{
-		int emit_lookupswitch_trace_phase = pushTracePhase("emitLookupswitch");
+
 		
 		//  "The base location is the address of the lookupswitch instruction itself." - AVM2 
 		int base_loc = out.size();
@@ -3491,7 +3491,7 @@ public class GlobalOptimizer
 			addTraceAttr("Block", insn_switch.succ[i].to);
 			out.writeS24(case_target);
 		}
-		unwindTrace(emit_lookupswitch_trace_phase);
+
 	}
 	
 	void emitTraits(AbcWriter out, Abc abc, Type t)
@@ -3549,7 +3549,7 @@ public class GlobalOptimizer
 		if(m.entry == null)
 			return;
 		
-		int optimize_trace_phase = pushTracePhase("optimize");
+
 		addTraceAttr("Method", m);
 		printMethod(m, "BEFORE OPT");
 		
@@ -3592,7 +3592,7 @@ public class GlobalOptimizer
 			printabc(schedule(m.entry.to));
 		}
 		
-		unwindTrace(optimize_trace_phase);
+
 	}
 	
 	public static byte[] optimize( byte[] raw_abc, String filename, ObjectList<ConfigVar> optimizer_configs, ObjectList<String> import_filespecs )
@@ -4331,7 +4331,7 @@ public class GlobalOptimizer
 	 */
 	void sccp(Method m)
 	{
-		int sccp_trace_phase = pushTracePhase("sccp");
+
 		addTraceAttr("Method", m);
 		
 		// first build the SSA Edges.
@@ -4374,7 +4374,7 @@ public class GlobalOptimizer
 		dce(m);
 		//verboseStatus("after sccp");
 		//print(dfs(m.entry.to));
-		unwindTrace(sccp_trace_phase);
+
 	}
 
 	void sccp_cfgopt(Map<Expr, Object> values, Map<Expr,Typeref> types, Set<Edge> reached)
@@ -4918,7 +4918,7 @@ public class GlobalOptimizer
 
 	void sccp_rename(EdgeMap<Expr> uses, Expr e, Expr[]args)
 	{
-		int sccp_rename_trace_phase = pushTracePhase("sccp_rename");
+
 		addTraceAttr(e);
 		
 		for (int i=args.length-1; i >= 0; i--)
@@ -4934,7 +4934,7 @@ public class GlobalOptimizer
 			}
 		}
 		
-		unwindTrace(sccp_rename_trace_phase);
+
 	}
 	
 	Map<Expr,Typeref> verify_types(Method m, Deque<Block> code, Map<Block,Block> idom)
@@ -4963,7 +4963,7 @@ public class GlobalOptimizer
 
 	void sccp_analyze(Method m, EdgeMap<Expr> uses, Map<Expr, Object> values, Map<Expr, Typeref> types, Set<Edge> reached)
 	{
-		int sccp_analyze_trace_phase = pushTracePhase("sccp_analyze");
+
 		addTraceAttr("Method", m);
 	
 		Set<Edge> flowWork = new TreeSet<Edge>();
@@ -4991,15 +4991,15 @@ public class GlobalOptimizer
 				Expr e = getExpr(ssaWork);
 				if (ready.contains(e))
 				{
-					int sccp_eval_trace_phase = pushTracePhase("sccp_eval");
+
 					addTraceAttr("Expr", e);
 					sccp_eval(m, e, values, types, flowWork, ssaWork, uses);
-					unwindTrace(sccp_eval_trace_phase);
+
 				}
 			}
 		}
 		while (!flowWork.isEmpty());
-		unwindTrace(sccp_analyze_trace_phase);
+
 	}
 
 	void insert_casts(Method m)
@@ -5009,7 +5009,7 @@ public class GlobalOptimizer
 		Map<Block,Block> idom = idoms(code, pred);
 		m.verifier_types = verify_types(m, code, idom);
 		
-		int insert_casts_trace_phase = pushTracePhase("insert_casts");
+
 		
 		// TODO this fixes things by inserting upcasts only.  We could use
 		// the types we know from sccp_analyze and insert casts that tell
@@ -5063,7 +5063,7 @@ public class GlobalOptimizer
 		
 		verboseStatus("VERIFY TYPES "+m.verifier_types);
 		
-		unwindTrace(insert_casts_trace_phase);
+
 	}
 	
 	Expr upcast(Expr a, Method m, Type t)
@@ -6361,7 +6361,7 @@ public class GlobalOptimizer
 		
 		printMethod(m, "BEFORE SCHED");
 		
-		int remove_phi_trace_phase = pushTracePhase("remove_phi");
+
 		addTraceAttr(m);
 		
 		restused:
@@ -6397,7 +6397,7 @@ public class GlobalOptimizer
 					break;
 				if (!locals.containsKey(e.id))
 					continue;
-				int remove_phi_phase = pushTracePhase("removePhi");
+
 				addTraceAttr(e);
 				int lhs = locals.get(e.id);
 				for (int i=e.args.length-1; i>=0; i--)
@@ -6422,7 +6422,7 @@ public class GlobalOptimizer
 						append(p, setlocal(m,lhs,get));
 					}
 				}
-				unwindTrace(remove_phi_phase);
+
 			}
 			
 			// now swap in the scheduled code and renumber the get/setlocals we have in there.
@@ -6455,7 +6455,7 @@ public class GlobalOptimizer
 		
 		printMethod(m, "AFTER SCHED");
 		
-		unwindTrace(remove_phi_trace_phase);
+
 	}
 	
 	/**
@@ -6524,7 +6524,7 @@ public class GlobalOptimizer
 	 */
 	void appeaseLegacyVerifier(Method m)
 	{
-		int kill_cruft_trace_phase = pushTracePhase("appeaseLegacyVerifier");
+
 		addTraceAttr(m);
 		
 		Deque<Block> code = schedule(m.entry.to);
@@ -6725,7 +6725,7 @@ public class GlobalOptimizer
 			}
 		}
 		
-		unwindTrace(kill_cruft_trace_phase);
+
 	}
 
 	boolean singlePathToExit(Edge s, SetMap<Block, Edge> pred, Set<Edge> known_single_paths)
@@ -7368,7 +7368,7 @@ public class GlobalOptimizer
 			Map<Block,Deque<Expr>> exprs,
 			ConflictGraph cg)
 	{
-		int sched_greedy_phase = pushTracePhase("sched_greedy");
+
 		addTraceAttr(m);
 		
 		SetMap<Block,Expr> liveout = new SetMap<Block,Expr>();
@@ -7400,7 +7400,7 @@ public class GlobalOptimizer
 
 			Set<Expr> out_of_order = new TreeSet<Expr>();
 			
-			int block_phase = pushTracePhase("Block");
+
 			addTraceAttr(b);
 
 			live.addAll(liveout.get(b));
@@ -7421,7 +7421,7 @@ public class GlobalOptimizer
 					showstate(live, stk, scp, verbose);
 					
 					Expr e = remove_dup(stk, m, out, verbose);
-					int pop_stack_phase = pushTracePhase("PopStack");
+
 					addTraceAttr(e);
 					addTraceAttr("formattedExpr", formatExpr(e));
 					
@@ -7438,7 +7438,7 @@ public class GlobalOptimizer
 						else
 						*/
 						{
-							int force_load_phase = pushTracePhase("ForceLoad");
+
 							addTraceAttr(e);
 							if ( e.inLocal() ) addTraceAttr("inLocal");
 							else if ( e.op == OP_phi ) addTraceAttr("OP_phi");
@@ -7446,7 +7446,7 @@ public class GlobalOptimizer
 							else if ( stk.contains(e) ) addTraceAttr("stackOverload", "stk.contains(" + e.toString() + ")");
 
 							issue_load(e, m, out, verbose, live, locals);
-							unwindTrace(force_load_phase);
+
 						}
 					}
 					else if (live.contains(e))
@@ -7473,7 +7473,7 @@ public class GlobalOptimizer
 						traceEntry("IssueExpr", e);
 						issue_expr(in.removeLast(), m, out, verbose, stk, scp, live, locals);
 					}
-					unwindTrace(pop_stack_phase);
+
 					continue;
 				}
 
@@ -7481,7 +7481,7 @@ public class GlobalOptimizer
 				{
 					showstate(live, stk, scp, verbose);
 					Expr e = in.removeLast();
-					int process_insn_phase = pushTracePhase("ProcessInsn");
+
 					addTraceAttr(e);
 					addTraceAttr("formattedExpr", formatExpr(e));
 					if ( out_of_order.contains(e) )
@@ -7536,7 +7536,7 @@ public class GlobalOptimizer
 						}
 						else
 						{
-							int non_live_phase = pushTracePhase("NonLiveExpr");
+
 							addTraceAttr(e);
 							if (e.onStack())
 							{
@@ -7544,15 +7544,15 @@ public class GlobalOptimizer
 								issue_pop(m,out,verbose,e);
 							}
 							issue_expr(e, m, out, verbose, stk, scp, live, locals);
-							unwindTrace(non_live_phase);
+
 						}
 					}
-					unwindTrace(process_insn_phase);
+
 				}
 			}
 			
 			fwd_state(m, locals, pred, liveout, stkout, scpout, work, b, live, stk, scp, verbose, out, phis);
-			unwindTrace(block_phase);
+
 		}
 		verboseStatus("STK_LIVEOUT " + liveout);
 		verboseStatus("CONFLICTS " + cg);
@@ -7567,13 +7567,8 @@ public class GlobalOptimizer
 				else 
 					verboseStatus(o);
 		}
-		unwindTrace(sched_greedy_phase);
-		return cg;
-	}
 
-	static int pushTracePhase(String phaseName) 
-	{
-		return tm.pushPhase(phaseName);
+		return cg;
 	}
 	
 	static void traceEntry(String traceTag)
@@ -7609,10 +7604,6 @@ public class GlobalOptimizer
 		addTraceAttr(expr);
 	}
 	
-	static void unwindTrace(int phase_level)
-	{
-		tm.unwind(phase_level);
-	}
 	
 	static void addTraceAttr(String attrName)
 	{
@@ -7686,7 +7677,7 @@ public class GlobalOptimizer
 	
 	void issue_phi(Expr e, Deque<Object>verbose, Set<Expr>phis, Set<Expr>live, ConflictGraph cg)
 	{
-		int phi_trace_phase = pushTracePhase("issue_phi");
+
 		addTraceAttr(e);
 		addTraceAttr("live", live.contains(e));
 
@@ -7701,7 +7692,7 @@ public class GlobalOptimizer
 					addTraceAttr("conflictsWith", l);
 					cg.add(l,e);
 				}
-		unwindTrace(phi_trace_phase);
+
 	}
 
 	ConflictGraph sched_lazy(Method m, 
@@ -7985,7 +7976,7 @@ public class GlobalOptimizer
 	
 	void define(Expr e, Set<Expr> live, ConflictGraph cg)
 	{
-		int define_trace_phase = pushTracePhase("define");
+
 		addTraceAttr(e);
 		live.remove(e);
 		for (Expr l: live)
@@ -7995,12 +7986,12 @@ public class GlobalOptimizer
 			addTraceAttr(e);
 			addTraceAttr("conflictsWith", l);
 		}
-		unwindTrace(define_trace_phase);
+
 	}
 
 	void issue_expr(Expr e, Method m, Deque<Expr>out, Deque<Object> verbose, Deque<Expr>stk, Deque<Expr>scp, Set<Expr>live, Map<Integer,Integer> locals)
 	{
-		int issue_phase = pushTracePhase("issue_expr");
+
 		addTraceAttr(e);
 		if (!e.isSynthetic())
 			out.addFirst(e);
@@ -8016,19 +8007,19 @@ public class GlobalOptimizer
 			use(a, live, locals);
 		}
 		try_dup(stk, m, out, verbose);
-		unwindTrace(issue_phase);
+
 	}
 	
 	void issue_store(Expr e, Method m, Deque<Expr>out, Deque<Object> verbose, Deque<Expr>stk)
 	{
 		Expr set = setlocal(m, e.id, e);
-		int store_phase = pushTracePhase("issue_store");
+
 		addTraceAttr("setlocalExpr", formatExpr(set));
 		out.addFirst(set);
 		verbose.addFirst(set);
 		traceEntry("Push", formatExpr(e));
 		stk.add(e);
-		unwindTrace(store_phase);
+
 	}
 	
 	void issue_dup(Expr e, Method m, Deque<Expr>out, Deque<Object> verbose)
@@ -8066,7 +8057,7 @@ public class GlobalOptimizer
 	
 	void rename(Expr e, Expr[] args, Map<Expr,Expr> map, EdgeMap<Expr> ssaSucc)
 	{
-		int rename_trace_phase = pushTracePhase("rename");
+
 		addTraceAttr(e);
 		
 		for (int i=0, n=args.length; i<n; i++)
@@ -8085,7 +8076,7 @@ public class GlobalOptimizer
 			}
 		}
 		
-		unwindTrace(rename_trace_phase);
+
 	}
 	
 	/**
@@ -8111,7 +8102,7 @@ public class GlobalOptimizer
 	 */
 	void cp(Deque<Block> code)
 	{
-		int cp_trace_phase = pushTracePhase("cp");
+
 		EdgeMap<Expr> uses = findUses(code);
 		Map<Expr,Expr> map = new HashMap<Expr,Expr>();
 		Set<Expr> work = new TreeSet<Expr>();
@@ -8177,7 +8168,7 @@ public class GlobalOptimizer
 				
 		}
 		
-		unwindTrace(cp_trace_phase);
+
 	}
 
 	boolean hasSideEffect(Expr e)
@@ -8507,7 +8498,7 @@ public class GlobalOptimizer
 	
 	Block createBlock(Method m, Edge edge, Map<Block,FrameState>states, Expr[] frame, int sp, int scopep)
 	{
-		int block_trace_phase = pushTracePhase("createBlock");
+
 		Block b = new Block(m);
 		addTraceAttr("Block", b);
 		FrameState state = new FrameState(frame,sp,scopep);
@@ -8533,7 +8524,7 @@ public class GlobalOptimizer
 		}
 		traceFrame("NewBlockFrame", m, frame, scopep, sp);
 		states.put(b, state);
-		unwindTrace(block_trace_phase);
+
 		return b;
 	}
 	
@@ -8552,7 +8543,7 @@ public class GlobalOptimizer
 	 */
 	void merge(Method m, Edge edge, Map<Integer,Block> blocks, Map<Block,FrameState> states, int pos, Expr[] frame, int sp, int scopep)
 	{
-		int merge_trace_phase = pushTracePhase("merge");
+
 		addTraceAttr("Edge", edge);
 		
 		if (!blocks.containsKey(pos))
@@ -8565,7 +8556,7 @@ public class GlobalOptimizer
 			edge.to = blocks.get(pos);
 			mergeFrameStates(m, edge, states, frame, sp, scopep);
 		}
-		unwindTrace(merge_trace_phase);
+
 	}
 	
 	/**
@@ -8579,7 +8570,7 @@ public class GlobalOptimizer
 	 */
 	void mergeFrameStates(Method m, Edge edge, Map<Block,FrameState>states, Expr[] frame, int sp, int scopep)
 	{
-		int merge_trace_phase = pushTracePhase("mergeFrameStates");
+
 		FrameState target = states.get(edge.to);
 		
 		/*
@@ -8610,12 +8601,12 @@ public class GlobalOptimizer
 			}
 		}
 		
-		unwindTrace(merge_trace_phase);
+
 	}
 
 	void xmerge(Method m, Edge edge, Map<Integer,Block> blocks, Map<Block,FrameState> states, int pos, Expr[] frame, int sp, int scopep)
 	{
-		int xmerge_trace_phase = pushTracePhase("xmerge");
+
 		scopep = m.local_count;
 		sp = scopep + m.max_scope;
 		
@@ -8649,13 +8640,13 @@ public class GlobalOptimizer
 			edge.to = h.entry;
 			mergeFrameStates(m, edge, states, frame, sp, scopep);
 		}
-		unwindTrace(xmerge_trace_phase);
+
 	}
 	
 	void traceFrame(String desc, Method m, Expr[] frame, int scopep, int sp)
 	{
-		int frame_trace_phase = pushTracePhase(desc);
-		int locals_trace_phase = pushTracePhase("Locals");
+
+
 		
 		int i = 0;
 		for ( i = 0; i < m.local_count; i++ )
@@ -8664,9 +8655,9 @@ public class GlobalOptimizer
 			addTraceAttr("number", i);
 			addTraceAttr("value", frame[i]);
 		}
-		unwindTrace(locals_trace_phase);
+
 		
-		int scope_stack_trace_phase = pushTracePhase("ScopeStack");
+
 		addTraceAttr("scopep", scopep);
 		for (; i < scopep; i++ )
 		{
@@ -8674,9 +8665,9 @@ public class GlobalOptimizer
 			addTraceAttr("index", i);
 			addTraceAttr("value", frame[i]);
 		}
-		unwindTrace(scope_stack_trace_phase);
+
 		
-		int operand_trace_phase = pushTracePhase("OperandStack");
+
 		addTraceAttr("sp", sp);
 		for ( i = m.local_count + m.max_scope; i < sp; i++ )
 		{
@@ -8684,16 +8675,16 @@ public class GlobalOptimizer
 			addTraceAttr("index", i);
 			addTraceAttr("value", frame[i]);
 		}
-		unwindTrace(operand_trace_phase);
+
 		
-		unwindTrace(frame_trace_phase);
+
 	}
 
 	static Expr[] capture(Expr[] frame, int top, int len)
 	{
 		Expr[] args = new Expr[len];
 		System.arraycopy(frame, top-len, args, 0, len);
-		int capture_trace_phase = pushTracePhase("capture");
+
 		addTraceAttr("stackPtr", top);
 		addTraceAttr("len", len);
 		for ( int i = 0; i < len; i++)
@@ -8701,7 +8692,7 @@ public class GlobalOptimizer
 			traceEntry("PopStack");
 			addTraceAttr(args[i]);
 		}
-		unwindTrace(capture_trace_phase);
+
 		return args;
 	}
 	
