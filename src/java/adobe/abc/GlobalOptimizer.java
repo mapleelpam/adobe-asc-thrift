@@ -2399,6 +2399,8 @@ public class GlobalOptimizer
 			}
 			else
 			{
+				//  HACK ALERT: This sort is incorrect, but the topological
+				//  sort causes tamarin-tracing builds to fail in shell.abc.
 				TreeSet<Type> cs = new TreeSet<Type>(new Comparator<Type>()
 				{
 					public int compare(Type a, Type b)
@@ -4640,6 +4642,9 @@ public class GlobalOptimizer
 						uses.get(s).remove(e);
 					changed = true;
 				}
+				/*
+				 * TODO: This transformation is too simplistic.
+				 * 
 				else if (e.op == OP_findproperty)
 				{
 					// will return global if nothing found.
@@ -4660,6 +4665,7 @@ public class GlobalOptimizer
 						changed = true;
 					}
 				}
+				*/
 				break;
 			}
 			
