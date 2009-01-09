@@ -2412,7 +2412,7 @@ public class GlobalOptimizer
 // for no-rel because TreeSet will assume they are identical and eliminate one...)
 //					else if (istype(a.itype, b.itype)) return 1;
 //					else return -1;
-						else if (b.itype.extendsBase(a.itype)) return -1;
+						else if (b.itype.extendsOrIsBase(a.itype)) return -1;
 						else return 1;
 					}
 				});
@@ -4508,7 +4508,7 @@ public class GlobalOptimizer
 				else
 				{
 					Type t0 = type(types,e.args[0]);
-					if (t0.extendsBase(m.returns.t))
+					if (t0.extendsOrIsBase(m.returns.t))
 					{
 						Expr a0 = e.args[0];
 						if (m.returns.t == INT() && a0.op == OP_convert_i)
@@ -5611,7 +5611,7 @@ public class GlobalOptimizer
 				else
 				{
 					// pointer style cast
-					if (t0.t.extendsBase(t))
+					if (t0.t.extendsOrIsBase(t))
 					{
 						// ignore upcasts
 						tref = t0;
@@ -5658,15 +5658,15 @@ public class GlobalOptimizer
 					v = "number";
 				else if (t0 == STRING())
 					v = "string";
-				else if (t0.extendsBase(XML()) || t0.extendsBase(XMLLIST()))
+				else if (t0.extendsOrIsBase(XML()) || t0.extendsOrIsBase(XMLLIST()))
 					v = "xml";
 				else if (t0 == VOID())
 					v = "undefined";
 				else if (t0 == BOOLEAN())
 					v = "boolean";
-				else if (t0.extendsBase(FUNCTION()))
+				else if (t0.extendsOrIsBase(FUNCTION()))
 					v = "function";
-				else if (t0 != OBJECT() && t0.extendsBase(OBJECT()))
+				else if (t0 != OBJECT() && t0.extendsOrIsBase(OBJECT()))
 					v = "object";
 				tref = STRING().ref.nonnull();
 				break;
@@ -6149,7 +6149,7 @@ public class GlobalOptimizer
 			{
 				Typeref t0 = types.get(e.args[0]);
 				Type t = TypeCache.instance().namedTypes.get(e.ref);
-				if (!t0.t.extendsBase(t) || t0.t.isAtom() != t.isAtom())
+				if (!t0.t.extendsOrIsBase(t) || t0.t.isAtom() != t.isAtom())
 				{
 					// TODO figure out what verifier is really doing here.
 					tref = t.ref;
