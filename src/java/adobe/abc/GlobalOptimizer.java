@@ -157,6 +157,12 @@ public class GlobalOptimizer
 	//  integration with the ASC entry point.
 	boolean reading_imports = true;
 	
+	/**
+	 *   The number of input files being linked together.
+	 *   @warn used to work around some linking bugs.
+	 */
+	int num_linked_files = 0;
+	
 	static TraceManager tm = new TraceManager();
 
 	public static void main(String[] args) throws IOException
@@ -314,16 +320,16 @@ public class GlobalOptimizer
 		initScripts.add(first.scripts.length - 1);
 
 		//  Combine other exported files.
-		for(int i=first_exported_file+1; i < a.size(); i++) {
+		for(int i=first_exported_file+1; i < a.size(); i++) 
+		{
 			first.combine(a.get(i));
 			initScripts.add(first.scripts.length - 1);
 			before_length += lengths.get(i);
+			go.num_linked_files++;
 		}
 		
 		// Optimize the combined ABC file and emit.
 		byte[] after = null;
-
-
 
 		go.optimize(first);
 		after = go.emit(first, filename, initScripts, no_c_gen);
@@ -2386,16 +2392,19 @@ public class GlobalOptimizer
 			// topological sort of the classes, base classes come first
 			if ( legacy_verifier )
 			{
-			classes = new Algorithms.TopologicalSort<Type>().toplogicalSort(
-					classes, 
-					new Algorithms.TopologicalSort.DependencyChecker<Type>()
-					{
-						public boolean depends(Type dep, Type parent)
-						{
-							return (dep.itype.isDerivedFrom(parent.itype));
-						}
-					}
-				);
+				if ( num_linked_files > 1 )
+				{
+					classes = new Algorithms.TopologicalSort<Type>().toplogicalSort(
+							classes, 
+							new Algorithms.TopologicalSort.DependencyChecker<Type>()
+							{
+								public boolean depends(Type dep, Type parent)
+								{
+									return (dep.itype.isDerivedFrom(parent.itype));
+								}
+							}
+						);
+				}
 			}
 			else
 			{

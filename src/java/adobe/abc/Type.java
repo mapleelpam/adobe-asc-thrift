@@ -155,7 +155,12 @@ public class Type
 	
 	public boolean extendsOrIsBase(Type c)
 	{
-		for (Type t = this; t != null; t = t.base)
+		return this == c || this.extendsBase(c);
+	}
+	
+	public boolean extendsBase(Type c)
+	{
+		for (Type t = this.base; t != null; t = t.base)
 			if (t == c) 
 				return true;
 		return false;
@@ -171,6 +176,6 @@ public class Type
 	
 	public boolean isDerivedFrom(Type x)
 	{
-		return this.extendsOrIsBase(x) || this.implementsInterface(x);
+		return this.extendsBase(x) || this.implementsInterface(x);
 	}
 }
