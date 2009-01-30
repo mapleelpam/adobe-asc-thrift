@@ -118,6 +118,8 @@ public class ScriptCompiler
 
     static ObjectList<ConfigVar> config_vars = new ObjectList<ConfigVar>();
     static ObjectList<String> use_namespaces;
+    static String swfOptions = null;
+
     private static void init(String[] args) throws Throwable
 	{
 		ObjectList<String> filespecs = new ObjectList<String>();
@@ -226,6 +228,10 @@ public class ScriptCompiler
             else if (args[i].equals("-versioncheck") )
             {
                 check_version = true;
+            }
+            else if (args[i].equals("-swf") )
+            {
+                swfOptions = args[++i];
             }
             else
 			{
@@ -394,9 +400,11 @@ public class ScriptCompiler
 
 	private static void resolveInheritance(int start, int end) throws Throwable
 	{
-		for (int i = start; i < end; i++)
+        IntList prev_imports = new IntList();
+        for (int i = start; i < end; i++)
 		{
-			for (Iterator<ReferenceValue> k = node.get(i).fa_unresolved.iterator(); k.hasNext();)
+            ProgramNode cur_node = node.get(i);
+            for (Iterator<ReferenceValue> k = cur_node.fa_unresolved.iterator(); k.hasNext();)
 			{
 				ReferenceValue ref = k.next();
 				boolean found = false;
@@ -424,8 +432,27 @@ public class ScriptCompiler
 				}
 			}
 
-			node.get(i).fa_unresolved.clear();
-		}
+			cur_node.fa_unresolved.clear();
+
+            if( cur_node.statements != null && cur_node.statements.first() instanceof BinaryProgramNode)
+            {
+                // It's an import - all the previous imports should be visible to this one
+                // this is important because imports won't got though all the rt/ce unresolved logic
+                // in FA, so the dependencies won't be set up correctly.  If we "inherit" all the previous
+                // import nodes, we will get all the right symbols available.
+                for( int r = 0, e = prev_imports.size(); r < e; ++r)
+                {
+                    Pair p = new Pair(i, prev_imports.at(r));
+                    if (!inheritance.contains(p))
+                    {
+                        inheritance.add(p);
+                    }
+                }
+                prev_imports.add(i);
+            }
+
+
+        }
 	}
 
 	private static void sortInheritance() throws Throwable
@@ -817,16 +844,22 @@ public class ScriptCompiler
             out_dir = new File(outputDir);
         }
 
-        FileOutputStream out = new FileOutputStream(new File(out_dir, outputFile + ".abc"));
 
         if (optimize)
 			bytes = Optimizer.optimize(bytes);
 		byte[] abc = bytes.toByteArray(false);
 
-		System.err.println(outputFile + ": " + abc.length);
-		out.write(abc);
-		out.close();
-
+        if (swfOptions != null)
+        {
+            Compiler.makeSwf(mainContext, bytes, swfOptions, out_dir.getCanonicalPath(), outputFile);
+        }
+        else
+        {
+            FileOutputStream out = new FileOutputStream(new File(out_dir, outputFile + ".abc"));
+            System.err.println(outputFile + ": " + abc.length);
+            out.write(abc);
+            out.close();
+        }
         // Reset the path so printNative outputs to the right directory
         mainContext.setPath(out_dir.getPath());
 

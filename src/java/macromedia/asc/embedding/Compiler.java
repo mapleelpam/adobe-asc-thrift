@@ -491,43 +491,8 @@ public class Compiler implements ErrorConstants
 
 					if (swf_options.length() != 0)
 					{
-						SwfMaker swfMaker = new SwfMaker();
-                        if( cx.abcVersion(Features.TARGET_AVM2) )
-                            swfMaker.swf_version = 10;
-                        if (!swfMaker.EncodeABC(bytes, swf_options))
-						{
-							System.err.println("ERROR: invalid -swf options, should be classname,width,height");
-						}
-						else
-						{
-							BufferedOutputStream swf_out = null;
-							try
-							{
-								swf_out = new BufferedOutputStream(new FileOutputStream(new File(pathspec, scriptname + ".swf")));
-								swf_out.write(swfMaker.buffer.toByteArray());
-								swf_out.flush();
-							}
-							catch (IOException ex)
-							{
-								ex.printStackTrace();
-							}
-							finally
-							{
-								if (swf_out != null)
-								{
-									try
-									{
-										swf_out.close();
-									}
-									catch (IOException ex)
-									{
-									}
-								}
-							}
-
-							System.err.println(scriptname + ".swf, " + swfMaker.buffer.size() + " bytes written");
-						}				
-					}
+                        makeSwf(cx, bytes, swf_options, pathspec, scriptname);
+                    }
 
 					if (emitter.native_method_count > 0)
 					{
@@ -545,96 +510,135 @@ public class Compiler implements ErrorConstants
         return (error_count == 0);
     }
 
+    static void makeSwf(Context cx, ByteList bytes, String swf_options, String pathspec, String scriptname) {
+        SwfMaker swfMaker = new SwfMaker();
+        if( cx.abcVersion(Features.TARGET_AVM2) )
+            swfMaker.swf_version = 10;
+        if (!swfMaker.EncodeABC(bytes, swf_options))
+        {
+            System.err.println("ERROR: invalid -swf options, should be classname,width,height");
+        }
+        else
+        {
+            BufferedOutputStream swf_out = null;
+            try
+            {
+                swf_out = new BufferedOutputStream(new FileOutputStream(new File(pathspec, scriptname + ".swf")));
+                swf_out.write(swfMaker.buffer.toByteArray());
+                swf_out.flush();
+            }
+            catch (IOException ex)
+            {
+                ex.printStackTrace();
+            }
+            finally
+            {
+                if (swf_out != null)
+                {
+                    try
+                    {
+                        swf_out.close();
+                    }
+                    catch (IOException ex)
+                    {
+                    }
+                }
+            }
+
+            System.err.println(scriptname + ".swf, " + swfMaker.buffer.size() + " bytes written");
+        }
+    }
+
     static boolean doCompile(
         CompilerPlug mainplug,
-	ObjectList<CompilerPlug> plugs,
+        ObjectList<CompilerPlug> plugs,
         boolean show_instructions /*=false*/,
-        boolean show_machinecode /*=false*/, 
+        boolean show_machinecode /*=false*/,
         boolean show_linenums /*=false*/,
         boolean show_parsetrees /*=false*/,
         boolean show_bytes /*=false*/,
         boolean show_flow /*=false*/)        throws Exception
     {
-	// rsun 11.18.05 let's open InputStreams for all the plugs, then
-	// send them to compile(.)
-	if(mainplug != null) {
-		File f = new File(mainplug.filename.trim());
-		InputStream in;
-		if(f.exists())
-		{
-			in = new BufferedInputStream(new FileInputStream(f));
-		}
-		else {
-			byte[] buf = new byte[1];
-			buf[0] = 0;
-			in = new ByteArrayInputStream(buf);
-		}
+        // rsun 11.18.05 let's open InputStreams for all the plugs, then
+        // send them to compile(.)
+        if(mainplug != null) {
+            File f = new File(mainplug.filename.trim());
+            InputStream in;
+            if(f.exists())
+            {
+                in = new BufferedInputStream(new FileInputStream(f));
+            }
+            else {
+                byte[] buf = new byte[1];
+                buf[0] = 0;
+                in = new ByteArrayInputStream(buf);
+            }
 
-		if(in != null) {
-			mainplug.in = in;
-		}
-	}
+            if(in != null) {
+                mainplug.in = in;
+            }
+        }
 
-	Iterator<CompilerPlug> plug_it = plugs.iterator();
-	for( ; plug_it.hasNext(); )
-	{
-		CompilerPlug plug = plug_it.next();
+        Iterator<CompilerPlug> plug_it = plugs.iterator();
+        for( ; plug_it.hasNext(); )
+        {
+            CompilerPlug plug = plug_it.next();
 
-		File f = new File(plug.filename.trim());
-		InputStream in;
-		if(f.exists())
-		{
-			in = new BufferedInputStream(new FileInputStream(f));
-		}
-		else {
-			byte[] buf = new byte[1];
-			buf[0] = 0;
-			in = new ByteArrayInputStream(buf);
-		}
+            File f = new File(plug.filename.trim());
+            InputStream in;
+            if(f.exists())
+            {
+                in = new BufferedInputStream(new FileInputStream(f));
+            }
+            else {
+                byte[] buf = new byte[1];
+                buf[0] = 0;
+                in = new ByteArrayInputStream(buf);
+            }
 
-		if(in != null) {
-			plug.in = in;
-		}
-	}
+            if(in != null) {
+                plug.in = in;
+            }
+        }
 
-	CompilerHandler handler = null;
-	
-	if(handler == null) {
-		handler = mainplug.handler;
-	}
+        CompilerHandler handler = null;
 
-	return doCompile(
-			mainplug.in,
-			mainplug.pathspec,
-			mainplug.scriptname,
-			mainplug.filename,
-            mainplug.file_encoding,
-			mainplug.swf_options,
-			mainplug.avmplus_exe,
-			mainplug.includes,
-			mainplug.import_filespecs,
-			mainplug.use_namespaces,
-			mainplug.language,
-            mainplug.configs,
-			plugs,
-			handler,
-			mainplug.emit_doc_info,
-			mainplug.emit_debug_info,
-			show_instructions,
-			show_machinecode,
-			show_linenums,
-			show_parsetrees,
-			show_bytes,
-			show_flow,
-			mainplug.lint_mode,
-			mainplug.use_static_semantics,
-			mainplug.emit_metadata,
-			mainplug.save_comment_nodes,
-			mainplug.dialect,
-            mainplug.target,
-            mainplug.optimize,
-            mainplug.optimizer_configs
-				);
+        if(handler == null) {
+            handler = mainplug.handler;
+        }
+
+        return doCompile(
+                mainplug.in,
+                mainplug.pathspec,
+                mainplug.scriptname,
+                mainplug.filename,
+                mainplug.file_encoding,
+                mainplug.swf_options,
+                mainplug.avmplus_exe,
+                mainplug.includes,
+                mainplug.import_filespecs,
+                mainplug.use_namespaces,
+                mainplug.language,
+                mainplug.configs,
+                plugs,
+                handler,
+                mainplug.emit_doc_info,
+                mainplug.emit_debug_info,
+                show_instructions,
+                show_machinecode,
+                show_linenums,
+                show_parsetrees,
+                show_bytes,
+                show_flow,
+                mainplug.lint_mode,
+                mainplug.use_static_semantics,
+                mainplug.emit_metadata,
+                mainplug.save_comment_nodes,
+                mainplug.dialect,
+                mainplug.target,
+                mainplug.optimize,
+                mainplug.optimizer_configs
+                    );
     }
 
     static boolean doCompile(
