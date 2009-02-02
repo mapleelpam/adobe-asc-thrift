@@ -350,7 +350,7 @@ public final class Scanner implements ErrorConstants
         {
             case kError_Lexical_General:
                 return;
-                
+
             case kError_Lexical_LineTerminatorInSingleQuotedStringLiteral:
             case kError_Lexical_LineTerminatorInDoubleQuotedStringLiteral:
                 while (true)
@@ -361,7 +361,7 @@ public final class Scanner implements ErrorConstants
                         return;
                     }
                 }
-                
+
             case kError_Lexical_SyntaxError:
             default:
                 while (true)
@@ -433,7 +433,7 @@ public final class Scanner implements ErrorConstants
     }
 
     public void clearUnusedBuffers() {
-     //   input.clearUnusedBuffers();
+        input.clearUnusedBuffers();
         input = null;
     } 
     
@@ -444,7 +444,7 @@ public final class Scanner implements ErrorConstants
 
     public int nexttoken(boolean resetState)
     {
-        String xmltagname = null, doctagname = "description";
+        String doctagname = "description";
         StringBuilder doctextbuf = null;
         int startofxml = pos();
         StringBuilder blockcommentbuf = null;
@@ -466,7 +466,6 @@ public final class Scanner implements ErrorConstants
 
             switch (state)
             {
-
                 case start_state:
                     {
                         c = nextchar();
@@ -485,10 +484,18 @@ public final class Scanner implements ErrorConstants
                             state = A_state;
                             continue;
                             
-                            // could not have worked...case 0xffffffef: // ??? not in Character type range ???
-                        case 0xffef:
-                                state = utf8sig_state;
-                                continue;
+                        case 0xffef: // could not have worked...case 0xffffffef: // ??? not in Character type range ???
+                            if (nextchar()==0xffffffbb &&
+                                nextchar()==0xffffffbf)
+                            {
+                                // ISSUE: set encoding scheme to utf-8, and implement support for utf8
+                                state = start_state;
+                            }
+                            else 
+                            {
+                                state = error_state;
+                            }
+                            continue;
                                 
                             case '@':
                                 return AMPERSAND_TOKEN;
@@ -533,71 +540,57 @@ public final class Scanner implements ErrorConstants
                             case '-':   // tokens: -- -= -
                                 switch (nextchar())
                                 {
-                                    case '-':
-                                        return MINUSMINUS_TOKEN;
-                                    case '=':
-                                        return MINUSASSIGN_TOKEN;
-                                    default:
-                                        retract();
-                                        return MINUS_TOKEN;
+                                case '-':
+                                    return MINUSMINUS_TOKEN;
+                                case '=':
+                                    return MINUSASSIGN_TOKEN;
+                                default:
+                                    retract();
+                                return MINUS_TOKEN;
                                 }
-                                
+
                             case '!':   // tokens: ! != !===
-                                switch (nextchar())
+                                if (nextchar()=='=')
                                 {
-                                    case '=':
-                                        switch (nextchar())
-                                        {
-                                            case '=':
-                                                return STRICTNOTEQUALS_TOKEN;
-                                            default:
-                                                retract();
-                                                return NOTEQUALS_TOKEN;
-                                        }
-                                    default:
-                                        retract();
-                                        return NOT_TOKEN;
-                                }
+                                    if (nextchar()=='=')
+                                        return STRICTNOTEQUALS_TOKEN;
+                                    retract();
+                                    return NOTEQUALS_TOKEN;
+                                }   
+                                retract();
+                                return NOT_TOKEN;
                                 
                             case '%':   // tokens: % %=
                                 switch (nextchar())
                                 {
-                                    case '=':
-                                        return MODULUSASSIGN_TOKEN;
-                                    default:
-                                        retract();
-                                        return MODULUS_TOKEN;
+                                case '=':
+                                    return MODULUSASSIGN_TOKEN;
+                                default:
+                                    retract();
+                                return MODULUS_TOKEN;
                                 }
-                                
+
                             case '&':   // tokens: & &= && &&=
-                                switch (nextchar())
+                                c = nextchar();
+                                if (c=='=')
+                                    return BITWISEANDASSIGN_TOKEN;
+                                if (c=='&')
                                 {
-                                    case '&':
-                                        switch (nextchar())
-                                        {
-                                            case '=':
-                                                return LOGICALANDASSIGN_TOKEN;
-                                            default:
-                                                retract();
-                                                return LOGICALAND_TOKEN;
-                                        }
-                                    case '=':
-                                        return BITWISEANDASSIGN_TOKEN;
-                                    default:
-                                        retract();
-                                        return BITWISEAND_TOKEN;
+                                    if (nextchar()=='=')
+                                        return LOGICALANDASSIGN_TOKEN;
+                                    retract();
+                                    return LOGICALAND_TOKEN;
                                 }
-                                
-                            case '#':
+                                retract();
+                                return BITWISEAND_TOKEN;
+                        
+                            case '#':   // # is short for use
                                 if (HAS_HASHPRAGMAS)
                                 {
                                     return USE_TOKEN;
                                 }
-                                else
-                                {
-                                    state = error_state;
-                                    continue;
-                                }  // # is short for use
+                                state = error_state;
+                                continue;
                                 
                             case '(':
                                 return LEFTPAREN_TOKEN;
@@ -606,14 +599,10 @@ public final class Scanner implements ErrorConstants
                                 return RIGHTPAREN_TOKEN;
                                 
                             case '*':   // tokens: *=  *
-                                switch (nextchar())
-                                {
-                                    case '=':
-                                        return MULTASSIGN_TOKEN;
-                                    default:
-                                        retract();
-                                        return MULT_TOKEN;
-                                }
+                                if (nextchar()=='=')
+                                    return MULTASSIGN_TOKEN;
+                                retract();
+                                return MULT_TOKEN;
 
                             case ',':
                                 return COMMA_TOKEN;
@@ -627,14 +616,12 @@ public final class Scanner implements ErrorConstants
                                 continue;
 
                             case ':':   // tokens: : ::
-                                switch (nextchar())
+                                if (nextchar()==':')
                                 {
-                                    case ':':
-                                        return DOUBLECOLON_TOKEN;
-                                    default:
-                                        retract();
-                                        return COLON_TOKEN;
+                                    return DOUBLECOLON_TOKEN;
                                 }
+                                retract();
+                                return COLON_TOKEN;
                              
                             case ';':
                                 return SEMICOLON_TOKEN;
@@ -648,31 +635,28 @@ public final class Scanner implements ErrorConstants
                             case ']':
                                 return RIGHTBRACKET_TOKEN;
                                 
-                            case '^':
-                                state = bitwisexor_state;
-                                continue;
+                            case '^':   // tokens: ^=  ^
+                                if (nextchar()=='=')
+                                        return BITWISEXORASSIGN_TOKEN;
+                                retract();
+                                return BITWISEXOR_TOKEN;
                                 
                             case '{':
                                 return LEFTBRACE_TOKEN;
                                 
                             case '|':   // tokens: | |= || ||=
-                                switch (nextchar())
+                                c = nextchar();
+                                if (c=='=')
+                                    return BITWISEORASSIGN_TOKEN;
+                                if (c=='|')
                                 {
-                                    case '|':
-                                        switch (nextchar())
-                                        {
-                                            case '=':
-                                                return LOGICALORASSIGN_TOKEN;
-                                            default:
-                                                retract();
-                                                return LOGICALOR_TOKEN;
-                                        }
-                                    case '=':
-                                        return BITWISEORASSIGN_TOKEN;
-                                    default:
-                                        retract();
-                                        return BITWISEOR_TOKEN;
+                                    if (nextchar()=='=')
+                                        return LOGICALORASSIGN_TOKEN;
+                                    retract();
+                                    return LOGICALOR_TOKEN;
                                 }
+                                retract();
+                                return BITWISEOR_TOKEN;
                                 
                             case '}':
                                 return RIGHTBRACE_TOKEN;
@@ -681,41 +665,95 @@ public final class Scanner implements ErrorConstants
                                 return BITWISENOT_TOKEN;
                                 
                             case '+':   // tokens: ++ += +
-                                switch (nextchar())
-                                {
-                                    case '+':
-                                        return PLUSPLUS_TOKEN;
-                                    case '=':
-                                        return PLUSASSIGN_TOKEN;
-                                    default:
-                                        retract();
-                                        return PLUS_TOKEN;
-                                }
+                                c = nextchar();
+                                if (c=='+')
+                                    return PLUSPLUS_TOKEN;
+                                if (c=='=')
+                                    return PLUSASSIGN_TOKEN;
+                                retract();
+                                return PLUS_TOKEN;
                                 
                             case '<':
-                                state = lessthan_state;
-                                continue;
-                                
-                            case '=':   // tokens: === == =
-                                switch (nextchar())
+                                if( isSlashDivContext() )
                                 {
-                                    case '=':                            
+                                    switch (nextchar())
+                                    {
+                                    case '<':   // tokens: << <<-                                            
+                                        if (nextchar()=='=')
+                                            return LEFTSHIFTASSIGN_TOKEN;
+                                        retract();
+                                        return LEFTSHIFT_TOKEN;
+
+                                    case '=':
+                                        return LESSTHANOREQUALS_TOKEN;
+
+                                    case '/':  
+                                        return XMLTAGSTARTEND_TOKEN;
+                                    case '!': 
+                                        state = xmlcommentorcdatastart_state; 
+                                        continue;
+                                    case '?': 
+                                        state = xmlpi_state; 
+                                        continue;                            
+                                    }
+                                }
+                                else
+                                {
+                                    switch ( nextchar() )             
+                                    {
+                                    case '/':  
+                                        return XMLTAGSTARTEND_TOKEN;
+                                    case '!': 
+                                        state = xmlcommentorcdatastart_state; 
+                                        continue;
+                                    case '?': 
+                                        state = xmlpi_state; 
+                                        continue;
+                                    }                          
+                                }
+                                retract();  
+                                return LESSTHAN_TOKEN;
+
+                            case '=':   // tokens: === == =
+                                if (nextchar()=='=')
+                                {
+                                    if (nextchar()=='=')
+                                        return STRICTEQUALS_TOKEN;
+                                    retract();
+                                    return EQUALS_TOKEN;
+                                }
+                                retract();
+                                return ASSIGN_TOKEN;
+                                
+                            case '>':   // tokens: > >= >> >>= >>> >>>=
+                                state = start_state;
+                                if( isSlashDivContext() )       
+                                {
+                                    switch ( nextchar() )          
+                                    {
+                                    case '>':
                                         switch (nextchar())
                                         {
-                                            case '=':
-                                                return STRICTEQUALS_TOKEN;
-                                            default:
-                                                retract();
-                                                return EQUALS_TOKEN;
+                                        case '>':
+                                            if (nextchar()=='=')
+                                                return UNSIGNEDRIGHTSHIFTASSIGN_TOKEN;
+                                            retract();
+                                            return UNSIGNEDRIGHTSHIFT_TOKEN;
+                                        case '=':
+                                            return RIGHTSHIFTASSIGN_TOKEN;
+                                        default:
+                                            retract();
+                                        return RIGHTSHIFT_TOKEN;
                                         }
-                                    default:
-                                        retract();
-                                        return ASSIGN_TOKEN;
-                                }
-                                
-                            case '>':
-                                state = greaterthan_state;
-                                continue;            
+
+                                    case '=': 
+                                        return GREATERTHANOREQUALS_TOKEN;
+
+                                    default:  
+                                        retract();  
+                                    }
+                                }     
+                                return GREATERTHAN_TOKEN;            
                                 
                             case '0':
                                 state = zero_state;
@@ -744,24 +782,24 @@ public final class Scanner implements ErrorConstants
                             default:
                                 switch (input.nextcharClass((char)c,true))
                                 {
-                                    case Lu: case Ll: case Lt: case Lm: case Lo: case Nl:
-                                        maybe_reserved = false;
-                                        state = A_state;
-                                        continue;
-                                          
-                                    case Zs:// unicode whitespace and control-characters
-                                    case Cc: 
-                                    case Cf:
-                                        continue;
-                                            
-                                    case Zl:// unicode line terminators 
-                                    case Zp:
-                                        isFirstTokenOnLine = true;
-                                        continue;
-                                        
-                                    default:
-                                        state = error_state;
-                                        continue;
+                                case Lu: case Ll: case Lt: case Lm: case Lo: case Nl:
+                                    maybe_reserved = false;
+                                    state = A_state;
+                                    continue;
+
+                                case Zs:// unicode whitespace and control-characters
+                                case Cc: 
+                                case Cf:
+                                    continue;
+
+                                case Zl:// unicode line terminators 
+                                case Zp:
+                                    isFirstTokenOnLine = true;
+                                    continue;
+
+                                default:
+                                    state = error_state;
+                                continue;
                                 }
                         }
                     }
@@ -829,41 +867,44 @@ public final class Scanner implements ErrorConstants
                 case zero_state:
                     switch (nextchar())
                     {
-                        case 'x':
-                        case 'X':
-                            switch(nextchar())
-                            {
-                            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
-                            case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'A': case 'B': case 'C': case 'D': 
-                            case 'E': case 'F':
-                                state = hexinteger_state;
-                                break;
-                            default:
-                                state = start_state;
-                                error(kError_Lexical_General); 
-                            }
-                            continue;
-  
+                    case 'x':
+                    case 'X':
+                        switch(nextchar())
+                        {
                         case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
-                        case '.':
-                            state = decimalinteger_state;
-                            continue;
-                        case 'E':
-                        case 'e':
-                            state = exponentstart_state;
-                            continue;
-                        case 'd':
-                        case 'm':
-                        case 'i':
-                        case 'u':
-                        	if (!ctx.statics.es4_numerics)
-                        		retract();
-                            state = start_state;
-                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'A': case 'B': case 'C': case 'D': 
+                        case 'E': case 'F':
+                            state = hexinteger_state;
+                            break;
                         default:
-                            retract();
                             state = start_state;
-                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                        error(kError_Lexical_General); 
+                        }
+                        continue;
+
+                    case '.':
+                        state = decimal_state;
+                        continue;
+                        
+                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                        state = decimalinteger_state;
+                        continue;
+                    case 'E':
+                    case 'e':
+                        state = exponentstart_state;
+                        continue;
+                    case 'd':
+                    case 'm':
+                    case 'i':
+                    case 'u':
+                        if (!ctx.statics.es4_numerics)
+                            retract();
+                        state = start_state;
+                        return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                    default:
+                        retract();
+                    state = start_state;
+                    return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
                     }
 
                     /*
@@ -874,21 +915,21 @@ public final class Scanner implements ErrorConstants
                 case hexinteger_state:
                     switch (nextchar())
                     {
-                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
-                        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'A': case 'B': case 'C': case 'D': 
-                        case 'E': case 'F':
-                            state = hexinteger_state;
-                            continue;
-                        case 'u':
-                        case 'i':
-                        	if (!ctx.statics.es4_numerics)
-                        		retract();
-                            state = start_state; 
-                            return makeTokenInstance( NUMBERLITERAL_TOKEN, input.copy() );
-                        default:  
+                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                    case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'A': case 'B': case 'C': case 'D': 
+                    case 'E': case 'F':
+                        state = hexinteger_state;
+                        continue;
+                    case 'u':
+                    case 'i':
+                        if (!ctx.statics.es4_numerics)
                             retract();
-                            state = start_state; 
-                            return makeTokenInstance( NUMBERLITERAL_TOKEN, input.copy() );
+                        state = start_state; 
+                        return makeTokenInstance( NUMBERLITERAL_TOKEN, input.copy() );
+                    default:  
+                        retract();
+                    state = start_state; 
+                    return makeTokenInstance( NUMBERLITERAL_TOKEN, input.copy() );
                     }
 
                     /*
@@ -899,32 +940,26 @@ public final class Scanner implements ErrorConstants
                 case dot_state:
                     switch (nextchar())
                     {
-                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
-                            state = decimal_state;
-                            continue;
-                        case '.':
-                            state = doubledot_state;
-                            continue;
-                        case '<':
-                            state = start_state;
-                            return DOTLESSTHAN_TOKEN;
-                        default:
-                            retract();
-                            state = start_state;
-                            return DOT_TOKEN;
-                    }
+                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                        state = decimal_state;
+                        continue;
 
-                    /*
-                     * accepts: ..
-                     */
-
-                case doubledot_state:
-                    state = start_state;
-                    if ( nextchar() == '.' )
+                    case '.':
+                        state = start_state;
+                        if (nextchar()=='.')
                             return TRIPLEDOT_TOKEN;
+                        retract();
+                        return DOUBLEDOT_TOKEN;
 
-                    retract();
-                    return DOUBLEDOT_TOKEN;
+                    case '<':
+                        state = start_state;
+                        return DOTLESSTHAN_TOKEN;
+
+                    default:
+                        retract();
+                    state = start_state;
+                    return DOT_TOKEN;
+                    }
 
                     /*
                      * prefix: N
@@ -934,28 +969,28 @@ public final class Scanner implements ErrorConstants
                 case decimalinteger_state:
                     switch (nextchar())
                     {
-                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
-                            state = decimalinteger_state;
-                            continue;
-                        case '.':
-                            state = decimal_state;
-                            continue;
-                        case 'd':
-                        case 'm':
-                        case 'u':
-                        case 'i':
-                        	if (!ctx.statics.es4_numerics)
-                        		retract();
-                            state = start_state;
-                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
-                        case 'E':
-                        case 'e':
-                            state = exponentstart_state;
-                            continue;
-                        default:
+                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                        state = decimalinteger_state;
+                        continue;
+                    case '.':
+                        state = decimal_state;
+                        continue;
+                    case 'd':
+                    case 'm':
+                    case 'u':
+                    case 'i':
+                        if (!ctx.statics.es4_numerics)
                             retract();
-                            state = start_state;
-                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                        state = start_state;
+                        return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                    case 'E':
+                    case 'e':
+                        state = exponentstart_state;
+                        continue;
+                    default:
+                        retract();
+                    state = start_state;
+                    return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
                     }
 
                     /*
@@ -966,23 +1001,23 @@ public final class Scanner implements ErrorConstants
                 case decimal_state:
                     switch (nextchar())
                     {
-                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
-                            state = decimal_state;
-                            continue;
-                        case 'd':
-                        case 'm':
-                        	if (!ctx.statics.es4_numerics)
-                        		retract();
-                            state = start_state;
-                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
-                        case 'E':
-                        case 'e':
-                            state = exponentstart_state;
-                            continue;
-                        default:
+                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                        state = decimal_state;
+                        continue;
+                    case 'd':
+                    case 'm':
+                        if (!ctx.statics.es4_numerics)
                             retract();
-                            state = start_state;
-                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                        state = start_state;
+                        return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                    case 'E':
+                    case 'e':
+                        state = exponentstart_state;
+                        continue;
+                    default:
+                        retract();
+                    state = start_state;
+                    return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
                     }
 
                     /*
@@ -993,16 +1028,16 @@ public final class Scanner implements ErrorConstants
                 case exponentstart_state:
                     switch (nextchar())
                     {
-                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
-                        case '+':
-                        case '-':
-                            state = exponent_state;
-                            continue;
-                        default:
-                            error(kError_Lexical_General);
-                            state = start_state;
-                            continue;
-                            // Issue: needs specific error here.
+                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                    case '+':
+                    case '-':
+                        state = exponent_state;
+                        continue;
+                    default:
+                        error(kError_Lexical_General);
+                    state = start_state;
+                    continue;
+                    // Issue: needs specific error here.
                     }
 
                     /*
@@ -1013,19 +1048,19 @@ public final class Scanner implements ErrorConstants
                 case exponent_state:
                     switch (nextchar())
                     {
-                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
-                            state = exponent_state;
-                            continue;
-                   		case 'd':
-                   		case 'm':
-                        	if (!ctx.statics.es4_numerics)
-                        		retract();
-                            state = start_state;
-                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
-                        default:
+                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                        state = exponent_state;
+                        continue;
+                    case 'd':
+                    case 'm':
+                        if (!ctx.statics.es4_numerics)
                             retract();
-                            state = start_state;
-                            return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                        state = start_state;
+                        return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                    default:
+                        retract();
+                    state = start_state;
+                    return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
                     }
 
                     /*
@@ -1038,9 +1073,9 @@ public final class Scanner implements ErrorConstants
               
                     switch (c)
                     {   
-                        case '/': // line comment
-                            state = start_state;
-                            line_comment: 
+                    case '/': // line comment
+                        state = start_state;
+                        line_comment: 
                             while ( (c=nextchar()) != 0)
                             {
                                 if ( c == '\r' || c == '\n' )
@@ -1054,17 +1089,17 @@ public final class Scanner implements ErrorConstants
                                     return makeTokenInstance( SLASHSLASHCOMMENT_TOKEN, input.copyReplaceUnicodeEscapes() );
                                 }
                             }
-                            continue;
-                            
-                        case '*':
-                            if (save_comments == false)
-                            {
-                                block_comment:
+                        continue;
+
+                    case '*':
+                        if (save_comments == false)
+                        {
+                            block_comment:
                                 while ( (c=nextchar()) != 0)
                                 {
                                     if ( c == '\r' || c == '\n' )
                                         isFirstTokenOnLine = true;
-                                    
+
                                     if (c == '*')
                                     {
                                         c = nextchar();
@@ -1075,66 +1110,60 @@ public final class Scanner implements ErrorConstants
                                         retract();
                                     }   
                                 }
-                                state = start_state;
-                            }
-                            else {
-                                if (blockcommentbuf == null) 
-                                    blockcommentbuf = new StringBuilder();
-                                blockcommentbuf.append("/*");
-                                state = blockcommentstart_state;
-                            }
-                            continue;
-                    
-                        default:
-                            
-                            if (isSlashDivContext())
-                            {
-                                /*
-                                 * tokens: /> /= /
-                                 */
-                                
-                                state = start_state; 
-                                switch (c)
-                                {
-                                    case '>':
-                                        return XMLTAGENDEND_TOKEN;
-                                    case '=':
-                                        return DIVASSIGN_TOKEN;
-                                    default:
-                                        retract();
-                                        return DIV_TOKEN;
-                                }
-                            }
- 
-                            state = slashregexp_state;
-                            retract(); // since we didn't use the current character for this decision.
-                            continue;
+                        state = start_state;
+                        }
+                        else {
+                            if (blockcommentbuf == null) 
+                                blockcommentbuf = new StringBuilder();
+                            blockcommentbuf.append("/*");
+                            state = blockcommentstart_state;
+                        }
+                        continue;
+
+                    default:
+                        if (isSlashDivContext())
+                        {
+                            /*
+                             * tokens: /> /= /
+                             */
+
+                            state = start_state; 
+                            if (c=='>')
+                                return XMLTAGENDEND_TOKEN;
+                            if (c=='=')
+                                return DIVASSIGN_TOKEN;
+                            retract();
+                            return DIV_TOKEN;
+                        }
+                    state = slashregexp_state;
+                    retract(); // since we didn't use the current character for this decision.
+                    continue;
                     }
                 }
 
-                    /*
+                /*
                      * tokens: /<regexpbody>/<regexpflags>
                      */
 
                 case slashregexp_state:
                     switch (nextchar())
                     {
-                        case '\\': 
-                            nextchar(); 
-                            continue;
-                        case '/':
-                            regexp_flags = 0;
-                            state = regexp_state;
-                            continue;
-                        case 0:
-                        case '\n':
-                        case '\r':
-                            error(kError_Lexical_General);
-                            state = start_state;
-                            continue;
-                        default:
-                            state = slashregexp_state;
-                            continue;
+                    case '\\': 
+                        nextchar(); 
+                        continue;
+                    case '/':
+                        regexp_flags = 0;
+                        state = regexp_state;
+                        continue;
+                    case 0:
+                    case '\n':
+                    case '\r':
+                        error(kError_Lexical_General);
+                        state = start_state;
+                        continue;
+                    default:
+                        state = slashregexp_state;
+                    continue;
                     }
 
                 /*
@@ -1144,8 +1173,9 @@ public final class Scanner implements ErrorConstants
                 */
 
                 case regexp_state:
-                switch ( nextchar() )
-                {
+                    c = nextchar();
+                    switch ( c )
+                    {
                     case 'g': 
                         if ((regexp_flags & 0x01) == 0)
                         {
@@ -1196,160 +1226,16 @@ public final class Scanner implements ErrorConstants
                         state = start_state; 
                         continue;
 
-                    case 'A': 
-                    case 'a': 
-                    case 'B': 
-                    case 'b': 
-                    case 'C': 
-                    case 'c': 
-                    case 'D': 
-                    case 'd': 
-                    case 'E': 
-                    case 'e': 
-                    case 'F': 
-                    case 'f':
-                    case 'G': 
-                    case 'H': 
-                    case 'h': 
-                    case 'I':
-                    case 'J': 
-                    case 'j': 
-                    case 'K': 
-                    case 'k': 
-                    case 'L': 
-                    case 'l': 
-                    case 'M': 
-                    case 'N': 
-                    case 'n': 
-                    case 'O': 
-                    case 'o':
-                    case 'P': 
-                    case 'p': 
-                    case 'Q': 
-                    case 'q': 
-                    case 'R': 
-                    case 'r': 
-                    case 'S': 
-                    case 'T': 
-                    case 't': 
-                    case 'U': 
-                    case 'u': 
-                    case 'V': 
-                    case 'v': 
-                    case 'W': 
-                    case 'w': 
-                    case 'X': 
-                    case 'Y': 
-                    case 'y': 
-                    case 'Z': 
-                    case 'z': 
-                    case '$': 
-                    case '_':
-                    case '0': 
-                    case '1': 
-                    case '2': 
-                    case '3': 
-                    case '4': 
-                    case '5': 
-                    case '6': 
-                    case '7': 
-                    case '8': 
-                    case '9':
-                        error(kError_Lexical_General); 
-                        state = start_state; 
-                        continue;
-                        
                     default: 
-                        retract(); 
-                        state = start_state; 
-                        return makeTokenInstance( REGEXPLITERAL_TOKEN, input.copyReplaceUnicodeEscapes());
-                }
-                    /*
-                     * tokens: ^^ ^^= ^=  ^
-                     */
-
-                case bitwisexor_state:
-                    switch (nextchar())
-                    {
-                        case '=':
-                            state = start_state;
-                            return BITWISEXORASSIGN_TOKEN;
-/* not yet supported
-                        case '^':
-                            state = logicalxor_state;
-                            continue;
-*/
-                        default:
-                            retract();
-                            state = start_state;
-                            return BITWISEXOR_TOKEN;
-                    }
-
-                    /*
-                     * tokens: ^^ ^=  ^
-                     */
-
-                case logicalxor_state:
-                    switch (nextchar())
-                    {
-                        case '=':
-                            state = start_state;
-                            return LOGICALXORASSIGN_TOKEN;
-                        default:
-                            retract();
-                            state = start_state;
-                            return LOGICALXOR_TOKEN;
-                    }
-
-                    /*
-                     * prefix: <
-                     */
-
-                case lessthan_state:
-                    if( isSlashDivContext() )
-                    {
-                        switch (nextchar())
+                        if (Character.isJavaIdentifierPart(c))
                         {
-                            case '<':
-                                state = leftshift_state;
-                                continue;
-                            case '=':
-                                state = start_state;
-                                return LESSTHANOREQUALS_TOKEN;
-                                
-                            case '/': 
-                                state = start_state; 
-                                return XMLTAGSTARTEND_TOKEN;
-                            case '!': 
-                                state = xmlcommentorcdatastart_state; 
-                                continue;
-                            case '?': 
-                                state = xmlpi_state; 
-                                continue;                            
-                            default:
-                                retract();
-                                state = start_state;
-                                return LESSTHAN_TOKEN;
+                            error(kError_Lexical_General); 
+                            state = start_state; 
+                            continue; 
                         }
-                    }
-                    else
-                    {
-                        switch ( nextchar() )             
-                        {
-                            case '/': 
-                                state = start_state; 
-                                return XMLTAGSTARTEND_TOKEN;
-                            case '!': 
-                                state = xmlcommentorcdatastart_state; 
-                                continue;
-                            case '?': 
-                                state = xmlpi_state; 
-                                continue;
-                            default:  
-                                retract(); 
-                                state = start_state; 
-                                return LESSTHAN_TOKEN;
-                        }                          
+                    retract(); 
+                    state = start_state; 
+                    return makeTokenInstance( REGEXPLITERAL_TOKEN, input.copyReplaceUnicodeEscapes());
                     }
 
                 /*
@@ -1359,407 +1245,199 @@ public final class Scanner implements ErrorConstants
                 case xmlcommentorcdatastart_state:
                     switch ( nextchar() )        
                     {
-                        case '[':  state = xmlcdatastart_state; continue;
-                        case '-':  state = xmlcommentstart_state; continue;
-                        default:    error(kError_Lexical_General); state = start_state; continue;
-                    }
+                    case '[':  
+                        if (nextchar()=='C' &&
+                            nextchar()=='D' &&
+                            nextchar()=='A' &&
+                            nextchar()=='T' &&
+                            nextchar()=='A' &&
+                            nextchar()=='[')
+                        {
+                            state = xmlcdata_state; 
+                            continue;
+                        }
+                        break; // error
 
-                case xmlcdatastart_state:
-                    switch ( nextchar() )        
-                    {
-                        case 'C':  state = xmlcdatac_state; continue;
-                        default:    error(kError_Lexical_General); state = start_state; continue;
-                    }
+                    case '-':  
+                        if (nextchar()=='-')
+                        {
+                            state = xmlcomment_state; 
+                            continue;
+                        }
+                    }    
+                    error(kError_Lexical_General); 
+                    state = start_state; 
+                    continue;
 
-                case xmlcdatac_state:
-                    switch ( nextchar() )          
-                    {
-                        case 'D':  state = xmlcdatacd_state; continue;
-                        default:    error(kError_Lexical_General); state = start_state; continue;
-                    }
-
-                case xmlcdatacd_state:
-                    switch ( nextchar() )        
-                    {
-                        case 'A':  state = xmlcdatacda_state; continue;
-                        default:   error(kError_Lexical_General); state = start_state; continue;
-                    }
-
-                case xmlcdatacda_state:
-                    switch ( nextchar() )       
-                    {
-                        case 'T':  state = xmlcdatacdat_state; continue;
-                        default:   error(kError_Lexical_General); state = start_state; continue;
-                    }
-
-                case xmlcdatacdat_state:
-                    switch ( nextchar() )          
-                    {
-                        case 'A':  state = xmlcdatacdata_state; continue;
-                        default:   error(kError_Lexical_General); state = start_state; continue;
-                    }
-                case xmlcdatacdata_state:
-                    switch ( nextchar() )          
-                    {
-                        case '[':  state = xmlcdata_state; continue;
-                        default:   error(kError_Lexical_General); state = start_state; continue;
-                    }
                 case xmlcdata_state:
                     switch ( nextchar() )         
                     {
-                        case ']':  state = xmlcdataendstart_state; continue;
-                        case 0:   error(kError_Lexical_General); state = start_state; continue;
-                        default:   state = xmlcdata_state; continue;
-                    }
-                case xmlcdataendstart_state:
-                    switch ( nextchar() )          
-                    {
-                        case ']':  state = xmlcdataend_state; continue;
-                        default:   state = xmlcdata_state; continue;
-                    }
-
-                case xmlcdataend_state:
-                    switch ( nextchar() )         
-                    {
-                        case '>':  
+                    case ']':
+                        if (nextchar()==']' && nextchar()=='>')
                         {
                             state = start_state;
                             return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));
                         }
-                        default:   state = xmlcdata_state; continue;
+                        continue;
+
+                    case 0:   
+                        error(kError_Lexical_General); 
+                        state = start_state;
                     }
-                case xmlcommentstart_state:
-                    switch ( nextchar() )        
-                    {
-                        case '-':  state = xmlcomment_state; continue;
-                        default:   error(kError_Lexical_General); state = start_state; continue;
-                    }
+                    continue;
 
                 case xmlcomment_state:
-                    switch ( nextchar() )
+                    while ( (c=nextchar()) != '-' && c != 0 )
+                        ;
+                    
+                    if (c=='-' && nextchar() != '-')
                     {
-                        case '-':  state = xmlcommentendstart_state; continue;
-                        case 0:   error(kError_Lexical_General); state = start_state; continue;
-                        default:   state = xmlcomment_state; continue;
+                        continue;
                     }
-
-                case xmlcommentendstart_state:
-                    switch ( nextchar() )
+                    
+                    // got -- if next is > ok else error
+                    
+                    if ( nextchar()=='>')
                     {
-                        case '-':  state = xmlcommentend_state; continue;
-                        default:   state = xmlcomment_state; continue;
+                        state = start_state;
+                        return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos())); 
                     }
-
-                case xmlcommentend_state:
-                    switch ( nextchar() )  
-                    {
-                        case '>':  
-                        {
-                            state = start_state;
-                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));
-                        }
-                        default:   error(kError_Lexical_General); state = start_state; continue;
-                    }
+                    
+                    error(kError_Lexical_General); 
+                    state = start_state;
+                    continue;
 
                 case xmlpi_state:
-                    switch ( nextchar() )
+                    while ( (c=nextchar()) != '?' && c != 0 )
+                        ;
+                    
+                    if (c=='?' && nextchar() == '>')
                     {
-                        case '?':  state = xmlpiend_state; continue;
-                        case 0:   error(kError_Lexical_General); state = start_state; continue;
-                        default:   state = xmlpi_state; continue;
+                        state = start_state;
+                        return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));  
                     }
 
-                case xmlpiend_state:
-                    switch ( nextchar() )
+                    if (nextchar()==0)
                     {
-                        case '>':  
-                        {
-                            state = start_state;
-                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));
-                        }
-                        default:   error(kError_Lexical_General); state = start_state; continue;
+                        error(kError_Lexical_General); 
+                        state = start_state;   
                     }
+                    continue;
+
                 case xmltext_state:
                 { 
                     switch(nextchar())
                     {
-                        case '<': case '{':  
+                    case '<': case '{':  
+                    {
+                        retract();
+                        String xmltext = input.substringReplaceUnicodeEscapes(startofxml,pos());
+                        if( xmltext != null )
                         {
-                            retract();
-                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml,pos());
-                            if( xmltext != null )
+                            state = start_state;
+                            return makeTokenInstance(XMLTEXT_TOKEN,xmltext);
+                        }
+                        else  // if there is no leading text, then just return punctuation token to avoid empty text tokens
+                        {
+                            switch(nextchar()) 
                             {
-                                state = start_state;
-                                return makeTokenInstance(XMLTEXT_TOKEN,xmltext);
-                            }
-                            else  // if there is no leading text, then just return puncutation token to avoid empty text tokens
-                            {
-                                switch(nextchar()) 
+                            case '<': 
+                                switch( nextchar() )
                                 {
-                                    case '<': 
-                                    switch( nextchar() )
-                                    {
-                                        case '/': state = start_state; return XMLTAGSTARTEND_TOKEN;
-                                        case '!': state = xmlcommentorcdatastart_state; continue;
-                                        case '?': state = xmlpi_state; continue;
-                                        default: retract(); state = start_state; return LESSTHAN_TOKEN;
-                                    }
-                                    case '{': 
-                                        state = start_state; 
-                                        return LEFTBRACE_TOKEN;
+                                case '/': state = start_state; return XMLTAGSTARTEND_TOKEN;
+                                case '!': state = xmlcommentorcdatastart_state; continue;
+                                case '?': state = xmlpi_state; continue;
+                                default: retract(); state = start_state; return LESSTHAN_TOKEN;
                                 }
+                            case '{': 
+                                state = start_state; 
+                                return LEFTBRACE_TOKEN;
                             }
                         }
-                        case 0:   
-                            state = start_state; 
-                            return EOS_TOKEN;
-                            
-                        default:  
-                            state = xmltext_state; 
-                        continue;
                     }
+                    case 0:   
+                        state = start_state; 
+                        return EOS_TOKEN;
+                    }
+                    continue;
                 }
 
                 case xmlliteral_state:
                     switch (nextchar())
                     {
-                        case '{':  // return XMLPART_TOKEN
-                            {
-	                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-1);
-                                return makeTokenInstance(XMLPART_TOKEN, xmltext);
-                            }
-                        case '<':
-                            switch (nextchar())
-                            {
-                                case '/':
-                                    --level;
-                                    nextchar();
-                                    mark();
-                                    retract();
-                                    state = endxmlname_state;
-                                    continue;
-                                default:
-                                    ++level;
-                                    state = xmlliteral_state;
-                                    continue;
-                            }
-                        case '/':
-                            {
-                                switch (nextchar())
-                                {
-                                    case '>':
-                                        {
-                                            --level;
-                                            if (level == 0)
-                                            {
-	                                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()+1);
-                                                state = start_state;
-                                                return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
-                                            }
-                                            // otherwise continue
-                                            state = xmlliteral_state;
-                                            continue;
-                                        }
-                                    default: /*error(kError_Lexical_General);*/
-                                        state = xmlliteral_state;
-                                        continue; // keep going anyway
-                                }
-                            }
-                        case 0:
-                            retract();
-                            error(kError_Lexical_NoMatchingTag);
-                            state = start_state;
-                            continue;
-                            
-                        default:
-                            continue;
-                    }
+                    case '{':  // return XMLPART_TOKEN
+                        return makeTokenInstance(XMLPART_TOKEN, input.substringReplaceUnicodeEscapes(startofxml, pos()-1));
 
-                case endxmlname_state:  // scan name and compare it to start name
-                    switch (nextchar())
-                    {
-                        case 'A': case 'a':
-                        case 'B': case 'b':
-                        case 'C': case 'c':
-                        case 'D': case 'd':
-                        case 'E': case 'e':
-                        case 'F': case 'f':
-                        case 'G':
-                        case 'g':
-                        case 'H':
-                        case 'h':
-                        case 'I':
-                        case 'i':
-                        case 'J':
-                        case 'j':
-                        case 'K':
-                        case 'k':
-                        case 'L':
-                        case 'l':
-                        case 'M':
-                        case 'm':
-                        case 'N':
-                        case 'n':
-                        case 'O':
-                        case 'o':
-                        case 'P':
-                        case 'p':
-                        case 'Q':
-                        case 'q':
-                        case 'R':
-                        case 'r':
-                        case 'S':
-                        case 's':
-                        case 'T':
-                        case 't':
-                        case 'U':
-                        case 'u':
-                        case 'V':
-                        case 'v':
-                        case 'W':
-                        case 'w':
-                        case 'X':
-                        case 'x':
-                        case 'Y':
-                        case 'y':
-                        case 'Z':
-                        case 'z':
-                        case '$':
-                        case '_':
-                        case '0':
-                        case '1':
-                        case '2':
-                        case '3':
-                        case '4':
-                        case '5':
-                        case '6':
-                        case '7':
-                        case '8':
-                        case '9':
-                        case ':':
-                            {
-                                // stop looking for matching tag if the names diverge
-                                String temp = input.copy();
-                                if (xmltagname != null && xmltagname.indexOf(temp) == -1)
-                                {
-                                    state = xmlliteral_state;
-                                    //level -= 2;
-                                }
-                                else
-                                {
-                                    state = endxmlname_state;
-                                }
-                                continue;
-                            }
-                        case '{':  // return XMLPART_TOKEN
-                            {
-                                if (xmltagname != null)  // clear xmltagname since there is an expression in it.
-                                {
-                                    xmltagname = null;
-                                }
-	                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-1);
-                                return makeTokenInstance(XMLPART_TOKEN, xmltext);
-                            }
-                        case '>':
-                            {
-                                retract();
-                                String temp = input.copy();
-                                nextchar();
-                                if (level == 0)
-                                {
-                                    if (xmltagname != null)
-                                    {
-                                        if (temp.equals(xmltagname))
-                                        {
-	                                        String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()+1);
-                                            state = start_state;
-                                            return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
-                                        }
-                                    }
-                                    else
-                                    {
-	                                    String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()+1);
-                                        state = start_state;
-                                        return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
-                                    }
-                                }
-                                state = xmlliteral_state;
-                                continue;
-                            }
-                        default:
-                            state = xmlliteral_state;
-                            continue;
-                    }
-
-                    /*
-                     * tokens: <<=  <<
-                     */
-
-                case leftshift_state:
-                    switch (nextchar())
-                    {
-                        case '=':
-                            state = start_state;
-                            return LEFTSHIFTASSIGN_TOKEN;
-                        default:
-                            retract();
-                            state = start_state;
-                            return LEFTSHIFT_TOKEN;
-                    }
-
-                    /*
-                     * prefix: >
-                     */
-
-                case greaterthan_state:
-                    if( isSlashDivContext() )       
-                    {
-                        switch ( nextchar() )          
+                    case '<':
+                        switch (nextchar())
                         {
-                            case '>': 
-                                state = rightshift_state; 
-                                break;
-                            
-                            case '=': 
-                                state = start_state; 
-                                return GREATERTHANOREQUALS_TOKEN;
-                            
-                            default:  
-                                retract(); 
-                                state = start_state; 
-                                return GREATERTHAN_TOKEN;
-                        }
-                    }
-                    else      
-                    {
-                        state = start_state; 
-                        return GREATERTHAN_TOKEN;
-                    }
-
-                    /*
-                     * prefix: >> >>> >>>=
-                     */
-
-                case rightshift_state:
-                    state = start_state;
-                    switch (nextchar())
-                    {
-                        case '>':
-                            switch (nextchar())
-                            {
-                                case '=':
-                                    return UNSIGNEDRIGHTSHIFTASSIGN_TOKEN;
-                                default:
-                                    retract();
-                                    return UNSIGNEDRIGHTSHIFT_TOKEN;
-                            }
-                        case '=':
-                            return RIGHTSHIFTASSIGN_TOKEN;
-                        default:
+                        case '/':
+                            --level;
+                            nextchar();
+                            mark();
                             retract();
-                            return RIGHTSHIFT_TOKEN;
+                            state = endxmlname_state;
+                            continue;
+
+                        default:
+                            ++level;
+                        state = xmlliteral_state;
+                        continue;
+                        }
+
+                    case '/':
+                        if (nextchar()=='>')
+                        {
+                            --level;
+                            if (level == 0)
+                            {
+                                state = start_state;
+                                return makeTokenInstance(XMLLITERAL_TOKEN, input.substringReplaceUnicodeEscapes(startofxml, pos()+1)); 
+                            }
+                        }
+                        continue;
+
+                    case 0:
+                        retract();
+                        error(kError_Lexical_NoMatchingTag);
+                        state = start_state;
+                        continue;
+
+                    default:
+                        continue;
+                    }
+
+                case endxmlname_state:
+                    c = nextchar();
+                    if (Character.isJavaIdentifierPart(c)||c==':')
+                    {
+                        continue;
                     }
                     
+                    switch(c)
+                    {
+                    case '{':  // return XMLPART_TOKEN
+                    {
+                        String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-1);
+                        return makeTokenInstance(XMLPART_TOKEN, xmltext);
+                    }
+                    case '>':
+                        retract();
+                        nextchar();
+                        if (level == 0)
+                        {
+                            String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()+1);
+                            state = start_state;
+                            return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
+                        }
+                        state = xmlliteral_state;
+                        continue;
+
+                    default:
+                        state = xmlliteral_state;
+                        continue;
+                    }
+
                /*
                 * prefix: /*
                 */
@@ -1847,23 +1525,32 @@ public final class Scanner implements ErrorConstants
                     blockcommentbuf.append(c);
                     switch ( c )                    
                     {
-                        case '/':
-                        {
-                            if (doctextbuf == null) 
-                                doctextbuf = getDocTextBuffer(doctagname);
-                            if( doctagname.length() > 0 ) 
-                            { 
-                                doctextbuf.append("]]></").append(doctagname).append(">"); 
-                            }
-                            String doctext = doctextbuf.toString(); // ??? does this needs escape conversion ???
-                            state = start_state; 
-                            return makeTokenInstance(DOCCOMMENT_TOKEN,doctext);
+                    case '/':
+                    {
+                        if (doctextbuf == null) 
+                            doctextbuf = getDocTextBuffer(doctagname);
+                        if( doctagname.length() > 0 ) 
+                        { 
+                            doctextbuf.append("]]></").append(doctagname).append(">"); 
                         }
-                        
-                        case '*':  state = doccommentstar_state; continue;
-                        case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
-                        default:   state = doccomment_state; continue;
-                            // if not a slash, then keep looking for an end comment.
+                        String doctext = doctextbuf.toString(); // ??? does this needs escape conversion ???
+                        state = start_state; 
+                        return makeTokenInstance(DOCCOMMENT_TOKEN,doctext);
+                    }
+
+                    case '*':  
+                        state = doccommentstar_state; 
+                        continue;
+                    
+                    case 0:    
+                        error(kError_BlockCommentNotTerminated); 
+                        state = start_state; 
+                        continue;
+                    
+                    default:   
+                        state = doccomment_state; 
+                        continue;
+                    // if not a slash, then keep looking for an end comment.
                     }
                 }
 
@@ -1876,66 +1563,66 @@ public final class Scanner implements ErrorConstants
                     c = nextchar();
                     switch ( c )
                     {
-                        case '*':  
-                            state = doccommentstar_state; 
-                            continue;
-                        
-                        case ' ': case '\t': case '\r': case '\n': 
-                        {
-                            if (doctextbuf == null) 
-                                doctextbuf = getDocTextBuffer(doctagname);
-                            
-                            // skip extra whitespace --fixes bug on tag text parsing 
-                            // --but really, the problem is not here, it's in whatever reads asdoc output..
-                            // --So if that gets fixed, feel free to delete the following.
-                            
-                            while ( (c=nextchar()) == ' ' || c == '\t' )
-                                ;
-                            retract();
-                            
-                            if( doctagname.length() > 0 ) 
-                            { 
-                                doctextbuf.append("\n<").append(doctagname).append("><![CDATA["); 
-                            }
-                            state = doccomment_state; 
-                            continue;
-                        }
-                        
-                        case 0:    
-                            error(kError_BlockCommentNotTerminated); 
-                            state = start_state; 
-                            continue;
-                        
-                        default:   
-                            doctagname += (char)(c); 
-                            continue;
-                    }
-                }
-
-                /*
-                * prefix: /**
-                */
-
-                case doccommentvalue_state:
-                switch ( nextchar() )
-                {
                     case '*':  
                         state = doccommentstar_state; 
                         continue;
-                        
-                    case '@':  
-                        state = doccommenttag_state; 
+
+                    case ' ': case '\t': case '\r': case '\n': 
+                    {
+                        if (doctextbuf == null) 
+                            doctextbuf = getDocTextBuffer(doctagname);
+
+                        // skip extra whitespace --fixes bug on tag text parsing 
+                        // --but really, the problem is not here, it's in whatever reads asdoc output..
+                        // --So if that gets fixed, feel free to delete the following.
+
+                        while ( (c=nextchar()) == ' ' || c == '\t' )
+                            ;
+                        retract();
+
+                        if( doctagname.length() > 0 ) 
+                        { 
+                            doctextbuf.append("\n<").append(doctagname).append("><![CDATA["); 
+                        }
+                        state = doccomment_state; 
                         continue;
-                        
+                    }
+
                     case 0:    
                         error(kError_BlockCommentNotTerminated); 
                         state = start_state; 
                         continue;
-                        
+
+                    default:   
+                        doctagname += (char)(c); 
+                    continue;
+                    }
+                }
+
+                /*
+                 * prefix: /**
+                 */
+
+                case doccommentvalue_state:
+                    switch ( nextchar() )
+                    {
+                    case '*':  
+                        state = doccommentstar_state; 
+                        continue;
+
+                    case '@':  
+                        state = doccommenttag_state; 
+                        continue;
+
+                    case 0:    
+                        error(kError_BlockCommentNotTerminated); 
+                        state = start_state; 
+                        continue;
+
                     default:   
                         state = doccomment_state; 
-                        continue;
-                }
+                    continue;
+                    }
 
                 /*
                 * prefix: /*
@@ -1947,11 +1634,11 @@ public final class Scanner implements ErrorConstants
                     blockcommentbuf.append(c);
                     switch ( c )                    
                     {
-                        case '*':  state = blockcommentstar_state; continue;
-                        case '\r': case '\n': isFirstTokenOnLine = true; 
-                            state = blockcomment_state; continue;
-                        case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
-                        default:   state = blockcomment_state; continue;
+                    case '*':  state = blockcommentstar_state; continue;
+                    case '\r': case '\n': isFirstTokenOnLine = true; 
+                    state = blockcomment_state; continue;
+                    case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
+                    default:   state = blockcomment_state; continue;
                     }
                 }
 
@@ -1961,39 +1648,18 @@ public final class Scanner implements ErrorConstants
                     blockcommentbuf.append(c);
                     switch ( c )
                     {
-                        case '/':  
-                        {
-                            state = start_state;
-                            String blocktext = blockcommentbuf.toString(); // ??? needs escape conversion
-                            return makeTokenInstance( BLOCKCOMMENT_TOKEN, blocktext );
-                        }
-                        case '*':  state = blockcommentstar_state; continue;
-                        case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
-                        default:   state = blockcomment_state; continue;
-                            // if not a slash, then keep looking for an end comment.
+                    case '/':  
+                    {
+                        state = start_state;
+                        String blocktext = blockcommentbuf.toString(); // ??? needs escape conversion
+                        return makeTokenInstance( BLOCKCOMMENT_TOKEN, blocktext );
+                    }
+                    case '*':  state = blockcommentstar_state; continue;
+                    case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
+                    default:   state = blockcomment_state; continue;
+                    // if not a slash, then keep looking for an end comment.
                     }
                 }
-              
-                /*
-                * utf8sigstart_state
-                */
-
-                case utf8sig_state:
-                    switch (nextchar())
-                    {
-                        case (char) 0xffffffbb:
-                            {
-                                switch (nextchar())
-                                {
-                                    case (char) 0xffffffbf:
-                                        // ISSUE: set encoding scheme to utf-8, and implement support for utf8
-                                        state = start_state;
-                                        continue; // and contine
-                                }
-                            }
-                    }
-                    state = error_state;
-                    continue;
 
                 /*
                  * skip error
@@ -2009,7 +1675,6 @@ public final class Scanner implements ErrorConstants
                     error("invalid scanner state");
                     state = start_state;
                     return EOS_TOKEN;
-
             }
         }
     }

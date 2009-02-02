@@ -17,6 +17,8 @@
 
 package macromedia.asc.parser;
 
+import java.util.HashMap;
+import java.util.TreeMap;
 import macromedia.asc.util.*;
 import macromedia.asc.semantics.*;
 
@@ -37,23 +39,48 @@ public class Node
 	public static final boolean useDebugToStrings = false;
 	public static final int MAX_DEF_BITS = 1000; // ISSUE: what does this cost?
 	
-	/*private static HashMap<Class,Integer> nodecounts = new HashMap<Class,Integer>();
-	public static void tally(Object o) {
+    //
+    // node statistics, set profiling_on=true to enable
+    //
+    
+    private final static boolean profiling_on = false; //true;
+	private static HashMap<Class,Integer> nodecounts;
+    
+	public static void tally(Object o) 
+    {
+        if (profiling_on==false)
+            return;
+        
 		Class c = o.getClass();
 		int i = nodecounts.containsKey(c) ? nodecounts.get(c) : 0;
 		nodecounts.put(c, i+1);
 	}
+    
 	static {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			public void run() {
-				TreeMap<Integer,Class> t = new TreeMap<Integer,Class>();
-				for (Class c : nodecounts.keySet())
-					t.put(nodecounts.get(c),c);
-				for (int i : t.keySet())
-					System.out.println(i + " " + t.get(i).getName());
-			}
-		});
-	}*/
+        
+        if (profiling_on==true)
+        {
+            
+            nodecounts = new HashMap<Class,Integer>();
+            
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    TreeMap<Integer,Class> t = new TreeMap<Integer,Class>();
+                    for (Class c : nodecounts.keySet())
+                        t.put(nodecounts.get(c),c);
+
+                    int sum = 0;
+
+                    for (int i : t.keySet())
+                    {
+                        sum += i;
+                        System.out.println(i + " " + t.get(i).getName());
+                    }
+                    System.out.println("Total nodes = "+sum);
+                }
+            });
+        }
+	}
 	
 	protected int flags;
 	public Block block;
@@ -87,7 +114,7 @@ public class Node
 	{
 		this.setPosition(position);
 		block = null;
-		//tally(this);
+		tally(this);
 	}
 
 	public Value evaluate(Context cx, Evaluator evaluator)
