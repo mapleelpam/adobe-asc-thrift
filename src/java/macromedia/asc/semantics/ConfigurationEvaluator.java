@@ -832,7 +832,63 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
                     }
     			}
         	}
-        	else
+            else if ( n instanceof StatementListNode )
+            {
+                StatementListNode stmt = (StatementListNode)n;
+                if( stmt.config_attrs != null )
+                {
+                    stmt.config_attrs.evaluate(cx, this);
+                    if( stmt.config_attrs.compileDefinition )
+                    {
+                        // Look for previous Metadata/DocComments if the stmtlist starts with a definition
+                        DefinitionNode def;
+                        if( (def = startsWithDefinition(cx, stmt)) != null )
+                        {
+                            for( int m = i-1; m >= 0; --m)
+                            {
+                                Node temp = node.items.at(m);
+                                if( temp instanceof MetaDataNode)
+                                {
+                                    MetaDataNode metadata = (MetaDataNode)temp;
+                                    metadata.def = def;
+                                    def.addMetaDataNode(metadata);
+                                }
+                                else if( !(temp instanceof IncludeDirectiveNode || temp instanceof EmptyStatementNode) )
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        if( stmt.last() instanceof MetaDataNode && ((def = findNextDefinition(cx, node, i+1))!= null))
+                        {
+                            for( int m = stmt.items.size()-1; m >= 0; --m)
+                            {
+                                Node temp = stmt.items.at(m);
+                                if( temp instanceof MetaDataNode )
+                                {
+                                    MetaDataNode metadata = (MetaDataNode)temp;
+                                    metadata.def = def;
+                                    def.addMetaDataNode(metadata);
+                                }
+                                else if( !(temp instanceof IncludeDirectiveNode || temp instanceof EmptyStatementNode) )
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        node.items.set(i, nodeFactory.emptyStatement());
+                    }
+                    stmt.config_attrs = null;
+                }
+                n = node.items.at(i);
+                Node temp = evalAndFold(cx, n);
+                if( temp != n )
+                    node.items.set(i, temp);
+            }
+            else
         	{
                 
                 boolean old_topLevel = top_level;
@@ -881,6 +937,37 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
             def.metaData = null;
         }        
     }
+
+    // Returns the next definition node in the list starting from start
+    // This skips over metadata, comments, etc, to find the next definition node
+    // returns null if a definition is not found.
+    private DefinitionNode findNextDefinition(Context cx, StatementListNode list, int start)
+    {
+        DefinitionNode def = null;
+        for( int i =start, l=list.items.size(); i < l; ++i)
+        {
+            Node n = list.items.at(i);
+            if( n instanceof MetaDataNode || n instanceof IncludeDirectiveNode )
+            {
+                continue;
+            }
+            if( n instanceof DefinitionNode )
+            {
+                def = (DefinitionNode)n;
+            }
+            break;
+        }
+        return def;
+    }
+
+    // Returns the first definition node if the list starts with a definition
+    // This skips over metadata, comments, etc, to find the first definition node
+    // returns null if the list does not start with a definition.
+    private DefinitionNode startsWithDefinition(Context cx, StatementListNode list)
+    {
+        return findNextDefinition(cx, list, 0);
+    }
+
     private Node evalAndFold(Context cx, Node n)
     {
     	Node ret = n;

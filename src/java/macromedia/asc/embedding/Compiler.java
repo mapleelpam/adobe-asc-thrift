@@ -281,7 +281,7 @@ public class Compiler implements ErrorConstants
 					try
 					{
 						warningOut.close();
-						System.err.println("wrote .xml doc file: " + cx.path() + "/" + cx.scriptName() + "xml" );
+						System.err.println("wrote .xml doc file: " + cx.path() + "/" + cx.scriptName() + ".xml" );
 					}
 					catch (IOException ex) {}
 				}
