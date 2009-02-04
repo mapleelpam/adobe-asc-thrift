@@ -94,7 +94,7 @@ public final class Context implements ErrorConstants
     {
         this.statics = statics;
         this.handler = null;
-	this.qualified_origin = "";
+        this.qualified_origin = "";
         err = null;
         contextId = contextIds++;
         if (statics != null)
@@ -1526,15 +1526,22 @@ public final class Context implements ErrorConstants
                 UnresolvedNamespace ns = nsList.get(i);
                 ObjectList<ObjectValue> scopes = unresolved_namespaces.get(ns);
                 ObjectList<ObjectValue> temp = statics.scopes;
-                statics.scopes = scopes;
-                Value val = ns.ref.getValue(this);
+                statics.scopes = unresolved_namespaces.get(ns);
+                Slot slot = ns.ref.getSlot(this);
                 statics.scopes = temp;
-                ObjectValue realNamespace = (val instanceof ObjectValue) ? (ObjectValue) val : null;
-                if (realNamespace != null)
+
+                // If we find a slot without a value, it means the namespace is defined in a variable.
+                if (slot != null)
                 {
-                    ns.name = realNamespace.name;
-                    ns.ns_kind = realNamespace.getNamespaceKind();
-                    ns.resolved = true;
+                    Value val = slot.getValue();
+                    ObjectValue realNamespace = (val instanceof ObjectValue) ? (ObjectValue) val : null;
+
+                    if (realNamespace != null)
+                    {
+                        ns.name = realNamespace.name;
+                        ns.ns_kind = realNamespace.getNamespaceKind();
+                        ns.resolved = true;
+                    }
                 }
                 else
                 {
