@@ -333,7 +333,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                         ns = ((value instanceof ObjectValue) ? (ObjectValue) value : null);
                         if( ns == null )
                         {
-                            ns = cx.getUnresolvedNamespace(cx, node, (ReferenceValue) ref);
+                            return null;
                             // cx.error(node.qualifier.pos(), kError_UndefinedNamespace );
                         }
                     }
