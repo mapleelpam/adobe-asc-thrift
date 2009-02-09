@@ -35,7 +35,8 @@ import java.io.*;
 public final class LintEvaluator extends Emitter implements Evaluator, ErrorConstants
 {
 	static boolean debug = false;
-	
+	private boolean ignoreSynthesizedCode = true;
+
 	private static final String newline = System.getProperty("line.separator");
 	
 	private static class CodeLocation
@@ -2977,7 +2978,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		if (first_pass
 				|| (enabledMap.containsKey(code) && !enabledMap.get(code))
 				|| ignorableFile(input)
-				|| pos == 0) return;
+				|| ((pos == 0) && ignoreSynthesizedCode)) return;
 
 		CodeLocation loc = new CodeLocation();
 		loc.pos = pos;
@@ -3405,6 +3406,11 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 	public void testErrorStrings(Context cx)
 	{
 		// todo: add all warning string here
+	}
+
+	public void setIgnoreSynthesizedCode(boolean value)
+	{
+		ignoreSynthesizedCode = value;
 	}
 
 	public void setOutputToFile(boolean otf) {
