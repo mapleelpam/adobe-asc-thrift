@@ -1524,7 +1524,6 @@ public final class Context implements ErrorConstants
             for (int i = 0, size = nsList.size(); i < size; i++)
             {
                 UnresolvedNamespace ns = nsList.get(i);
-                ObjectList<ObjectValue> scopes = unresolved_namespaces.get(ns);
                 ObjectList<ObjectValue> temp = statics.scopes;
                 statics.scopes = unresolved_namespaces.get(ns);
                 Slot slot = ns.ref.getSlot(this);
@@ -1538,6 +1537,13 @@ public final class Context implements ErrorConstants
 
                     if (realNamespace != null)
                     {
+                        // Remove the ns from the TreeMap before we change it's name, and ns_kind,
+                        // which would change the ordering that ObjectValue.ObjectValueCompare generates.
+                        // If we don't remove the entry, then the Tree could be messed up since the ordering could
+                        // be different from when the namespace was inserted.  This could cause lookup problems for
+                        // other unresolved namespaces.
+                        unresolved_namespaces.remove(ns);
+
                         ns.name = realNamespace.name;
                         ns.ns_kind = realNamespace.getNamespaceKind();
                         ns.resolved = true;
