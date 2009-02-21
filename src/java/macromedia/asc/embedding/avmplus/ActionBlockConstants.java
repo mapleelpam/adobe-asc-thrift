@@ -146,6 +146,17 @@ public interface ActionBlockConstants
     int OP_hasnext2 = 0x32;
     int OP_pushdecimal = 0x33;
  	int OP_pushdnan = 0x34;
+ 	
+ 	int OP_li8 = 0x35;
+	int OP_li16 = 0x36;
+	int OP_li32 = 0x37;
+	int OP_lf32 = 0x38;
+	int OP_lf64 = 0x39;
+	int OP_si8 = 0x3A;
+	int OP_si16 = 0x3B;
+	int OP_si32 = 0x3C;
+	int OP_sf32 = 0x3D;
+	int OP_sf64 = 0x3E;
 
     int OP_newfunction =  0x40;
     int OP_call =  0x41;
