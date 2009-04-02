@@ -183,7 +183,8 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
                 if( node.is_default && ( dcn.metaData == null || !("Event".equals(dcn.metaData.id)
                                             || "Style".equals(dcn.metaData.id)
                                             || "Effect".equals(dcn.metaData.id)
-                                            || "SkinState".equals(dcn.metaData.id)) ) )
+                                            || "SkinState".equals(dcn.metaData.id) 
+                                            || "Alternative".equals(dcn.metaData.id)) ) )
                     add_node = false;
                 else
                     doccomments.remove(size-1);
