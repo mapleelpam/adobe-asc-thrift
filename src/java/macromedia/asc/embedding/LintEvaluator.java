@@ -35,7 +35,6 @@ import java.io.*;
 public final class LintEvaluator extends Emitter implements Evaluator, ErrorConstants
 {
 	static boolean debug = false;
-	private boolean ignoreSynthesizedCode = true;
 
 	private static final String newline = System.getProperty("line.separator");
 	
@@ -2975,10 +2974,10 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		//	  things in the pEnabledMap.  Some common objects like NaN and undefined are not in playerglobal.as yet
 		//	  anything from playerglobal.as.  It still needs to be cleaned up
 		//    anything from pos==0.  This is synthesized code created by the compiler.
-		if (first_pass
-				|| (enabledMap.containsKey(code) && !enabledMap.get(code))
-				|| ignorableFile(input)
-				|| ((pos == 0) && ignoreSynthesizedCode)) return;
+		if (first_pass ||
+            (enabledMap.containsKey(code) && !enabledMap.get(code)) ||
+            ignorableFile(input) ||
+            (pos == 0)) return;
 
 		CodeLocation loc = new CodeLocation();
 		loc.pos = pos;
@@ -3406,11 +3405,6 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 	public void testErrorStrings(Context cx)
 	{
 		// todo: add all warning string here
-	}
-
-	public void setIgnoreSynthesizedCode(boolean value)
-	{
-		ignoreSynthesizedCode = value;
 	}
 
 	public void setOutputToFile(boolean otf) {
