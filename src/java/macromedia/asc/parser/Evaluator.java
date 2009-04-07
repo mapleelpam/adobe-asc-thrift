@@ -90,6 +90,8 @@ public interface Evaluator
 	Value evaluate(Context cx, LiteralFieldNode node);
 
 	Value evaluate(Context cx, LiteralArrayNode node);
+	
+	Value evaluate(Context cx, LiteralVectorNode node);
 
 	Value evaluate(Context cx, SuperExpressionNode node);
 
