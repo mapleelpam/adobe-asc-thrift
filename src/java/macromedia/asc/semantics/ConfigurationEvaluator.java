@@ -239,6 +239,16 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 		}
 		return null;
 	}
+	
+	public Value evaluate(Context cx, LiteralVectorNode node) {
+		node.type.evaluate(cx, this);
+		if( node.elementlist != null )
+		{
+			evalArrayOrObjectArgList(cx, node.elementlist);
+			node.elementlist.evaluate(cx, this);
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, SuperExpressionNode node) {
 		node.expr = evalAndFold(cx, node.expr);
