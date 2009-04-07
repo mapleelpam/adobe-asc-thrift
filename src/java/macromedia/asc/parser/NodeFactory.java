@@ -1235,6 +1235,14 @@ public final class NodeFactory implements ErrorConstants
 		node.setPositionTerminal(pos);
 		return node;
 	}
+	
+	public LiteralVectorNode literalVector(Node vector_type, ArgumentListNode initializer_list, int pos)
+	{
+		LiteralVectorNode node = new LiteralVectorNode(initializer_list, vector_type);
+		node.setPositionTerminal(pos);
+		return node;
+	}
+	
     public LiteralXMLNode literalXML( ListNode list, boolean is_xmllist, int pos )
     {
         // LiteralStringNode first = list.items.at(0) instanceof LiteralStringNode ? (LiteralStringNode) list.items.at(0) : null;
