@@ -19,7 +19,7 @@ package macromedia.asc.embedding;
 public interface ErrorConstants
 {
    static final int kNumLanguages = 16;
-   static final int kNumErrorConstants = 178;
+   static final int kNumErrorConstants = 179;
 
 
       public static final int kError_OverrideOfFuncNotMarkedForOverride = 1024;
@@ -182,6 +182,7 @@ public interface ErrorConstants
       public static final int kError_InvalidPrecision = 1212;
       public static final int kError_Parser_NumericUseMisplaced = 1213;
       public static final int kError_WrongVersion = 1214;
+      public static final int kError_LossyConversion = 1215;
       public static final int kError_AmbiguousReference = 1000;
       public static final int kError_NamespaceAccessSpecifiers = 1003;
       public static final int kError_Unknown_Namespace = 1004;
@@ -387,6 +388,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsCN = { 
@@ -568,6 +570,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsCS = { 
@@ -749,6 +752,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsDE = { 
@@ -930,6 +934,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsES = { 
@@ -1111,6 +1116,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsFR = { 
@@ -1292,6 +1298,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsIT = { 
@@ -1473,6 +1480,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsJP = { 
@@ -1654,6 +1662,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsKR = { 
@@ -1835,6 +1844,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsNL = { 
@@ -2016,6 +2026,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsPL = { 
@@ -2197,6 +2208,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsPT = { 
@@ -2378,6 +2390,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsRU = { 
@@ -2559,6 +2572,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsSV = { 
@@ -2740,6 +2754,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsTR = { 
@@ -2921,6 +2936,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
    public static final AscError[] errorConstantsTW = { 
@@ -3102,6 +3118,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
            new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
+		   new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data."),
    };
 
         public static final AscError[][] allErrorConstants =
