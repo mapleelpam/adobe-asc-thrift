@@ -1,0 +1,26 @@
+\[Compiler\] Error #1084: Syntax error: expecting greaterthan before leftbracket.
+.*vectorError1084_3.as, Ln 38, Col 17:
+var v1 = new<int\[1\]>;
+................\^
+\[Compiler\] Error #1084: Syntax error: expecting leftbracket before semicolon.
+.*vectorError1084_3.as, Ln 38, Col 21:
+var v1 = new<int\[1\]>;
+....................\^
+\[Compiler\] Error #1084: Syntax error: expecting identifier before end of program.
+.*vectorError1084_3.as, Ln 39, Col 1:
+\[Compiler\] Error #1084: Syntax error: expecting rightbracket before end of program.
+.*vectorError1084_3.as, Ln 39, Col 1:
+4 errors found
+\[Compiler\] Error #1084: Syntax error: expecting greaterthan before leftbracket.
+.*vectorError1084_3.as, Ln 38, Col 17:
+var v1 = new<int\[1\]>;
+................\^
+\[Compiler\] Error #1084: Syntax error: expecting leftbracket before semicolon.
+.*vectorError1084_3.as, Ln 38, Col 21:
+var v1 = new<int\[1\]>;
+....................\^
+\[Compiler\] Error #1084: Syntax error: expecting identifier before end of program.
+.*vectorError1084_3.as, Ln 39, Col 1:
+\[Compiler\] Error #1084: Syntax error: expecting rightbracket before end of program.
+.*vectorError1084_3.as, Ln 39, Col 1:
+4 errors found

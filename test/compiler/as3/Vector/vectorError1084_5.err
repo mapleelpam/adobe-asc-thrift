@@ -1,0 +1,14 @@
+\[Compiler\] Error #1084: Syntax error: expecting identifier before comma.
+.*vectorError1084_5.as, Ln 38, Col 22:
+var v1 = new<Object>\[,,,\];
+.....................\^
+\[Compiler\] Error #1084: Syntax error: expecting rightbracket before end of program.
+.*vectorError1084_5.as, Ln 39, Col 1:
+2 errors found
+\[Compiler\] Error #1084: Syntax error: expecting identifier before comma.
+.*vectorError1084_5.as, Ln 38, Col 22:
+var v1 = new<Object>\[,,,\];
+.....................\^
+\[Compiler\] Error #1084: Syntax error: expecting rightbracket before end of program.
+.*vectorError1084_5.as, Ln 39, Col 1:
+2 errors found

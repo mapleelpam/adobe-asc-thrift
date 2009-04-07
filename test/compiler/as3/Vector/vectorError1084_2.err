@@ -1,0 +1,18 @@
+\[Compiler\] Error #1084: Syntax error: expecting leftbracket before leftparen.
+.*vectorError1084_2.as, Ln 38, Col 31:
+var v1:Vector.<int> = new<int>\(1,2,3\);
+..............................\^
+\[Compiler\] Error #1084: Syntax error: expecting identifier before end of program.
+.*vectorError1084_2.as, Ln 41, Col 1:
+\[Compiler\] Error #1084: Syntax error: expecting rightbracket before end of program.
+.*vectorError1084_2.as, Ln 41, Col 1:
+3 errors found
+\[Compiler\] Error #1084: Syntax error: expecting leftbracket before leftparen.
+.*vectorError1084_2.as, Ln 38, Col 31:
+var v1:Vector.<int> = new<int>\(1,2,3\);
+..............................\^
+\[Compiler\] Error #1084: Syntax error: expecting identifier before end of program.
+.*vectorError1084_2.as, Ln 41, Col 1:
+\[Compiler\] Error #1084: Syntax error: expecting rightbracket before end of program.
+.*vectorError1084_2.as, Ln 41, Col 1:
+3 errors found

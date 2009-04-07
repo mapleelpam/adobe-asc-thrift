@@ -1,0 +1,26 @@
+\[Compiler\] Error #1067: Implicit coercion of a value of type String to an unrelated type int.
+.*typeError1.as, Ln 41, Col 10:
+new<int>\["1"\];
+.........\^
+\[Compiler\] Error #1067: Implicit coercion of a value of type Boolean to an unrelated type uint.
+.*typeError1.as, Ln 42, Col 11:
+new<uint>\[false\];
+..........\^
+\[Compiler\] Error #1067: Implicit coercion of a value of type int to an unrelated type String.
+.*typeError1.as, Ln 46, Col 13:
+new<String>\[44\];
+............\^
+3 errors found
+\[Compiler\] Error #1067: Implicit coercion of a value of type String to an unrelated type int.
+.*typeError1.as, Ln 41, Col 10:
+new<int>\["1"\];
+.........\^
+\[Compiler\] Error #1067: Implicit coercion of a value of type Boolean to an unrelated type uint.
+.*typeError1.as, Ln 42, Col 11:
+new<uint>\[false\];
+..........\^
+\[Compiler\] Error #1067: Implicit coercion of a value of type int to an unrelated type String.
+.*typeError1.as, Ln 46, Col 13:
+new<String>\[44\];
+............\^
+3 errors found

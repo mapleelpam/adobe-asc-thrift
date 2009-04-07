@@ -1,0 +1,10 @@
+\[Compiler\] Error #1067: Implicit coercion of a value of type __AS3__.vec:Vector.<int> to an unrelated type __AS3__.vec:Vector.<\*>.
+.*assignIncompatible.as, Ln 44, Col 24:
+var x:Vector.<\*> = new<int>\[1\];
+.......................\^
+1 error found
+\[Compiler\] Error #1067: Implicit coercion of a value of type __AS3__.vec:Vector.<int> to an unrelated type __AS3__.vec:Vector.<\*>.
+.*assignIncompatible.as, Ln 44, Col 24:
+var x:Vector.<\*> = new<int>\[1\];
+.......................\^
+1 error found

@@ -1,0 +1,18 @@
+\[Compiler\] Error #1176: Comparison between a value with static type Number and a possibly unrelated type Null.
+.*asc-3699.as, Ln 3, Col 8:
+if \(v3\[2\] == null\) \{\}
+.......\^
+\[Compiler\] Error #1176: Comparison between a value with static type Number and a possibly unrelated type Null.
+.*asc-3699.as, Ln 5, Col 25:
+if \(new <Number>\[4,5,6\]\[1\] == null\) \{\}
+........................\^
+2 errors found
+\[Compiler\] Error #1176: Comparison between a value with static type Number and a possibly unrelated type Null.
+.*asc-3699.as, Ln 3, Col 8:
+if \(v3\[2\] == null\) \{\}
+.......\^
+\[Compiler\] Error #1176: Comparison between a value with static type Number and a possibly unrelated type Null.
+.*asc-3699.as, Ln 5, Col 25:
+if \(new <Number>\[4,5,6\]\[1\] == null\) \{\}
+........................\^
+2 errors found

@@ -1,0 +1,152 @@
+Warning Report:
+---------------
+\[Coach\] Warning #1008: Missing type declaration.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(42\): variable 'v1' has no type declaration.
+var v1 = new <int> \[67,8,9\];
+....\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #1086: ActionScript 3.0 iterates over an object's properties within a "for x in target" statement in random order.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(45\): Migration issue: ActionScript 3.0 iterates over an object's properties within a "for x in target" statement in random order.
+for \(i in new <int> \[3,4,5\]\) \{\}
+...........................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #1092: Negative value will become a large positive value when assigned to a uint data type.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(48\): Negative value used where a uint \(non-negative\) value is expected.
+var v2:Vector.<uint> = new <uint>\[1,2,-3,4\];
+.......................................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #1098: Illogical comparison with NaN. Any comparison operation involving NaN will evaluate to false because NaN != NaN.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(51\): Illogical comparison with NaN.  This statement always evaluates to false.
+if \(n == NaN\) \{\}
+....\^
+.*vectorWarnings.as\(52\): Illogical comparison with NaN.  This statement always evaluates to false.
+if \(v3\[2\] == NaN\) \{\}
+.......\^
+.*vectorWarnings.as\(53\): Illogical comparison with NaN.  This statement always evaluates to false.
+if \(new <Number>\[4,5,6\]\[1\] == NaN\) \{\}
+........................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #1102: Impossible null assignment.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(57\): null used where a Boolean value was expected.
+var b1:Boolean = null;
+.................\^
+.*vectorWarnings.as\(58\): null used where a Boolean value was expected.
+var v4:Vector.<Boolean> = new <Boolean> \[null,true\];
+.........................................\^
+.*vectorWarnings.as\(59\): null used where a uint value was expected.
+var v5:Vector.<uint> = new <uint> \[3,null,4\];
+.....................................\^
+.*vectorWarnings.as\(60\): null used where a int value was expected.
+var v6:Vector.<int> = new <int> \[9,null\];
+...................................\^
+.*vectorWarnings.as\(61\): null used where a Number value was expected.
+var v7:Vector.<Number> = new <Number> \[98.3,null\];
+............................................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #3590: Non-Boolean value used where a Boolean value was expected.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(64\): String used where a Boolean value was expected.  The expression will be type coerced to Boolean.
+var b2:Boolean = "hello";
+.................\^
+.*vectorWarnings.as\(65\): String used where a Boolean value was expected.  The expression will be type coerced to Boolean.
+var v8:Vector.<Boolean> = new <Boolean> \[true, true, "hello"\];
+.....................................................\^
+.*vectorWarnings.as\(67\): vectorWarnings.as\$1:MyClass used where a Boolean value was expected.  The expression will be type coerced to Boolean.
+var b3:Boolean = new MyClass\(\);
+.....................\^
+.*vectorWarnings.as\(68\): vectorWarnings.as\$1:MyClass used where a Boolean value was expected.  The expression will be type coerced to Boolean.
+var v9:Vector.<Boolean> = new <Boolean> \[new MyClass\(\)\];
+.............................................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #3600: Possible attempt to delete a fixed property.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(71\): The declared property fixed cannot be deleted. To free associated memory, set its value to null.
+delete new <int>\[1,2,3\].fixed
+........................\^
+.*vectorWarnings.as\(72\): The declared property length cannot be deleted. To free associated memory, set its value to null.
+delete new <String>\['r'\].length
+.........................\^
+-------------------------------------------------------------------------
+vectorWarnings.abc, \d+ bytes written
+ReferenceError: Error #1065.*$
+Warning Report:
+---------------
+\[Coach\] Warning #1008: Missing type declaration.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(42\): variable 'v1' has no type declaration.
+var v1 = new <int> \[67,8,9\];
+....\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #1086: ActionScript 3.0 iterates over an object's properties within a "for x in target" statement in random order.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(45\): Migration issue: ActionScript 3.0 iterates over an object's properties within a "for x in target" statement in random order.
+for \(i in new <int> \[3,4,5\]\) \{\}
+...........................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #1092: Negative value will become a large positive value when assigned to a uint data type.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(48\): Negative value used where a uint \(non-negative\) value is expected.
+var v2:Vector.<uint> = new <uint>\[1,2,-3,4\];
+.......................................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #1098: Illogical comparison with NaN. Any comparison operation involving NaN will evaluate to false because NaN != NaN.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(51\): Illogical comparison with NaN.  This statement always evaluates to false.
+if \(n == NaN\) \{\}
+....\^
+.*vectorWarnings.as\(52\): Illogical comparison with NaN.  This statement always evaluates to false.
+if \(v3\[2\] == NaN\) \{\}
+.......\^
+.*vectorWarnings.as\(53\): Illogical comparison with NaN.  This statement always evaluates to false.
+if \(new <Number>\[4,5,6\]\[1\] == NaN\) \{\}
+........................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #1102: Impossible null assignment.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(57\): null used where a Boolean value was expected.
+var b1:Boolean = null;
+.................\^
+.*vectorWarnings.as\(58\): null used where a Boolean value was expected.
+var v4:Vector.<Boolean> = new <Boolean> \[null,true\];
+.........................................\^
+.*vectorWarnings.as\(59\): null used where a uint value was expected.
+var v5:Vector.<uint> = new <uint> \[3,null,4\];
+.....................................\^
+.*vectorWarnings.as\(60\): null used where a int value was expected.
+var v6:Vector.<int> = new <int> \[9,null\];
+...................................\^
+.*vectorWarnings.as\(61\): null used where a Number value was expected.
+var v7:Vector.<Number> = new <Number> \[98.3,null\];
+............................................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #3590: Non-Boolean value used where a Boolean value was expected.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(64\): String used where a Boolean value was expected.  The expression will be type coerced to Boolean.
+var b2:Boolean = "hello";
+.................\^
+.*vectorWarnings.as\(65\): String used where a Boolean value was expected.  The expression will be type coerced to Boolean.
+var v8:Vector.<Boolean> = new <Boolean> \[true, true, "hello"\];
+.....................................................\^
+.*vectorWarnings.as\(67\): vectorWarnings.as\$1:MyClass used where a Boolean value was expected.  The expression will be type coerced to Boolean.
+var b3:Boolean = new MyClass\(\);
+.....................\^
+.*vectorWarnings.as\(68\): vectorWarnings.as\$1:MyClass used where a Boolean value was expected.  The expression will be type coerced to Boolean.
+var v9:Vector.<Boolean> = new <Boolean> \[new MyClass\(\)\];
+.............................................\^
+-------------------------------------------------------------------------
+\[Coach\] Warning #3600: Possible attempt to delete a fixed property.
+-------------------------------------------------------------------------
+.*vectorWarnings.as\(71\): The declared property fixed cannot be deleted. To free associated memory, set its value to null.
+delete new <int>\[1,2,3\].fixed
+........................\^
+.*vectorWarnings.as\(72\): The declared property length cannot be deleted. To free associated memory, set its value to null.
+delete new <String>\['r'\].length
+.........................\^
+-------------------------------------------------------------------------
+vectorWarnings.abc, \d+ bytes written
+ReferenceError: Error #1065.*$

@@ -1,0 +1,18 @@
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: Vector.
+.*vectorUndefClass.as, Ln 42, Col 12:
+var x = new<Zuul>\[\];
+...........\^
+\[Compiler\] Error #1120: Access of undefined property Vector.
+.*vectorUndefClass.as, Ln 43, Col 13:
+var y = new Vector.<Zuul>\(\);
+............\^
+2 errors found
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: Vector.
+.*vectorUndefClass.as, Ln 42, Col 12:
+var x = new<Zuul>\[\];
+...........\^
+\[Compiler\] Error #1120: Access of undefined property Vector.
+.*vectorUndefClass.as, Ln 43, Col 13:
+var y = new Vector.<Zuul>\(\);
+............\^
+2 errors found
