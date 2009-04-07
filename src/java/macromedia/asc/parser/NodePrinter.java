@@ -367,6 +367,22 @@ public class NodePrinter implements Evaluator
         pop_out();
         return null;
     }
+    
+    public Value evaluate(Context cx, LiteralVectorNode node)
+    {
+        indent();
+        out.print("new<");
+        node.type.evaluate(cx, this);
+        out.print(">");
+        
+        push_in();
+        if (node.elementlist != null)
+        {
+            node.elementlist.evaluate(cx, this);
+        }
+        pop_out();
+        return null;
+    }
 
     public Value evaluate(Context cx, SuperExpressionNode node)
     {
