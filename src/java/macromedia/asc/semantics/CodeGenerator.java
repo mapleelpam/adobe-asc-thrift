@@ -400,6 +400,55 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
         }
         return null;
     }
+    
+    public Value evaluate(Context cx, LiteralVectorNode node)
+    {
+        if (debug)
+        {
+            System.out.print("\n// +LiteralVector");
+        }
+        
+        FindProperty("Vector", new Namespaces(cx.getNamespace("__AS3__.vec")), true/*is_strict*/, false /*is_qualified*/, false /*is_attribute*/);
+        node.type.evaluate(cx, this);
+
+        int n_elements = (null == node.elementlist)? 0:node.elementlist.size();
+        
+        PushNumber(new IntNumberConstant(n_elements), cx.intType().getTypeId());
+        InvokeClosure(true /* construct */,1);
+        
+        if (node.elementlist != null)
+        {
+        	Namespaces elements_nss  = new Namespaces();
+        	elements_nss.add(cx.publicNamespace());
+        	
+        	for (int i = 0, size = node.elementlist.items.size(); i < size; i++)
+            {
+    	        Node item = node.elementlist.items.get(i);
+    	        //  Keep the new Vector on the stack
+    	        Dup();
+    	        
+    	        //  Push the index
+    	        PushNumber(new IntNumberConstant(i), cx.intType().getTypeId());
+    	        
+    	        //  Push the value
+                item.evaluate(cx, this);
+                
+                //  setproperty with null operand => use indexed access
+                SetProperty(false, false, false, elements_nss, false);
+            }
+        }
+
+        if (node.void_result)
+        {
+            Pop();
+        }
+
+        if (debug)
+        {
+            System.out.print("\n// -LiteralVector");
+        }
+        return null;
+    }
 
     public Value evaluate(Context cx, EmptyElementNode node)
     {
