@@ -1125,6 +1125,50 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
         }
         return cx.arrayType().prototype;
     }
+    
+    public Value evaluate(Context cx, LiteralVectorNode node)
+    {
+    	Value initializer_typeref = node.type.evaluate(cx, this);
+    	Value intializer_typevalue = initializer_typeref.getValue(cx);
+    	
+    	if ( cx.useStaticSemantics() )
+    	{
+	        if ( intializer_typevalue == null)
+	        {
+	        	if ( initializer_typeref.isReference() )
+	        	{
+	        		cx.error(node.type.pos(), kError_UnknownType, ((ReferenceValue)initializer_typeref).name);
+	        	}
+	        	else
+	        	{
+	        		cx.error(node.type.pos(), kError_UnknownType);
+	        	}
+	        }
+    	}
+ 
+        if (node.elementlist != null)
+        {
+    		if ( intializer_typevalue instanceof TypeValue )
+    		{
+        		TypeInfo vector_element_type = ((TypeValue)intializer_typevalue).indexed_type.getDefaultTypeInfo();
+        		
+    			for ( int i = size(node.elementlist.expected_types); i < node.elementlist.size(); i++ )
+    			{
+    				node.elementlist.addType(vector_element_type);
+    				node.elementlist.addDeclStyle(PARAM_Required);
+    			}
+    			
+    			if ( cx.useStaticSemantics() )
+    			{
+    				checkLiteralConversion(cx, vector_element_type.getTypeValue(), node.elementlist);
+    			}
+    		}
+
+            node.value = node.elementlist.evaluate(cx, this);
+        }
+        return initializer_typeref;
+    }
+
 
     public Value evaluate(Context cx, MemberExpressionNode node)
     {
@@ -4212,5 +4256,52 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
     public Value evaluate(Context cx, TypeExpressionNode node)
     {
         return node.expr.evaluate(cx, this);
+    }
+    
+    /**
+     * Check for data loss in type conversion.
+     * @param cx - the compile context.
+     * @param dest_type - the type to convert to.
+     * @param element_list - the list of potential literals to be checked. 
+     */
+    private void checkLiteralConversion(Context cx, TypeValue dest_type, ArgumentListNode element_list)
+    {
+    	//  The only types where this is relevant are int and uint.
+    	boolean conversion_to_int = dest_type == cx.intType();
+    	boolean conversion_to_uint = dest_type == cx.uintType();
+    	
+    	if ( !conversion_to_int && !conversion_to_uint )
+    		//  No data loss (after type conversion, checked elsewhere).
+    		return;
+    	
+    	for ( int i = 0; i < element_list.size(); i++ )
+		{
+			Node item = element_list.items.get(i);
+			
+			if ( item.isLiteralNumber() )
+			{
+				LiteralNumberNode literal = (LiteralNumberNode)item;
+				double d_value = literal.numericValue.doubleValue();
+				
+				if ( conversion_to_int )
+				{
+					if ( d_value != literal.numericValue.intValue() )
+					{
+						cx.error(item.getPosition(), kError_LossyConversion, dest_type.getPrintableName());
+					}
+				}
+				else if ( conversion_to_uint)
+				{
+					//  Note: can't call uintValue() b/c the parser parsed the numeric constant wrong"
+					if ( d_value < 0 || d_value != (long)d_value)
+					{
+						cx.error(item.getPosition(), kError_LossyConversion, dest_type.getPrintableName());
+					}
+				}
+				else
+					//  Can't happen unless guard at the top of the routine has malfunctioned.
+					assert(false);
+			}
+		}
     }
 }
