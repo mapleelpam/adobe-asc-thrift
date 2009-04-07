@@ -7,12 +7,3 @@ var x = new<int>\[1,,2\];
 trace\(x\);
 \^
 2 errors found
-\[Compiler\] Error #1084: Syntax error: expecting identifier before comma.
-.*emptyInitializerSpots.as, Ln 1, Col 20:
-var x = new<int>\[1,,2\];
-...................\^
-\[Compiler\] Error #1084: Syntax error: expecting rightbracket before trace.
-.*emptyInitializerSpots.as, Ln 2, Col 1:
-trace\(x\);
-\^
-2 errors found

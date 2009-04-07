@@ -15,20 +15,3 @@ new <uint>\[-1\]; // Loses sign
 new <int>\[0x80000000\]; // too large
 ..........\^
 4 errors found
-\[Compiler\] Error #1215: Invalid initialization: conversion to type int loses data.
-.*valueConversionError.as, Ln 41, Col 11:
-new <int>\[3.14\];
-..........\^
-\[Compiler\] Error #1215: Invalid initialization: conversion to type uint loses data.
-.*valueConversionError.as, Ln 42, Col 12:
-new <uint>\[3.14\];
-...........\^
-\[Compiler\] Error #1215: Invalid initialization: conversion to type uint loses data.
-.*valueConversionError.as, Ln 43, Col 13:
-new <uint>\[-1\]; // Loses sign
-............\^
-\[Compiler\] Error #1215: Invalid initialization: conversion to type int loses data.
-.*valueConversionError.as, Ln 45, Col 11:
-new <int>\[0x80000000\]; // too large
-..........\^
-4 errors found

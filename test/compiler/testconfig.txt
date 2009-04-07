@@ -21,6 +21,14 @@ as3/LocalizedErrors/1188-IllegalAssgnErr                 ,    asc.args         ,
 as3/LocalizedErrors/1195-InaccessibleMethodErr           ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
 as3/LocalizedErrors/1087-ExtraCharsAfterEndOfProgram     ,    skip             , asc-full|asc-smokes   ,    cpeyer: investigating
 as3/Warnings/.*                                          ,    asc.args         , asc-full|asc-smokes   ,    -warnings -AS3 -import global.abc -import playerglobal.abc
+as3/Vector/vectorWarnings                                ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc
+as3/Vector/vectorStrictErrors                            ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
+as3/Vector/vectorUndefClass                              ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
+as3/Vector/valueConversionError                          ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
+as3/Vector/asc-3699                                      ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
+as3/Vector/asc-3704                                      ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
+as3/Vector/assignIncompatible                            ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
+as3/Vector/typeError1                                    ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
 sanity/strict/.*                                         ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc -import toplevel.abc
 sanity/strict/xml_dynamic                                ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc -import toplevel.abc
 sanity/strict/toStringRadix                              ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc -import toplevel.abc

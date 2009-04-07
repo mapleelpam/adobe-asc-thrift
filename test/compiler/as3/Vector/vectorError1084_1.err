@@ -11,16 +11,3 @@ var v:Vector.<int> = new <>\[\];
 \[Compiler\] Error #1084: Syntax error: expecting rightbracket before end of program.
 .*vectorError1084_1.as, Ln 39, Col 1:
 5 errors found
-\[Compiler\] Error #1084: Syntax error: expecting identifier before greaterthan.
-.*vectorError1084_1.as, Ln 38, Col 28:
-var v:Vector.<int> = new <>\[\];
-...........................\^
-\[Compiler\] Error #1084: Syntax error: expecting greaterthan before end of program.
-.*vectorError1084_1.as, Ln 39, Col 1:
-\[Compiler\] Error #1084: Syntax error: expecting leftbracket before end of program.
-.*vectorError1084_1.as, Ln 39, Col 1:
-\[Compiler\] Error #1084: Syntax error: expecting identifier before end of program.
-.*vectorError1084_1.as, Ln 39, Col 1:
-\[Compiler\] Error #1084: Syntax error: expecting rightbracket before end of program.
-.*vectorError1084_1.as, Ln 39, Col 1:
-5 errors found

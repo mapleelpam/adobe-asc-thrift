@@ -3,8 +3,3 @@
 var v:Vector.<String> = new\[\]<String>;
 .....................................\^
 1 error found
-\[Compiler\] Error #1084: Syntax error: expecting identifier before semicolon.
-.*vectorError1084_6.as, Ln 38, Col 38:
-var v:Vector.<String> = new\[\]<String>;
-.....................................\^
-1 error found
