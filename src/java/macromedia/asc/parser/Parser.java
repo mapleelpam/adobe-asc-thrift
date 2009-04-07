@@ -1080,7 +1080,7 @@ public final class Parser
         case LEFTBRACKET_TOKEN:
             result = parseArrayLiteral();
             break;
-            
+      
         case LEFTBRACE_TOKEN:
             result = parseObjectLiteral();
             break;
@@ -1865,7 +1865,7 @@ XMLElementContent
 
         first = (lookahead()==RIGHTBRACKET_TOKEN)
             ? null
-            : parseElementListPrime(nodeFactory.argumentList(null, parseLiteralElement()));
+            : parseElementListPrime(nodeFactory.argumentList(null, parseLiteralElement(true)), true);
 
         result = nodeFactory.literalArray(first,pos);
         match(RIGHTBRACKET_TOKEN);
@@ -1878,6 +1878,53 @@ XMLElementContent
         
         return result;
     }
+    
+    private LiteralVectorNode parseVectorLiteral()
+    {
+ 
+        if (debug)
+        {
+            System.err.println("begin parseVectorLiteral");
+        }
+		
+        LiteralVectorNode result;
+        Node vector_type;
+        ArgumentListNode initializer_list = null;
+
+        int pos = ctx.input.positionOfMark();
+
+        scanner.enterSlashRegExpContext();
+        match(LESSTHAN_TOKEN);
+
+        ListNode type_list = parseTypeExpressionList();
+        vector_type = nodeFactory.applyTypeExpr (
+        	nodeFactory.identifier("Vector", false, pos), 
+        	type_list,
+        	pos);
+
+        match(GREATERTHAN_TOKEN);
+        match(LEFTBRACKET_TOKEN);
+        
+        // ElementList : LiteralElement ElementListPrime (inlined)
+
+        if (RIGHTBRACKET_TOKEN != lookahead())
+        {
+        	initializer_list = parseElementListPrime(nodeFactory.argumentList(null, parseLiteralElement(false)), false);
+        }
+
+        match(RIGHTBRACKET_TOKEN);
+		scanner.exitSlashRegExpContext();
+
+        result = nodeFactory.literalVector(vector_type, initializer_list, pos);
+
+        if (debug)
+        {
+            System.err.println("finish parseVectorLiteral");
+        }
+        
+        return result;
+    }
+
 
     /*
      * ElementListPrime
@@ -1885,7 +1932,8 @@ XMLElementContent
      *     empty
      */
 
-    private ArgumentListNode parseElementListPrime(ArgumentListNode first)
+ 
+    private ArgumentListNode parseElementListPrime(ArgumentListNode first, boolean allow_empty)
     {
 
         if (debug)
@@ -1899,7 +1947,7 @@ XMLElementContent
         {
             shift();
             Node second;
-            second = parseLiteralElement(); // May be empty.
+            second = parseLiteralElement(allow_empty); // May be empty.
             if( second != null )
             {
                 first = nodeFactory.argumentList(first, second);
@@ -1915,6 +1963,7 @@ XMLElementContent
 
         return result;
     }
+    
 
     /*
      * LiteralElement
@@ -1922,7 +1971,7 @@ XMLElementContent
      *     empty
      */
 
-    private Node parseLiteralElement()
+    private Node parseLiteralElement(boolean allow_empty)
     {
 
         if (debug)
@@ -1934,7 +1983,7 @@ XMLElementContent
         Node first;
         int lt = lookahead();
         
-        if(lt==COMMA_TOKEN)
+        if(lt==COMMA_TOKEN && allow_empty)
         {
             result = nodeFactory.emptyElement(ctx.input.positionOfMark());
         }
@@ -2039,19 +2088,27 @@ XMLElementContent
             
         case NEW_TOKEN:
             first = parseShortNewExpression();
-            if (lookahead()==LEFTPAREN_TOKEN)
+            
+       
+            //  LiteralVectorNode shares some syntax
+            //  with a new call, but its semantics
+            //  are different; it's its own constructor.
+            if ( ! (first instanceof LiteralVectorNode) )
             {
-                first = parseArguments(first);
-            }
-            else
-            {
-                first = nodeFactory.callExpression(first, null);
-            }
-
-            first = nodeFactory.newExpression(first);  // translates call to new
-            if ( !lookaheadSemicolon(full_mode) && ((lookahead()==PLUSPLUS_TOKEN || lookahead()==MINUSMINUS_TOKEN)))
-            {
-                first = parsePostfixIncrement(first);
+	            if (lookahead()==LEFTPAREN_TOKEN)
+	            {
+	                first = parseArguments(first);
+	            }
+	            else
+	            {
+	                first = nodeFactory.callExpression(first, null);
+	            }
+	
+	            first = nodeFactory.newExpression(first);  // translates call to new
+	            if ( !lookaheadSemicolon(full_mode) && ((lookahead()==PLUSPLUS_TOKEN || lookahead()==MINUSMINUS_TOKEN)))
+	            {
+	                first = parsePostfixIncrement(first);
+	            }
             }
             break;
             
@@ -2317,7 +2374,10 @@ XMLElementContent
         {
         case NEW_TOKEN:
             first = parseFullNewExpression();
-            result = parseFullNewSubexpressionPrime(first);
+            if ( first instanceof LiteralVectorNode )
+            	result = first;
+            else
+            	result = parseFullNewSubexpressionPrime(first);
             break;
             
         case SUPER_TOKEN:
@@ -2337,7 +2397,7 @@ XMLElementContent
             first = nodeFactory.memberExpression(null, nodeFactory.getExpression(parseQualifiedIdentifier()));
             result = parseFullNewSubexpressionPrime(first);
             break;
-            
+             
         default:
             first = parsePrimaryExpression();
             result = parseFullNewSubexpressionPrime(first);      
@@ -2414,7 +2474,14 @@ XMLElementContent
         Node result;
 
         match(NEW_TOKEN);
-        result = parseShortNewSubexpression();
+        if ( LESSTHAN_TOKEN == lookahead() )
+        {
+        	result = parseVectorLiteral();
+        }
+        else
+        {
+        	result = parseShortNewSubexpression();
+        }
 
         if (debug)
         {
