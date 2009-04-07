@@ -600,6 +600,28 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         }
         return null;
     }
+    
+    public Value evaluate(Context cx, LiteralVectorNode node)
+    {
+        if (debug)
+        {
+            System.out.print("\n// +LiteralVector");
+        }
+
+        getEmitter().AddStmtToBlock(node.toString());
+
+        node.type.evaluate(cx, this);
+        if (node.elementlist != null)
+        {
+            node.elementlist.evaluate(cx, this);
+        }
+
+        if (debug)
+        {
+            System.out.print("\n// -LiteralVector");
+        }
+        return null;
+    }
 
     public Value evaluate(Context cx, MemberExpressionNode node)
     {
