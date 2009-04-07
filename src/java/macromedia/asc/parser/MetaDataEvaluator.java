@@ -201,6 +201,11 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 	{
 		return null;
 	}
+	
+	public Value evaluate(Context cx, LiteralVectorNode node)
+	{
+		return null;
+	}
 
 	public Value evaluate(Context cx, MemberExpressionNode node)
 	{

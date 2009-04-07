@@ -996,6 +996,16 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 
 		return cx.arrayType();
 	}
+	
+	public Value evaluate( Context cx, LiteralVectorNode node )
+	{
+		node.type.evaluate(cx, this);
+
+		if( node.elementlist != null)
+			node.elementlist.evaluate(cx,this);
+
+		return cx.vectorType();
+	}
 
 	public Value evaluate( Context cx, MemberExpressionNode node )
 	{
