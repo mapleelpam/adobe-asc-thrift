@@ -2755,7 +2755,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 	// Table of warningRecord vectors indexable via WarningCode
 	private TreeMap<Integer, ObjectList<WarningRecord>> pWarnings = new TreeMap<Integer, ObjectList<WarningRecord>>();
 	// Table of warningRecord vectors indexed by source file and line
-	private TreeMap<String, TreeMap<Integer, WarningRecord>> warningsByLoc = new TreeMap<String,  TreeMap<Integer, WarningRecord>>();
+	private TreeMap<String, TreeMap<Integer, Set<WarningRecord>>> warningsByLoc = new TreeMap<String, TreeMap<Integer, Set<WarningRecord>>>();
 
 	//  This is where WarningRecords are logged when encountered,
 	//  and how we dump them out by category at the end of the evaluation
@@ -2852,26 +2852,29 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		}
 
 		int count = 0;
-		for (TreeMap<Integer, WarningRecord> locMap : warningsByLoc.values())
+		for (TreeMap<Integer, Set<WarningRecord>> locMap : warningsByLoc.values())
 		{
-			for(WarningRecord pRec : locMap.values())
+			for(Set<WarningRecord> records : locMap.values())
 			{
-				StringBuilder sb = new StringBuilder();
-				InputBuffer input = pRec.loc.input;
+                for (WarningRecord record : records)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    InputBuffer input = record.loc.input;
 				
-				createErrorMessage(pRec, sb, pRec.code);
-				String source = input.getLineText(pRec.loc.pos);
+                    createErrorMessage(record, sb, record.code);
+                    String source = input.getLineText(record.loc.pos);
 				
-				if (logAsErrors)
-				{
-					handler.error(input.origin, pRec.lineNum, pRec.colNum, sb.toString(), source, pRec.code);
-				}
-				else
-				{
-					// This is the path the Flex compiler usually takes
-					handler.warning(input.origin, pRec.lineNum, pRec.colNum, sb.toString(), source, pRec.code);
-				}
-				count++;
+                    if (logAsErrors)
+                    {
+                        handler.error(input.origin, record.lineNum, record.colNum, sb.toString(), source, record.code);
+                    }
+                    else
+                    {
+                        // This is the path the Flex compiler usually takes
+                        handler.warning(input.origin, record.lineNum, record.colNum, sb.toString(), source, record.code);
+                    }
+                    count++;
+                }
 			}
 		}
 		return count;
@@ -3028,13 +3031,23 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 
 			// add to warningsByLoc
 			String origin = loc.input.origin;
-			TreeMap<Integer, WarningRecord> locMap = warningsByLoc.get(origin);
+			TreeMap<Integer, Set<WarningRecord>> locMap = warningsByLoc.get(origin);
+            
 			if (locMap == null)
 			{
-				locMap = new TreeMap<Integer, WarningRecord>();
+				locMap = new TreeMap<Integer, Set<WarningRecord>>();
 				warningsByLoc.put(origin, locMap);
 			}
-			locMap.put(rec.lineNum, rec);
+
+            Set<WarningRecord> records = locMap.get(rec.lineNum);
+
+            if (records == null)
+            {
+                records = new HashSet<WarningRecord>(1);
+                locMap.put(rec.lineNum, records);
+            }
+
+            records.add(rec);
 		}
 		else
 			assert(false); //  "invalid inputId inAS2LintEvaluator::warning";
