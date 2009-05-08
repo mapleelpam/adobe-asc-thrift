@@ -341,7 +341,7 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 			//  were declared, but not registered via this method.  
 			if( node.ref != null && node.ref.name.compareTo("addEventListener") == 0)
 			{
-				if (node.args.items.size() > 1)
+				if ((node.args != null) && node.args.items.size() > 1)
 				{
 					Node arg2 = node.args.items.get(1);
 
