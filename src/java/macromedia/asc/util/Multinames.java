@@ -25,6 +25,7 @@ public final class Multinames extends TreeMap<String, Namespaces>
 	private Multinames delegate;
 	// used to track delegate mutation, not foolproof
 	private int delegateSize;
+	private boolean checkingDelegate;
 	
 	
 	public Multinames()
@@ -46,11 +47,13 @@ public final class Multinames extends TreeMap<String, Namespaces>
 
 	private void checkDelegate()
 	{
-		if(delegate != this)
+		if (delegate != this && !checkingDelegate)
 		{
 			if(delegate.size() != delegateSize)
 				throw new RuntimeException("Optimization gone wrong, fix code.");
+			checkingDelegate = true;
 			super.putAll(delegate);
+			checkingDelegate = false;
 			delegate = this;
 			delegateSize = 0;
 		}
