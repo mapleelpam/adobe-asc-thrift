@@ -189,6 +189,7 @@ public class ContextStatics
     public boolean es4_vectors = true;
 
     ObjectValue _publicNamespace;
+    ObjectValue _AS3Namespace;
 	ObjectValue _anyNamespace;
     TypeValue _noType;
     TypeValue _objectType;

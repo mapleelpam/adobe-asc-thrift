@@ -33,10 +33,16 @@ public final class Token
 	private int tokenClass;
 	private String lexeme;
 
-    public void set(int tokenClass,String lexeme)
+    public final void set(int tokenClass,String lexeme)
     {
         this.tokenClass = tokenClass;
         this.lexeme = lexeme;
+    }
+    
+    public final void set(int tokenClass)
+    {
+        this.tokenClass = tokenClass;
+        this.lexeme = null;
     }
     
 	public Token(int tokenClass, String lexeme)
@@ -45,7 +51,7 @@ public final class Token
 	    this.lexeme = lexeme;
 	}
 
-	public int getTokenClass()
+	public final int getTokenClass()
 	{
 		return tokenClass;
 	}

@@ -10,12 +10,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 package macromedia.asc.util;
-import java.util.concurrent.*;
-
-import macromedia.asc.semantics.ObjectValue;
 import java.util.HashMap;
 
-public class NamespacesTable extends ConcurrentHashMap<Namespaces,Namespaces>  
+import macromedia.asc.semantics.ObjectValue;
+
+public class NamespacesTable extends HashMap<Namespaces,Namespaces>  
 {
 	private ObjectList<ObjectValue> list = new ObjectList<ObjectValue>(1);
 	

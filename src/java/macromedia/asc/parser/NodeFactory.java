@@ -187,11 +187,12 @@ public final class NodeFactory implements ErrorConstants
 		{
 			node = this.memberExpression(null, this.setExpression(lhs, this.argumentList(null, rhs),is_constinit));
 		}
-		if (cx.scriptAssistParsing){
-			MemberExpressionNode exprNode = (MemberExpressionNode)node;
-			if (exprNode != null && (prevOp != op))
-				exprNode.setOrigToken(prevOp);
-		}
+// Appears unused....		
+//		if (cx.scriptAssistParsing){
+//			MemberExpressionNode exprNode = (MemberExpressionNode)node;
+//			if (exprNode != null && (prevOp != op))
+//				exprNode.setOrigToken(prevOp);
+//		}
 		node.setPositionNonterminal(lhs, pos);
 		return node;
 	}
@@ -1120,6 +1121,9 @@ public final class NodeFactory implements ErrorConstants
 		return node;
 	}
 
+	// List gets consed on nil, added to end otherwise.
+	// Always returns list start.
+	
 	public ListNode list(ListNode list, Node item)
 	{
 		return list(list, item, -1);

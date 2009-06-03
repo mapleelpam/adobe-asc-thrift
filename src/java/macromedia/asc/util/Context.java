@@ -1016,6 +1016,15 @@ public final class Context implements ErrorConstants
         return statics._publicNamespace;
     }
 
+    public ObjectValue AS3Namespace()
+    {
+        if (statics._AS3Namespace == null)
+        {
+            statics._AS3Namespace = getNamespace("");
+        }
+        return statics._AS3Namespace;
+    }
+    
     public ObjectValue anyNamespace()
     {
         if (statics._anyNamespace == null)

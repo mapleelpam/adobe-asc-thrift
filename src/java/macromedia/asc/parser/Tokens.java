@@ -71,8 +71,8 @@ public interface Tokens
 	public static final int DOUBLECOLON_TOKEN = COLON_TOKEN - 1;
 	public static final int SEMICOLON_TOKEN = DOUBLECOLON_TOKEN - 1;
 	public static final int QUESTIONMARK_TOKEN = SEMICOLON_TOKEN - 1;
-	public static final int AMPERSAND_TOKEN = QUESTIONMARK_TOKEN - 1;
-	public static final int LEFTBRACKET_TOKEN = AMPERSAND_TOKEN - 1;
+	public static final int ATSIGN_TOKEN = QUESTIONMARK_TOKEN - 1;
+	public static final int LEFTBRACKET_TOKEN = ATSIGN_TOKEN - 1;
 	public static final int RIGHTBRACKET_TOKEN = LEFTBRACKET_TOKEN - 1;
 	public static final int BITWISEXOR_TOKEN = RIGHTBRACKET_TOKEN - 1;
 	public static final int LOGICALXOR_TOKEN = BITWISEXOR_TOKEN - 1;

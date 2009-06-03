@@ -21,8 +21,8 @@ import java.io.*;
 import java.util.HashSet;
 import java.util.ListIterator;
 
-import macromedia.asc.semantics.NamespaceValue;
 import macromedia.asc.semantics.ReferenceValue;
+import macromedia.asc.semantics.NamespaceValue;
 import macromedia.asc.util.*;
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.*;
@@ -143,18 +143,20 @@ public final class Parser
     public Scanner scanner;
 
     private String encoding;
-
-    // keeps track of the type of the currently evaluating member expressions base
-    public ObjectList<Node>    comments = new ObjectList<Node>(); // all comments encountered while parsing are placed here, rather than in the parse tree
+    public ObjectList<Node> comments = new ObjectList<Node>(); // all comments encountered while parsing are placed here, rather than in the parse tree
     public IntList block_kind_stack = new IntList();
     public String current_class_name = null;
-    
     private boolean within_package;
-
     private boolean parsing_include = false;
-
     public ObjectList< HashSet<String> > config_namespaces = new ObjectList< HashSet<String> >();
 
+    private void clearUnusedBuffers() {
+        comments.clear();
+        scanner.clearUnusedBuffers();
+        scanner = null;
+        comments = null;
+    }
+    
     /*
      * Log a syntax error and recover
      */
@@ -184,14 +186,13 @@ public final class Parser
                 out.append(msg.substring(nextLoc, msg.length()));
         }
 
-        int lineno;
-        int column;
         if( pos < 0 )
         {
             pos = scanner.input.positionOfMark();
         }
-        lineno = scanner.input.getLnNum(pos);
-        column = scanner.input.getColPos(pos);
+
+        int lineno = scanner.input.getLnNum(pos);
+        int column = scanner.input.getColPos(pos);
 
         if (kind == syntax_error || kind == syntax_eos_error )
         {
@@ -233,24 +234,20 @@ public final class Parser
                     }
                     break;
                 }
-                else
-                if( nextToken == EOS_TOKEN )
+                else if( nextToken == EOS_TOKEN )
                 {
                     break;
                 }
-                else
-                if( nextToken == SEMICOLON_TOKEN && kind != RIGHTBRACE_TOKEN ) // don't stop eating until right brace is found
+                else if( nextToken == SEMICOLON_TOKEN && kind != RIGHTBRACE_TOKEN ) // don't stop eating until right brace is found
                 {
                     break;
                 }
-                else
-                if( nextToken == LEFTBRACE_TOKEN && kind != RIGHTBRACE_TOKEN ) // don't stop eating until right brace is found
+                else if( nextToken == LEFTBRACE_TOKEN && kind != RIGHTBRACE_TOKEN ) // don't stop eating until right brace is found
                 {
                     scanner.retract();
                     break;
                 }
-                else
-                if( nextToken == RIGHTBRACE_TOKEN )
+                else if( nextToken == RIGHTBRACE_TOKEN )
                 {
                     scanner.retract();
                     break;
@@ -387,6 +384,7 @@ public final class Parser
      * This contructor is used by Flex direct AST generation.  It
      * allows Flex to pass in a specialized InputBuffer.
      */
+    
     public Parser(Context cx, InputBuffer inputBuffer, String origin, boolean emit_doc_info)
     {
         init(cx, origin, emit_doc_info, false, null);
@@ -502,20 +500,22 @@ public final class Parser
     {
 
         int result = ERROR_TOKEN;
+        final int lt = lookahead();
 
-        if (lookahead(SEMICOLON_TOKEN))
+        if (lt==SEMICOLON_TOKEN)
         {
-            result = match(SEMICOLON_TOKEN);
+        	shift();
+            result = SEMICOLON_TOKEN;
         }
-        else if (scanner.followsLineTerminator() || lookahead(EOS_TOKEN) || lookahead(RIGHTBRACE_TOKEN))
+        else if (lt==EOS_TOKEN||lt==RIGHTBRACE_TOKEN||scanner.followsLineTerminator())
         {
             result = SEMICOLON_TOKEN;
         }
-        else if ((mode == abbrevIfElse_mode || mode == abbrevDoWhile_mode) && lookahead(mode))
+        else if ((mode == abbrevIfElse_mode || mode == abbrevDoWhile_mode) && lt==mode)
         {
             result = SEMICOLON_TOKEN;
         }
-        else if (!lookahead(ERROR_TOKEN))
+        else if (lt!=ERROR_TOKEN)
         {
             if (mode == abbrevFunction_mode)
             {
@@ -625,9 +625,6 @@ public final class Parser
             System.err.println("\t" + Token.getTokenClassName(scanner.getCurrentTokenClass(nextToken)) + " lookahead(" + Token.getTokenClassName(expectedTokenClass) + ")");
         }
 
-        // Compare the expected token class against the token class of
-        // the nextToken.
-
         if (expectedTokenClass != nextTokenClass) // scanner.getTokenClass(nextToken))
         {
             return false;
@@ -655,40 +652,20 @@ public final class Parser
     
     private final boolean lookahead( final int expectedTokenClasses[], int count )
     {
-        // If the nextToken is empty_token, then fetch another. This is the first
-        // lookahead since the last match.
-
         if( nextToken == EMPTY_TOKEN )
         {
             getNextToken();
         }
 
-        // Compare the expected token class against the token class of
-        // the nextToken.
-
-        final int tokenclass = nextTokenClass; //scanner.getTokenClass(nextToken);
-        int i = 0;
-        for( ; i < count; ++i )
+        for(int i = 0; i < count; ++i )
         {
-            if( expectedTokenClasses[i] == tokenclass )
+            if( expectedTokenClasses[i] == nextTokenClass )
             {
                 return true;
             }
         }
 
         return false;
-    }
-
-    /**
-     * Set regexp allowed context and force read of next token
-     *
-     */
-    
-    private final void lookaheadInSlashRegExpContext()
-    {
-        scanner.enterSlashRegExpContext();
-            lookahead();
-        scanner.exitSlashRegExpContext();
     }
     
     /*
@@ -819,7 +796,8 @@ public final class Parser
         	}
         	else
         	{
-        	    result = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN)).intern();
+        		String s = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN));
+        		result = s.intern();
         	}
         }
 
@@ -890,7 +868,7 @@ public final class Parser
         IdentifierNode first;
 
         boolean is_attr;
-        if (HAS_ATTRIBUTEIDENTIFIERS && lookahead()==AMPERSAND_TOKEN)
+        if (HAS_ATTRIBUTEIDENTIFIERS && lookahead()==ATSIGN_TOKEN)
         {
             shift();
             is_attr = true;
@@ -962,7 +940,7 @@ public final class Parser
         Node first;
 
         boolean is_attr;
-        if (HAS_ATTRIBUTEIDENTIFIERS && lookahead()==AMPERSAND_TOKEN)
+        if (HAS_ATTRIBUTEIDENTIFIERS && lookahead()==ATSIGN_TOKEN)
         {
             shift();
             is_attr = true;
@@ -1015,7 +993,6 @@ public final class Parser
 
     private Node parsePrimaryExpression()
     {
-
         if (debug)
         {
             System.err.println("begin parsePrimaryExpression");
@@ -1023,54 +1000,55 @@ public final class Parser
 
         Node result;
         final int lt = lookahead();
+        int pos = ctx.input.positionOfMark();
 
         switch ( lt )
         {
         case NULL_TOKEN:
             shift();
-            result = nodeFactory.literalNull(ctx.input.positionOfMark());
+            result = nodeFactory.literalNull(pos);
             break;
             
         case TRUE_TOKEN:    
             shift();
-            result = nodeFactory.literalBoolean(true,ctx.input.positionOfMark());
+            result = nodeFactory.literalBoolean(true,pos);
             break;
             
         case FALSE_TOKEN:
             shift();
-            result = nodeFactory.literalBoolean(false,ctx.input.positionOfMark());
+            result = nodeFactory.literalBoolean(false,pos);
             break;
             
         case PRIVATE_TOKEN:
             shift();
-            result = nodeFactory.identifier(PRIVATE,false,ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PRIVATE,false,pos);
             break;
             
         case PUBLIC_TOKEN:
             shift();
-            result = nodeFactory.identifier(PUBLIC,false,ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PUBLIC,false,pos);
             break;
             
         case PROTECTED_TOKEN:
             shift();
-            result = nodeFactory.identifier(PROTECTED,false,ctx.input.positionOfMark());
+            result = nodeFactory.identifier(PROTECTED,false,pos);
             break;
         
         case NUMBERLITERAL_TOKEN:
-            result = nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NUMBERLITERAL_TOKEN)),ctx.input.positionOfMark());
+            result = nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NUMBERLITERAL_TOKEN)),pos);
             break;
             
         case STRINGLITERAL_TOKEN:
         {
             boolean[] is_single_quoted = new boolean[1];
             String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
-            result = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
+            result = nodeFactory.literalString(enclosedText, pos, is_single_quoted[0] );
             break;
         }
         
         case THIS_TOKEN:
             shift();
-            result = nodeFactory.thisExpression(ctx.input.positionOfMark());
+            result = nodeFactory.thisExpression(pos);
             break;
             
         case LEFTPAREN_TOKEN:
@@ -1101,12 +1079,12 @@ public final class Parser
             if (within_package)
             {
                 error(syntax_error, kError_NestedPackage);
-                result = nodeFactory.error(ctx.input.positionOfMark(), kError_NestedPackage);
+                result = nodeFactory.error(pos, kError_NestedPackage);
             }
             else
             {
                 error(syntax_error,kError_Parser_ExpectedPrimaryExprBefore,scanner.getCurrentTokenText(nextToken));
-                result = nodeFactory.error(ctx.input.positionOfMark(), kError_Parser_ExpectedPrimaryExprBefore);
+                result = nodeFactory.error(pos, kError_Parser_ExpectedPrimaryExprBefore);
             }
             skiperror(LEFTBRACE_TOKEN);
             skiperror(RIGHTBRACE_TOKEN);
@@ -1123,17 +1101,17 @@ public final class Parser
         case XMLMARKUP_TOKEN: case LESSTHAN_TOKEN:
             result = (HAS_XMLLITERALS)
                 ? parseXMLLiteral()
-                : parseTypeIdentifier();
+                : parseTypeName();
             break;
             
         case REGEXPLITERAL_TOKEN:
             result = (HAS_REGULAREXPRESSIONS) 
-                ? nodeFactory.literalRegExp(scanner.getCurrentTokenText(match(REGEXPLITERAL_TOKEN)),ctx.input.positionOfMark())
-                : parseTypeIdentifier();
+                ? nodeFactory.literalRegExp(scanner.getCurrentTokenText(match(REGEXPLITERAL_TOKEN)),pos)
+                : parseTypeName();
             break;
             
         default:    
-                result = parseTypeIdentifier();
+                result = parseTypeName();
         }
 
         if (debug)
@@ -1177,7 +1155,6 @@ public final class Parser
         boolean is_xmllist = false;
 
         match(LESSTHAN_TOKEN);
-        scanner.enterSlashDivContext();  // after the initial < tokenize in slashdiv mode to avoid /> conflict
         if(lookahead()==GREATERTHAN_TOKEN)
         {
             is_xmllist = true;
@@ -1200,7 +1177,6 @@ public final class Parser
             result = parseXMLElementContent(result);
             if(lookahead()==EOS_TOKEN)
             {
-                scanner.exitSlashDivContext();
                 error(kError_Lexical_NoMatchingTag);
                 return nodeFactory.error(ctx.input.positionOfMark(),kError_Lexical_NoMatchingTag);
             }
@@ -1225,7 +1201,6 @@ public final class Parser
             match(XMLTAGENDEND_TOKEN);  // "/>"
             result = concatXML(result,nodeFactory.literalString("/>",0));
         }
-        scanner.exitSlashDivContext();
         this.is_xmllist = is_xmllist;
         return result;
     }
@@ -1494,13 +1469,11 @@ XMLElementContent
 
         Node result;
 
-        scanner.enterSlashRegExpContext();
         match(LEFTPAREN_TOKEN);
         int mark = scanner.input.positionOfMark();
         result = parseAssignmentExpression(allowIn_mode);
         result.setPosition(mark);
         match(RIGHTPAREN_TOKEN);
-        scanner.exitSlashRegExpContext();
 
         if (debug)
         {
@@ -1522,11 +1495,9 @@ XMLElementContent
             System.err.println("begin parseParenListExpression");
         }
 
-        scanner.enterSlashRegExpContext();
         match(LEFTPAREN_TOKEN);
         ListNode result = parseListExpression(allowIn_mode);
         match(RIGHTPAREN_TOKEN);
-        scanner.exitSlashRegExpContext();
 
         if (debug)
         {
@@ -1556,7 +1527,7 @@ XMLElementContent
             if (HAS_EXPRESSIONQUALIFIEDIDS && lookahead()==DOUBLECOLON_TOKEN)
             {
                 shift();
-                if (first.size() != 1)
+                if (first == null || first.size() != 1)
                 {
                     result = error(kError_Parser_ExpectingASingleExpressionWithinParenthesis);
                     skiperror(expression_syntax_error);
@@ -1682,7 +1653,6 @@ XMLElementContent
 
         int pos = ctx.input.positionOfMark();
 
-		scanner.enterSlashRegExpContext();
         match(LEFTBRACE_TOKEN);
 
         if (lookahead()==RIGHTBRACE_TOKEN)
@@ -1693,51 +1663,24 @@ XMLElementContent
         else
         {
             // Inlining parseFieldList:
-            //     FieldList: LiteralField FieldListPrime
 
-            first = parseFieldListPrime(nodeFactory.argumentList(null, parseLiteralField()));
+            first = nodeFactory.argumentList(null, parseLiteralField());
+            
+            while (lookahead()==COMMA_TOKEN)
+            {
+                shift();
+                Node t = parseLiteralField();
+                nodeFactory.argumentList(first,t);
+            }
+            
             match(RIGHTBRACE_TOKEN);
         }
 
-		scanner.exitSlashRegExpContext();			
         result = nodeFactory.literalObject(first,pos);
 
         if (debug)
         {
             System.err.println("finish parseObjectLiteral with result = ");
-        }
-
-        return result;
-    }
-
-    /*
-     * FieldListPrime
-     */
-
-    private ArgumentListNode parseFieldListPrime(ArgumentListNode first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseFieldListPrime");
-        }
-
-        ArgumentListNode result;
-
-        if (lookahead()==COMMA_TOKEN)
-        {
-            shift();
-            Node second = parseLiteralField();
-            result = parseFieldListPrime(nodeFactory.argumentList(first, second));
-        }
-        else
-        {
-            result = first;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseFieldListPrime with result = ");
         }
 
         return result;
@@ -1847,29 +1790,22 @@ XMLElementContent
 
     private LiteralArrayNode parseArrayLiteral()
     {
-
         if (debug)
         {
             System.err.println("begin parseArrayLiteral");
         }
 		
         LiteralArrayNode result;
-        ArgumentListNode first;
-
+        ArgumentListNode initializer_list = null;
         int pos = ctx.input.positionOfMark();
 
-        scanner.enterSlashRegExpContext();
         match(LEFTBRACKET_TOKEN);
-
-        // ElementList : LiteralElement ElementListPrime (inlined)
-
-        first = (lookahead()==RIGHTBRACKET_TOKEN)
-            ? null
-            : parseElementListPrime(nodeFactory.argumentList(null, parseLiteralElement(true)), true);
-
-        result = nodeFactory.literalArray(first,pos);
+        if (RIGHTBRACKET_TOKEN != lookahead())
+        {
+        	initializer_list = parseElementList(true);
+        }
+        result = nodeFactory.literalArray(initializer_list,pos);
         match(RIGHTBRACKET_TOKEN);
-		scanner.exitSlashRegExpContext();
 
         if (debug)
         {
@@ -1881,41 +1817,30 @@ XMLElementContent
     
     private LiteralVectorNode parseVectorLiteral()
     {
- 
         if (debug)
         {
             System.err.println("begin parseVectorLiteral");
         }
 		
-        LiteralVectorNode result;
-        Node vector_type;
         ArgumentListNode initializer_list = null;
-
         int pos = ctx.input.positionOfMark();
-
-        scanner.enterSlashRegExpContext();
+                
         match(LESSTHAN_TOKEN);
-
         ListNode type_list = parseTypeExpressionList();
-        vector_type = nodeFactory.applyTypeExpr (
+        Node vector_type = nodeFactory.applyTypeExpr (
         	nodeFactory.identifier("Vector", false, pos), 
         	type_list,
         	pos);
-
         match(GREATERTHAN_TOKEN);
-        match(LEFTBRACKET_TOKEN);
         
-        // ElementList : LiteralElement ElementListPrime (inlined)
-
+        match(LEFTBRACKET_TOKEN);
         if (RIGHTBRACKET_TOKEN != lookahead())
         {
-        	initializer_list = parseElementListPrime(nodeFactory.argumentList(null, parseLiteralElement(false)), false);
+        	initializer_list = parseElementList(false);
         }
-
         match(RIGHTBRACKET_TOKEN);
-		scanner.exitSlashRegExpContext();
 
-        result = nodeFactory.literalVector(vector_type, initializer_list, pos);
+        LiteralVectorNode result = nodeFactory.literalVector(vector_type, initializer_list, pos);
 
         if (debug)
         {
@@ -1925,46 +1850,38 @@ XMLElementContent
         return result;
     }
 
-
     /*
-     * ElementListPrime
-     *     , LiteralElement ElementListPrime
-     *     empty
+     * ElementList
+     *     LiteralElement,*
      */
-
  
-    private ArgumentListNode parseElementListPrime(ArgumentListNode first, boolean allow_empty)
+    private ArgumentListNode parseElementList(boolean allow_empty)
     {
-
         if (debug)
         {
-            System.err.println("begin parseElementListPrime");
+            System.err.println("begin parseElementList");
         }
 
-        ArgumentListNode result;
+        ArgumentListNode result = nodeFactory.argumentList(null, parseLiteralElement(allow_empty));
 
         while (lookahead()==COMMA_TOKEN)
         {
             shift();
-            Node second;
-            second = parseLiteralElement(allow_empty); // May be empty.
-            if( second != null )
+            Node t = parseLiteralElement(allow_empty);
+            if( t != null )
             {
-                first = nodeFactory.argumentList(first, second);
+                nodeFactory.argumentList(result, t);
             }
         }
 
-        result = first;
-
         if (debug)
         {
-            System.err.println("finish parseElementListPrime");
+            System.err.println("finish parseElementList");
         }
 
         return result;
     }
     
-
     /*
      * LiteralElement
      *     AssignmentExpression
@@ -1973,7 +1890,6 @@ XMLElementContent
 
     private Node parseLiteralElement(boolean allow_empty)
     {
-
         if (debug)
         {
             System.err.println("begin parseLiteralElement");
@@ -1985,6 +1901,9 @@ XMLElementContent
         
         if(lt==COMMA_TOKEN && allow_empty)
         {
+        	// ??? Looks like if allow_empty is false, then falls into parseAssignmentExpression below...
+        	// ??? seems like an odd way to fail, when we could give a clear message...
+        	
             result = nodeFactory.emptyElement(ctx.input.positionOfMark());
         }
         else if(lt==RIGHTBRACKET_TOKEN)
@@ -1995,7 +1914,7 @@ XMLElementContent
         {
         	first = parseAssignmentExpression(allowIn_mode);
         	lt = lookahead();
-        	if( first.isConfigurationName() && lt!=COMMA_TOKEN && lt!=RIGHTBRACKET_TOKEN ) //??? squirrelly logic --check {pmd}
+        	if( first.isConfigurationName() && lt!=COMMA_TOKEN && lt!=RIGHTBRACKET_TOKEN )
         	{
         		// We have an element with a config attr i.e. 
         		// [..., CONFIG::Debug 4, ...]
@@ -2024,21 +1943,19 @@ XMLElementContent
 
     private Node parseSuperExpression()
     {
-
         if (debug)
         {
             System.err.println("begin parseSuperExpression");
         }
 
-        Node result;
-
-        match(SUPER_TOKEN);
+        int pos = scanner.input.positionOfMark();
+        shift(); //match(SUPER_TOKEN);
         Node first = null;
         if (lookahead()==LEFTPAREN_TOKEN)
         {
             first = parseParenExpression();
         }
-        result = nodeFactory.superExpression(first,scanner.input.positionOfMark()-5);
+        Node result = nodeFactory.superExpression(first,pos);
 
         if (debug)
         {
@@ -2048,13 +1965,133 @@ XMLElementContent
         return result;
     }
 
+    
+    /*
+     * precedence: --rewrite as table soon.
+     */
+    
+    private final int precedence( int token, int mode )
+    {
+    	switch (token)
+    	{
+    	
+    	case COMMA_TOKEN:
+    		return 1;
+    		
+    	case ASSIGN_TOKEN:
+      	case BITWISEANDASSIGN_TOKEN:
+      	case BITWISEORASSIGN_TOKEN:
+      	case BITWISEXORASSIGN_TOKEN:
+    	case DIVASSIGN_TOKEN:
+    	case LEFTSHIFTASSIGN_TOKEN:
+    	case LOGICALANDASSIGN_TOKEN:
+    	case LOGICALORASSIGN_TOKEN:
+    	case LOGICALXORASSIGN_TOKEN:
+    	case MINUSASSIGN_TOKEN:
+    	case MULTASSIGN_TOKEN:
+    	case MODULUSASSIGN_TOKEN:
+    	case PLUSASSIGN_TOKEN:	
+    	case RIGHTSHIFTASSIGN_TOKEN:
+    	case UNSIGNEDRIGHTSHIFTASSIGN_TOKEN:
+    		return 2;
+    	
+    	case QUESTIONMARK_TOKEN:
+    		return 3;
+    		
+    	case LOGICALOR_TOKEN:
+    		return 4;
+    			
+    	case LOGICALAND_TOKEN:
+    		return 5;
+    		
+    	case BITWISEOR_TOKEN:
+    		return 6;
+    		
+    	case BITWISEXOR_TOKEN:
+    		return 7;
+    		
+    	case BITWISEAND_TOKEN:
+    		return 8;
+    		
+    	case EQUALS_TOKEN:
+    	case NOTEQUALS_TOKEN:
+    	case STRICTEQUALS_TOKEN:
+    	case STRICTNOTEQUALS_TOKEN:
+    		return 9;
+    		
+    	case GREATERTHAN_TOKEN:
+    	case GREATERTHANOREQUALS_TOKEN:
+    	case LESSTHAN_TOKEN:
+    	case LESSTHANOREQUALS_TOKEN:		
+    	case INSTANCEOF_TOKEN:
+    	case IS_TOKEN:
+    	case AS_TOKEN:
+    		return 10;
+    		
+    	case IN_TOKEN:
+    		
+    		/*
+    		 * For the context "for ( <dcl|expr> ... IN"
+    		 * We drop the precedence of 'IN' to 0, shutting off operator precedence parsing.
+    		 */
+    		
+    		if ( mode == noIn_mode)
+    			return 0;
+    		return 10;
+    		
+    	case LEFTSHIFT_TOKEN:
+    	case RIGHTSHIFT_TOKEN:
+    	case UNSIGNEDRIGHTSHIFT_TOKEN:
+    		return 11;
+    		
+    	case MINUS_TOKEN:
+    	case PLUS_TOKEN:
+    		return 12;
+    		
+       	case DIV_TOKEN:
+       	case MODULUS_TOKEN:
+    	case MULT_TOKEN:
+    			return 13;
+    		
+    	default:
+    		return 0;
+    	}
+    }
+    
+    private Node parseBinaryExpression(int mode, int prec)
+    {
+    	Node result = parseUnaryExpression();
+    	
+    	/*
+    	 * Operator precedence parser
+    	 * 	refer to Vaughan Pratt, "top down operator precedence parsing"
+    	 * or Dijkstra's shunting yard algorithm, or precedence climbing.
+    	 * 
+    	 */
+    	
+    	for ( int p1 = precedence(lookahead(),mode); p1 >= prec; p1--)
+    	{
+    	   	while ( precedence(lookahead(),mode)==p1 )
+        	{
+    	   		int op = lookahead();
+    	   		shift();
+    	   		
+    	   		Node t = parseBinaryExpression(mode,p1+1);
+    	   		
+    	   		// Could fold fully constant expressions here.
+    	   		
+    	   		result = nodeFactory.binaryExpression(op, result, t);
+        	}
+    	}
+    	return result;
+    }
+    
     /*
      * PostfixExpression
      */
 
     private Node parsePostfixExpression()
     {
-
         if (debug)
         {
             System.err.println("begin parsePostfixExpression");
@@ -2062,15 +2099,16 @@ XMLElementContent
 
         Node first;
         Node result;
-        final int lt = lookahead();
+        int lt = lookahead();
 
         switch ( lt )
         {
         case PUBLIC_TOKEN: case PRIVATE_TOKEN: case PROTECTED_TOKEN: case DEFAULT_TOKEN: 
         case GET_TOKEN: case SET_TOKEN: case IDENTIFIER_TOKEN: case NAMESPACE_TOKEN: 
-        case MULT_TOKEN: case AMPERSAND_TOKEN:
+        case MULT_TOKEN: case ATSIGN_TOKEN:
             first = parseAttributeExpression();
-            if ( !lookaheadSemicolon(full_mode) && (lookahead() == PLUSPLUS_TOKEN || lookahead() == MINUSMINUS_TOKEN) )
+            lt = lookahead();
+            if ( !lookaheadSemicolon(full_mode) && (lt == PLUSPLUS_TOKEN || lt == MINUSMINUS_TOKEN) )
             {
                 first = parsePostfixIncrement(first);
             }
@@ -2088,11 +2126,11 @@ XMLElementContent
             
         case NEW_TOKEN:
             first = parseShortNewExpression();
-            
        
             //  LiteralVectorNode shares some syntax
             //  with a new call, but its semantics
             //  are different; it's its own constructor.
+            
             if ( ! (first instanceof LiteralVectorNode) )
             {
 	            if (lookahead()==LEFTPAREN_TOKEN)
@@ -2179,7 +2217,7 @@ XMLElementContent
             System.err.println("begin parseFullPostfixExpressionPrime");
         }
 
-        Node result;
+        Node result = first;
         final int lt = lookahead();
 
         if (lt==DOT_TOKEN || lt==LEFTBRACKET_TOKEN || lt==DOTLESSTHAN_TOKEN || (HAS_DESCENDOPERATORS && lt==DOUBLEDOT_TOKEN))
@@ -2192,14 +2230,10 @@ XMLElementContent
             first = parseArguments(first);
             result = parseFullPostfixExpressionPrime(first);
         }
-        else if ( !lookaheadSemicolon(full_mode) && ((lookahead()==PLUSPLUS_TOKEN || lookahead()==MINUSMINUS_TOKEN)))
+        else if ( !lookaheadSemicolon(full_mode) && ((lt==PLUSPLUS_TOKEN || lt==MINUSMINUS_TOKEN)))
         {
             first = parsePostfixIncrement(first);
             result = parseFullPostfixExpressionPrime(first);
-        }
-        else
-        {
-            result = first;
         }
 
         if (debug)
@@ -2219,7 +2253,6 @@ XMLElementContent
 
     private Node parseAttributeExpression()
     {
-
         if (debug)
         {
             System.err.println("begin parseAttributeExpression");
@@ -2239,7 +2272,7 @@ XMLElementContent
         
         final int lt = lookahead();
         
-        if (lt==DOT_TOKEN || lt==LEFTBRACKET_TOKEN || lt==DOUBLEDOT_TOKEN || lt==LEFTPAREN_TOKEN || lt==AMPERSAND_TOKEN)    
+        if (lt==DOT_TOKEN || lt==LEFTBRACKET_TOKEN || lt==DOUBLEDOT_TOKEN || lt==LEFTPAREN_TOKEN || lt==ATSIGN_TOKEN)    
         {
             result = parseAttributeExpressionPrime(first);
         }
@@ -2330,18 +2363,14 @@ XMLElementContent
 
     private Node parseFullNewExpression()
     {
-
         if (debug)
         {
             System.err.println("begin parseFullNewExpression");
         }
 
-        Node result;
-        Node first;
-
-        match(NEW_TOKEN);
-        first = parseFullNewSubexpression();
-        result = nodeFactory.newExpression(parseArguments(first));
+        shift(); //match(NEW_TOKEN);
+        Node first = parseFullNewSubexpression();
+        Node result = nodeFactory.newExpression(parseArguments(first));
 
         if (debug)
         {
@@ -2361,7 +2390,6 @@ XMLElementContent
 
     private Node parseFullNewSubexpression()
     {
-
         if (debug)
         {
             System.err.println("begin parseFullNewSubexpression");
@@ -2393,7 +2421,7 @@ XMLElementContent
             
         case PUBLIC_TOKEN: case PRIVATE_TOKEN: case PROTECTED_TOKEN: case DEFAULT_TOKEN:
         case GET_TOKEN: case SET_TOKEN: case NAMESPACE_TOKEN: case MULT_TOKEN:
-        case IDENTIFIER_TOKEN: case AMPERSAND_TOKEN:
+        case IDENTIFIER_TOKEN: case ATSIGN_TOKEN:
             first = nodeFactory.memberExpression(null, nodeFactory.getExpression(parseQualifiedIdentifier()));
             result = parseFullNewSubexpressionPrime(first);
             break;
@@ -2419,35 +2447,19 @@ XMLElementContent
 
     private Node parseFullNewSubexpressionPrime(Node first)
     {
-
         if (debug)
         {
             System.err.println("begin parseFullNewSubexpressionPrime");
         }
 
-        Node result;
+        Node result = first;
         final int lt = lookahead();
 
         if (lt==DOT_TOKEN || lt==LEFTBRACKET_TOKEN || lt==DOTLESSTHAN_TOKEN ||
-            (HAS_DESCENDOPERATORS && lt==DOUBLEDOT_TOKEN) || lt==AMPERSAND_TOKEN )
+            (HAS_DESCENDOPERATORS && lt==DOUBLEDOT_TOKEN) || lt==ATSIGN_TOKEN )
         {
             first = parsePropertyOperator(first);
             result = parseFullNewSubexpressionPrime(first);
-        }
-        else
-        {
-/*
-            MemberExpressionNode memb = first instanceof MemberExpressionNode ? (MemberExpressionNode) first : null;
-            if( memb != null && memb.selector.is_package )
-            {
-                IdentifierNode ident = memb.selector.expr instanceof IdentifierNode ? (IdentifierNode) memb.selector.expr : null;
-                if( ident != null )
-                {
-                    ctx.error(memb.selector.expr.pos(),kError_IllegalPackageReference, ident.name);
-                }
-            }
-*/
-            result = first;
         }
 
         if (debug)
@@ -2465,7 +2477,6 @@ XMLElementContent
 
     private Node parseShortNewExpression()
     {
-
         if (debug)
         {
             System.err.println("begin parseShortNewExpression");
@@ -2499,7 +2510,6 @@ XMLElementContent
 
     private Node parseShortNewSubexpression()
     {
-
         if (debug)
         {
             System.err.println("begin parseShortNewSubexpression");
@@ -2543,25 +2553,22 @@ XMLElementContent
 
     private Node parsePropertyOperator(Node first)
     {
-
         if (debug)
         {
             System.err.println("begin parsePropertyOperator");
         }
 
-        Node result;
-        final int lt = lookahead();
+        Node result = null;
+        int lt = lookahead();
         
         if (lt==DOT_TOKEN)
         {
             shift();
             if (lookahead()==LEFTPAREN_TOKEN)
             {
-                scanner.enterSlashRegExpContext();
                 shift();
                 result = nodeFactory.filterOperator(first,parseListExpression(allowIn_mode),first.pos());
                 match(RIGHTPAREN_TOKEN);
-                scanner.exitSlashRegExpContext();
             }
             else
             {
@@ -2581,27 +2588,7 @@ XMLElementContent
         }
         else if (lt==DOTLESSTHAN_TOKEN)
         {
-            shift();
-            result = nodeFactory.applyTypeExpr(first, parseTypeExpressionList(),ctx.input.positionOfMark());
-            if(lookahead()==UNSIGNEDRIGHTSHIFT_TOKEN)
-            {
-                // Transform >>> to >> and eat one >
-                changeLookahead(RIGHTSHIFT_TOKEN);
-            }
-            else if(lookahead()==RIGHTSHIFT_TOKEN)
-            {
-                // Transform >> to > and eat one >
-                changeLookahead(GREATERTHAN_TOKEN);
-            }
-            else
-            {
-                match(GREATERTHAN_TOKEN);
-            }
-        }
-        else
-        {
-            // C: this else-part not in the C++ code...
-            result = null;
+        	result = parseTemplatizedTypeExpression(first);
         }
 
         if (debug)
@@ -2620,7 +2607,6 @@ XMLElementContent
 
     private MemberExpressionNode parseBrackets(Node first)
     {
-
         if (debug)
         {
             System.err.println("begin parseBrackets");
@@ -2661,25 +2647,16 @@ XMLElementContent
 
     private Node parseArguments(Node first)
     {
-
         if (debug)
         {
             System.err.println("begin parseArguments");
         }
 
-        Node result;
-        ArgumentListNode second;
-
-        scanner.enterSlashRegExpContext();
         match(LEFTPAREN_TOKEN);
-
-        second = (lookahead()==RIGHTPAREN_TOKEN)
-            ? null
-            : parseArgumentsWithRest(allowIn_mode);
-
+        ArgumentListNode args = (lookahead()==RIGHTPAREN_TOKEN) ? null : parseArgumentsWithRest(allowIn_mode);
         match(RIGHTPAREN_TOKEN);
-        scanner.exitSlashRegExpContext();
-        result = nodeFactory.callExpression(first, second);
+        
+        Node result = nodeFactory.callExpression(first, args); // Note that a call node is built here.
 
         if (debug)
         {
@@ -2691,26 +2668,25 @@ XMLElementContent
 
     /*
      *  ArgumentsWithRest
-     *      RestExpression
-     *      AssignmentExpression ListExpressionWithRestPrime
+     *      ('...'? AssignmentExpression),+
      */
 
     private ArgumentListNode parseArgumentsWithRest(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseArgumentsWithRest");
         }
 
-        ArgumentListNode result;
-        Node first;
+       //  (RestExpression | AssignmentExpr),+
 
-        first = (lookahead()==TRIPLEDOT_TOKEN)
-            ? parseRestExpression()
-            : parseAssignmentExpression(mode);
+        ArgumentListNode result = nodeFactory.argumentList(null,parseRestOrAssignmentExpression(mode));
 
-        result = parseArgumentsWithRestPrime(mode, nodeFactory.argumentList(null, first));
+        while (lookahead()==COMMA_TOKEN)
+        {
+        	shift();
+        	nodeFactory.argumentList(result, parseRestOrAssignmentExpression(mode));
+        }
 
         if (debug)
         {
@@ -2721,76 +2697,34 @@ XMLElementContent
     }
 
     /*
-        *  ArgumentsWithRestPrime
-        *      empty
-        *      , RestExpression
-        *      , AssignmentExpression ListExpressionPrime
-        */
-
-    private ArgumentListNode parseArgumentsWithRestPrime(int mode, ArgumentListNode first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseArgumentsWithRestPrime");
-        }
-
-        ArgumentListNode result;
-
-        // , RestExpression
-        // , AssignmentExpression ListExpressionWithRest
-
-        if (lookahead()==COMMA_TOKEN)
-        {
-            shift();
-
-            Node second;
-
-            if (lookahead()==TRIPLEDOT_TOKEN)
-            {
-                result = nodeFactory.argumentList(first, parseRestExpression());
-            }
-            else
-            {
-                second = parseAssignmentExpression(mode);
-                result = parseArgumentsWithRestPrime(mode, nodeFactory.argumentList(first, second));
-            }
-        }
-        else
-        {
-            result = first;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseArgumentsWithRestPrime with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    /*
-     * RestExpression
-     *     ... AssignmentExpression[allowIn]
+     * RestOrAssigmentExpression
+     *     '...' AssignmentExpression[allowIn]
+     *     AssignmentExpression[mode] --not sure why mode used in one and not the other...check this ??? {pmd}
      */
 
-    private Node parseRestExpression()
+    private Node parseRestOrAssignmentExpression(int mode)
     {
-
         if (debug)
         {
-            System.err.println("begin parseRestExpression");
+            System.err.println("begin parseRestOrAssignmentExpression");
         }
 
         Node result;
 
-        match(TRIPLEDOT_TOKEN);
+        if (lookahead()==TRIPLEDOT_TOKEN)
+        {
+            shift(); //match(TRIPLEDOT_TOKEN);
+            result = nodeFactory.restExpression(parseAssignmentExpression(allowIn_mode));
 
-        result = nodeFactory.restExpression(parseAssignmentExpression(allowIn_mode));
-
+        }
+        else
+        {
+        	result = parseAssignmentExpression(mode);
+        }
+        
         if (debug)
         {
-            System.err.println("finish parseRestExpression");
+            System.err.println("finish parseRestOrAssignmentExpression");
         }
 
         return result;
@@ -2813,7 +2747,6 @@ XMLElementContent
 
     private Node parseUnaryExpression()
     {
-
         if (debug)
         {
             System.err.println("begin parseUnaryExpression");
@@ -2827,7 +2760,7 @@ XMLElementContent
         {
         case DELETE_TOKEN:
             shift();
-            lookaheadInSlashRegExpContext();
+            lookahead();
             result = nodeFactory.unaryExpression(lt, parsePostfixExpression(),scanner.input.positionOfMark());
             break;
                    
@@ -2838,13 +2771,13 @@ XMLElementContent
         case BITWISENOT_TOKEN:
         case NOT_TOKEN:    
             shift();
-            lookaheadInSlashRegExpContext();
+            lookahead();
             result = nodeFactory.unaryExpression(lt, parseUnaryExpression(), scanner.input.positionOfMark());
             break;
             
         case VOID_TOKEN:
             shift();
-            lookaheadInSlashRegExpContext();
+            lookahead();
             pos = scanner.input.positionOfMark();
             result = ( lookahead()==COMMA_TOKEN || lookahead()==SEMICOLON_TOKEN || lookahead()==RIGHTPAREN_TOKEN )
                 ? nodeFactory.unaryExpression(lt, nodeFactory.literalNumber("0",pos),pos)
@@ -2853,7 +2786,7 @@ XMLElementContent
  
         case MINUS_TOKEN:
             shift();
-            lookaheadInSlashRegExpContext();
+            lookahead();
             result = (lookahead()==NEGMINLONGLITERAL_TOKEN)
                 ? nodeFactory.unaryExpression(lt,nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NEGMINLONGLITERAL_TOKEN)),ctx.input.positionOfMark()),scanner.input.positionOfMark())
                 : nodeFactory.unaryExpression(lt, parseUnaryExpression(), scanner.input.positionOfMark());
@@ -2872,633 +2805,6 @@ XMLElementContent
     }
 
     /*
-     * MultiplicativeExpression
-     */
-
-    private Node parseMultiplicativeExpression()
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseMultiplicativeExpression");
-        }
-
-        Node result;
-        Node first = null;
-
-        lookahead(); // force lookahead read in current context
-        scanner.enterSlashDivContext();
-        first = parseUnaryExpression();
-        scanner.exitSlashDivContext();
-        
-        result = parseMultiplicativeExpressionPrime(first);
-
-        if (debug)
-        {
-            System.err.println("finish parseMultiplicativeExpression");
-        }
-
-        return result;
-    }
-
-    private Node parseMultiplicativeExpressionPrime(Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseMultiplicativeExpressionPrime");
-        }
-
-        Node result;
-        final int lt = lookahead();
-        
-        switch ( lt )
-        {
-        case MULT_TOKEN: case DIV_TOKEN: case MODULUS_TOKEN:
-            shift();
-            lookahead(); // force lookahead read in current context
-            scanner.enterSlashDivContext();
-            first = nodeFactory.binaryExpression(lt, first, parseUnaryExpression());
-            scanner.exitSlashDivContext();
-            result = parseMultiplicativeExpressionPrime(first);
-            break;
-            
-            default:
-                result = first;
-        }
- 
-        if (debug)
-        {
-            System.err.println("finish parseMultiplicativeExpressionPrime");
-        }
-
-        return result;
-    }
-
-    /*
-     * AdditiveExpression
-     *     MultiplicativeExpression AdditiveExpressionPrime
-     *
-     * AdditiveExpressionPrime
-     *     + MultiplicativeExpression AdditiveExpressionPrime
-     *     - MultiplicativeExpression AdditiveExpressionPrime
-     *     empty
-     */
-
-    private Node parseAdditiveExpression()
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseAdditiveExpression");
-        }
-
-        Node first = parseMultiplicativeExpression();;
-        Node result = parseAdditiveExpressionPrime(first);
-
-        if (debug)
-        {
-            System.err.println("finish parseAdditiveExpression");
-        }
-
-        return result;
-    }
-
-    private Node parseAdditiveExpressionPrime(Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseAdditiveExpressionPrime");
-        }
-
-        Node result;
-        final int lt = lookahead();
-
-        if (lt == PLUS_TOKEN || lt == MINUS_TOKEN )
-        {
-            shift();
-            first = nodeFactory.binaryExpression(lt, first, parseMultiplicativeExpression());
-            result = parseAdditiveExpressionPrime(first);
-        }
-        else
-        {
-            result = first;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseAdditiveExpressionPrime");
-        }
-
-        return result;
-    }
-
-    /*
-     * ShiftExpression
-     *     AdditiveExpression ShiftExpressionPrime
-     *
-     * ShiftExpressionPrime
-     *     << AdditiveExpression ShiftExpressionPrime
-     *     >> AdditiveExpression ShiftExpressionPrime
-     *     >>> AdditiveExpression ShiftExpressionPrime
-     *     empty
-     */
-
-    private Node parseShiftExpression()
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseShiftExpression");
-        }
-
-        Node result;
-        Node first;
-
-        first = parseAdditiveExpression();
-        result = parseShiftExpressionPrime(first);
-
-        if (debug)
-        {
-            System.err.println("finish parseShiftExpression");
-        }
-
-        return result;
-    }
-
-    private Node parseShiftExpressionPrime(Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseShiftExpressionPrime");
-        }
-
-        Node result;
-        final int lt = lookahead();
-
-        switch ( lt )
-        {
-        case LEFTSHIFT_TOKEN: case RIGHTSHIFT_TOKEN: case UNSIGNEDRIGHTSHIFT_TOKEN:
-            shift();
-            first = nodeFactory.binaryExpression(lt, first, parseAdditiveExpression());
-            result = parseShiftExpressionPrime(first);
-            break;
-            
-        default:    
-            result = first;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseShiftExpressionPrime");
-        }
-
-        return result;
-    }
-
-    /*
-     * RelationalExpression
-     *     ShiftExpression RelationalExpressionPrime
-     *
-     * RelationalExpressionPrime
-     *     < ShiftExpression RelationalExpressionPrime
-     *     > ShiftExpression RelationalExpressionPrime
-     *     <= ShiftExpression RelationalExpressionPrime
-     *     >= ShiftExpression RelationalExpressionPrime
-     *     instanceof ShiftExpression RelationalExpressionPrime
-     *     as ShiftExpression RelationalExpressionPrime
-     *     in ShiftExpression RelationalExpressionPrime
-     *     empty
-     */
-
-    private Node parseRelationalExpression(int mode)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseRelationalExpression");
-        }
-
-        Node result;
-        Node first;
-
-        first = parseShiftExpression();
-        result = parseRelationalExpressionPrime(mode, first);
-
-        if (debug)
-        {
-            System.err.println("finish parseRelationalExpression");
-        }
-
-        return result;
-    }
-
-    private Node parseRelationalExpressionPrime(int mode, Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseRelationalExpressionPrime");
-        }
-
-        Node result = first;
-        final int lt = lookahead();
-
-        switch ( lt )
-        {
-        case IN_TOKEN:
-            if ( mode != allowIn_mode )
-                break;
-            //fall thru
-        case LESSTHAN_TOKEN: case GREATERTHAN_TOKEN: case LESSTHANOREQUALS_TOKEN: case GREATERTHANOREQUALS_TOKEN:
-        case IS_TOKEN: case AS_TOKEN: case INSTANCEOF_TOKEN:
-            shift();
-            first = nodeFactory.binaryExpression(lt, first, parseShiftExpression());
-            result = parseRelationalExpressionPrime(mode, first);      
-        }
-  
-        if (debug)
-        {
-            System.err.println("finish parseRelationalExpressionPrime");
-        }
-
-        return result;
-    }
-
-    /*
-     * EqualityExpression(mode)
-     *     RelationalExpression(mode)
-     *     EqualityExpression(mode) == RelationalExpression(mode)
-     *     EqualityExpression(mode) != RelationalExpression(mode)
-     *     EqualityExpression(mode) === RelationalExpression(mode)
-     *     EqualityExpression(mode) !== RelationalExpression(mode)
-     */
-
-    private Node parseEqualityExpression(int mode)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseEqualityExpression");
-        }
-
-        Node first = parseRelationalExpression(mode);
-        Node result = parseEqualityExpressionPrime(mode, first);
-
-        if (debug)
-        {
-            System.err.println("finish parseEqualityExpression with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    private Node parseEqualityExpressionPrime(int mode, Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseEqualityExpressionPrime");
-        }
-
-        Node result = first;
-        final int lt = lookahead();
-        
-        switch ( lt )
-        {
-        case STRICTNOTEQUALS_TOKEN:
-            if (HAS_STRICTNOTEQUALS==false)
-                break; // else fallthru 
-        case EQUALS_TOKEN: case NOTEQUALS_TOKEN: case STRICTEQUALS_TOKEN:
-            shift();
-            first = nodeFactory.binaryExpression(lt, first, parseRelationalExpression(mode));
-            result = parseEqualityExpressionPrime(mode, first);
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseEqualityExpressionPrime with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    /*
-     * BitwiseAndExpression(mode)
-     *     EqualityExpression(mode)
-     *     BitwiseAndExpression(mode) & EqualityExpression(mode)
-     */
-
-    private Node parseBitwiseAndExpression(int mode)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseBitwiseAndExpression");
-        }
-
-        Node first = parseEqualityExpression(mode);
-        Node result = parseBitwiseAndExpressionPrime(mode, first);
-
-        if (debug)
-        {
-            System.err.println("finish parseBitwiseAndExpression");
-        }
-
-        return result;
-    }
-
-    private Node parseBitwiseAndExpressionPrime(int mode, Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseBitwiseAndExpressionPrime");
-        }
-
-        Node result;
-        final int lt = lookahead();
-
-        if (lt==BITWISEAND_TOKEN)
-        {
-            shift();
-            first = nodeFactory.binaryExpression(lt, first, parseEqualityExpression(mode));
-            result = parseBitwiseAndExpressionPrime(mode, first);
-        }
-        else
-        {
-            result = first;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseBitwiseAndExpressionPrime with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    /*
-     * BitwiseXorExpression(mode)
-     *     BitwiseAndExpression(mode)
-     *     BitwiseXorExpression(mode) ^ BitwiseAndExpression(mode)
-     */
-
-    private Node parseBitwiseXorExpression(int mode)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseBitwiseXorExpression");
-        }
-
-        Node first = parseBitwiseAndExpression(mode);
-        Node result = parseBitwiseXorExpressionPrime(mode, first);
-
-        if (debug)
-        {
-            System.err.println("finish parseBitwiseXorExpression");
-        }
-
-        return result;
-    }
-
-    private Node parseBitwiseXorExpressionPrime(int mode, Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseBitwiseXorExpressionPrime");
-        }
-
-        Node result;
-
-        if (lookahead()==BITWISEXOR_TOKEN)
-        {
-            shift();
-            first = nodeFactory.binaryExpression(BITWISEXOR_TOKEN, first, parseBitwiseAndExpression(mode));
-            result = parseBitwiseXorExpressionPrime(mode, first);
-        }
-        else
-        {
-            result = first;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseBitwiseXorExpressionPrime with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    /*
-     * BitwiseOrExpression(mode)
-     *     BitwiseXorExpression(mode)
-     *     BitwiseOrExpression(mode) | BitwiseXorExpression(mode)
-     */
-
-    private Node parseBitwiseOrExpression(int mode)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseBitwiseOrExpression");
-        }
-
-        Node first = parseBitwiseXorExpression(mode);
-        Node result = parseBitwiseOrExpressionPrime(mode, first);
-
-        if (debug)
-        {
-            System.err.println("finish parseBitwiseOrExpression");
-        }
-
-        return result;
-    }
-
-    private Node parseBitwiseOrExpressionPrime(int mode, Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseBitwiseOrExpressionPrime");
-        }
-
-        Node result;
-
-        if (lookahead()==BITWISEOR_TOKEN)
-        {
-            shift();
-            first = nodeFactory.binaryExpression(BITWISEOR_TOKEN, first, parseBitwiseXorExpression(mode));
-            result = parseBitwiseOrExpressionPrime(mode, first);
-        }
-        else
-        {
-            result = first;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseBitwiseOrExpressionPrime with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    /*
-     * LogicalAndExpression
-     *     BitwiseOrExpression
-     *     LogicalAndExpression && BitwiseOrExpression
-     */
-
-    private Node parseLogicalAndExpression(int mode)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseLogicalAndExpression");
-        }
-
-        Node first = parseBitwiseOrExpression(mode);
-        Node result = parseLogicalAndExpressionPrime(mode, first);
-
-        if (debug)
-        {
-            System.err.println("finish parseLogicalAndExpression");
-        }
-
-        return result;
-    }
-
-    private Node parseLogicalAndExpressionPrime(int mode, Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseLogicalAndExpressionPrime");
-        }
-
-        Node result = first;
-
-        if (lookahead()==LOGICALAND_TOKEN)
-        {
-            shift();
-            first = nodeFactory.binaryExpression(LOGICALAND_TOKEN, first, parseBitwiseOrExpression(mode));
-            result = parseLogicalAndExpressionPrime(mode, first);
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseLogicalAndExpressionPrime with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    /*
-     * LogicalXorExpression
-     *     LogicalAndExpression
-     *     LogicalXorExpression ^^ LogicalAndExpression
-     */
-
-    private Node parseLogicalXorExpression(int mode)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseLogicalXorExpression");
-        }
-
-        Node first = parseLogicalAndExpression(mode);
-        Node result = parseLogicalXorExpressionPrime(mode, first);
-
-        if (debug)
-        {
-            System.err.println("finish parseLogicalXorExpression with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    private Node parseLogicalXorExpressionPrime(int mode, Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseLogicalXorExpressionPrime");
-        }
-
-        Node result = first;
-
-        if (lookahead()==LOGICALXOR_TOKEN)
-        {
-            shift();
-            first = nodeFactory.binaryExpression(LOGICALXOR_TOKEN, first, parseLogicalAndExpression(mode));
-            result = parseLogicalXorExpressionPrime(mode, first);
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseLogicalXorExpressionPrime with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    /*
-     * LogicalOrExpression
-     *     LogicalXorExpression
-     *     LogicalOrExpression || LogicalXorExpression
-     */
-
-    private Node parseLogicalOrExpression(int mode)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseLogicalOrExpression");
-        }
-
-        Node first = parseLogicalXorExpression(mode);
-        Node result = parseLogicalOrExpressionPrime(mode, first);
-
-        if (debug)
-        {
-            System.err.println("finish parseLogicalOrExpression with " + ((result != null) ? result.toString() : ""));
-        }
-
-        return result;
-    }
-
-    private Node parseLogicalOrExpressionPrime(int mode, Node first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseLogicalOrExpressionPrime");
-        }
-
-        Node result = first;
-
-        if (lookahead()==LOGICALOR_TOKEN)
-        {
-            shift();
-            first = nodeFactory.binaryExpression(LOGICALOR_TOKEN, first, parseLogicalXorExpression(mode));
-            result = parseLogicalOrExpressionPrime(mode, first);
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseLogicalOrExpressionPrime");
-        }
-
-        return result;
-    }
-
-    /*
      * ConditionalExpression
      *     LogicalOrExpression
      *     LogicalOrExpression ? AssignmentExpression : AssignmentExpression
@@ -3506,31 +2812,21 @@ XMLElementContent
 
     private Node parseConditionalExpression(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseConditionalExpression");
         }
 
-        Node result;
-        Node first;
-
-        first = parseLogicalOrExpression(mode);
+        Node first = parseBinaryExpression(mode,4);
+        Node result = first;
 
         if (lookahead()==QUESTIONMARK_TOKEN)
         {
             shift();
-            
-            Node second;
-            Node third;
-            second = parseAssignmentExpression(mode);
+            Node second = parseAssignmentExpression(mode);
             match(COLON_TOKEN);
-            third = parseAssignmentExpression(mode);
+            Node third = parseAssignmentExpression(mode);
             result = nodeFactory.conditionalExpression(first, second, third);
-        }
-        else
-        {
-            result = first;
         }
 
         if (debug)
@@ -3549,33 +2845,22 @@ XMLElementContent
 
     private Node parseNonAssignmentExpression(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseNonAssignmentExpression");
         }
 
-        Node result;
-        Node first;
-
-        first = parseLogicalOrExpression(mode);
+        Node first = parseBinaryExpression(mode,4);
+        Node result = first;
 
         if (lookahead()==QUESTIONMARK_TOKEN)
         {
             shift();
-            
-            Node second;
-            Node third;
-            second = parseNonAssignmentExpression(mode);
+            Node second = parseNonAssignmentExpression(mode);
             match(COLON_TOKEN);
-            third = parseNonAssignmentExpression(mode);
+            Node third = parseNonAssignmentExpression(mode);
             result = nodeFactory.conditionalExpression(first, second, third);
         }
-        else
-        {
-            result = first;
-        }
-
 
         if (debug)
         {
@@ -3603,7 +2888,6 @@ XMLElementContent
 
     private Node parseAssignmentExpression(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseAssignmentExpression");
@@ -3628,7 +2912,7 @@ XMLElementContent
             System.err.println("begin parseAssignmentExpressionSuffix");
         }
 
-        Node result;
+        Node result = first;
         final int lt = lookahead();
         
         switch ( lt )
@@ -3636,7 +2920,6 @@ XMLElementContent
         case LOGICALANDASSIGN_TOKEN: case LOGICALXORASSIGN_TOKEN: case LOGICALORASSIGN_TOKEN:
             if (HAS_LOGICALASSIGNMENT==false)
             {
-                result = first;
                 break;
             }
         case ASSIGN_TOKEN: case MULTASSIGN_TOKEN: case DIVASSIGN_TOKEN: 
@@ -3644,13 +2927,9 @@ XMLElementContent
         case LEFTSHIFTASSIGN_TOKEN: case RIGHTSHIFTASSIGN_TOKEN: case UNSIGNEDRIGHTSHIFTASSIGN_TOKEN: 
         case BITWISEANDASSIGN_TOKEN: case BITWISEXORASSIGN_TOKEN: case BITWISEORASSIGN_TOKEN:
             shift();
-            
             Node third = parseAssignmentExpression(mode);
             result = nodeFactory.assignmentExpression(first, lt, third);
             break;
-            
-            default:
-                result = first;
         }
       
         if (debug)
@@ -3669,14 +2948,23 @@ XMLElementContent
 
     private ListNode parseListExpression(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseListExpression");
         }
 
         Node first = parseAssignmentExpression(mode);
-        ListNode result = parseListExpressionPrime(mode, nodeFactory.list(null, first));
+        
+        // Where the list is a single expr, this generates an unnecessary list node... ???
+        // If the list is necessary as a placeholder, a nil node should be generated by something like parseNilOrAssignmentExpr()
+        ListNode result = nodeFactory.list(null,first);
+        
+        while (lookahead()==COMMA_TOKEN)
+        {
+            shift();
+            Node t = parseAssignmentExpression(mode);
+            nodeFactory.list(result, t);
+        }
 
         if (debug)
         {
@@ -3686,35 +2974,29 @@ XMLElementContent
         return result;
     }
 
-    private ListNode parseListExpressionPrime(int mode, ListNode first)
+    private ListNode parseListExpressionPrime(int mode, ListNode list)
     {
-
+    	// ??? this method is only used by Super() call to get the rest of a list packaged up.
+    	//??? it should be renamed or something. -not a big deal.
         if (debug)
         {
             System.err.println("begin parseListExpressionPrime");
         }
 
-        ListNode result;
+        ListNode result = list;
 
         // , AssignmentExpression ListExpressionPrime
 
-        if (lookahead()==COMMA_TOKEN)
+        while (lookahead()==COMMA_TOKEN)
         {
             shift();
-
-            Node second;
-
-            second = parseAssignmentExpression(mode);
-            result = parseListExpressionPrime(mode, nodeFactory.list(first, second));
-        }
-        else
-        {
-            result = first;
+            Node t = parseAssignmentExpression(mode);
+            nodeFactory.list(list, t);
         }
 
         if (debug)
         {
-            System.err.println("finish parseListExpression with " + ((result != null) ? result.toString() : ""));
+            System.err.println("finish parseListExpressionPrime with " + ((result != null) ? result.toString() : ""));
         }
 
         return result;
@@ -3739,52 +3021,26 @@ XMLElementContent
         return result;
     }
 
-    private Node parseTypeName()
-    {
-        Node first = parseTypeIdentifier();
-        return first;//nodeFactory.memberExpression(null, nodeFactory.getExpression(first, first.pos()),first.pos());
-    }
-
-    private ListNode parseTypeNameList()
-    {
-        ListNode type_list = null;
-
-        type_list = nodeFactory.list(type_list, parseTypeName());
-        while( lookahead()==COMMA_TOKEN )
-        {
-            shift();
-            type_list = nodeFactory.list(type_list, parseTypeName());
-        }
-
-        return type_list;
-    }
-
     private Node parseSimpleTypeIdentifier()
     {
         if (debug)
         {
             System.err.println("begin parseSimpleTypeIdentifier");
         }
-
-        Node result;
-        Node first;
+        
+        // Comment below is historical, I dont know what it means{pmd 5/22/09}.
         // TODO: handle packageidentifier.identifier
-//        if( lookahead(PACKAGEIDENTIFIER_TOKEN))
-        {
 
-        }
-//        else
-        {
-            first = parseNonAttributeQualifiedExpression();
-            result = nodeFactory.memberExpression(null, nodeFactory.getExpression(first, first.pos()),first.pos());
+        Node first = parseNonAttributeQualifiedExpression();
+        Node result = nodeFactory.memberExpression(null, nodeFactory.getExpression(first, first.pos()),first.pos());
 
-            while( lookahead()==DOT_TOKEN )
-            {
-                // TODO: this should only be for real package identifiers
-                shift();
-                result = nodeFactory.memberExpression(result, nodeFactory.getExpression(parseNonAttributeQualifiedExpression()));
-            }
+        while( lookahead()==DOT_TOKEN )
+        {
+        	// TODO: this should only be for real package identifiers
+        	shift();
+        	result = nodeFactory.memberExpression(result, nodeFactory.getExpression(parseNonAttributeQualifiedExpression()));
         }
+        
         if (debug)
         {
             System.err.println("finish parseSimpleTypeIdentifier");
@@ -3793,46 +3049,82 @@ XMLElementContent
         return result;
     }
 
-    private Node parseTypeIdentifier()
+    /*
+     * TemplatizedTypeExpression
+     * 	.< type-expression-list >
+     * Complicated by follow tokens >>>, >>>=, >>, >>=, >=
+     */
+    
+ 	private final Node parseTemplatizedTypeExpression(Node first)
+ 	{	
+ 		shift(); // match(DOTLESSTHAN_TOKEN);
+ 		Node result = nodeFactory.applyTypeExpr(first, parseTypeExpressionList(),ctx.input.positionOfMark());
+
+ 		final int lt = lookahead();
+
+ 		switch ( lt )
+ 		{
+ 		case UNSIGNEDRIGHTSHIFTASSIGN_TOKEN:	// >>>= to >>=, consume('>')
+ 			changeLookahead(RIGHTSHIFTASSIGN_TOKEN);
+ 			break;
+ 			
+ 		case UNSIGNEDRIGHTSHIFT_TOKEN:	// >>> to >>, consume('>')
+ 			changeLookahead(RIGHTSHIFT_TOKEN);
+ 			break;
+ 		
+ 		case RIGHTSHIFT_TOKEN:	// >> to >, consume('>')
+ 			changeLookahead(GREATERTHAN_TOKEN);
+ 			break;
+ 			
+ 		case RIGHTSHIFTASSIGN_TOKEN:	// >>= to >=, consume('>')
+ 			changeLookahead(GREATERTHANOREQUALS_TOKEN);
+ 			break;
+ 		
+ 		case GREATERTHANOREQUALS_TOKEN:	// >= to =, consume('>')
+ 			changeLookahead(ASSIGN_TOKEN);
+ 			break;
+ 		
+ 		default:
+ 			match(GREATERTHAN_TOKEN);
+ 		}
+ 		
+ 		return result;
+ 	}
+ 	
+    private Node parseTypeName()
     {
         if (debug)
         {
-            System.err.println("begin parseTypeIdentifier");
+            System.err.println("begin parseTypeName");
         }
 
-        Node result;
         Node first = parseSimpleTypeIdentifier();
-
-        // TODO: parse <...> type expression list
+        Node result = first;
+        
         if(lookahead()==DOTLESSTHAN_TOKEN)
         {
-            shift();
-            result = nodeFactory.applyTypeExpr(first, parseTypeExpressionList(),ctx.input.positionOfMark());
-            if( lookahead(UNSIGNEDRIGHTSHIFT_TOKEN) )
-            {
-                // Transform >>> to >> and eat one >
-                changeLookahead(RIGHTSHIFT_TOKEN);
-            }
-            else if(lookahead()==RIGHTSHIFT_TOKEN)
-            {
-                // Transform >> to > and eat one >
-                changeLookahead(GREATERTHAN_TOKEN);
-            }
-            else
-            {
-                match(GREATERTHAN_TOKEN);
-            }
+        	result = parseTemplatizedTypeExpression(first);
         }
-
-        result = first;  // ??? was this meant? - clobbers result
 
         if (debug)
         {
-            System.err.println("finish parseTypeIdentifier");
+            System.err.println("finish parseTypeName");
         }
 
         return result;
     }
+    
+    private ListNode parseTypeNameList()
+    {
+        ListNode type_list = nodeFactory.list(null, parseTypeName());
+        while( lookahead()==COMMA_TOKEN )
+        {
+            shift();
+            nodeFactory.list(type_list, parseTypeName());
+        }
+        return type_list;
+    }
+
     /*
      * TypeExpression
      *     NonassignmentExpression
@@ -3840,7 +3132,6 @@ XMLElementContent
 
     private Node parseTypeExpression(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseTypeExpression");
@@ -3855,7 +3146,7 @@ XMLElementContent
         }
         else
         {
-            Node first = parseTypeIdentifier();
+            Node first = parseTypeName();
             boolean is_nullable = true;
             boolean is_explicit = false;
             final int lt = lookahead();
@@ -3905,7 +3196,6 @@ XMLElementContent
 
     private Node parseStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseStatement");
@@ -4008,7 +3298,6 @@ XMLElementContent
 
     private Node parseSubstatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseSubstatement");
@@ -4040,8 +3329,6 @@ XMLElementContent
         return result;
     }
 
-
-
     /*
      * SuperStatement
      *     super Arguments
@@ -4049,7 +3336,6 @@ XMLElementContent
 
     private Node parseSuperStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseSuperStatement");
@@ -4058,7 +3344,7 @@ XMLElementContent
         Node result;
         Node first;
 
-        match(SUPER_TOKEN);
+        shift(); //match(SUPER_TOKEN);
         first = nodeFactory.superExpression(null,ctx.input.positionOfMark() );
 
         if (lookahead()==LEFTPAREN_TOKEN)  // super statement
@@ -4069,6 +3355,7 @@ XMLElementContent
             {
                 ctx.internalError("Internal error in parseSuperStatement()");
             }
+            
             if (lookaheadSemicolon(mode))
             {
                 result = nodeFactory.superStatement(call);
@@ -4076,7 +3363,7 @@ XMLElementContent
             }
             else // super expression
             {
-                if (!(call != null && call.args != null && call.args.size() == 1))
+                if (call == null || call.args == null || call.args.size() != 1)
                 {
                     error(kError_Parser_WrongNumberOfSuperArgs);
                 }
@@ -4124,33 +3411,28 @@ XMLElementContent
 
     private Node parseLabeledOrExpressionStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseLabeledOrExpressionStatement");
         }
 
         Node result;
+        ListNode first = parseListExpression(allowIn_mode);
 
+        if (lookahead()==COLON_TOKEN)
         {
-            ListNode first;
-            first = parseListExpression(allowIn_mode);
-            if (lookahead()==COLON_TOKEN)
-            {
-                if (!first.isLabel())
-                {
-                    error(kError_Parser_LabelIsNotIdentifier);
-                }
-                shift();
-                result = nodeFactory.labeledStatement(first, parseSubstatement(mode));
-            }
-            else
-            {
-                result = nodeFactory.expressionStatement(first);
-                // leave matchSemicolon(mode) for caller
-            }
+        	if (!first.isLabel())
+        	{
+        		error(kError_Parser_LabelIsNotIdentifier);
+        	}
+        	shift();
+        	result = nodeFactory.labeledStatement(first, parseSubstatement(mode));
         }
-
+        else
+        {
+        	result = nodeFactory.expressionStatement(first);
+        	// leave matchSemicolon(mode) for caller
+        }
 
         if (debug)
         {
@@ -4164,6 +3446,7 @@ XMLElementContent
      * Block
      *     { Directives }
      */
+    
     private StatementListNode parseBlock()
     {
         return parseBlock(null);
@@ -4171,7 +3454,6 @@ XMLElementContent
 
     private StatementListNode parseBlock(AttributeListNode first)
     {
-
         if (debug)
         {
             System.err.println("begin parseBlock");
@@ -4235,27 +3517,24 @@ XMLElementContent
 
     private Node parseIfStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseIfStatement");
         }
 
-        Node result;
-        ListNode first;
-        Node second;
+        shift(); //match(IF_TOKEN);
+        
+        ListNode first = parseParenListExpression();
+        Node second = parseSubstatement(abbrevIfElse_mode);
         Node third = null;
-
-        match(IF_TOKEN);
-        first = parseParenListExpression();
-        second = parseSubstatement(abbrevIfElse_mode);
+        
         if (lookahead()==ELSE_TOKEN)
         {
             shift();
             third = parseSubstatement(mode);
         }
 
-        result = nodeFactory.ifStatement(first, second, third);
+        Node result = nodeFactory.ifStatement(first, second, third);
 
         if (debug)
         {
@@ -4272,23 +3551,20 @@ XMLElementContent
 
     private Node parseSwitchStatement()
     {
-
         if (debug)
         {
             System.err.println("begin parseSwitchStatement");
         }
 
-        Node result;
-        Node first;
-        StatementListNode second;
-
-        match(SWITCH_TOKEN);
-        first = parseParenListExpression();
+        shift(); //match(SWITCH_TOKEN);
+        
+        Node first = parseParenListExpression();
+        
         match(LEFTBRACE_TOKEN);
-        second = parseCaseStatements();
+        StatementListNode second = parseCaseStatements();
         match(RIGHTBRACE_TOKEN);
 
-        result = nodeFactory.switchStatement(first, second);
+        Node result = nodeFactory.switchStatement(first, second);
 
         if (debug)
         {
@@ -4306,16 +3582,14 @@ XMLElementContent
 
     private Node parseCaseStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseCaseStatement");
         }
 
-        Node result;
         final int lt = lookahead();
 
-        result = (lt==CASE_TOKEN || lt==DEFAULT_TOKEN)
+        Node result = (lt==CASE_TOKEN || lt==DEFAULT_TOKEN)
             ? parseCaseLabel()
             : parseDirective(null, mode);
       
@@ -4335,7 +3609,6 @@ XMLElementContent
 
     private Node parseCaseLabel()
     {
-
         if (debug)
         {
             System.err.println("begin parseCaseLabel");
@@ -4378,7 +3651,6 @@ XMLElementContent
 
     private StatementListNode parseCaseStatements()
     {
-
         if (debug)
         {
             System.err.println("begin parseCaseStatements");
@@ -4387,12 +3659,12 @@ XMLElementContent
         StatementListNode result = null;
         int lt = lookahead();
 
-        if (!(lt==RIGHTBRACE_TOKEN || lt==EOS_TOKEN))
+        if (lt!=RIGHTBRACE_TOKEN && lt!=EOS_TOKEN)
         {
             Node first = parseCaseLabel();
             lt=lookahead();
             
-            result = (!(lt==RIGHTBRACE_TOKEN || lt==EOS_TOKEN))
+            result = (lt!=RIGHTBRACE_TOKEN && lt!=EOS_TOKEN)
                 ? parseCaseStatementsPrefix(nodeFactory.statementList(null, first))
                 : nodeFactory.statementList(null, first);
         }
@@ -4413,7 +3685,6 @@ XMLElementContent
 
     private StatementListNode parseCaseStatementsPrefix(StatementListNode first)
     {
-
         if (debug)
         {
             System.err.println("begin parseCaseStatementsPrefix");
@@ -4421,7 +3692,7 @@ XMLElementContent
 
         StatementListNode result = null;
 
-        if (!(lookahead()==RIGHTBRACE_TOKEN || lookahead()==EOS_TOKEN))
+        if (lookahead()!=RIGHTBRACE_TOKEN && lookahead()!=EOS_TOKEN)
         {
             first = nodeFactory.statementList(first, parseCaseStatement(full_mode));
             while (lookahead()!=RIGHTBRACE_TOKEN && lookahead()!=EOS_TOKEN)
@@ -4430,7 +3701,6 @@ XMLElementContent
             }
             result = first;
         }
-
 
         if (debug)
         {
@@ -4447,19 +3717,15 @@ XMLElementContent
 
     private Node parseDoStatement()
     {
-
         if (debug)
         {
             System.err.println("begin parseDoStatement");
         }
 
-        Node result;
-        Node first;
-
-        match(DO_TOKEN);
-        first = parseSubstatement(abbrevDoWhile_mode);
+        shift(); //match(DO_TOKEN);
+        Node first = parseSubstatement(abbrevDoWhile_mode);
         match(WHILE_TOKEN);
-        result = nodeFactory.doStatement(first, parseParenListExpression());
+        Node result = nodeFactory.doStatement(first, parseParenListExpression());
 
         if (debug)
         {
@@ -4476,18 +3742,15 @@ XMLElementContent
 
     private Node parseWhileStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseWhileStatement");
         }
-
-        Node result;
-
-        match(WHILE_TOKEN);
+        
+        shift(); //match(WHILE_TOKEN);  
         Node first = parseParenListExpression();
         Node second = parseSubstatement(mode);
-        result = nodeFactory.whileStatement(first, second);
+        Node result = nodeFactory.whileStatement(first, second);
 
         if (debug)
         {
@@ -4516,7 +3779,6 @@ XMLElementContent
 
     private Node parseForStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseForStatement");
@@ -4524,8 +3786,8 @@ XMLElementContent
 
         Node result;
         boolean is_each = false;
-
-        match(FOR_TOKEN);
+        
+        shift(); //match(FOR_TOKEN);
 
         if(lookahead()==IDENTIFIER_TOKEN)
         {
@@ -4572,9 +3834,11 @@ XMLElementContent
             {
                 error(syntax_error, kError_ParserInvalidForInInitializer);
             }
+            
             match(IN_TOKEN);
             second = parseListExpression(allowIn_mode);
             match(RIGHTPAREN_TOKEN);
+
             int pos = ctx.input.positionOfMark();
             result = nodeFactory.forInStatement(is_each, first, second, parseSubstatement(mode), pos);
         }
@@ -4590,17 +3854,13 @@ XMLElementContent
             {
                 error(syntax_error,kError_Parser_EachWithoutIn);
             }
-            Node third;
+
             match(SEMICOLON_TOKEN);
             
-            second = (lookahead()==SEMICOLON_TOKEN)
-                ? null
-                : parseListExpression(allowIn_mode);
+            second = (lookahead()==SEMICOLON_TOKEN) ? null : parseListExpression(allowIn_mode);
             match(SEMICOLON_TOKEN);
 
-            third = (lookahead()==RIGHTPAREN_TOKEN)
-                ? null
-                : parseListExpression(allowIn_mode);
+            Node third = (lookahead()==RIGHTPAREN_TOKEN) ? null : parseListExpression(allowIn_mode);
             match(RIGHTPAREN_TOKEN);
             
             int pos = ctx.input.positionOfMark();
@@ -4616,17 +3876,15 @@ XMLElementContent
 
     private Node parseWithStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseWithStatement");
         }
-
-        Node result;
-
-        match(WITH_TOKEN);
+        
+        int pos = ctx.input.positionOfMark();
+        shift(); //match(WITH_TOKEN);
         Node first = parseParenListExpression();
-        result = nodeFactory.withStatement(first, parseSubstatement(mode));
+        Node result = nodeFactory.withStatement(first, parseSubstatement(mode), pos);
 
         if (debug)
         {
@@ -4644,22 +3902,20 @@ XMLElementContent
 
     private Node parseContinueStatement()
     {
-
         if (debug)
         {
             System.err.println("begin parseContinueStatement");
         }
 
-        Node result;
         IdentifierNode first = null;
-
-        match(CONTINUE_TOKEN);
+        shift(); //match(CONTINUE_TOKEN);
+        
         if (!lookaheadSemicolon(full_mode))
         {
             first = parseIdentifier();
         }
 
-        result = nodeFactory.continueStatement(first,ctx.input.positionOfMark());
+        Node result = nodeFactory.continueStatement(first, ctx.input.positionOfMark());
 
         if (debug)
         {
@@ -4677,22 +3933,20 @@ XMLElementContent
 
     private Node parseBreakStatement()
     {
-
         if (debug)
         {
             System.err.println("begin parseBreakStatement");
         }
 
-        Node result;
         IdentifierNode first = null;
-
-        match(BREAK_TOKEN);
+        shift(); //match(BREAK_TOKEN);
+        
         if (!lookaheadSemicolon(full_mode))
         {
             first = parseIdentifier();
         }
 
-        result = nodeFactory.breakStatement(first,ctx.input.positionOfMark());
+        Node result = nodeFactory.breakStatement(first, ctx.input.positionOfMark());
 
         if (debug)
         {
@@ -4710,16 +3964,13 @@ XMLElementContent
 
     private Node parseReturnStatement()
     {
-
         if (debug)
         {
             System.err.println("begin parseReturnStatement");
         }
 
-        Node result;
         Node first = null;
-
-        match(RETURN_TOKEN);
+        shift(); //match(RETURN_TOKEN);
 
         // ACTION: check for VirtualSemicolon
 
@@ -4728,7 +3979,7 @@ XMLElementContent
             first = parseListExpression(allowIn_mode);
         }
 
-        result = nodeFactory.returnStatement(first, ctx.input.positionOfMark());
+        Node result = nodeFactory.returnStatement(first, ctx.input.positionOfMark());
 
         if (debug)
         {
@@ -4745,25 +3996,25 @@ XMLElementContent
 
     private Node parseThrowStatement()
     {
-
         if (debug)
         {
             System.err.println("begin parseThrowStatement");
         }
 
         Node result;
-
-        match(THROW_TOKEN);
+        int pos = ctx.input.positionOfMark(); // pos of 'throw'
+        shift(); //match(THROW_TOKEN);
+        
         lookahead(); // force read of next token
      
         if (scanner.followsLineTerminator())
         {
-            error(syntax_error, kError_Parser_ThrowWithoutExpression,"","",ctx.input.positionOfMark()-8);   // -8 gets us to the first char of throw
-            result = nodeFactory.throwStatement(null,ctx.input.positionOfMark());    // make a dummy node
+            error(syntax_error, kError_Parser_ThrowWithoutExpression,"","",pos);
+            result = nodeFactory.throwStatement(null,pos);    // make a dummy node
         }
         else
         {
-            result = nodeFactory.throwStatement(parseListExpression(allowIn_mode),ctx.input.positionOfMark());
+            result = nodeFactory.throwStatement(parseListExpression(allowIn_mode),pos);
         }
 
         if (debug)
@@ -4783,7 +4034,6 @@ XMLElementContent
 
     private Node parseTryStatement()
     {
-
         if (debug)
         {
             System.err.println("begin parseTryStatement");
@@ -4792,7 +4042,7 @@ XMLElementContent
         Node result;
         StatementListNode first;
 
-        match(TRY_TOKEN);
+        shift(); //match(TRY_TOKEN);
         first = parseBlock();
         if (lookahead()==CATCH_TOKEN)
         {
@@ -4841,7 +4091,6 @@ XMLElementContent
 
     private StatementListNode parseCatchClauses()
     {
-
         if (debug)
         {
             System.err.println("begin parseCatchClauses");
@@ -4870,21 +4119,18 @@ XMLElementContent
 
     private Node parseCatchClause()
     {
-
         if (debug)
         {
             System.err.println("begin parseCatchClause");
         }
 
-        Node result;
-        Node first;
-
-        match(CATCH_TOKEN);
+        shift(); //match(CATCH_TOKEN);
+        
         match(LEFTPAREN_TOKEN);
-        first = parseParameter();
+        Node first = parseParameter();
         match(RIGHTPAREN_TOKEN);
 
-        result = nodeFactory.catchClause(first, parseBlock());
+        Node result = nodeFactory.catchClause(first, parseBlock());
 
         if (debug)
         {
@@ -4907,13 +4153,11 @@ XMLElementContent
             System.err.println("begin parseFinallyClause");
         }
 
-        FinallyClauseNode result;
-
-        match(FINALLY_TOKEN);
+        shift(); //match(FINALLY_TOKEN);
 
         // No line break.
 
-        result = nodeFactory.finallyClause(parseBlock());
+        FinallyClauseNode result = nodeFactory.finallyClause(parseBlock());
 
         if (debug)
         {
@@ -4940,7 +4184,6 @@ XMLElementContent
 
     private Node parseDirective(AttributeListNode first, int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseDirective");
@@ -5014,7 +4257,6 @@ XMLElementContent
 
     private Node parseAnnotatedDirectiveOrStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseDefinition");
@@ -5163,7 +4405,6 @@ XMLElementContent
 
     private Node parseAnnotatedSubstatementsOrStatement(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseDefinition");
@@ -5195,33 +4436,6 @@ XMLElementContent
                     else if (temp.isAttribute())
                     {
                         error(syntax_error,kError_InvalidAttribute);
-
-                        /* cn: this is for the unimplemented named block feature
-                         *
-                        AttributeListNode first;
-                        if (lookahead(TRUE_TOKEN) || lookahead(FALSE_TOKEN) ||
-                            lookahead(PRIVATE_TOKEN) || lookahead(PUBLIC_TOKEN) ||
-                            lookahead(PROTECTED_TOKEN) ||
-                            lookahead(STATIC_TOKEN) || lookahead(IDENTIFIER_TOKEN))
-                        {
-                            first = nodeFactory.attributeList(temp, parseAttributes());
-                        }
-                        else
-                        {
-                            first = nodeFactory.attributeList(temp, null);
-                        }
-
-                        if (lookahead(LEFTBRACE_TOKEN))
-                        {
-                            result = parseSubstatements(first, null);
-                        }
-                        else
-                        {
-                            error(syntax_error, kError_Parser_ExpectingBlockStatement);
-                            skiperror(SEMICOLON_TOKEN);
-                        }
-
-                         */
                     }
                     else
                     {
@@ -5258,7 +4472,6 @@ XMLElementContent
 
     private Node parseAnnotatableDirectiveOrPragmaOrInclude(AttributeListNode first, int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseDefinition");
@@ -5292,11 +4505,6 @@ XMLElementContent
             matchSemicolon(mode);
             break;
 
-//        case CONFIG_TOKEN:
-//            result = parseConfigNamespaceDefinition(first);
-//            matchSemicolon(mode);
-//            break;
-
         case IMPORT_TOKEN:
             result = parseImportDirective(first);
             matchSemicolon(mode);
@@ -5329,12 +4537,12 @@ XMLElementContent
         {
             System.err.println("finish parseDefinition");
         }
+        
         return result;
     }
 
     public StatementListNode parseDirectives(AttributeListNode first, StatementListNode second)
     {
-
         if (debug)
         {
             System.err.println("begin parseDirectives");
@@ -5432,7 +4640,6 @@ XMLElementContent
 
     private Node parseUseDirectiveOrPragma(AttributeListNode first)
     {
-
         if (debug)
         {
             System.err.println("begin parseUseDirectiveOrPragma");
@@ -5440,7 +4647,7 @@ XMLElementContent
 
         Node result = null;
 
-        match(USE_TOKEN);
+        shift(); //match(USE_TOKEN);
         
         if (lookahead()==NAMESPACE_TOKEN)
         {
@@ -5467,39 +4674,46 @@ XMLElementContent
         return result;
     }
 
-	private Node parsePragmaItem(int mode) {
+	private Node parsePragmaItem(int mode) 
+	{
         Node id;
         Node argument;
+        
         if (debug)
         {
             System.err.println("begin parsePragmaItem");
         }
 
         id = parseIdentifier();
-        if (lookahead()==COMMA_TOKEN || lookaheadSemicolon(mode)) {
+        int lt = lookahead();
+        
+        if (lt==COMMA_TOKEN || lookaheadSemicolon(mode)) 
+        {
             argument = null;
         } 
-        else if (lookahead()==TRUE_TOKEN) {
+        else if (lt==TRUE_TOKEN) 
+        {
             shift();
             argument = nodeFactory.literalBoolean(true,ctx.input.positionOfMark());
         }
-        else if (lookahead()==FALSE_TOKEN)
+        else if (lt==FALSE_TOKEN)
         {
             shift();
             argument = nodeFactory.literalBoolean(false,ctx.input.positionOfMark());
         }
-        else if (lookahead()==NUMBERLITERAL_TOKEN)
+        else if (lt==NUMBERLITERAL_TOKEN)
         {
             argument = nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NUMBERLITERAL_TOKEN)),
                                                ctx.input.positionOfMark());
         }
-        else if (lookahead()==STRINGLITERAL_TOKEN)
+        else if (lt==STRINGLITERAL_TOKEN)
         {
             boolean[] is_single_quoted = new boolean[1];
             String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
             argument = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
         }
         else argument = parseIdentifier();
+        
         Node result = nodeFactory.usePragma(id, argument, ctx.input.positionOfMark());
 
         if (debug)
@@ -5511,45 +4725,23 @@ XMLElementContent
 
     private ListNode parsePragmaItems(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parsePragmaItems");
         }
 
-        ListNode result = null;
-
         Node first = parsePragmaItem(mode);
+        ListNode result = nodeFactory.list(null,first);
 
-        result = parsePragmaItemsPrime(nodeFactory.list(null, first), mode); 
+        while (lookahead()==COMMA_TOKEN) {
+            shift();
+            Node second = parsePragmaItem(mode);
+            nodeFactory.list(result,second);
+        }
 
         if (debug)
         {
             System.err.println("finish parsePragmaItems");
-        }
-        return result;
-    }
-
-	private ListNode parsePragmaItemsPrime(ListNode first, int mode) {
-        if (debug)
-        {
-            System.err.println("begin parsePragmaItemsPrime");
-        }
-
-        ListNode result;
-
-        if (lookahead()==COMMA_TOKEN) {
-            shift();
-            Node second;
-            second = parsePragmaItem(mode);
-            result =  parsePragmaItemsPrime(nodeFactory.list(first, second), mode);
-        }
-        else
-            result = first;
-
-        if (debug)
-        {
-            System.err.println("finish parsePragmaItemsPrime");
         }
         return result;
     }
@@ -5561,7 +4753,6 @@ XMLElementContent
 
     private Node parseIncludeDirective()
     {
-
         if (debug)
         {
             System.err.println("begin parseIncludeDirective");
@@ -5570,7 +4761,7 @@ XMLElementContent
         IncludeDirectiveNode result;
         LiteralStringNode first;
 
-        match(INCLUDE_TOKEN);
+        shift(); //match(INCLUDE)
 
         boolean[] is_single_quoted = new boolean[1];
         String filespec = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted).trim();
@@ -5715,23 +4906,19 @@ XMLElementContent
             {
                 ctx.error(node.pos(), kError_InvalidPrivate);
             }
-            else
-            if( node.hasAttribute("protected") )
+            else if( node.hasAttribute("protected") )
             {
                 ctx.error(node.pos(), kError_InvalidProtected);
             }
-            else
-            if( node.hasAttribute("static") )
+            else if( node.hasAttribute("static") )
             {
                 ctx.error(node.pos(), kError_InvalidStatic);
             }
-            else
-            if( t != PACKAGE_TOKEN && t != EMPTY_TOKEN && node.hasAttribute("internal") )
+            else if( t != PACKAGE_TOKEN && t != EMPTY_TOKEN && node.hasAttribute("internal") )
             {
                 ctx.error(node.pos(), kError_InvalidInternal);
             }
-            else
-            if( t != PACKAGE_TOKEN && node.hasAttribute("public") )
+            else if( t != PACKAGE_TOKEN && node.hasAttribute("public") )
             {
                 ctx.error(node.pos(), kError_InvalidPublic);
             }
@@ -5755,9 +4942,11 @@ XMLElementContent
 
     private String which_attribute(Node t)
     {
+    	
         /*
          * empirically derived, fragile code, since tree shapes may differ or change. {pmd}
          */
+    	
         if (t.isList())
         {
             Node t1 = ((ListNode) t).items.get(0);
@@ -5794,13 +4983,10 @@ XMLElementContent
     
     private AttributeListNode parseAttributes()
     {
-
         if (debug)
         {
             System.err.println("begin parseAttributes");
         }
-
-        AttributeListNode result;
 
         Node first = parseAttribute();
 
@@ -5816,7 +5002,7 @@ XMLElementContent
             second = parseAttributes();
         }
 
-        result = nodeFactory.attributeList(first, second);
+        AttributeListNode result = nodeFactory.attributeList(first, second);
 
         if (debug)
         {
@@ -5837,7 +5023,6 @@ XMLElementContent
 
     private Node parseAttribute()
     {
-
         if (debug)
         {
             System.err.println("begin parseAttribute");
@@ -5912,18 +5097,16 @@ XMLElementContent
 
     private Node parseImportDirective(AttributeListNode first)
     {
-
         if (debug)
         {
             System.err.println("begin parseImportDirective");
         }
 
-        Node result;
         PackageNameNode second;
         PackageNameNode third = null;
 
         int stmtPos = scanner.input.positionOfMark();
-        match(IMPORT_TOKEN);
+        shift(); //match(IMPORT_TOKEN);
         second = parsePackageName(true);
         if (lookahead()==ASSIGN_TOKEN)
         {
@@ -5931,7 +5114,7 @@ XMLElementContent
             third = parsePackageName(true);
         }
 
-        result = nodeFactory.importDirective(first, second, third, stmtPos, ctx);
+        Node result = nodeFactory.importDirective(first, second, third, stmtPos, ctx);
 
         if (debug)
         {
@@ -5951,25 +5134,26 @@ XMLElementContent
 
     private Node parseVariableDefinition(AttributeListNode first, int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseVariableDefinition");
         }
 
-        int second;
-        ListNode third;
-        Node result;
-
-        // The following logic goes something like this: If it is a
-        // CONST_TOKEN, then first is a CONST_TOKEN. If it is a VAR_TOKEN
-        // then first is VAR_TOKEN. If it is anything else then first is
-        // the default (VAR_TOKEN).
-
-        second = (lookahead()==CONST_TOKEN) ? match(CONST_TOKEN) :
-            (lookahead()==VAR_TOKEN) ? match(VAR_TOKEN) : VAR_TOKEN;
-        third = parseVariableBindingList(first, second, mode);
-        result = nodeFactory.variableDefinition(first, second, third);
+        int lt = lookahead();
+        int kind = VAR_TOKEN;
+        
+        if (lt==CONST_TOKEN)
+        {
+        	kind = CONST_TOKEN;
+        	shift();
+        }
+        else if (lt==VAR_TOKEN)
+        {
+        	shift();
+        }
+            
+        ListNode t = parseVariableBindingList(first, kind, mode);
+        Node result = nodeFactory.variableDefinition(first, kind, t);
 
         if (debug)
         {
@@ -5981,11 +5165,7 @@ XMLElementContent
 
     /*
      * VariableBindingList
-     *     VariableBinding VariableBindingListPrime
-     *
-     * VariableBindingListPrime
-     *     , VariableBinding VariableBindingListPrime
-     *     empty
+     *     VariableBinding,*
      */
 
     private ListNode parseVariableBindingList(AttributeListNode attrs, int kind, int mode)
@@ -5995,44 +5175,22 @@ XMLElementContent
             System.err.println("begin parseVariableBindingList");
         }
 
-        ListNode result;
-        Node first;
+        // ??? if first is null, then we can return null ???
+        // ??? How about if the following list is empty, can we avoid consing the list node ???
+        
+        Node first = parseVariableBinding(attrs, kind, mode);
+        ListNode result = nodeFactory.list(null, first);
 
-        first = parseVariableBinding(attrs, kind, mode);
-        result = parseVariableBindingListPrime(attrs, kind, mode, nodeFactory.list(null, first));
-
+        while (lookahead()==COMMA_TOKEN)
+        {
+            shift();
+            Node t = parseVariableBinding(attrs, kind, mode);
+            nodeFactory.list(result, t);
+        }
+        
         if (debug)
         {
             System.err.println("finish parseVariableBindingList");
-        }
-
-        return result;
-    }
-
-    private ListNode parseVariableBindingListPrime(AttributeListNode attrs, int kind, int mode, ListNode first)
-    {
-        if (debug)
-        {
-            System.err.println("begin parseVariableBindingListPrime");
-        }
-
-        ListNode result;
-
-        if (lookahead()==COMMA_TOKEN)
-        {
-            shift();
-            Node second;
-            second = parseVariableBinding(attrs, kind, mode);
-            result = parseVariableBindingListPrime(attrs, kind, mode, nodeFactory.list(first, second));
-        }
-        else
-        {
-            result = first;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseVariableBindingListPrime'");
         }
 
         return result;
@@ -6045,19 +5203,14 @@ XMLElementContent
 
     private Node parseVariableBinding(AttributeListNode attrs, int kind, int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseVariableBinding");
         }
 
-        Node result;
-        TypedIdentifierNode first;
-        Node second;
-
-        first = parseTypedIdentifier(mode);
-        second = parseVariableInitialization(mode);
-        result = nodeFactory.variableBinding(attrs, kind, first, second);
+        TypedIdentifierNode first = parseTypedIdentifier(mode);
+        Node second = parseVariableInitialization(mode);
+        Node result = nodeFactory.variableBinding(attrs, kind, first, second);
 
         if (debug)
         {
@@ -6079,7 +5232,6 @@ XMLElementContent
 
     private Node parseVariableInitialization(int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseVariableInitialization");
@@ -6091,7 +5243,7 @@ XMLElementContent
         if (lookahead()==ASSIGN_TOKEN)
         {
             shift();
-            lookaheadInSlashRegExpContext();
+            lookahead();
             first = parseAssignmentExpression(mode);
             
             if (lookahead()==COMMA_TOKEN || 
@@ -6142,10 +5294,9 @@ XMLElementContent
                 else
                 	second = null;
             }
-            else
-            if(lookahead()==MULTASSIGN_TOKEN)
+            else if(lookahead()==MULTASSIGN_TOKEN)
             {
-                changeLookahead(ASSIGN_TOKEN);  // morph into ordinary looking intializer
+                changeLookahead(ASSIGN_TOKEN);  // morph into ordinary looking initializer
                 second = null;
             }
             else
@@ -6186,20 +5337,16 @@ XMLElementContent
 
     private Node parseFunctionDefinition(AttributeListNode first)
     {
-
         if (debug)
         {
             System.err.println("begin parseFunctionDefinition");
         }
 
-        Node result;
-        FunctionNameNode second;
-        FunctionCommonNode third;
-
-        match(FUNCTION_TOKEN);
-        second = parseFunctionName();
-        third = parseFunctionCommon(second.identifier);
-        result = nodeFactory.functionDefinition(ctx, first, second, third);
+        shift(); //match(FUNCTION_TOKEN);
+        
+        FunctionNameNode second = parseFunctionName();
+        FunctionCommonNode third = parseFunctionCommon(second.identifier);
+        Node result = nodeFactory.functionDefinition(ctx, first, second, third);
 
         if (debug)
         {
@@ -6218,15 +5365,15 @@ XMLElementContent
 
     private FunctionNameNode parseFunctionName()
     {
-
         if (debug)
         {
             System.err.println("begin parseFunctionName");
         }
 
         FunctionNameNode result;
-
-        if (lookahead()==GET_TOKEN)
+        int lt = lookahead();
+        
+        if (lt==GET_TOKEN)
         {
             shift();
             if (lookahead()==LEFTPAREN_TOKEN)  // function get(...) {...}
@@ -6238,7 +5385,7 @@ XMLElementContent
                 result = nodeFactory.functionName(GET_TOKEN, parseIdentifier());
             }
         }
-        else if (lookahead()==SET_TOKEN)
+        else if (lt==SET_TOKEN)
         {
             shift();
             if (lookahead()==LEFTPAREN_TOKEN)  // function set(...) {...}
@@ -6259,6 +5406,7 @@ XMLElementContent
         {
             System.err.println("finish parseFunctionName");
         }
+        
         return result;
     }
 
@@ -6272,7 +5420,6 @@ XMLElementContent
 
     private FunctionSignatureNode parseFunctionSignature()
     {
-
         if (debug)
         {
             System.err.println("begin parseFunctionSignature");
@@ -6289,9 +5436,10 @@ XMLElementContent
         match(LEFTPAREN_TOKEN);
         first = parseParameters();
         match(RIGHTPAREN_TOKEN);
+        
         second = parseResultSignature(no_anno,void_anno);
 
-        result = nodeFactory.functionSignature(first, second,ctx.input.positionOfMark());
+        result = nodeFactory.functionSignature(first, second, ctx.input.positionOfMark());
         result.no_anno = no_anno[0];
         result.void_anno = void_anno[0];
 
@@ -6309,9 +5457,10 @@ XMLElementContent
      * ParameterSignature ( Parameters )
      */
 
-    private FunctionSignatureNode parseConstructorSignature() {
-
-        if (debug) {
+    private FunctionSignatureNode parseConstructorSignature() 
+    {
+        if (debug) 
+        {
             System.err.println("begin parseConstructorSignature");
         }
 
@@ -6326,6 +5475,7 @@ XMLElementContent
         match(LEFTPAREN_TOKEN);
         first = parseParameters();
         match(RIGHTPAREN_TOKEN);
+        
         second = parseConstructorInitializer(no_anno, void_anno);
 
         if( void_anno[0] )
@@ -6336,8 +5486,7 @@ XMLElementContent
         }
         else
         {
-            result = nodeFactory.constructorSignature(first, second, ctx.input
-                .positionOfMark());
+            result = nodeFactory.constructorSignature(first, second, ctx.input.positionOfMark());
             result.no_anno = true;
             result.void_anno = false;
         }
@@ -6349,8 +5498,10 @@ XMLElementContent
         return result;
     }
 
-    private ListNode parseConstructorInitializer(boolean no_anno[], boolean void_anno[]) {
-        if (debug) {
+    private ListNode parseConstructorInitializer(boolean no_anno[], boolean void_anno[]) 
+    {
+        if (debug) 
+        {
             System.err.println("begin parseConstructorInitializer");
         }
 
@@ -6376,10 +5527,6 @@ XMLElementContent
                 result = nodeFactory.list(result, parseSuperInitializer() );
             }
         } 
-        else 
-        {
-            result = null;
-        }
 
         if (debug) {
             System.err.println("finish parseConstructorInitializer");
@@ -6390,21 +5537,23 @@ XMLElementContent
 
     private Node parseSuperInitializer()
     {
-        if (debug) {
+        if (debug) 
+        {
             System.err.println("begin parseSuperInitializer");
         }
         
-        match(SUPER_TOKEN);
+        shift(); //match(SUPER_TOKEN);
+        
         Node result = null;
         Node first = nodeFactory.superExpression(null, ctx.input.positionOfMark());
-
         Node n = parseArguments(first);
-        CallExpressionNode call = (n instanceof CallExpressionNode) ? (CallExpressionNode) n
-                : null; // this returns a call expression node
-        if (call == null) {
+        
+        if ( !( n instanceof CallExpressionNode))
+        {
             ctx.internalError("Internal error in parseSuperInitializer()");
         }
-        result = nodeFactory.superStatement(call);
+        
+        result = nodeFactory.superStatement((CallExpressionNode)n);
 
         if (debug) {
             System.err.println("end parseSuperInitializer");
@@ -6413,58 +5562,32 @@ XMLElementContent
         return result;
     }
     
-    private ListNode parseInitializerList() {
-        if (debug) {
-            System.err.println("begin parseInitiliazerList");
+    private ListNode parseInitializerList() 
+    {
+    	if (debug) 
+    	{
+            System.err.println("begin parseInitializerList");
         }
 
         ListNode result = null;
 
-        Node first;
-        if(lookahead()==SUPER_TOKEN)
+        if(lookahead()!=SUPER_TOKEN)
         {
-            result = null;
-        }
-        else
-        {
-            first = parseInitializer();
-            result = parseInitializerListPrime(nodeFactory.list(null, first));
+            ListNode list = nodeFactory.list(null,parseInitializer());
+            result = list;
+            while ( lookahead()==COMMA_TOKEN )
+            {
+            	shift();
+            	if (lookahead()!=SUPER_TOKEN)
+            	{
+            		Node next = parseInitializer();
+            		nodeFactory.list(list,next);
+            	}
+            }
         }
         
         if (debug) {
             System.err.println("end parseInitializerList");
-        }
-
-        return result;
-    }
-
-    private ListNode parseInitializerListPrime(ListNode first) {
-        if (debug) {
-            System.err.println("begin parseInitializerListPrime");
-        }
-
-        ListNode result;
-
-        if (lookahead()==COMMA_TOKEN)
-        {
-            shift();
-            if(lookahead()==SUPER_TOKEN)
-            {
-                result = first;
-            }
-            else
-            {
-                Node second;
-    
-                second = parseInitializer();
-                result = parseInitializerListPrime(nodeFactory.list(first, second));
-            }
-        } else {
-            result = first;
-        }
-
-        if (debug) {
-            System.err.println("end parseInitializerListPrime");
         }
 
         return result;
@@ -6510,19 +5633,14 @@ XMLElementContent
 
     private ParameterListNode parseParameters()
     {
-
         if (debug)
         {
             System.err.println("begin parseParameters");
         }
 
-        ParameterListNode result;
+        ParameterListNode result = null;
 
-        if (lookahead()==RIGHTPAREN_TOKEN)
-        {
-            result = null;
-        }
-        else
+        if (lookahead()!=RIGHTPAREN_TOKEN)
         {
             result = parseNonemptyParameters(null);
         }
@@ -6544,7 +5662,6 @@ XMLElementContent
 
     private ParameterListNode parseNonemptyParameters(ParameterListNode first)
     {
-
         if (debug)
         {
             System.err.println("begin parseNonemptyParameters");
@@ -6601,27 +5718,22 @@ XMLElementContent
 
     private ParameterNode parseRestParameter()
     {
-
         if (debug)
         {
             System.err.println("begin parseRestParameter");
         }
 
         ParameterNode result;
-        ParameterNode first;
+        ParameterNode first = null;
 
-        match(TRIPLEDOT_TOKEN);
+        shift(); //match(TRIPLEDOT_TOKEN);
 
         final int lt = lookahead();
         if (lt==CONST_TOKEN || lt==IDENTIFIER_TOKEN || lt==GET_TOKEN || lt==SET_TOKEN)
         {
             first = parseParameter();
         }
-        else
-        {
-            first = null;
-        }
-
+     
         result = nodeFactory.restParameter(first,ctx.input.positionOfMark());
 
         if (debug)
@@ -6640,28 +5752,17 @@ XMLElementContent
 
     private ParameterNode parseParameter()
     {
-
         if (debug)
         {
             System.err.println("begin parseParameter");
         }
 
-        ParameterNode result;
-        int first;
-        IdentifierNode second;
-        Node third;
+        Node third = null;
         boolean no_anno = false;
 
-        if (HAS_CONSTPARAMETERS && lookahead()==CONST_TOKEN)
-        {
-            first = match(CONST_TOKEN);
-        }
-        else
-        {
-            first = VAR_TOKEN;
-        }
-
-        second = parseIdentifier();
+        int first = (HAS_CONSTPARAMETERS && lookahead()==CONST_TOKEN) ? match(CONST_TOKEN) : VAR_TOKEN;
+        IdentifierNode second = parseIdentifier();
+        
         if (lookahead()==COLON_TOKEN)
         {
             shift();
@@ -6669,35 +5770,25 @@ XMLElementContent
             {
                 shift();
                 second.setOrigTypeToken(MULT_TOKEN);
-                third = null;
             }
             else
             if(lookahead()==MULTASSIGN_TOKEN)
             {
                 changeLookahead(ASSIGN_TOKEN);  // morph into ordinary looking intializer
                 second.setOrigTypeToken(MULTASSIGN_TOKEN);
-                third = null;
             }
-            else
+            // if it's a keyword, that's invalid, throws an error
+            else if( !errorIfNextTokenIsKeywordInsteadOfTypeExpression() )
             {
-                // if it's a keyword, that's invalid, throws an error
-                if( errorIfNextTokenIsKeywordInsteadOfTypeExpression() )
-                {
-                    third = null; // skip
-                }
-                else
-                {
-                    third = parseTypeExpression(allowIn_mode);
-                }
+            	third = parseTypeExpression(allowIn_mode);
             }
         }
         else
         {
-            third = null;
             no_anno = true;
         }
 
-        result = nodeFactory.parameter(first, second, third);
+        ParameterNode result = nodeFactory.parameter(first, second, third);
         result.no_anno = no_anno;
 
         if (debug)
@@ -6716,13 +5807,12 @@ XMLElementContent
 
     private Node parseResultSignature(boolean no_anno[],boolean void_anno[])
     {
-
         if (debug)
         {
             System.err.println("begin parseResultSignature");
         }
 
-        Node result;
+        Node result = null;
 
         no_anno[0] = false;
         void_anno[0] = false;
@@ -6734,17 +5824,16 @@ XMLElementContent
             {
                 shift();
                 if (ctx.scriptAssistParsing)
+                {
                 	result = nodeFactory.identifier(ASTERISK,false,ctx.input.positionOfMark());
-                else
-                	result = null;
+                }
             }
             else if(lookahead()==MULTASSIGN_TOKEN) // do this here for better (potential) syntax error reporting
             {         
                 changeLookahead(ASSIGN_TOKEN); // morph into an assign token
                 result = null;  // same as no annotation
             }
-            else
-            if(lookahead()==VOID_TOKEN)
+            else if(lookahead()==VOID_TOKEN)
             {
                 shift();
                 result = null;
@@ -6778,28 +5867,26 @@ XMLElementContent
     
     private boolean errorIfNextTokenIsKeywordInsteadOfTypeExpression() 
     {
-        if (lookahead()==VOID_TOKEN)
+    	final int lt = lookahead();
+    	
+        if (lt == VOID_TOKEN)
         {
             error(syntax_error, kError_Parser_keywordInsteadOfTypeExpr, scanner.getCurrentTokenText(nextToken));
             match(VOID_TOKEN);
             return true;
         }
-        else
-        if (lookahead(xmlid_tokens, xmlid_tokens_count) && lookahead() != IDENTIFIER_TOKEN)
+        else if (lt != IDENTIFIER_TOKEN && lookahead(xmlid_tokens, xmlid_tokens_count))
         {
             error(syntax_error, kError_Parser_keywordInsteadOfTypeExpr, scanner.getCurrentTokenText(nextToken));
             match(xmlid_tokens, xmlid_tokens_count);
             return true;
         }
-        else
+        else if( ctx.dialect(8) && lt == IDENTIFIER_TOKEN && scanner.getCurrentTokenText(nextToken).equals("Object") )
         {
-            if( ctx.dialect(8) && lookahead() == IDENTIFIER_TOKEN && scanner.getCurrentTokenText(nextToken).equals("Object") )
-            {
-                error(syntax_error, kError_ColonObjectAnnoOutOfService);
-                return true;
-            }
-            return false;
+        	error(syntax_error, kError_ColonObjectAnnoOutOfService);
+        	return true;
         }
+        return false;
     }
 
     /*
@@ -6809,16 +5896,12 @@ XMLElementContent
 
     private Node parseClassDefinition(AttributeListNode attrs, int mode)
     {
-
         if (debug)
         {
             System.err.println("begin parseClassDefinition");
         }
 
-        Node result;
-        ClassNameNode first;
-
-        match(CLASS_TOKEN);
+        shift(); //match(CLASS_TOKEN);
 
         if( block_kind_stack.last() != PACKAGE_TOKEN && block_kind_stack.last() != EMPTY_TOKEN )
         {
@@ -6827,32 +5910,25 @@ XMLElementContent
 
         block_kind_stack.add(CLASS_TOKEN);
 
-        first = parseClassName();
-
+        ClassNameNode first = parseClassName();
         String temp_class_name = current_class_name;
         current_class_name = first.ident.name;
 
+        if( first.pkgname != null )
         {
-            InheritanceNode second;
-            StatementListNode third;
+        	nodeFactory.startPackage(ctx,null,first.pkgname);
+        }
 
-            if( first.pkgname != null )
-            {
-                nodeFactory.startPackage(ctx,null,first.pkgname);
-            }
+        nodeFactory.StartClassDefs();
+        InheritanceNode second = parseInheritance();
+        StatementListNode third = parseBlock();
+        Node result = nodeFactory.classDefinition(ctx, attrs, first.ident, second, third, first.non_nullable);
+        block_kind_stack.removeLast();
+        current_class_name = temp_class_name;
 
-            nodeFactory.StartClassDefs();
-            second = parseInheritance();
-            third  = parseBlock();
-            result = nodeFactory.classDefinition(ctx, attrs, first.ident, second, third, first.non_nullable);
-            block_kind_stack.removeLast();
-
-            current_class_name = temp_class_name;
-            
-            if( first.pkgname != null )
-            {
-                nodeFactory.finishPackage(ctx,null);
-            }
+        if( first.pkgname != null )
+        {
+        	nodeFactory.finishPackage(ctx,null);
         }
 
         if (debug)
@@ -6871,18 +5947,29 @@ XMLElementContent
 
     private ClassNameNode parseClassName()
     {
-
         if (debug)
         {
             System.err.println("begin parseClassName");
         }
 
         ClassNameNode result;
-        IdentifierNode first;
-        first = parseIdentifier();
+        IdentifierNode first = parseIdentifier();
+        
         if (HAS_COMPOUNDCLASSNAMES)
         {
-            result = parseClassNamePrime(first);
+            // result = parseClassNamePrime(first);
+            
+            PackageIdentifiersNode list = null;
+
+            while (lookahead()==DOT_TOKEN)
+            {
+                shift();
+                list = nodeFactory.packageIdentifiers(list, first, true);
+                first = parseIdentifier();
+            }
+
+            PackageNameNode pkgname = (list!=null) ? nodeFactory.packageName(list) : null;
+            result = nodeFactory.className(pkgname,first);
         }
         else
         {
@@ -6911,35 +5998,6 @@ XMLElementContent
         return result;
     }
 
-    private ClassNameNode parseClassNamePrime(IdentifierNode second)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseClassNamePrime");
-        }
-
-        ClassNameNode result;
-        PackageIdentifiersNode first = null;
-
-        while (lookahead()==DOT_TOKEN)
-        {
-            shift();
-            first = nodeFactory.packageIdentifiers(first, second, true);
-            second = parseIdentifier();
-        }
-
-        PackageNameNode pkgname = first!=null?nodeFactory.packageName(first):null;
-        result = nodeFactory.className(pkgname,second);
-
-        if (debug)
-        {
-            System.err.println("finish parseClassNamePrime");
-        }
-
-        return result;
-    }
-
     /*
      * Inheritance
      *     empty
@@ -6950,34 +6008,25 @@ XMLElementContent
 
     private InheritanceNode parseInheritance()
     {
-
         if (debug)
         {
             System.err.println("begin parseInheritance");
         }
 
         InheritanceNode result = null;
-        Node first;
-        ListNode second;
+        Node first = null;
+        ListNode second = null;
 
         if (lookahead()==EXTENDS_TOKEN)
         {
             shift();
             first = parseTypeName();
         }
-        else
-        {
-            first = null;
-        }
 
         if (lookahead()==IMPLEMENTS_TOKEN)
         {
             shift();
             second = parseTypeNameList();
-        }
-        else
-        {
-            second = null;
         }
 
         if (!(first == null && second == null))
@@ -6995,97 +6044,30 @@ XMLElementContent
 
     /*
      * TypeExpressionList
-     *     TypeExpression[allowin] TypeExpressionListPrime
+     *     TypeExpression[allowin],+
      *
-     * TypeExpressionListPrime:
-     *     , TypeExpression[allowin] TypeExpressionListPrime
-     *     empty
      */
 
     private ListNode parseTypeExpressionList()
     {
-
         if (debug)
         {
             System.err.println("begin parseTypeExpressionList");
         }
 
-        ListNode result;
-        Node first;
-
-        first = parseTypeExpression(allowIn_mode);
-        result = parseTypeExpressionListPrime(nodeFactory.list(null, first));
-
+        Node first = parseTypeExpression(allowIn_mode); 
+        ListNode result = nodeFactory.list(null, first);
+     
+        while (lookahead()==COMMA_TOKEN)
+        {
+            shift();
+            Node t = parseTypeExpression(allowIn_mode);
+            nodeFactory.list(result, t);
+        }
+        
         if (debug)
         {
             System.err.println("finish parseTypeExpressionList");
-        }
-
-        return result;
-    }
-
-    private ListNode parseTypeExpressionListPrime(ListNode first)
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseTypeExpressionListPrime");
-        }
-
-        ListNode result;
-
-        if (lookahead()==COMMA_TOKEN)
-        {
-            shift();
-
-            Node second;
-
-            second = parseTypeExpression(allowIn_mode);
-            result = parseTypeExpressionListPrime(nodeFactory.list(first, second));
-
-        }
-        else
-        {
-            result = first;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseTypeExpressionListPrime'");
-        }
-
-        return result;
-    }
-
-    /*
-     * ExtendsList
-     *     empty
-     *     extends TypeExpressionList
-     */
-
-    private ListNode parseExtendsList()
-    {
-
-        if (debug)
-        {
-            System.err.println("begin parseExtendsList");
-        }
-
-        ListNode result;
-
-        if (lookahead()==EXTENDS_TOKEN)
-        {
-            shift();
-            result = parseTypeNameList();
-        }
-        else
-        {
-            result = null;
-        }
-
-        if (debug)
-        {
-            System.err.println("finish parseExtendsList");
         }
 
         return result;
@@ -7105,35 +6087,34 @@ XMLElementContent
             System.err.println("begin parseInterfaceDefinition");
         }
 
-        Node result;
-        ClassNameNode first;
-
-        match(INTERFACE_TOKEN);
+        shift(); //match(INTERFACE_TOKEN);
 
         block_kind_stack.add(INTERFACE_TOKEN);
 
-        first = parseClassName();
+        ClassNameNode first = parseClassName();
 
+        if( first.pkgname != null )
         {
-            ListNode second;
-            StatementListNode third;
+        	nodeFactory.startPackage(ctx,null,first.pkgname);
+        }
 
-            if( first.pkgname != null )
-            {
-                nodeFactory.startPackage(ctx,null,first.pkgname);
-            }
+         // (extends TypeExpressionList)?
+        
+        ListNode second = null;
+        if (lookahead()==EXTENDS_TOKEN)
+        {
+        	shift();
+        	second = parseTypeNameList();
+        }
+ 
+        StatementListNode third  = parseBlock();
+        Node result = nodeFactory.interfaceDefinition(ctx, attrs, first.ident, second, third);
 
-            second = parseExtendsList();
-            third  = parseBlock();
-            result = nodeFactory.interfaceDefinition(ctx, attrs, first.ident, second, third);
+        block_kind_stack.removeLast();
 
-            block_kind_stack.removeLast();
-
-            if( first.pkgname != null )
-            {
-                nodeFactory.finishPackage(ctx,null);
-            }
-
+        if( first.pkgname != null )
+        {
+        	nodeFactory.finishPackage(ctx,null);
         }
 
         if (debug)
@@ -7151,7 +6132,6 @@ XMLElementContent
 
     private NamespaceDefinitionNode parseNamespaceDefinition(AttributeListNode first)
     {
-
         if (debug)
         {
             System.err.println("begin parseNamespaceDefinition");
@@ -7159,24 +6139,16 @@ XMLElementContent
 
         if( first != null && first.items.size() == 1 && first.hasAttribute("config"))
         {
-        	first = null;
-        	return parseConfigNamespaceDefinition(first);
+        	return parseConfigNamespaceDefinition(null);
         }
 
         NamespaceDefinitionNode result;
-        IdentifierNode second = null;
         Node third = null;
 
-        match(NAMESPACE_TOKEN);
-//        if (!lookahead(ASSIGN_TOKEN))
-        {
-            second = parseIdentifier();
-        }
-/*        else
-        {
-            // ISSUE: error if not the default namespace
-        }
-*/
+        shift(); //match(NAMESPACE_TOKEN);
+
+        IdentifierNode second = parseIdentifier();
+ 
         if (lookahead()==ASSIGN_TOKEN)
         {
             shift();
@@ -7216,18 +6188,15 @@ XMLElementContent
 
     private NamespaceDefinitionNode parseConfigNamespaceDefinition(AttributeListNode first)
     {
-
         if (debug)
         {
             System.err.println("begin parseConfigNamespaceDefinition");
         }
 
-        NamespaceDefinitionNode result;
-
-        match(NAMESPACE_TOKEN);
-        IdentifierNode second = parseIdentifier();
+        shift(); //match(NAMESPACE_TOKEN);
         
-        result = nodeFactory.configNamespaceDefinition(first, second, -1);
+        IdentifierNode second = parseIdentifier();
+        NamespaceDefinitionNode result = nodeFactory.configNamespaceDefinition(first, second, -1);
 
         assert config_namespaces.size() > 0; 
         config_namespaces.last().add(result.name.name);
@@ -7244,10 +6213,13 @@ XMLElementContent
     {
         NodeFactory nodeFactory = ctx.getNodeFactory();
         IdentifierNode as3Identifier = nodeFactory.identifier(AS3, false);
+        
         Namespaces namespaces = new Namespaces();
         NamespaceValue namespaceValue = new NamespaceValue();
-        namespaces.add(namespaceValue);
+        namespaces.add(namespaceValue);      
         ReferenceValue referenceValue = new ReferenceValue(ctx, null, AS3, namespaces);
+        
+//        ReferenceValue referenceValue = new ReferenceValue(ctx, null, AS3, ctx.AS3Namespace());
         referenceValue.setIsAttributeIdentifier(false);
         as3Identifier.ref = referenceValue;
         return nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(as3Identifier)));
@@ -7258,9 +6230,9 @@ XMLElementContent
      *     package Block
      *     package PackageName Block
      */
+    
     private PackageDefinitionNode parsePackageDefinition()
     {
-
         if (debug)
         {
             System.err.println("begin parsePackageDefinition");
@@ -7271,106 +6243,87 @@ XMLElementContent
 
         within_package = true;
 
-        PackageDefinitionNode result;
-
         // Init the default xml namespace
 
         nodeFactory.dxns = null;
 
         block_kind_stack.add(PACKAGE_TOKEN);
 
-        match(PACKAGE_TOKEN);
+        shift(); //match(PACKAGE_TOKEN);
 
         assert config_namespaces.size() > 0; 
         HashSet<String> conf_ns = new HashSet<String>(config_namespaces.last().size());
         conf_ns.addAll(config_namespaces.last());
         config_namespaces.push_back(conf_ns);
         
-        if (lookahead()==LEFTBRACE_TOKEN)
+        PackageNameNode first = null;
+        final boolean has_packagename = (lookahead()!=LEFTBRACE_TOKEN);
+        
+        if (has_packagename==true)
         {
-            result = nodeFactory.startPackage(ctx, null, null);
-            // Careful, when adding synthetic UseDirectiveNodes they must be created
-            // in between calls to start/finishPackage.  Otherwise they won't have their
-            // pkgdef ptr set up correctly, and things will go mysteriously awry later.
-            Node udn = generateAs3UseDirective(ctx);
-
-            ObjectList<UseDirectiveNode> udns = null;
-            if ( !ctx.statics.use_namespaces.isEmpty() )
-            {
-                udns = new ObjectList<UseDirectiveNode>();
-                for (String useName : ctx.statics.use_namespaces )
-                {
-                    udns.add(nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName)))));
-                }
-            }
-            Node idn = null;
-            if( ctx.statics.es4_vectors )
-            {
-                PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier(__AS3__, false), true);
-                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VEC, false), true);
-                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VECTOR, false), true);
-                idn = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
-            }
-            result = nodeFactory.finishPackage(ctx, parseBlock());
-            if ((ctx.dialect(10) /*|| ctx.dialect(11)*/) && result != null)
-        	{
-        		result.statements.items.add(1,udn);  // insert after the first statment, which is the starting package definition
-        	}
-            if( ctx.statics.es4_vectors && result != null)
-            {
-                result.statements.items.add(1, idn);
-            }
-            if( udns != null && result != null)
-            {
-                for( UseDirectiveNode usenode : udns )
-                {
-                    result.statements.items.add(1,usenode);
-                }
-            }
-
+            first = parsePackageName(false);
         }
-        else
+        	
+        PackageDefinitionNode result = nodeFactory.startPackage(ctx, null, first);
+        
+        // Careful, when adding synthetic UseDirectiveNodes they must be created
+        // in between calls to start/finishPackage.  Otherwise they won't have their
+        // pkgdef ptr set up correctly, and things will go mysteriously awry later.
+        
+        Node as3UseDirective = generateAs3UseDirective(ctx);
+        ObjectList<UseDirectiveNode> useDirectives = null;
+        
+        if ( !ctx.statics.use_namespaces.isEmpty() )
         {
-            PackageNameNode first = parsePackageName(false);
-            result = nodeFactory.startPackage(ctx, null, first);
-            // Careful, when adding synthetic UseDirectiveNodes they must be created
-            // in between calls to start/finishPackage.  Otherwise they won't have their
-            // pkgdef ptr set up correctly, and things will go mysteriously awry later.
-            Node udn = generateAs3UseDirective(ctx);
-            ObjectList<UseDirectiveNode> udns = null;
-            if ( !ctx.statics.use_namespaces.isEmpty() )
-            {
-                udns = new ObjectList<UseDirectiveNode>();
-                for (String useName : ctx.statics.use_namespaces )
-                {
-                    udns.add(nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(useName)))));
-                }
-            }
-            Node idn = null;
-            if( ctx.statics.es4_vectors )
-            {
-                PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier(__AS3__, false), true);
-                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VEC, false), true);
-                pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VECTOR, false), true);
-                idn = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
-            }
-            result = nodeFactory.finishPackage(ctx, parseBlock());
-            if ((ctx.dialect(10) /*|| ctx.dialect(11)*/) && result != null)
-            {
-        		result.statements.items.add(1,udn);  // insert after the first statment, which is the starting package definition
-            }
-            if( udns != null && result != null)
-            {
-                for( UseDirectiveNode usenode : udns )
-                {
-                    result.statements.items.add(1,usenode);
-                }
-            }
-            if( ctx.statics.es4_vectors && result != null)
-            {
-                result.statements.items.add(1, idn);
-            }
-       }
+        	useDirectives = new ObjectList<UseDirectiveNode>();
+        	for (String u : ctx.statics.use_namespaces )
+        	{
+        		useDirectives.add(nodeFactory.useDirective(null,nodeFactory.memberExpression(null,nodeFactory.getExpression(nodeFactory.identifier(u)))));
+        	}
+        }
+        
+        Node importDirective = null;
+        if( ctx.statics.es4_vectors )
+        {
+        	PackageIdentifiersNode pin = nodeFactory.packageIdentifiers(null, nodeFactory.identifier(__AS3__, false), true);
+        	pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VEC, false), true);
+        	pin = nodeFactory.packageIdentifiers(pin, nodeFactory.identifier(VECTOR, false), true);
+        	importDirective = nodeFactory.importDirective(null, nodeFactory.packageName(pin), null, ctx);
+        }
+        
+        result = nodeFactory.finishPackage(ctx, parseBlock());
+            
+        // General disclaimer: (pmd 5/28/09)
+        // This code was refactored, it was very badly written (redundant cut & paste, no comments etc.).
+        // I dont know if use/import statement ordering matters or was intended.
+        // Note that earlier add(1,...) end up AFTER following add(1,..) statements
+        
+        if ((ctx.dialect(10) /*|| ctx.dialect(11)*/) && result != null)
+        {
+        	result.statements.items.add(1,as3UseDirective);  // insert after the first statement, which is the starting package definition
+        }
+            
+        // Add importDirective AFTER useDirectives...if there is no packagename...
+
+        if( has_packagename == false && ctx.statics.es4_vectors && result != null)
+        {
+        	result.statements.items.add(1, importDirective);
+        }
+
+        if( useDirectives != null && result != null)
+        {
+        	for( UseDirectiveNode u : useDirectives )
+        	{
+        		result.statements.items.add(1,u);
+        	}
+        }
+
+        // Or add the importDirective BEFORE, why? who knows...
+
+        if( has_packagename == true && ctx.statics.es4_vectors && result != null)
+        {
+        	result.statements.items.add(1, importDirective);
+        }
 
         block_kind_stack.removeLast();
         config_namespaces.pop_back();
@@ -7409,6 +6362,7 @@ XMLElementContent
     
     /*
      * PackageName
+     * 	   stringLiteral
      *     Identifier
      *     PackageName . Identifier
      */
@@ -7431,37 +6385,19 @@ XMLElementContent
         }
         else
         {
-            PackageIdentifiersNode first;
-            first = nodeFactory.packageIdentifiers(null, parseIdentifier(), isDefinition);
-            result = parsePackageNamePrime(first, isDefinition);
+            PackageIdentifiersNode first = nodeFactory.packageIdentifiers(null, parseIdentifier(), isDefinition);
+            
+            while (lookahead()==DOT_TOKEN)
+            {
+                shift();
+                first = nodeFactory.packageIdentifiers(first, parsePropertyIdentifier(), isDefinition);
+            }
+            result = nodeFactory.packageName(first);
         }
 
         if (debug)
         {
             System.err.println("finish parsePackageName");
-        }
-
-        return result;
-    }
-
-    private PackageNameNode parsePackageNamePrime(PackageIdentifiersNode first, boolean isDefinition)
-    {
-        if (debug)
-        {
-            System.err.println("begin parsePackageNamePrime");
-        }
-
-        while (lookahead()==DOT_TOKEN)
-        {
-            shift();
-            first = nodeFactory.packageIdentifiers(first, parsePropertyIdentifier(), isDefinition);
-        }
-
-        PackageNameNode result = nodeFactory.packageName(first);
-
-        if (debug)
-        {
-            System.err.println("finish parsePackageNamePrime");
         }
 
         return result;
@@ -7474,6 +6410,7 @@ XMLElementContent
      * 
      * <B>CLEARS unused buffers before returning</B></PRE>
      */
+    
     public ProgramNode parseProgram()
     {
         if (debug)
@@ -7483,8 +6420,8 @@ XMLElementContent
 
         StatementListNode first = null;
         StatementListNode second = null;
-
         StatementListNode configs = null;
+        
         if( !parsing_include )
         {
             config_namespaces.push_back(new HashSet<String>());
@@ -7555,8 +6492,7 @@ XMLElementContent
     		}
         }
         
-        clearUnusedBuffers();
-        
+        clearUnusedBuffers();  
 
         if( !parsing_include )
         {
@@ -7578,12 +6514,5 @@ XMLElementContent
         }
         
         return result;
-    }
-
-    private void clearUnusedBuffers() {
-        comments.clear();
-        scanner.clearUnusedBuffers();
-        scanner = null;
-        comments = null;
     }
 }

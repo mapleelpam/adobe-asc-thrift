@@ -16,7 +16,8 @@
  */
 
 package macromedia.asc.parser;
-import java.util.concurrent.*;
+//import java.util.concurrent.*;
+import java.util.HashMap;
 import macromedia.asc.util.*;
 import macromedia.asc.embedding.ErrorConstants;
 
@@ -36,9 +37,6 @@ public final class Scanner implements ErrorConstants
     private static final boolean debug = false;
     private static int token_count = 0;
 
-    private static final int slashdiv_context = 0x1;
-    private static final int slashregexp_context = 0x2;
-
     /*
      * Scanner maintains a notion of a single current token 
      * (It used to keep an array of all pseudo-terminal tokens...)
@@ -52,16 +50,15 @@ public final class Scanner implements ErrorConstants
     private Token currentToken;
     private int currentTokenId;
     
-    private IntList slash_context = new IntList();  // slashdiv_context or slashregexp_context
     private boolean isFirstTokenOnLine;
     private boolean save_comments;
     private Context ctx;
     public InputBuffer input;
    
-    private static final ConcurrentHashMap<String,Integer> reservedWord;
+    private static final HashMap<String,Integer> reservedWord;
     
     static {
-    	reservedWord = new ConcurrentHashMap<String,Integer>(64);
+    	reservedWord = new HashMap<String,Integer>(64);
     	reservedWord.put("as",AS_TOKEN); // ??? predicated on HAS_ASOPERATOR
     	reservedWord.put("break",BREAK_TOKEN);
     	reservedWord.put("case",CASE_TOKEN);
@@ -119,10 +116,8 @@ public final class Scanner implements ErrorConstants
         ctx = cx;
         state = start_state;
         level = 0;
-        slash_context.add(slashregexp_context);
         states = new IntList();
         levels = new IntList();
-        slashcontexts = new ObjectList<IntList>();
         this.save_comments = save_comments;
         
         currentToken = new Token(0,"");
@@ -170,7 +165,7 @@ public final class Scanner implements ErrorConstants
     /*
      * retract() --
      * Causes one character of input to be 'put back' onto the
-     * que. [Test whether this works for comments and white space.]
+     * queue. [Test whether this works for comments and white space.]
      */
 
     public void retract()
@@ -179,7 +174,7 @@ public final class Scanner implements ErrorConstants
     }
 
     /**
-     * @return +1 from current char pos in InputBuffer
+     * @return makeToken( +1 from current char pos in InputBuffer
      */
     
     private int pos()
@@ -194,43 +189,13 @@ public final class Scanner implements ErrorConstants
     {
         input.textMark();
     }
-    
-    /*
-     * Various helper methods for managing and testing the
-     * scanning context for slashes.
-     */
-
-    public void enterSlashDivContext()
-    {
-        slash_context.add(slashdiv_context);
-    }
-
-    public void exitSlashDivContext()
-    {
-        slash_context.removeLast();
-    }
-
-    public void enterSlashRegExpContext()
-    {
-        slash_context.add(slashregexp_context);
-    }
-
-    public void exitSlashRegExpContext()
-    {
-        slash_context.removeLast();
-    }
-
-    private boolean isSlashDivContext()
-    {
-        return slash_context.last() == slashdiv_context;
-    }
 
     /*
      * Make an instance of the specified token class using the lexeme string.
-     * Return the index of the token which is its identifier.
+     * return makeToken( the index of the token which is its identifier.
      */
 
-    private int makeTokenInstance(int token_class, String lexeme)
+    private final int makeToken(int token_class, String lexeme)
     {
         token_count++;
         currentToken.set(token_class, lexeme);
@@ -238,11 +203,17 @@ public final class Scanner implements ErrorConstants
         return token_count;
     }
     
+    private final int makeToken(int token_class)
+    {
+    	currentToken.set(token_class);
+    	return token_class;
+    }
+    
     /*
      * Get the class of a token instance.
      */
 
-    public int getCurrentTokenClass(int token_id)
+    public final int getCurrentTokenClass(int token_id)
     {
         
         // if the token id is negative, it is a token_class.
@@ -399,30 +370,19 @@ public final class Scanner implements ErrorConstants
 
     public IntList states;
     public IntList levels;
-    public ObjectList<IntList> slashcontexts;
 
     public void pushState()
     {
         states.add(state);
         levels.add(level);
-        IntList temp = new IntList(slash_context);
-        slashcontexts.add(temp);
         state = start_state;
         level = 0;
-        slash_context.clear();
-        enterSlashRegExpContext();
     }
 
     public void popState()
     {
-        exitSlashRegExpContext();  // only necessary to do the following assert
-        if (slash_context.size() != 0)
-        {
-            assert(false); // throw "internal error";
-        }
         state = states.removeLast();
         level = levels.removeLast();
-        slash_context = slashcontexts.removeLast();
     }
 
     private StringBuilder getDocTextBuffer(String doctagname)
@@ -432,10 +392,11 @@ public final class Scanner implements ErrorConstants
         return doctextbuf;
     }
 
-    public void clearUnusedBuffers() {
+    public void clearUnusedBuffers() 
+    {
         input.clearUnusedBuffers();
         input = null;
-    } 
+    }
     
     /*
      * 
@@ -448,7 +409,7 @@ public final class Scanner implements ErrorConstants
         StringBuilder doctextbuf = null;
         int startofxml = pos();
         StringBuilder blockcommentbuf = null;
-        char regexp_flags =0; // used to track option flags encountered in a regexp expression.  Initialized in regexp_state
+        char regexp_flags = 0; // used to track option flags encountered in a regexp expression.  Initialized in regexp_state
         boolean maybe_reserved = false;
         char c = 0;
 
@@ -498,7 +459,7 @@ public final class Scanner implements ErrorConstants
                             continue;
                                 
                             case '@':
-                                return AMPERSAND_TOKEN;
+                                return makeToken( ATSIGN_TOKEN );
                               
                             case '\'':
                             case '\"':
@@ -531,81 +492,81 @@ public final class Scanner implements ErrorConstants
                                     else if ( c == 0 )
                                     {
                                         error(kError_Lexical_EndOfStreamInStringLiteral);
-                                        return EOS_TOKEN;
+                                        return makeToken( EOS_TOKEN );
                                     }
                                 }
-                                return makeTokenInstance(STRINGLITERAL_TOKEN, input.copyReplaceStringEscapes(needs_escape));
+                                return makeToken(STRINGLITERAL_TOKEN, input.copyReplaceStringEscapes(needs_escape));
                             }
 
                             case '-':   // tokens: -- -= -
                                 switch (nextchar())
                                 {
                                 case '-':
-                                    return MINUSMINUS_TOKEN;
+                                    return makeToken( MINUSMINUS_TOKEN );
                                 case '=':
-                                    return MINUSASSIGN_TOKEN;
+                                    return makeToken( MINUSASSIGN_TOKEN );
                                 default:
                                     retract();
-                                return MINUS_TOKEN;
+                                return makeToken( MINUS_TOKEN );
                                 }
 
                             case '!':   // tokens: ! != !===
                                 if (nextchar()=='=')
                                 {
                                     if (nextchar()=='=')
-                                        return STRICTNOTEQUALS_TOKEN;
+                                        return makeToken( STRICTNOTEQUALS_TOKEN );
                                     retract();
-                                    return NOTEQUALS_TOKEN;
+                                    return makeToken( NOTEQUALS_TOKEN );
                                 }   
                                 retract();
-                                return NOT_TOKEN;
+                                return makeToken( NOT_TOKEN );
                                 
                             case '%':   // tokens: % %=
                                 switch (nextchar())
                                 {
                                 case '=':
-                                    return MODULUSASSIGN_TOKEN;
+                                    return makeToken( MODULUSASSIGN_TOKEN );
                                 default:
                                     retract();
-                                return MODULUS_TOKEN;
+                                return makeToken( MODULUS_TOKEN );
                                 }
 
                             case '&':   // tokens: & &= && &&=
                                 c = nextchar();
                                 if (c=='=')
-                                    return BITWISEANDASSIGN_TOKEN;
+                                    return makeToken( BITWISEANDASSIGN_TOKEN );
                                 if (c=='&')
                                 {
                                     if (nextchar()=='=')
-                                        return LOGICALANDASSIGN_TOKEN;
+                                        return makeToken( LOGICALANDASSIGN_TOKEN );
                                     retract();
-                                    return LOGICALAND_TOKEN;
+                                    return makeToken( LOGICALAND_TOKEN );
                                 }
                                 retract();
-                                return BITWISEAND_TOKEN;
+                                return makeToken( BITWISEAND_TOKEN );
                         
                             case '#':   // # is short for use
                                 if (HAS_HASHPRAGMAS)
                                 {
-                                    return USE_TOKEN;
+                                    return makeToken( USE_TOKEN );
                                 }
                                 state = error_state;
                                 continue;
                                 
                             case '(':
-                                return LEFTPAREN_TOKEN;
+                                return makeToken( LEFTPAREN_TOKEN );
                                 
                             case ')':
-                                return RIGHTPAREN_TOKEN;
+                                return makeToken( RIGHTPAREN_TOKEN );
                                 
                             case '*':   // tokens: *=  *
                                 if (nextchar()=='=')
-                                    return MULTASSIGN_TOKEN;
+                                    return makeToken( MULTASSIGN_TOKEN );
                                 retract();
-                                return MULT_TOKEN;
+                                return makeToken( MULT_TOKEN );
 
                             case ',':
-                                return COMMA_TOKEN;
+                                return makeToken( COMMA_TOKEN );
                                 
                             case '.':
                                 state = dot_state;
@@ -618,142 +579,121 @@ public final class Scanner implements ErrorConstants
                             case ':':   // tokens: : ::
                                 if (nextchar()==':')
                                 {
-                                    return DOUBLECOLON_TOKEN;
+                                    return makeToken( DOUBLECOLON_TOKEN );
                                 }
                                 retract();
-                                return COLON_TOKEN;
+                                return makeToken( COLON_TOKEN );
                              
                             case ';':
-                                return SEMICOLON_TOKEN;
+                                return makeToken( SEMICOLON_TOKEN );
                                 
                             case '?':
-                                return QUESTIONMARK_TOKEN;
+                                return makeToken( QUESTIONMARK_TOKEN );
                                 
                             case '[':
-                                return LEFTBRACKET_TOKEN;
+                                return makeToken( LEFTBRACKET_TOKEN );
                                 
                             case ']':
-                                return RIGHTBRACKET_TOKEN;
+                                return makeToken( RIGHTBRACKET_TOKEN );
                                 
                             case '^':   // tokens: ^=  ^
                                 if (nextchar()=='=')
-                                        return BITWISEXORASSIGN_TOKEN;
+                                        return makeToken( BITWISEXORASSIGN_TOKEN );
                                 retract();
-                                return BITWISEXOR_TOKEN;
+                                return makeToken( BITWISEXOR_TOKEN );
                                 
                             case '{':
-                                return LEFTBRACE_TOKEN;
+                                return makeToken( LEFTBRACE_TOKEN );
                                 
                             case '|':   // tokens: | |= || ||=
                                 c = nextchar();
                                 if (c=='=')
-                                    return BITWISEORASSIGN_TOKEN;
+                                    return makeToken( BITWISEORASSIGN_TOKEN );
                                 if (c=='|')
                                 {
                                     if (nextchar()=='=')
-                                        return LOGICALORASSIGN_TOKEN;
+                                        return makeToken( LOGICALORASSIGN_TOKEN );
                                     retract();
-                                    return LOGICALOR_TOKEN;
+                                    return makeToken( LOGICALOR_TOKEN );
                                 }
                                 retract();
-                                return BITWISEOR_TOKEN;
+                                return makeToken( BITWISEOR_TOKEN );
                                 
                             case '}':
-                                return RIGHTBRACE_TOKEN;
+                                return makeToken( RIGHTBRACE_TOKEN );
                                 
                             case '~':
-                                return BITWISENOT_TOKEN;
+                                return makeToken( BITWISENOT_TOKEN );
                                 
                             case '+':   // tokens: ++ += +
                                 c = nextchar();
                                 if (c=='+')
-                                    return PLUSPLUS_TOKEN;
+                                    return makeToken( PLUSPLUS_TOKEN );
                                 if (c=='=')
-                                    return PLUSASSIGN_TOKEN;
+                                    return makeToken( PLUSASSIGN_TOKEN );
                                 retract();
-                                return PLUS_TOKEN;
+                                return makeToken( PLUS_TOKEN );
                                 
-                            case '<':
-                                if( isSlashDivContext() )
-                                {
-                                    switch (nextchar())
-                                    {
-                                    case '<':   // tokens: << <<-                                            
-                                        if (nextchar()=='=')
-                                            return LEFTSHIFTASSIGN_TOKEN;
-                                        retract();
-                                        return LEFTSHIFT_TOKEN;
+                            case '<':    		
+                            	switch (nextchar())
+                            	{
+                            	case '<':   // tokens: << <<=                                           
+                            		if (nextchar()=='=')
+                            			return makeToken( LEFTSHIFTASSIGN_TOKEN );
+                            		retract();
+                            		return makeToken( LEFTSHIFT_TOKEN );
 
-                                    case '=':
-                                        return LESSTHANOREQUALS_TOKEN;
+                            	case '=':
+                            		return makeToken( LESSTHANOREQUALS_TOKEN );
 
-                                    case '/':  
-                                        return XMLTAGSTARTEND_TOKEN;
-                                    case '!': 
-                                        state = xmlcommentorcdatastart_state; 
-                                        continue;
-                                    case '?': 
-                                        state = xmlpi_state; 
-                                        continue;                            
-                                    }
-                                }
-                                else
-                                {
-                                    switch ( nextchar() )             
-                                    {
-                                    case '/':  
-                                        return XMLTAGSTARTEND_TOKEN;
-                                    case '!': 
-                                        state = xmlcommentorcdatastart_state; 
-                                        continue;
-                                    case '?': 
-                                        state = xmlpi_state; 
-                                        continue;
-                                    }                          
-                                }
-                                retract();  
-                                return LESSTHAN_TOKEN;
+                            	case '/':  
+                            		return makeToken( XMLTAGSTARTEND_TOKEN );
+                            	case '!': 
+                            		state = xmlcommentorcdatastart_state; 
+                            		continue;
+                            	case '?': 
+                            		state = xmlpi_state; 
+                            		continue;                            
+                            	}                               
+                            	retract();  
+                            	return makeToken( LESSTHAN_TOKEN );
 
                             case '=':   // tokens: === == =
                                 if (nextchar()=='=')
                                 {
                                     if (nextchar()=='=')
-                                        return STRICTEQUALS_TOKEN;
+                                        return makeToken( STRICTEQUALS_TOKEN );
                                     retract();
-                                    return EQUALS_TOKEN;
+                                    return makeToken( EQUALS_TOKEN );
                                 }
                                 retract();
-                                return ASSIGN_TOKEN;
+                                return makeToken( ASSIGN_TOKEN );
                                 
                             case '>':   // tokens: > >= >> >>= >>> >>>=
                                 state = start_state;
-                                if( isSlashDivContext() )       
+
+                                switch ( nextchar() )          
                                 {
-                                    switch ( nextchar() )          
-                                    {
-                                    case '>':
-                                        switch (nextchar())
-                                        {
-                                        case '>':
-                                            if (nextchar()=='=')
-                                                return UNSIGNEDRIGHTSHIFTASSIGN_TOKEN;
-                                            retract();
-                                            return UNSIGNEDRIGHTSHIFT_TOKEN;
-                                        case '=':
-                                            return RIGHTSHIFTASSIGN_TOKEN;
-                                        default:
-                                            retract();
-                                        return RIGHTSHIFT_TOKEN;
-                                        }
+                                case '>':
+                                	switch (nextchar())
+                                	{
+                                	case '>':
+                                		if (nextchar()=='=')
+                                			return makeToken( UNSIGNEDRIGHTSHIFTASSIGN_TOKEN );
+                                		retract();
+                                		return makeToken( UNSIGNEDRIGHTSHIFT_TOKEN );
+                                	case '=':
+                                		return makeToken( RIGHTSHIFTASSIGN_TOKEN );
+                                	default:
+                                		retract();
+                                		return makeToken( RIGHTSHIFT_TOKEN );
+                                	}
 
-                                    case '=': 
-                                        return GREATERTHANOREQUALS_TOKEN;
-
-                                    default:  
-                                        retract();  
-                                    }
-                                }     
-                                return GREATERTHAN_TOKEN;            
+                                case '=': 
+                                	return makeToken( GREATERTHANOREQUALS_TOKEN );
+                                }
+                                retract();
+                                return makeToken( GREATERTHAN_TOKEN );            
                                 
                             case '0':
                                 state = zero_state;
@@ -777,7 +717,7 @@ public final class Scanner implements ErrorConstants
                                 continue;
                                 
                             case 0:
-                                return EOS_TOKEN;
+                                return makeToken( EOS_TOKEN );
                                 
                             default:
                                 switch (input.nextcharClass((char)c,true))
@@ -854,9 +794,9 @@ public final class Scanner implements ErrorConstants
                     {
                         Integer i = reservedWord.get(s); 
                         if ( i != null )
-                            return (int) i;
+                            return makeToken( (int) i );
                     }
-                    return makeTokenInstance(IDENTIFIER_TOKEN,s);
+                    return makeToken(IDENTIFIER_TOKEN,s);
                 }
                 
                 /*
@@ -900,11 +840,11 @@ public final class Scanner implements ErrorConstants
                         if (!ctx.statics.es4_numerics)
                             retract();
                         state = start_state;
-                        return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                        return makeToken(NUMBERLITERAL_TOKEN, input.copy());
                     default:
                         retract();
                     state = start_state;
-                    return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                    return makeToken(NUMBERLITERAL_TOKEN, input.copy());
                     }
 
                     /*
@@ -925,11 +865,11 @@ public final class Scanner implements ErrorConstants
                         if (!ctx.statics.es4_numerics)
                             retract();
                         state = start_state; 
-                        return makeTokenInstance( NUMBERLITERAL_TOKEN, input.copy() );
+                        return makeToken( NUMBERLITERAL_TOKEN, input.copy() );
                     default:  
                         retract();
                     state = start_state; 
-                    return makeTokenInstance( NUMBERLITERAL_TOKEN, input.copy() );
+                    return makeToken( NUMBERLITERAL_TOKEN, input.copy() );
                     }
 
                     /*
@@ -947,18 +887,18 @@ public final class Scanner implements ErrorConstants
                     case '.':
                         state = start_state;
                         if (nextchar()=='.')
-                            return TRIPLEDOT_TOKEN;
+                            return makeToken( TRIPLEDOT_TOKEN );
                         retract();
-                        return DOUBLEDOT_TOKEN;
+                        return makeToken( DOUBLEDOT_TOKEN );
 
                     case '<':
                         state = start_state;
-                        return DOTLESSTHAN_TOKEN;
+                        return makeToken( DOTLESSTHAN_TOKEN );
 
                     default:
                         retract();
                     state = start_state;
-                    return DOT_TOKEN;
+                    return makeToken( DOT_TOKEN );
                     }
 
                     /*
@@ -982,7 +922,7 @@ public final class Scanner implements ErrorConstants
                         if (!ctx.statics.es4_numerics)
                             retract();
                         state = start_state;
-                        return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                        return makeToken(NUMBERLITERAL_TOKEN, input.copy());
                     case 'E':
                     case 'e':
                         state = exponentstart_state;
@@ -990,7 +930,7 @@ public final class Scanner implements ErrorConstants
                     default:
                         retract();
                     state = start_state;
-                    return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                    return makeToken(NUMBERLITERAL_TOKEN, input.copy());
                     }
 
                     /*
@@ -1009,7 +949,7 @@ public final class Scanner implements ErrorConstants
                         if (!ctx.statics.es4_numerics)
                             retract();
                         state = start_state;
-                        return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                        return makeToken(NUMBERLITERAL_TOKEN, input.copy());
                     case 'E':
                     case 'e':
                         state = exponentstart_state;
@@ -1017,7 +957,7 @@ public final class Scanner implements ErrorConstants
                     default:
                         retract();
                     state = start_state;
-                    return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                    return makeToken(NUMBERLITERAL_TOKEN, input.copy());
                     }
 
                     /*
@@ -1056,11 +996,11 @@ public final class Scanner implements ErrorConstants
                         if (!ctx.statics.es4_numerics)
                             retract();
                         state = start_state;
-                        return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                        return makeToken(NUMBERLITERAL_TOKEN, input.copy());
                     default:
                         retract();
                     state = start_state;
-                    return makeTokenInstance(NUMBERLITERAL_TOKEN, input.copy());
+                    return makeToken(NUMBERLITERAL_TOKEN, input.copy());
                     }
 
                     /*
@@ -1069,81 +1009,89 @@ public final class Scanner implements ErrorConstants
 
                 case slash_state:
                 {
-                    c = nextchar();
-              
-                    switch (c)
-                    {   
-                    case '/': // line comment
-                        state = start_state;
-                        line_comment: 
-                            while ( (c=nextchar()) != 0)
-                            {
-                                if ( c == '\r' || c == '\n' )
-                                {
-                                    isFirstTokenOnLine = true;
-                                    if (save_comments == false)
-                                    {
-                                        break line_comment;
-                                    }
-                                    retract(); // don't include newline in line comment. (Sec 7.3)
-                                    return makeTokenInstance( SLASHSLASHCOMMENT_TOKEN, input.copyReplaceUnicodeEscapes() );
-                                }
-                            }
-                        continue;
+                	c = nextchar();
 
-                    case '*':
-                        if (save_comments == false)
-                        {
-                            block_comment:
-                                while ( (c=nextchar()) != 0)
-                                {
-                                    if ( c == '\r' || c == '\n' )
-                                        isFirstTokenOnLine = true;
+                	switch (c)
+                	{   
+                	case '/': // line comment
+                		state = start_state;
+                		line_comment: 
+                			while ( (c=nextchar()) != 0)
+                			{
+                				if ( c == '\r' || c == '\n' )
+                				{
+                					isFirstTokenOnLine = true;
+                					if (save_comments == false)
+                					{
+                						break line_comment;
+                					}
+                					retract(); // don't include newline in line comment. (Sec 7.3)
+                					return makeToken( SLASHSLASHCOMMENT_TOKEN, input.copyReplaceUnicodeEscapes() );
+                				}
+                			}
+                		continue;
 
-                                    if (c == '*')
-                                    {
-                                        c = nextchar();
-                                        if (c == '/' )
-                                        {
-                                            break block_comment;
-                                        }
-                                        retract();
-                                    }   
-                                }
-                        state = start_state;
-                        }
-                        else {
-                            if (blockcommentbuf == null) 
-                                blockcommentbuf = new StringBuilder();
-                            blockcommentbuf.append("/*");
-                            state = blockcommentstart_state;
-                        }
-                        continue;
+                	case '*':
+                		if (save_comments == false)
+                		{
+                			block_comment:
+                				while ( (c=nextchar()) != 0)
+                				{
+                					if ( c == '\r' || c == '\n' )
+                						isFirstTokenOnLine = true;
 
-                    default:
-                        if (isSlashDivContext())
-                        {
-                            /*
-                             * tokens: /> /= /
-                             */
+                					if (c == '*')
+                					{
+                						c = nextchar();
+                						if (c == '/' )
+                						{
+                							break block_comment;
+                						}
+                						retract();
+                					}   
+                				}
+                		state = start_state;
+                		}
+                		else 
+                		{
+                			if (blockcommentbuf == null) 
+                				blockcommentbuf = new StringBuilder();
+                			blockcommentbuf.append("/*");
+                			state = blockcommentstart_state;
+                		}
+                		continue;
 
-                            state = start_state; 
-                            if (c=='>')
-                                return XMLTAGENDEND_TOKEN;
-                            if (c=='=')
-                                return DIVASSIGN_TOKEN;
-                            retract();
-                            return DIV_TOKEN;
-                        }
-                    state = slashregexp_state;
-                    retract(); // since we didn't use the current character for this decision.
-                    continue;
-                    }
+                	default:
+                		// If the last token read is any of these, then the '/' can't start a div or div_assign...
+
+                		int lb = currentToken.getTokenClass();
+                		if ( lb == LEFTPAREN_TOKEN || lb == COMMA_TOKEN     || lb == ASSIGN_TOKEN || lb == LEFTBRACKET_TOKEN || 
+                			 lb == RETURN_TOKEN    || lb == LEFTBRACE_TOKEN || lb == SEMICOLON_TOKEN )
+                		{
+                			state = slashregexp_state;
+                			retract(); // since we didn't use the current character for this decision.
+                			continue;	
+                		}
+                		else 
+                		{
+                			/*
+                			 * tokens: /> /= /
+                			 */
+
+                			state = start_state; 
+                			if (c=='>')
+                				return makeToken( XMLTAGENDEND_TOKEN );
+                			if (c=='=')
+                				return makeToken( DIVASSIGN_TOKEN );
+                			retract();
+                			return makeToken( DIV_TOKEN );	
+                		}
+                	}
                 }
 
                 /*
-                     * tokens: /<regexpbody>/<regexpflags>
-                     */
+                 * tokens: /<regexpbody>/<regexpflags>
+                 */
 
                 case slashregexp_state:
                     switch (nextchar())
@@ -1235,7 +1183,7 @@ public final class Scanner implements ErrorConstants
                         }
                     retract(); 
                     state = start_state; 
-                    return makeTokenInstance( REGEXPLITERAL_TOKEN, input.copyReplaceUnicodeEscapes());
+                    return makeToken( REGEXPLITERAL_TOKEN, input.copyReplaceUnicodeEscapes());
                     }
 
                 /*
@@ -1276,7 +1224,7 @@ public final class Scanner implements ErrorConstants
                         if (nextchar()==']' && nextchar()=='>')
                         {
                             state = start_state;
-                            return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));
+                            return makeToken(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));
                         }
                         continue;
 
@@ -1300,7 +1248,7 @@ public final class Scanner implements ErrorConstants
                     if ( nextchar()=='>')
                     {
                         state = start_state;
-                        return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos())); 
+                        return makeToken(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos())); 
                     }
                     
                     error(kError_Lexical_General); 
@@ -1314,10 +1262,10 @@ public final class Scanner implements ErrorConstants
                     if (c=='?' && nextchar() == '>')
                     {
                         state = start_state;
-                        return makeTokenInstance(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));  
+                        return makeToken(XMLMARKUP_TOKEN,input.substringReplaceUnicodeEscapes(startofxml,pos()));  
                     }
 
-                    if (nextchar()==0)
+                    if (c==0)
                     {
                         error(kError_Lexical_General); 
                         state = start_state;   
@@ -1335,7 +1283,7 @@ public final class Scanner implements ErrorConstants
                         if( xmltext != null )
                         {
                             state = start_state;
-                            return makeTokenInstance(XMLTEXT_TOKEN,xmltext);
+                            return makeToken(XMLTEXT_TOKEN,xmltext);
                         }
                         else  // if there is no leading text, then just return punctuation token to avoid empty text tokens
                         {
@@ -1344,20 +1292,20 @@ public final class Scanner implements ErrorConstants
                             case '<': 
                                 switch( nextchar() )
                                 {
-                                case '/': state = start_state; return XMLTAGSTARTEND_TOKEN;
+                                case '/': state = start_state; return makeToken( XMLTAGSTARTEND_TOKEN );
                                 case '!': state = xmlcommentorcdatastart_state; continue;
                                 case '?': state = xmlpi_state; continue;
-                                default: retract(); state = start_state; return LESSTHAN_TOKEN;
+                                default: retract(); state = start_state; return makeToken( LESSTHAN_TOKEN );
                                 }
                             case '{': 
                                 state = start_state; 
-                                return LEFTBRACE_TOKEN;
+                                return makeToken( LEFTBRACE_TOKEN );
                             }
                         }
                     }
                     case 0:   
                         state = start_state; 
-                        return EOS_TOKEN;
+                        return makeToken( EOS_TOKEN );
                     }
                     continue;
                 }
@@ -1365,8 +1313,8 @@ public final class Scanner implements ErrorConstants
                 case xmlliteral_state:
                     switch (nextchar())
                     {
-                    case '{':  // return XMLPART_TOKEN
-                        return makeTokenInstance(XMLPART_TOKEN, input.substringReplaceUnicodeEscapes(startofxml, pos()-1));
+                    case '{':  // return makeToken( XMLPART_TOKEN
+                        return makeToken(XMLPART_TOKEN, input.substringReplaceUnicodeEscapes(startofxml, pos()-1));
 
                     case '<':
                         switch (nextchar())
@@ -1392,7 +1340,7 @@ public final class Scanner implements ErrorConstants
                             if (level == 0)
                             {
                                 state = start_state;
-                                return makeTokenInstance(XMLLITERAL_TOKEN, input.substringReplaceUnicodeEscapes(startofxml, pos()+1)); 
+                                return makeToken(XMLLITERAL_TOKEN, input.substringReplaceUnicodeEscapes(startofxml, pos()+1)); 
                             }
                         }
                         continue;
@@ -1416,10 +1364,10 @@ public final class Scanner implements ErrorConstants
                     
                     switch(c)
                     {
-                    case '{':  // return XMLPART_TOKEN
+                    case '{':  // return makeToken( XMLPART_TOKEN
                     {
                         String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()-1);
-                        return makeTokenInstance(XMLPART_TOKEN, xmltext);
+                        return makeToken(XMLPART_TOKEN, xmltext);
                     }
                     case '>':
                         retract();
@@ -1428,7 +1376,7 @@ public final class Scanner implements ErrorConstants
                         {
                             String xmltext = input.substringReplaceUnicodeEscapes(startofxml, pos()+1);
                             state = start_state;
-                            return makeTokenInstance(XMLLITERAL_TOKEN, xmltext);
+                            return makeToken(XMLLITERAL_TOKEN, xmltext);
                         }
                         state = xmlliteral_state;
                         continue;
@@ -1451,7 +1399,7 @@ public final class Scanner implements ErrorConstants
                     case '*':
                         if ( nextchar() == '/' ){
                             state = start_state;
-                            return makeTokenInstance( BLOCKCOMMENT_TOKEN, new String());
+                            return makeToken( BLOCKCOMMENT_TOKEN, new String());
                         }
                         retract(); 
                         state = doccomment_state; 
@@ -1535,7 +1483,7 @@ public final class Scanner implements ErrorConstants
                         }
                         String doctext = doctextbuf.toString(); // ??? does this needs escape conversion ???
                         state = start_state; 
-                        return makeTokenInstance(DOCCOMMENT_TOKEN,doctext);
+                        return makeToken(DOCCOMMENT_TOKEN,doctext);
                     }
 
                     case '*':  
@@ -1652,7 +1600,7 @@ public final class Scanner implements ErrorConstants
                     {
                         state = start_state;
                         String blocktext = blockcommentbuf.toString(); // ??? needs escape conversion
-                        return makeTokenInstance( BLOCKCOMMENT_TOKEN, blocktext );
+                        return makeToken( BLOCKCOMMENT_TOKEN, blocktext );
                     }
                     case '*':  state = blockcommentstar_state; continue;
                     case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
@@ -1674,7 +1622,7 @@ public final class Scanner implements ErrorConstants
                 default:
                     error("invalid scanner state");
                     state = start_state;
-                    return EOS_TOKEN;
+                    return makeToken(EOS_TOKEN);
             }
         }
     }
