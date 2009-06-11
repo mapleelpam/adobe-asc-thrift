@@ -1,10 +1,10 @@
 [Compiler] Error #1084: Syntax error: expecting leftparen before div.
-.*EmptyNameErr23.as, Ln 5, Col 19:
+   EmptyNameErr23.as, Ln 5, Col 19:
 function get a/b \(\) {}
 ..................^
 [Compiler] Error #1084: Syntax error: expecting leftparen before div.
-.*EmptyNameErr23.as, Ln 6, Col 19:
+   EmptyNameErr23.as, Ln 6, Col 19:
 function set a/b\(e\) {}
 ..................^
-2 errors found
 
+2 errors found

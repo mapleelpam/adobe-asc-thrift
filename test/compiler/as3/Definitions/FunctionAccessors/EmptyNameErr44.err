@@ -24,10 +24,10 @@
        function set default\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-   EmptyNameErr44.as, Ln 6, Col 29: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+   EmptyNameErr44.as, Ln 6, Col 27: 
        function set default\(e\) {}
-   ............................^
+   ..........................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr44.as, Ln 6, Col 29: 

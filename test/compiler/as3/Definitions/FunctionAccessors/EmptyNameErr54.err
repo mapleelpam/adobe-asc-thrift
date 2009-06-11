@@ -24,10 +24,10 @@
        function set implements\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-   EmptyNameErr54.as, Ln 6, Col 32: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+   EmptyNameErr54.as, Ln 6, Col 30: 
        function set implements\(e\) {}
-   ...............................^
+   .............................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr54.as, Ln 6, Col 32: 

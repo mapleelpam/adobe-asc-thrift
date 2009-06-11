@@ -35,21 +35,21 @@ import static macromedia.asc.embedding.avmplus.Features.*;
 public final class Scanner implements ErrorConstants
 {
     private static final boolean debug = false;
-    private static int token_count = 0;
 
     /*
-     * Scanner maintains a notion of a single current token 
-     * (It used to keep an array of all pseudo-terminal tokens...)
-     * This means that the notion of 'tokenClass' as opposed to tokenID (an index to the pseudo-terminal array)
-     * can also go away.
+     * Scanner maintains a notion of a single current token
+     * The Token.java class is not used anymore. It might get repurposed as a enum of token names.
      * We should also upgrade a Token to contain source seekpos,line,column information, so we can throw away the line table,
      * which would mean we also dont need to buffer source after scanning, since we could reread it if an error/warning/info
      * line print was requested.
      */
     
-    private Token currentToken;
-    private int currentTokenId;
+    private class Tok {
+    	int id;
+    	String text;
+    }
     
+    private Tok currentToken;
     private boolean isFirstTokenOnLine;
     private boolean save_comments;
     private Context ctx;
@@ -120,8 +120,7 @@ public final class Scanner implements ErrorConstants
         levels = new IntList();
         this.save_comments = save_comments;
         
-        currentToken = new Token(0,"");
-        currentTokenId = 0;
+        currentToken = new Tok();
     }
 
     
@@ -190,74 +189,59 @@ public final class Scanner implements ErrorConstants
         input.textMark();
     }
 
-    /*
-     * Make an instance of the specified token class using the lexeme string.
-     * return makeToken( the index of the token which is its identifier.
-     */
-
-    private final int makeToken(int token_class, String lexeme)
+    private final int makeToken(int id, String text)
     {
-        token_count++;
-        currentToken.set(token_class, lexeme);
-        currentTokenId = token_count;
-        return token_count;
+        currentToken.id = id;
+        currentToken.text = text;
+        return id;
     }
     
-    private final int makeToken(int token_class)
+    private final int makeToken(int id)
     {
-    	currentToken.set(token_class);
-    	return token_class;
-    }
-    
-    /*
-     * Get the class of a token instance.
-     */
-
-    public final int getCurrentTokenClass(int token_id)
-    {
-        
-        // if the token id is negative, it is a token_class.
-        if (token_id < 0)
-        {
-            return token_id;
-        }
-        return currentToken.getTokenClass();
+        currentToken.id = id;
+        currentToken.text = null;
+    	return id;
     }
 
     /*
      * Get the text of the current token
      */
 
-    public String getCurrentTokenText(int token_id)
+    public String getCurrentTokenText()
     {
-        // if the token id is negative, it is a token_class.
-        if (token_id < 0)
+        if (currentToken.text == null)
         {
-            return Token.getTokenClassName(token_id);
+            error("Scanner internal: current token not a pseudo-terminal");   
         }
-
-        if (token_id != currentTokenId)
-        {
-            error("Scanner internal: token id does not match current token id");   
-        }
-        return currentToken.getTokenText();
+        return currentToken.text;
     }
 
     /*
-     * Get text of literal string token as well as info about whether it was single quoted or not
+     * A slightly confusing hack, returns the current token text or the text of the token type (Class)
+     * Gets used in generating error messages or strings used in later concatenations.
+     */
+
+    public String getCurrentTokenTextOrTypeText(int id)
+    {
+        if (currentToken.text != null)
+        {
+        	return currentToken.text;
+        }
+        return Token.getTokenClassName(id);
+    }
+    
+    /*
+     * Strips quotes and returns text of literal string token as well as info about whether it was single quoted or not
+     * Makes me wonder if leaving the quotes on strings is ever used...if not we could save what the quoting was and strip these up front.
      */
     
-    public String getCurrentStringTokenText( int token_id, boolean[] is_single_quoted )
+    public String getCurrentStringTokenText(boolean[] is_single_quoted )
     {
-        // if the token id is negative, it is a token_class. ???if we know its a string, why are we doing this???
-        if( token_id < 0 )
-        {
-            is_single_quoted[0] = false;
-            return Token.getTokenClassName(token_id);
-        }
-
-        // otherwise, get tokenSourceText (which includes string delimiters)
-        String fulltext = currentToken.getTokenSource();
+    	if (currentToken.id != STRINGLITERAL_TOKEN || currentToken.text==null)
+    	{
+    		error("internal: string token expected.");
+    	}
+        String fulltext = currentToken.text;
         is_single_quoted[0] = (fulltext.charAt(0) == '\'' ? true : false);
         String enclosedText = fulltext.substring(1, fulltext.length() - 1);
         
@@ -1064,7 +1048,7 @@ public final class Scanner implements ErrorConstants
                 	default:
                 		// If the last token read is any of these, then the '/' can't start a div or div_assign...
 
-                		int lb = currentToken.getTokenClass();
+                		int lb = currentToken.id;
                 		if ( lb == LEFTPAREN_TOKEN || lb == COMMA_TOKEN     || lb == ASSIGN_TOKEN || lb == LEFTBRACKET_TOKEN || 
                 			 lb == RETURN_TOKEN    || lb == LEFTBRACE_TOKEN || lb == SEMICOLON_TOKEN )
                 		{

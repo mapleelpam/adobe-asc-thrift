@@ -4,10 +4,10 @@ ecma3.e10_1_4_7_Err.as, Ln 93, Col 13:
 function\( x\){return Math.pow\(Number\(x\),2\)};
 ............^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-ecma3.e10_1_4_7_Err.as, Ln 93, Col 17:
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+ecma3.e10_1_4_7_Err.as, Ln 93, Col 16:
 function\( x\){return Math.pow\(Number\(x\),2\)};
-................^
+...............^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
 ecma3.e10_1_4_7_Err.as, Ln 93, Col 17:

@@ -24,10 +24,10 @@
        function set try\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-   EmptyNameErr68.as, Ln 6, Col 25: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+   EmptyNameErr68.as, Ln 6, Col 23: 
        function set try\(e\) {}
-   ........................^
+   ......................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr68.as, Ln 6, Col 25: 

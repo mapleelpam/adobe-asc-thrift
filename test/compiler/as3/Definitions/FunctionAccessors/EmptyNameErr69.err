@@ -24,10 +24,10 @@
        function get typeof\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-   EmptyNameErr69.as, Ln 6, Col 28: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+   EmptyNameErr69.as, Ln 6, Col 26: 
        function get typeof\(e\) {}
-   ...........................^
+   .........................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr69.as, Ln 6, Col 28: 

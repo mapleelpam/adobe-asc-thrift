@@ -1,5 +1,5 @@
 
-[Compiler] Error #1084: Syntax error: expecting identifier before ampersand.
+[Compiler] Error #1084: Syntax error: expecting identifier before atsign.
 ecma3.e7_5_8_Err.as, Ln 39, Col 9:
 var @0abc;
 ........^

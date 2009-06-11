@@ -1,4 +1,4 @@
-\[Compiler\] Error #1177: The return statement cannot be used in global initialization code.
+[Compiler] Error #1177: The return statement cannot be used in global initialization code.
    e12_9_1_Err.as, Ln 30, Col 7:
 return;
 ......^
