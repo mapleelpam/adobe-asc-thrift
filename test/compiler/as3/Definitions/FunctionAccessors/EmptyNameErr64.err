@@ -24,10 +24,10 @@
        function set super\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-   EmptyNameErr64.as, Ln 6, Col 27: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+   EmptyNameErr64.as, Ln 6, Col 25: 
        function set super\(e\) {}
-   ..........................^
+   ........................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr64.as, Ln 6, Col 27: 

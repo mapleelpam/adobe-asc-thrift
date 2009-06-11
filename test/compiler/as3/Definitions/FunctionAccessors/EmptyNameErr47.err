@@ -24,10 +24,10 @@
        function set else\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-   EmptyNameErr47.as, Ln 6, Col 26: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+   EmptyNameErr47.as, Ln 6, Col 24: 
        function set else\(e\) {}
-   .........................^
+   .......................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr47.as, Ln 6, Col 26: 

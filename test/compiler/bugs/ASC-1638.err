@@ -1,12 +1,7 @@
-
 [Compiler] Error #1084: Syntax error: expecting identifier before const.
-bugs.ASC-1638.as, Ln 1, Col 15:
+   ASC-1638.as, Ln 1, Col 15:
 function test\(const arg1\) {}
 ..............^
 
-[Compiler] Error #1084: Syntax error: expecting rightparen before leftbrace.
-bugs.ASC-1638.as, Ln 1, Col 27:
-function test\(const arg1\) {}
-..........................^
+1 error found
 
-2 errors found

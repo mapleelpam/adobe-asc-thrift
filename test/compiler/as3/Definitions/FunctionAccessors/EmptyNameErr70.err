@@ -4,10 +4,10 @@
        function set var\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-   EmptyNameErr70.as, Ln 5, Col 25: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+   EmptyNameErr70.as, Ln 5, Col 23: 
        function set var\(e\) {}
-   ........................^
+   ......................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr70.as, Ln 5, Col 25: 

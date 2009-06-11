@@ -4,10 +4,10 @@
        function set while\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-   EmptyNameErr72.as, Ln 5, Col 27: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+   EmptyNameErr72.as, Ln 5, Col 25: 
        function set while\(e\) {}
-   ..........................^
+   ........................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr72.as, Ln 5, Col 27: 

@@ -4,10 +4,10 @@
        function set do\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
-   EmptyNameErr46.as, Ln 5, Col 24: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
+   EmptyNameErr46.as, Ln 5, Col 22: 
        function set do\(e\) {}
-   .......................^
+   .....................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr46.as, Ln 5, Col 24: 

@@ -6,16 +6,12 @@ if fact > 2 {
    1084-ExpectTokenBeforeErr.as, Ln 9, Col 2:
 var bigger:Boolean = true;
 .^
-[Compiler] Error #1084: Syntax error: expecting colon before rightbrace.
-   1084-ExpectTokenBeforeErr.as, Ln 10, Col 1:
-}
-^
-[Compiler] Error #1084: Syntax error: expecting identifier before rightbrace.
-   1084-ExpectTokenBeforeErr.as, Ln 10, Col 1:
-}
-^
+[Compiler] Error #1084: Syntax error: expecting rightbrace before semicolon.
+   1084-ExpectTokenBeforeErr.as, Ln 9, Col 27:
+var bigger:Boolean = true;
+..........................^
 [Compiler] Error #1084: Syntax error: expecting rightparen before end of program.
    1084-ExpectTokenBeforeErr.as, Ln 11, Col 1:
 [Compiler] Error #1084: Syntax error: expecting identifier before end of program.
    1084-ExpectTokenBeforeErr.as, Ln 11, Col 1:
-6 errors found
+5 errors found
