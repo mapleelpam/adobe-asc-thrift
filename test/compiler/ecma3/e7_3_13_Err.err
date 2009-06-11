@@ -1,10 +1,7 @@
+
 [Compiler] Error #1084: Syntax error: expecting identifier before return.
-   e7_3_13_Err.as, Ln 42, Col 9:
+ecma3.e7_3_13_Err.as, Ln 42, Col 9:
 return \( array \);
 ........^
-[Compiler] Error #1084: Syntax error: expecting rightbrace before rightparen.
-   e7_3_13_Err.as, Ln 42, Col 24:
-return \( array \);
-.......................^
 
-2 errors found
+1 error found

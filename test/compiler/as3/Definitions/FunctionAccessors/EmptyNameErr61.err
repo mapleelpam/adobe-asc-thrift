@@ -4,10 +4,10 @@
        function set public\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
-   EmptyNameErr61.as, Ln 5, Col 26: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
+   EmptyNameErr61.as, Ln 5, Col 28: 
        function set public\(e\) {}
-   .........................^
+   ...........................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr61.as, Ln 5, Col 28: 

@@ -59,69 +59,15 @@ public final class Parser
     private static final int abbrevFunction_mode     = FUNCTION_TOKEN;
     private static final int abbrev_mode             = LAST_TOKEN - 1;
     private static final int full_mode               = abbrev_mode - 1;
+
     private static final int allowIn_mode            = full_mode - 1;
     private static final int noIn_mode               = allowIn_mode - 1;
-       
-    private enum ParseError {
-    	catch_parameter,
-    	syntax,
-    	expression,
-    	EOS,
-    	XML
-    }
-    
-    private static int binary_precedence[];
-    
-    private void init_binary_precedence()
-    {
-    	if ( binary_precedence != null )
-    		return;
-    	
-    	binary_precedence = new int [-LAST_TOKEN];
-    	
-    	binary_precedence[-COMMA_TOKEN] = 1;
-    	binary_precedence[-ASSIGN_TOKEN] = 2;
-     	binary_precedence[-BITWISEANDASSIGN_TOKEN] = 2;
-     	binary_precedence[-BITWISEORASSIGN_TOKEN] = 2;
-      	binary_precedence[-BITWISEXORASSIGN_TOKEN] = 2;
-     	binary_precedence[-DIVASSIGN_TOKEN] = 2;
-      	binary_precedence[-LEFTSHIFTASSIGN_TOKEN] = 2;
-     	binary_precedence[-LOGICALANDASSIGN_TOKEN] = 2;
-      	binary_precedence[-LOGICALORASSIGN_TOKEN] = 2;
-     	binary_precedence[-LOGICALXORASSIGN_TOKEN] = 2;
-      	binary_precedence[-MINUSASSIGN_TOKEN] = 2;
-     	binary_precedence[-MULTASSIGN_TOKEN] = 2;
-      	binary_precedence[-MODULUSASSIGN_TOKEN] = 2;
-     	binary_precedence[-PLUSASSIGN_TOKEN] = 2;
-      	binary_precedence[-RIGHTSHIFTASSIGN_TOKEN] = 2;
-     	binary_precedence[-UNSIGNEDRIGHTSHIFTASSIGN_TOKEN] = 2;
-     	binary_precedence[-QUESTIONMARK_TOKEN] = 3;	
-     	binary_precedence[-LOGICALOR_TOKEN] = 4;
-      	binary_precedence[-LOGICALAND_TOKEN] = 5;   	
-     	binary_precedence[-BITWISEOR_TOKEN] = 6;
-     	binary_precedence[-BITWISEXOR_TOKEN] = 7;
-      	binary_precedence[-BITWISEAND_TOKEN] = 8;
-     	binary_precedence[-EQUALS_TOKEN] = 9;
-     	binary_precedence[-NOTEQUALS_TOKEN] = 9;
-      	binary_precedence[-STRICTEQUALS_TOKEN] = 9;
-     	binary_precedence[-STRICTNOTEQUALS_TOKEN] = 9;
-     	binary_precedence[-GREATERTHAN_TOKEN] = 10;
-      	binary_precedence[-GREATERTHANOREQUALS_TOKEN] = 10;
-     	binary_precedence[-LESSTHAN_TOKEN] = 10;
-     	binary_precedence[-LESSTHANOREQUALS_TOKEN] = 10;
-      	binary_precedence[-INSTANCEOF_TOKEN] = 10;
-     	binary_precedence[-IS_TOKEN] = 10;
-     	binary_precedence[-AS_TOKEN] = 10;
-      	binary_precedence[-IN_TOKEN] = 10;
-     	binary_precedence[-LEFTSHIFT_TOKEN] = 11;
-     	binary_precedence[-RIGHTSHIFT_TOKEN] = 11;
-      	binary_precedence[-UNSIGNEDRIGHTSHIFT_TOKEN] = 11;
-     	binary_precedence[-MINUS_TOKEN] = 12;
-     	binary_precedence[-PLUS_TOKEN] = 12;
-     	binary_precedence[-DIV_TOKEN] = 13;
-      	binary_precedence[-MODULUS_TOKEN] = 13;
-    	binary_precedence[-MULT_TOKEN] = 13;
-    }
+    private static final int catch_parameter_error   = 1;
+    private static final int syntax_xml_error        = 2;
+
+    private static final int syntax_error            = 7;
+    private static final int expression_syntax_error = 8;
+    private static final int syntax_eos_error        = 9;
 
     private static final int xmlid_tokens[] = 
               { // include all keyword tokens and the identifier token
@@ -189,6 +135,7 @@ public final class Parser
     static final int xmlid_tokens_count = xmlid_tokens.length;
 
     private int nextToken;
+    private int nextTokenClass;
     private Context ctx;
     private NodeFactory nodeFactory;
     private boolean create_doc_info;
@@ -214,11 +161,11 @@ public final class Parser
      * Log a syntax error and recover
      */
 
-    Node error(int errCode)                                             	   { return error(ParseError.syntax, errCode,"","",-1); }
-    private Node error(ParseError kind, int errCode)                           { return error(kind,errCode,"","",-1); }
-    private Node error(ParseError kind, int errCode, String arg1)              { return error(kind,errCode,arg1,"",-1); }
-    private Node error(ParseError kind, int errCode, String arg1, String arg2) { return error(kind,errCode,arg1,arg2,-1); }
-    private Node error(ParseError kind, int errCode, String arg1, String arg2,int pos)
+    Node error(int errCode)                                             { return error(syntax_error, errCode,"","",-1); }
+    private Node error(int kind, int errCode)                           { return error(kind,errCode,"","",-1); }
+    private Node error(int kind, int errCode, String arg1)              { return error(kind,errCode,arg1,"",-1); }
+    private Node error(int kind, int errCode, String arg1, String arg2) { return error(kind,errCode,arg1,arg2,-1); }
+    private Node error(int kind, int errCode, String arg1, String arg2,int pos)
     {
         String origin = this.scanner.input.origin;
         StringBuilder out = new StringBuilder();
@@ -247,7 +194,7 @@ public final class Parser
         int lineno = scanner.input.getLnNum(pos);
         int column = scanner.input.getColPos(pos);
 
-        if (kind == ParseError.syntax || kind == ParseError.EOS )
+        if (kind == syntax_error || kind == syntax_eos_error )
         {
             ctx.localizedError(origin, lineno, column, out.toString(), scanner.input.getLineText(pos), errCode);
         }
@@ -263,89 +210,95 @@ public final class Parser
      * whitespace or end of input.
      */
 
-    private void skiperror( ParseError e)
+    private void skiperror(int kind)
     {
-    	switch (e)
-    	{
-    	case catch_parameter:
-    		while (true)
-    		{
-    			getNextToken();
-    			if (nextToken == RIGHTPAREN_TOKEN || nextToken == EOS_TOKEN)
-    			{
-    				break;
-    			}
-    		}
-    		break;
-    		
-    	case XML:
-    	case EOS:
-    		while (true)
-    		{
-    			getNextToken();
-    			if (nextToken == EOS_TOKEN)
-    			{
-    				break;
-    			}
-    		}
-    		break;
-    		
-    	case syntax:
-    	case expression:
-    		do
-    		{
-    			if (nextToken == LEFTPAREN_TOKEN || nextToken == RIGHTPAREN_TOKEN ||
-    					nextToken == LEFTBRACE_TOKEN || nextToken == RIGHTBRACE_TOKEN ||
-    					nextToken == LEFTBRACKET_TOKEN || nextToken == RIGHTBRACKET_TOKEN ||
-    					nextToken == COMMA_TOKEN || nextToken == SEMICOLON_TOKEN ||
-    					nextToken == EOS_TOKEN)
-    			{
-    				break;
-    			}
-    			getNextToken();
-    		}
-    		while (true);
-    	break;
-    	}	
-    }
-    
-    private void skiperror(int token_type)
-    {
-    	while (true)
-    	{
-    		if (nextToken == token_type)
-    		{
-    			if( token_type == RIGHTBRACE_TOKEN )
-    			{
-    				int size = block_kind_stack.size();
-    				block_kind_stack.clear();
-    				for( ; size > 0; --size)
-    				{
-    					block_kind_stack.add(ERROR_TOKEN);    // ignore attribute errors since blocks are probably messed up
-    				}
-    			}
-    			break;
-    		}
-    		else if( nextToken == EOS_TOKEN )
-    		{
-    			break;
-    		}
-    		else if( nextToken == SEMICOLON_TOKEN && token_type != RIGHTBRACE_TOKEN ) // don't stop eating until right brace is found
-    		{
-    			break;
-    		}
-    		else if( nextToken == LEFTBRACE_TOKEN && token_type != RIGHTBRACE_TOKEN ) // don't stop eating until right brace is found
-    		{
-    			scanner.retract();
-    			break;
-    		}
-    		else if( nextToken == RIGHTBRACE_TOKEN )
-    		{
-    			scanner.retract();
-    			break;
-    		}
-    		getNextToken();
-    	}
+        // If kind is < 0 then it is a token class to be advanced to,
+        // Otherwise it is a error category.
+
+        if (kind < 0)
+        {
+            while (true)
+            {
+                // nextToken is the same variable used by lookahead
+
+                if (nextToken == kind)
+                {
+                    if( kind == RIGHTBRACE_TOKEN )
+                    {
+                        int size = block_kind_stack.size();
+                        block_kind_stack.clear();
+                        for( ; size > 0; --size)
+                        {
+                           block_kind_stack.add(ERROR_TOKEN);    // ignore attribute errors since blocks are probably messed up
+                        }
+                    }
+                    break;
+                }
+                else if( nextToken == EOS_TOKEN )
+                {
+                    break;
+                }
+                else if( nextToken == SEMICOLON_TOKEN && kind != RIGHTBRACE_TOKEN ) // don't stop eating until right brace is found
+                {
+                    break;
+                }
+                else if( nextToken == LEFTBRACE_TOKEN && kind != RIGHTBRACE_TOKEN ) // don't stop eating until right brace is found
+                {
+                    scanner.retract();
+                    break;
+                }
+                else if( nextToken == RIGHTBRACE_TOKEN )
+                {
+                    scanner.retract();
+                    break;
+                }
+                getNextToken();
+            }
+        }
+        else
+        {
+            switch (kind)
+            {
+                case catch_parameter_error:
+                    while (true)
+                    {
+                        getNextToken();
+                        if (nextToken == RIGHTPAREN_TOKEN || nextToken == EOS_TOKEN)
+                        {
+                            break;
+                        }
+                    }
+                    break;
+                case syntax_xml_error:
+                case syntax_eos_error:
+                    while (true)
+                    {
+                        getNextToken();
+                        if (nextToken == EOS_TOKEN)
+                        {
+                            break;
+                        }
+                    }
+                    break;
+                case syntax_error:
+                case expression_syntax_error:
+                default:
+                    do
+                    {
+                        if (nextToken == LEFTPAREN_TOKEN || nextToken == RIGHTPAREN_TOKEN ||
+                            nextToken == LEFTBRACE_TOKEN || nextToken == RIGHTBRACE_TOKEN ||
+                            nextToken == LEFTBRACKET_TOKEN || nextToken == RIGHTBRACKET_TOKEN ||
+                            nextToken == COMMA_TOKEN || nextToken == SEMICOLON_TOKEN ||
+                            nextToken == EOS_TOKEN)
+                        {
+                            break;
+                        }
+                        getNextToken();
+                    }
+                    while (true);
+                    break;
+            }
+        }
     }
 
 	private void init(Context cx, String origin, boolean emit_doc_info, boolean save_comment_nodes, IntList block_kind_stack)
@@ -367,7 +320,6 @@ public final class Parser
 		}
 		cx.parser = this;
 		cx.setOrigin(origin);
-		init_binary_precedence();
 	}
 
     public Parser(Context cx, InputStream in, String origin)
@@ -456,47 +408,54 @@ public final class Parser
    
     private final int match(int expectedTokenClass)
     {
-        int result;
+        int result = ERROR_TOKEN;
         int lt = lookahead();
    
-        if (lt == expectedTokenClass)
+        if (lt != expectedTokenClass)
         {
-        	shift();
-        	return lt;
-        }
-        
-        if (lt == ERROR_TOKEN)
-        {
-        	result = nextToken;
-        	shift();
-        	return result;
-        }
-
-        if (expectedTokenClass == EOS_TOKEN)
-        {
-        	if (ctx.errorCount() == 0)  // only if this is the first error.
-        	{
-        		error(kError_Parser_ExtraCharsAfterEndOfProgram);
-        	}
-        	// otherwise, don't say anything.
-        	skiperror(EOS_TOKEN);
-        	result = nextToken;
-        	shift();
+            if (lt != ERROR_TOKEN)
+            {
+                if (expectedTokenClass == EOS_TOKEN)
+                {
+                    if (ctx.errorCount() == 0)  // only if this is the first error.
+                    {
+                        error(syntax_error, kError_Parser_ExtraCharsAfterEndOfProgram);
+                    }
+                    // otherwise, don't say anything.
+                    skiperror(expectedTokenClass);
+                    result = nextToken;
+                    nextToken = EMPTY_TOKEN;
+                }
+                else if (nextToken == EOS_TOKEN)
+                {
+                    error(syntax_eos_error, kError_Parser_ExpectedToken,
+                          Token.getTokenClassName(expectedTokenClass),
+                          scanner.getCurrentTokenText(nextToken));
+                    skiperror(expectedTokenClass);
+                    result = nextToken;
+                }
+                else
+                {
+                    error(syntax_eos_error, kError_Parser_ExpectedToken,
+                        Token.getTokenClassName(expectedTokenClass),
+                        scanner.getCurrentTokenText(nextToken));
+                    skiperror(expectedTokenClass);
+                    result = nextToken;
+                    nextToken = EMPTY_TOKEN;
+                }
+            }
+            else
+            {
+                result = nextToken;
+                nextToken = EMPTY_TOKEN;
+            }
         }
         else
         {
-        	error(ParseError.EOS, kError_Parser_ExpectedToken,
-        			Token.getTokenClassName(expectedTokenClass),
-        			scanner.getCurrentTokenTextOrTypeText(nextToken));
-        	
-        	skiperror(expectedTokenClass);
-
-        	result = nextToken;
-        	if (nextToken!=EOS_TOKEN)
-        	{
-        		shift();
-        	}
+            result = nextToken;
+            nextToken = EMPTY_TOKEN;
         }
+
         return result;
     }
 
@@ -506,16 +465,17 @@ public final class Parser
 
         if( !lookahead( expectedTokenClasses, count ) )
         {
-            if( lookahead()!=ERROR_TOKEN )
+            if( !lookahead(ERROR_TOKEN) )
             {
-                error(ParseError.syntax, kError_Parser_ExpectedToken,
-                	  Token.getTokenClassName(expectedTokenClasses[0]),
-                	  scanner.getCurrentTokenTextOrTypeText(nextToken));
+                error(syntax_error, kError_Parser_ExpectedToken,
+                Token.getTokenClassName(expectedTokenClasses[0]),
+                scanner.getCurrentTokenText(nextToken));
                 skiperror(expectedTokenClasses[0]);
             }
         }
         result    = nextToken;
         nextToken = EMPTY_TOKEN;
+
         return result;
     }
 
@@ -529,7 +489,7 @@ public final class Parser
     {
         final int lt = lookahead();
         
-        if (lt==SEMICOLON_TOKEN || lt==EOS_TOKEN || lt==RIGHTBRACE_TOKEN || lt==mode || scanner.followsLineTerminator())
+        if (lt==SEMICOLON_TOKEN || lt==EOS_TOKEN || lt==RIGHTBRACE_TOKEN || lookahead(mode) || scanner.followsLineTerminator())
         {
         	return true;
         }
@@ -559,12 +519,12 @@ public final class Parser
         {
             if (mode == abbrevFunction_mode)
             {
-                error(kError_Parser_ExpectedLeftBrace);
+                error(syntax_error, kError_Parser_ExpectedLeftBrace);
                 skiperror(LEFTBRACE_TOKEN);
             }
             else
             {
-                error(ParseError.syntax, kError_Parser_ExpectedSemicolon, scanner.getCurrentTokenTextOrTypeText(nextToken));
+                error(syntax_error, kError_Parser_ExpectedSemicolon, scanner.getCurrentTokenText(nextToken));
                 skiperror(SEMICOLON_TOKEN);
             }
         }
@@ -589,13 +549,13 @@ public final class Parser
             return SEMICOLON_TOKEN;
         }
  
-        if ((mode == abbrevIfElse_mode || mode == abbrevDoWhile_mode) && lookahead()==mode)
+        if ((mode == abbrevIfElse_mode || mode == abbrevDoWhile_mode) && lookahead(mode))
         {
             return SEMICOLON_TOKEN;
         }
         else
         {
-            error(ParseError.syntax, kError_Parser_ExpectedSemicolon, scanner.getCurrentTokenTextOrTypeText(nextToken));
+            error(syntax_error, kError_Parser_ExpectedSemicolon, scanner.getCurrentTokenText(nextToken));
             skiperror(SEMICOLON_TOKEN);
             return ERROR_TOKEN;
         }
@@ -611,20 +571,23 @@ public final class Parser
     private final void getNextToken()
     {
         int tok = scanner.nexttoken(true);
+        int tok_type = scanner.getCurrentTokenClass(tok);
         
-        while(tok == SLASHSLASHCOMMENT_TOKEN || tok == BLOCKCOMMENT_TOKEN || tok == DOCCOMMENT_TOKEN)
+        while(tok_type == SLASHSLASHCOMMENT_TOKEN || tok_type == BLOCKCOMMENT_TOKEN || tok_type == DOCCOMMENT_TOKEN)
         {
-            if( save_comment_nodes && (!ctx.scriptAssistParsing || tok != DOCCOMMENT_TOKEN))
+            if( save_comment_nodes && (!ctx.scriptAssistParsing || tok_type != DOCCOMMENT_TOKEN))
             {
-                Node newComment = nodeFactory.comment(scanner.getCurrentTokenText(), tok, ctx.input.positionOfMark());
+                Node newComment = nodeFactory.comment(scanner.getCurrentTokenText(tok), tok_type, ctx.input.positionOfMark());
                 comments.push_back(newComment);
             }
 
-            if (tok == DOCCOMMENT_TOKEN && create_doc_info) // return doccomment tokens if create_doc_info, skip normal comment tokens)
+            if (tok_type == DOCCOMMENT_TOKEN && create_doc_info) // return doccomment tokens if create_doc_info, skip normal comment tokens)
                 break;
 
             tok = scanner.nexttoken(false);
+            tok_type = scanner.getCurrentTokenClass(tok);
         }
+        nextTokenClass = tok_type;
         nextToken = tok;
     }
 
@@ -636,7 +599,38 @@ public final class Parser
     private final void changeLookahead(int tok)
     {
         nextToken = tok;
+        nextTokenClass = scanner.getCurrentTokenClass(nextToken);
     }
+    /*
+     * Lookahead to the next token.
+     */
+
+    private final boolean lookahead(int expectedTokenClass)
+    {
+        // If the nextToken is EMPTY_TOKEN, then fetch another. This is the first
+        // lookahead since the last match.
+        if (nextToken == EMPTY_TOKEN)
+        {
+            getNextToken();
+            //printf("%s ",Token::getTokenClassName(scanner.getTokenClass(nextToken)).c_str());
+            if (debug)
+            {
+                System.err.println("\tnextToken() returning " + Token.getTokenClassName(scanner.getCurrentTokenClass(nextToken)));
+            }
+        }
+
+        if (debug)
+        {
+            // System.err.println("\t" + Token::getTokenClassName(scanner.getTokenClass(nextToken)) + " lookahead(" + Token::getTokenClassName(expectedTokenClass) + ")");
+            System.err.println("\t" + Token.getTokenClassName(scanner.getCurrentTokenClass(nextToken)) + " lookahead(" + Token.getTokenClassName(expectedTokenClass) + ")");
+        }
+
+        if (expectedTokenClass != nextTokenClass) // scanner.getTokenClass(nextToken))
+        {
+            return false;
+        }
+        return true;
+    }    
 
     /*
      * Lookahead (simpler version)
@@ -651,9 +645,9 @@ public final class Parser
         
         if (debug)
         {
-            System.err.println("\t" + Token.getTokenClassName(nextToken));
+            System.err.println("\t" + Token.getTokenClassName(scanner.getCurrentTokenClass(nextToken)));
         }
-        return nextToken;
+        return nextTokenClass; // scanner.getTokenClass(nextToken);
     }
     
     private final boolean lookahead( final int expectedTokenClasses[], int count )
@@ -665,7 +659,7 @@ public final class Parser
 
         for(int i = 0; i < count; ++i )
         {
-            if( expectedTokenClasses[i] == nextToken )
+            if( expectedTokenClasses[i] == nextTokenClass )
             {
                 return true;
             }
@@ -727,20 +721,8 @@ public final class Parser
             result = NAMESPACE;
             break;
             
-        case IDENTIFIER_TOKEN:
-        	shift();
-        	result = scanner.getCurrentTokenText().intern();
-        	break;
-            
         default:
-        	if (IDENTIFIER_TOKEN==match(IDENTIFIER_TOKEN))
-        	{
-        		result=scanner.getCurrentTokenText().intern();
-        	}
-        	else
-        	{
-        		result = "expected identifer";
-        	}
+            result = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN)).intern(); //???hmmm all identifiers are interned....
         }
 
         if (debug)
@@ -805,27 +787,19 @@ public final class Parser
         	shift();
         	result = NAMESPACE;
         	break;
-            
-        case IDENTIFIER_TOKEN:
-        	shift();
-        	result = scanner.getCurrentTokenText().intern();
-        	break;
-	
+        	
         default:
         	if (HAS_WILDCARDSELECTOR && lt==MULT_TOKEN)
         	{
         		shift();
         		result = ASTERISK;
         	}
-        	else if (IDENTIFIER_TOKEN==match(IDENTIFIER_TOKEN))
-            {
-            	result=scanner.getCurrentTokenText().intern();
-           	}
         	else
         	{
-        		result = "expected property identifier";
+        		String s = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN));
+        		result = s.intern();
         	}
-         }
+        }
 
         if (debug)
         {
@@ -884,6 +858,7 @@ public final class Parser
 
     private IdentifierNode parseSimpleQualifiedIdentifier()
     {
+
         if (debug)
         {
             System.err.println("begin parseSimpleQualifiedIdentifier");
@@ -891,12 +866,16 @@ public final class Parser
 
         IdentifierNode result = null;
         IdentifierNode first;
-        boolean is_attr = false;
-        
+
+        boolean is_attr;
         if (HAS_ATTRIBUTEIDENTIFIERS && lookahead()==ATSIGN_TOKEN)
         {
             shift();
             is_attr = true;
+        }
+        else
+        {
+            is_attr = false;
         }
 
         if( is_attr && lookahead()==LEFTBRACKET_TOKEN )   // @[expr]
@@ -911,7 +890,8 @@ public final class Parser
             if (HAS_QUALIFIEDIDENTIFIERS && lookahead()==DOUBLECOLON_TOKEN)
             {
                 shift();
-                MemberExpressionNode temp = nodeFactory.memberExpression(null,nodeFactory.getExpression(first));
+                MemberExpressionNode temp;
+                temp = nodeFactory.memberExpression(null,nodeFactory.getExpression(first));
                 if( lookahead()==LEFTBRACKET_TOKEN )  // @ns::[expr]
                 {
                     MemberExpressionNode men = parseBrackets(null);
@@ -950,6 +930,7 @@ public final class Parser
 
     private IdentifierNode parseExpressionQualifiedIdentifier()
     {
+
         if (debug)
         {
             System.err.println("begin parseExpressionQualifiedIdentifier");
@@ -957,12 +938,16 @@ public final class Parser
 
         IdentifierNode result;
         Node first;
-        boolean is_attr = false;
-        
+
+        boolean is_attr;
         if (HAS_ATTRIBUTEIDENTIFIERS && lookahead()==ATSIGN_TOKEN)
         {
             shift();
             is_attr = true;
+        }
+        else
+        {
+            is_attr = false;
         }
 
         first = parseParenExpression();
@@ -984,6 +969,7 @@ public final class Parser
 
     private IdentifierNode parseQualifiedIdentifier()
     {
+
         if (debug)
         {
             System.err.println("begin parseQualifiedIdentifier");
@@ -1049,15 +1035,13 @@ public final class Parser
             break;
         
         case NUMBERLITERAL_TOKEN:
-        	shift();
-            result = nodeFactory.literalNumber(scanner.getCurrentTokenText(),pos);
+            result = nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NUMBERLITERAL_TOKEN)),pos);
             break;
             
         case STRINGLITERAL_TOKEN:
         {
             boolean[] is_single_quoted = new boolean[1];
-            shift();
-            String enclosedText = scanner.getCurrentStringTokenText(is_single_quoted);
+            String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
             result = nodeFactory.literalString(enclosedText, pos, is_single_quoted[0] );
             break;
         }
@@ -1094,12 +1078,12 @@ public final class Parser
         case PACKAGE_TOKEN:
             if (within_package)
             {
-                error(kError_NestedPackage);
+                error(syntax_error, kError_NestedPackage);
                 result = nodeFactory.error(pos, kError_NestedPackage);
             }
             else
             {
-                error(ParseError.syntax,kError_Parser_ExpectedPrimaryExprBefore,scanner.getCurrentTokenTextOrTypeText(nextToken));
+                error(syntax_error,kError_Parser_ExpectedPrimaryExprBefore,scanner.getCurrentTokenText(nextToken));
                 result = nodeFactory.error(pos, kError_Parser_ExpectedPrimaryExprBefore);
             }
             skiperror(LEFTBRACE_TOKEN);
@@ -1107,7 +1091,8 @@ public final class Parser
             break;
             
         case CATCH_TOKEN: case FINALLY_TOKEN: case ELSE_TOKEN:
-            error(ParseError.syntax, kError_Parser_ExpectedPrimaryExprBefore,scanner.getCurrentTokenTextOrTypeText(nextToken));
+            error(syntax_error, kError_Parser_ExpectedPrimaryExprBefore,
+                      scanner.getCurrentTokenText(nextToken));
             skiperror(LEFTBRACE_TOKEN);
             skiperror(RIGHTBRACE_TOKEN);
             result = nodeFactory.error(ctx.input.positionOfMark(), kError_Parser_ExpectedPrimaryExprBefore);
@@ -1120,15 +1105,9 @@ public final class Parser
             break;
             
         case REGEXPLITERAL_TOKEN:
-            if (HAS_REGULAREXPRESSIONS) 
-            {
-            	shift();
-                result = nodeFactory.literalRegExp(scanner.getCurrentTokenText(),pos);
-            }
-            else 
-            {
-            	result = parseTypeName();
-            }
+            result = (HAS_REGULAREXPRESSIONS) 
+                ? nodeFactory.literalRegExp(scanner.getCurrentTokenText(match(REGEXPLITERAL_TOKEN)),pos)
+                : parseTypeName();
             break;
             
         default:    
@@ -1152,11 +1131,9 @@ public final class Parser
         LiteralXMLNode result = null;
         Node first;
         int pos = ctx.input.positionOfMark();
-        
         if(lookahead()==XMLMARKUP_TOKEN)
         {
-        	shift();
-            first  = nodeFactory.list(null,nodeFactory.literalString(scanner.getCurrentTokenText(),pos));
+            first  = nodeFactory.list(null,nodeFactory.literalString(scanner.getCurrentTokenText(match(XMLMARKUP_TOKEN)),pos));
         }
         else
         {
@@ -1164,7 +1141,6 @@ public final class Parser
             first = parseXMLElement();
             scanner.popState();
         }
-        
         if( first != null )
         {
             ListNode list = nodeFactory.list(null,first,pos);
@@ -1205,7 +1181,7 @@ public final class Parser
                 return nodeFactory.error(ctx.input.positionOfMark(),kError_Lexical_NoMatchingTag);
             }
             match(XMLTAGSTARTEND_TOKEN); // "</"
-            if( lookahead()==GREATERTHAN_TOKEN )
+            if( lookahead(GREATERTHAN_TOKEN) )
             {
                 if( !is_xmllist )
                 {
@@ -1277,20 +1253,18 @@ public final class Parser
         {
             if( lookahead(xmlid_tokens,xmlid_tokens_count) )
             {
-            	int lt = lookahead();
-            	shift();
-                result  = concatXML(first,nodeFactory.literalString(scanner.getCurrentTokenTextOrTypeText(lt),ctx.input.positionOfMark()));
+                result  = concatXML(first,nodeFactory.literalString(scanner.getCurrentTokenText(match(xmlid_tokens,xmlid_tokens_count)),ctx.input.positionOfMark()));
             }
             else
             {
-                error(ParseError.syntax,kError_ErrorNodeError,"invalid xml name");
-                skiperror(ParseError.XML);
+                error(syntax_error,kError_ErrorNodeError,"invalid xml name");
+                skiperror(syntax_xml_error);
                 result = nodeFactory.error(ctx.input.positionOfMark(),kError_MissingXMLTagName);
             }
             
             while( true )
             {
-                int lt = lookahead();
+                final int lt = lookahead();
                 String separator_text;
                 
                 if( lt == DOT_TOKEN )
@@ -1312,14 +1286,12 @@ public final class Parser
                 if( lookahead(xmlid_tokens,xmlid_tokens_count) )
                 {
                     result = concatXML(result,nodeFactory.literalString(separator_text,0));
-                    lt = lookahead();
-                    shift();
-                    result = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenTextOrTypeText(lt),ctx.input.positionOfMark()));
+                    result = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenText(match(xmlid_tokens,xmlid_tokens_count)),ctx.input.positionOfMark()));
                 }
                 else
                 {
-                    error(kError_MissingXMLTagName);
-                    skiperror(ParseError.XML);
+                    error(syntax_error,kError_MissingXMLTagName);
+                    skiperror(syntax_xml_error);
                     result = nodeFactory.error(ctx.input.positionOfMark(),kError_MissingXMLTagName);
                 }
             }
@@ -1330,13 +1302,10 @@ public final class Parser
     Node parseXMLAttributes(Node first)
     {
         Node result = first;
-        int lt = lookahead();
-        
-        while( !(lt==GREATERTHAN_TOKEN||lt==XMLTAGENDEND_TOKEN||lt==EOS_TOKEN) )
+        while( !(lookahead(GREATERTHAN_TOKEN)||lookahead(XMLTAGENDEND_TOKEN)||lookahead(EOS_TOKEN) ) )
         {
             result = concatXML(result,nodeFactory.literalString(" ",0));
             result = parseXMLAttribute(result);
-            lt = lookahead();
         }
         return result;
     }
@@ -1354,8 +1323,7 @@ public final class Parser
             if(lookahead()==STRINGLITERAL_TOKEN)
             {
                 boolean[] is_single_quoted = new boolean[1];
-                shift();
-                String enclosedText = scanner.getCurrentStringTokenText(is_single_quoted);
+                String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
                 value = nodeFactory.literalString( enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
                 single_quote = is_single_quoted[0];
             }
@@ -1371,7 +1339,7 @@ public final class Parser
             }
             else
             {
-                error(kError_ParserExpectingLeftBraceOrStringLiteral);
+                error(syntax_error,kError_ParserExpectingLeftBraceOrStringLiteral);
             }
 
             result = concatXML(result,nodeFactory.literalString(single_quote ? "='" : "=\"",0));
@@ -1407,22 +1375,25 @@ public final class Parser
                 match(RIGHTBRACE_TOKEN);
                 scanner.popState();      // restore the state of the scanner
             }
-            else if(lt==LESSTHAN_TOKEN)
+            else
+            if(lt==LESSTHAN_TOKEN)
             {
                 scanner.state = start_state;
                 result = concatXML(result,parseXMLElement());
             }
-            else if(lt==XMLMARKUP_TOKEN)
+            else
+            if(lt==XMLMARKUP_TOKEN)
             {
-                result  = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenTextOrTypeText(match(XMLMARKUP_TOKEN)),ctx.input.positionOfMark()));
+                result  = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenText(match(XMLMARKUP_TOKEN)),ctx.input.positionOfMark()));
             }
-            else if(lt==XMLTEXT_TOKEN)
+            else
+            if(lt==XMLTEXT_TOKEN)
             {
-                result  = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenTextOrTypeText(match(XMLTEXT_TOKEN)),ctx.input.positionOfMark()));
+                result  = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenText(match(XMLTEXT_TOKEN)),ctx.input.positionOfMark()));
             }
             else
             {
-                error(kError_MissingXMLTagName);
+                error(syntax_error,kError_MissingXMLTagName);
                 skiperror(RIGHTBRACE_TOKEN);
                 scanner.popState();
                 return result;
@@ -1490,6 +1461,7 @@ XMLElementContent
 
     private Node parseParenExpression()
     {
+
         if (debug)
         {
             System.err.println("begin parseParenExpression");
@@ -1516,7 +1488,8 @@ XMLElementContent
      */
 
     private ListNode parseParenListExpression()
-    {   
+    {
+        
         if (debug)
         {
             System.err.println("begin parseParenListExpression");
@@ -1557,7 +1530,7 @@ XMLElementContent
                 if (first == null || first.size() != 1)
                 {
                     result = error(kError_Parser_ExpectingASingleExpressionWithinParenthesis);
-                    skiperror(ParseError.expression);
+                    skiperror(expression_syntax_error);
                 }
                 else
                 {
@@ -1589,6 +1562,7 @@ XMLElementContent
 
     private FunctionCommonNode parseFunctionCommon(IdentifierNode first)
     {
+
         if (debug)
         {
             System.err.println("begin parseFunctionCommon");
@@ -1653,6 +1627,7 @@ XMLElementContent
         //nodeFactory.FinishClassDefs();
         block_kind_stack.removeLast();
 
+
         if (debug)
         {
             System.err.println("finish parseFunctionCommon");
@@ -1667,6 +1642,7 @@ XMLElementContent
 
     private Node parseObjectLiteral()
     {
+
         if (debug)
         {
             System.err.println("begin parseObjectLiteral");
@@ -1716,6 +1692,7 @@ XMLElementContent
 
     private Node parseLiteralField()
     {
+
         if (debug)
         {
             System.err.println("begin parseLiteralField");
@@ -1736,15 +1713,14 @@ XMLElementContent
         	first = parseFieldOrConfigName();
         }
         match(COLON_TOKEN);
-        
         second = parseAssignmentExpression(allowIn_mode);
+
         result = nodeFactory.literalField(first, second);
 
         if( l != null )
         {
         	result = nodeFactory.list(l, result);
         }
-        
         if (debug)
         {
             System.err.println("finish parseLiteralField");
@@ -1771,14 +1747,12 @@ XMLElementContent
         if (HAS_NONIDENTFIELDNAMES && lt==STRINGLITERAL_TOKEN)
         {
             boolean[] is_single_quoted = new boolean[1];
-            shift();
-            String enclosedText = scanner.getCurrentStringTokenText(is_single_quoted);
+            String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
             result = nodeFactory.literalString( enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
         }
         else if (HAS_NONIDENTFIELDNAMES && lt==NUMBERLITERAL_TOKEN)
         {
-        	shift();
-            result = nodeFactory.literalNumber(scanner.getCurrentTokenText(),ctx.input.positionOfMark());
+            result = nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NUMBERLITERAL_TOKEN)),ctx.input.positionOfMark());
         }
         else if (HAS_NONIDENTFIELDNAMES && lt==LEFTPAREN_TOKEN)
         {
@@ -1853,7 +1827,10 @@ XMLElementContent
                 
         match(LESSTHAN_TOKEN);
         ListNode type_list = parseTypeExpressionList();
-        Node vector_type = nodeFactory.applyTypeExpr(nodeFactory.identifier("Vector", false, pos), type_list, pos);
+        Node vector_type = nodeFactory.applyTypeExpr (
+        	nodeFactory.identifier("Vector", false, pos), 
+        	type_list,
+        	pos);
         match(GREATERTHAN_TOKEN);
         
         match(LEFTBRACKET_TOKEN);
@@ -1886,7 +1863,7 @@ XMLElementContent
         }
 
         ArgumentListNode result = nodeFactory.argumentList(null, parseLiteralElement(allow_empty));
-        
+
         while (lookahead()==COMMA_TOKEN)
         {
             shift();
@@ -1990,22 +1967,95 @@ XMLElementContent
 
     
     /*
-     * precedence:
+     * precedence: --rewrite as table soon.
      */
     
     private final int precedence( int token, int mode )
     {
- 
-		/*
-		 * For the context "for ( <dcl|expr> ... IN"
-		 * We drop the precedence of 'IN' to 0, shutting off operator precedence parsing.
-		 */
+    	switch (token)
+    	{
     	
-    	if (token==IN_TOKEN && mode == noIn_mode)
+    	case COMMA_TOKEN:
+    		return 1;
+    		
+    	case ASSIGN_TOKEN:
+      	case BITWISEANDASSIGN_TOKEN:
+      	case BITWISEORASSIGN_TOKEN:
+      	case BITWISEXORASSIGN_TOKEN:
+    	case DIVASSIGN_TOKEN:
+    	case LEFTSHIFTASSIGN_TOKEN:
+    	case LOGICALANDASSIGN_TOKEN:
+    	case LOGICALORASSIGN_TOKEN:
+    	case LOGICALXORASSIGN_TOKEN:
+    	case MINUSASSIGN_TOKEN:
+    	case MULTASSIGN_TOKEN:
+    	case MODULUSASSIGN_TOKEN:
+    	case PLUSASSIGN_TOKEN:	
+    	case RIGHTSHIFTASSIGN_TOKEN:
+    	case UNSIGNEDRIGHTSHIFTASSIGN_TOKEN:
+    		return 2;
+    	
+    	case QUESTIONMARK_TOKEN:
+    		return 3;
+    		
+    	case LOGICALOR_TOKEN:
+    		return 4;
+    			
+    	case LOGICALAND_TOKEN:
+    		return 5;
+    		
+    	case BITWISEOR_TOKEN:
+    		return 6;
+    		
+    	case BITWISEXOR_TOKEN:
+    		return 7;
+    		
+    	case BITWISEAND_TOKEN:
+    		return 8;
+    		
+    	case EQUALS_TOKEN:
+    	case NOTEQUALS_TOKEN:
+    	case STRICTEQUALS_TOKEN:
+    	case STRICTNOTEQUALS_TOKEN:
+    		return 9;
+    		
+    	case GREATERTHAN_TOKEN:
+    	case GREATERTHANOREQUALS_TOKEN:
+    	case LESSTHAN_TOKEN:
+    	case LESSTHANOREQUALS_TOKEN:		
+    	case INSTANCEOF_TOKEN:
+    	case IS_TOKEN:
+    	case AS_TOKEN:
+    		return 10;
+    		
+    	case IN_TOKEN:
+    		
+    		/*
+    		 * For the context "for ( <dcl|expr> ... IN"
+    		 * We drop the precedence of 'IN' to 0, shutting off operator precedence parsing.
+    		 */
+    		
+    		if ( mode == noIn_mode)
+    			return 0;
+    		return 10;
+    		
+    	case LEFTSHIFT_TOKEN:
+    	case RIGHTSHIFT_TOKEN:
+    	case UNSIGNEDRIGHTSHIFT_TOKEN:
+    		return 11;
+    		
+    	case MINUS_TOKEN:
+    	case PLUS_TOKEN:
+    		return 12;
+    		
+       	case DIV_TOKEN:
+       	case MODULUS_TOKEN:
+    	case MULT_TOKEN:
+    			return 13;
+    		
+    	default:
     		return 0;
-    	
-    	int prec = binary_precedence[-token];
-    	return prec;
+    	}
     }
     
     private Node parseBinaryExpression(int mode, int prec)
@@ -2019,13 +2069,11 @@ XMLElementContent
     	 * 
     	 */
     	
-    	int op = lookahead();
-    	int p1 = precedence(op,mode);
-    	int p2 = p1;
-    	for (; p1 >= prec; p1--)
+    	for ( int p1 = precedence(lookahead(),mode); p1 >= prec; p1--)
     	{
-    	   	while ( p2==p1 )
+    	   	while ( precedence(lookahead(),mode)==p1 )
         	{
+    	   		int op = lookahead();
     	   		shift();
     	   		
     	   		Node t = parseBinaryExpression(mode,p1+1);
@@ -2033,8 +2081,6 @@ XMLElementContent
     	   		// Could fold fully constant expressions here.
     	   		
     	   		result = nodeFactory.binaryExpression(op, result, t);
-    	   		op = lookahead();
-    	   		p2 = precedence(op,mode);
         	}
     	}
     	return result;
@@ -2062,7 +2108,7 @@ XMLElementContent
         case MULT_TOKEN: case ATSIGN_TOKEN:
             first = parseAttributeExpression();
             lt = lookahead();
-            if ( (lt == PLUSPLUS_TOKEN || lt == MINUSMINUS_TOKEN) && !lookaheadSemicolon(full_mode) )
+            if ( !lookaheadSemicolon(full_mode) && (lt == PLUSPLUS_TOKEN || lt == MINUSMINUS_TOKEN) )
             {
                 first = parsePostfixIncrement(first);
             }
@@ -2128,6 +2174,7 @@ XMLElementContent
 
     private Node parsePostfixIncrement(Node first)
     {
+
         if (debug)
         {
             System.err.println("begin parsePostfixIncrement");
@@ -2138,13 +2185,12 @@ XMLElementContent
         
         if (lt==PLUSPLUS_TOKEN || lt==MINUSMINUS_TOKEN)
         {
-        	shift();
-            result = nodeFactory.postfixExpression(lt, first,ctx.input.positionOfMark());
+            result = nodeFactory.postfixExpression(match(lt), first,ctx.input.positionOfMark());
         }
         else
         {
             result = error(kError_Parser_ExpectingIncrOrDecrOperator);
-            skiperror(ParseError.syntax);
+            skiperror(syntax_error);
         }
 
         if (debug)
@@ -2165,6 +2211,7 @@ XMLElementContent
 
     private Node parseFullPostfixExpressionPrime(Node first)
     {
+
         if (debug)
         {
             System.err.println("begin parseFullPostfixExpressionPrime");
@@ -2254,6 +2301,7 @@ XMLElementContent
 
     private Node parseAttributeExpressionPrime(Node first)
     {
+
         if (debug)
         {
             System.err.println("begin parseAttributeExpressionPrime");
@@ -2266,7 +2314,8 @@ XMLElementContent
         {
             result = parseAttributeExpressionPrime(parsePropertyOperator(first));
         }
-        else if (lt==LEFTPAREN_TOKEN) // Arguments
+        else
+        if (lt==LEFTPAREN_TOKEN) // Arguments
         {
 /*
             MemberExpressionNode memb = first instanceof MemberExpressionNode ? (MemberExpressionNode) first : null;
@@ -2705,14 +2754,14 @@ XMLElementContent
 
         Node result = null;
         int pos;
-        final int op = lookahead();
+        final int lt = lookahead();
         
-        switch ( op )
+        switch ( lt )
         {
         case DELETE_TOKEN:
             shift();
             lookahead();
-            result = nodeFactory.unaryExpression(op, parsePostfixExpression(),scanner.input.positionOfMark());
+            result = nodeFactory.unaryExpression(lt, parsePostfixExpression(),scanner.input.positionOfMark());
             break;
                    
         case TYPEOF_TOKEN:
@@ -2723,30 +2772,24 @@ XMLElementContent
         case NOT_TOKEN:    
             shift();
             lookahead();
-            result = nodeFactory.unaryExpression(op, parseUnaryExpression(), scanner.input.positionOfMark());
+            result = nodeFactory.unaryExpression(lt, parseUnaryExpression(), scanner.input.positionOfMark());
             break;
             
         case VOID_TOKEN:
             shift();
-            int la = lookahead();
+            lookahead();
             pos = scanner.input.positionOfMark();
-            result = ( la==COMMA_TOKEN || la==SEMICOLON_TOKEN || la==RIGHTPAREN_TOKEN )
-                ? nodeFactory.unaryExpression(op, nodeFactory.literalNumber("0",pos),pos)
-                : nodeFactory.unaryExpression(op, parseUnaryExpression(), pos);
+            result = ( lookahead()==COMMA_TOKEN || lookahead()==SEMICOLON_TOKEN || lookahead()==RIGHTPAREN_TOKEN )
+                ? nodeFactory.unaryExpression(lt, nodeFactory.literalNumber("0",pos),pos)
+                : nodeFactory.unaryExpression(lt, parseUnaryExpression(), pos);
             break;
  
         case MINUS_TOKEN:
             shift();
-            if (lookahead()==NEGMINLONGLITERAL_TOKEN)
-            {
-            	shift();
-            	Node lit = nodeFactory.literalNumber(scanner.getCurrentTokenText(),scanner.input.positionOfMark());
-            	result = nodeFactory.unaryExpression(op,lit,scanner.input.positionOfMark());
-            }
-            else 
-            {
-            	result = nodeFactory.unaryExpression(op, parseUnaryExpression(), scanner.input.positionOfMark());
-            }
+            lookahead();
+            result = (lookahead()==NEGMINLONGLITERAL_TOKEN)
+                ? nodeFactory.unaryExpression(lt,nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NEGMINLONGLITERAL_TOKEN)),ctx.input.positionOfMark()),scanner.input.positionOfMark())
+                : nodeFactory.unaryExpression(lt, parseUnaryExpression(), scanner.input.positionOfMark());
             break;
 
         default:
@@ -2911,6 +2954,9 @@ XMLElementContent
         }
 
         Node first = parseAssignmentExpression(mode);
+        
+        // Where the list is a single expr, this generates an unnecessary list node... ???
+        // If the list is necessary as a placeholder, a nil node should be generated by something like parseNilOrAssignmentExpr()
         ListNode result = nodeFactory.list(null,first);
         
         while (lookahead()==COMMA_TOKEN)
@@ -2983,13 +3029,14 @@ XMLElementContent
         }
         
         // Comment below is historical, I dont know what it means{pmd 5/22/09}.
-        // handle packageidentifier.identifier
+        // TODO: handle packageidentifier.identifier
 
         Node first = parseNonAttributeQualifiedExpression();
         Node result = nodeFactory.memberExpression(null, nodeFactory.getExpression(first, first.pos()),first.pos());
 
         while( lookahead()==DOT_TOKEN )
         {
+        	// TODO: this should only be for real package identifiers
         	shift();
         	result = nodeFactory.memberExpression(result, nodeFactory.getExpression(parseNonAttributeQualifiedExpression()));
         }
@@ -3092,7 +3139,7 @@ XMLElementContent
 
         Node result;
 
-        if( ctx.dialect(7) && nextToken == IDENTIFIER_TOKEN && scanner.getCurrentTokenText().equals("Object") )
+        if( ctx.dialect(7) && nextToken == IDENTIFIER_TOKEN && scanner.getCurrentTokenText(nextToken).equals("Object") )
         {
             match(IDENTIFIER_TOKEN);
             result = null;  // means *
@@ -3438,17 +3485,16 @@ XMLElementContent
 
         if( lookahead()==DOCCOMMENT_TOKEN)
         {
-        	shift();
-            ListNode list = nodeFactory.list(null,nodeFactory.literalString(scanner.getCurrentTokenText(),pos));
-            LiteralXMLNode first = nodeFactory.literalXML(list,false/*is_xmllist*/,pos);
+            ListNode list = nodeFactory.list(null,nodeFactory.literalString(
+                    scanner.getCurrentTokenText(match(DOCCOMMENT_TOKEN)),ctx.input.positionOfMark()));
+            LiteralXMLNode first = nodeFactory.literalXML(list,false/*is_xmllist*/,ctx.input.positionOfMark());
             Node x = nodeFactory.memberExpression(null,nodeFactory.getExpression(first),pos);
             result = nodeFactory.docComment(nodeFactory.literalArray(nodeFactory.argumentList(null,x),pos),pos);
         }
         else if(lookahead()==XMLLITERAL_TOKEN)
         {
-            result = nodeFactory.metaData(
-            		     nodeFactory.literalArray(
-                            nodeFactory.argumentList(null,parseXMLLiteral())),pos);
+            result = nodeFactory.metaData(nodeFactory.literalArray(
+                                            nodeFactory.argumentList(null,parseXMLLiteral())),pos);
         }
         else
         {
@@ -3745,10 +3791,10 @@ XMLElementContent
 
         if(lookahead()==IDENTIFIER_TOKEN)
         {
-        	shift();
-            if( !scanner.getCurrentTokenText().equals("each") )
+            String id = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN));
+            if( !id.equals("each") )
             {
-                error(kError_Parser_ExpectedLeftParen);
+                error(syntax_error,kError_Parser_ExpectedLeftParen);
             }
             is_each = true;
         }
@@ -3782,11 +3828,11 @@ XMLElementContent
 
             if( first instanceof VariableDefinitionNode && ((VariableDefinitionNode)first).list.size() > 1)
             {
-                error(kError_ParserInvalidForInInitializer);
+                error(syntax_error, kError_ParserInvalidForInInitializer);
             }
             else if( first instanceof ListNode && ((ListNode)first).size() > 1 )
             {
-                error(kError_ParserInvalidForInInitializer);
+                error(syntax_error, kError_ParserInvalidForInInitializer);
             }
             
             match(IN_TOKEN);
@@ -3798,7 +3844,7 @@ XMLElementContent
         }
         else if(lookahead()==COLON_TOKEN)
         {
-            match(IN_TOKEN); //error(ParseError.syntax,kError_Parser_EachWithoutIn);
+            match(IN_TOKEN); //error(syntax_error,kError_Parser_EachWithoutIn);
             skiperror(LEFTBRACE_TOKEN);
             result = parseSubstatement(mode);
         }
@@ -3806,7 +3852,7 @@ XMLElementContent
         {
             if( is_each )
             {
-                error(kError_Parser_EachWithoutIn);
+                error(syntax_error,kError_Parser_EachWithoutIn);
             }
 
             match(SEMICOLON_TOKEN);
@@ -3963,7 +4009,7 @@ XMLElementContent
      
         if (scanner.followsLineTerminator())
         {
-            error(ParseError.syntax, kError_Parser_ThrowWithoutExpression,"","",pos);
+            error(syntax_error, kError_Parser_ThrowWithoutExpression,"","",pos);
             result = nodeFactory.throwStatement(null,pos);    // make a dummy node
         }
         else
@@ -4168,15 +4214,13 @@ XMLElementContent
                 result = parseAnnotatableDirectiveOrPragmaOrInclude(first, mode);
                 break;
                 
-            case DEFAULT_TOKEN: // default xml namespace = <expr>  --pretty cumbersome syntax
+            case DEFAULT_TOKEN:
             {
                 shift();
-                if (match(IDENTIFIER_TOKEN)==IDENTIFIER_TOKEN)
+                String id = scanner.getCurrentTokenText(match(IDENTIFIER_TOKEN));
+                if( !id.equals("xml") && lookahead()==NAMESPACE_TOKEN )
                 {
-                	 if( !scanner.getCurrentTokenText().equals("xml") && lookahead()==NAMESPACE_TOKEN)
-                     {
-                         error(kError_Parser_ExpectedXMLBeforeNameSpace);
-                     }
+                    error(kError_Parser_ExpectedXMLBeforeNameSpace);
                 }
                 match(NAMESPACE_TOKEN);
                 match(ASSIGN_TOKEN);
@@ -4248,7 +4292,7 @@ XMLElementContent
             }
             else 
             {  
-                String directiveString = scanner.getCurrentTokenTextOrTypeText(nextToken);
+                String directiveString = this.scanner.getCurrentTokenText(nextToken);
 
                 if (lookaheadSemicolon(mode) && !temp.isConfigurationName())
                 {
@@ -4257,33 +4301,39 @@ XMLElementContent
                     
                     result = temp;
 
+                    ExpressionStatementNode estmt;
+                    
                     if (temp instanceof ExpressionStatementNode)
                     {
-                        temp = ((ExpressionStatementNode) temp).expr;
+                        estmt = (ExpressionStatementNode) temp;
+                        if (estmt != null)
+                        {
+                            temp = estmt.expr;
+                        }
                     }
-                    
                     boolean is_attribute_keyword = checkAttribute(temp);
-                    
                     if( is_attribute_keyword )
                     {
-                        error(ParseError.syntax, kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes, which_attribute(temp), directiveString);
+                        error(syntax_error, kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes, which_attribute(temp), directiveString);
                     }
                 }
                 else if (temp.isAttribute())
                 {
                     // If its an expression statement, then extract the expression
                     
-                	ExpressionStatementNode estmt = null;
-                	if ( temp instanceof ExpressionStatementNode )
-                	{
-                		estmt = (ExpressionStatementNode)temp;
-                		temp = estmt.expr;
-                	}
+                    ExpressionStatementNode estmt = (temp instanceof ExpressionStatementNode) 
+                        ? (ExpressionStatementNode) temp : null;
+                        
+                    if (estmt != null)
+                    {
+                        temp = estmt.expr;
+                    }
 
                     boolean is_attribute_keyword = checkAttribute(temp);
+
                     AttributeListNode first;
-                    
-                    switch ( lookahead() )
+                    lt = lookahead();
+                    switch ( lt )
                     {
                     case TRUE_TOKEN: case FALSE_TOKEN: case PRIVATE_TOKEN: case PUBLIC_TOKEN: 
                     case PROTECTED_TOKEN: case IDENTIFIER_TOKEN:
@@ -4315,7 +4365,7 @@ XMLElementContent
                         }
                         else if( is_attribute_keyword || first.size() > 1 )
                         {
-                            error(ParseError.syntax, kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes,
+                            error(syntax_error, kError_Parser_ExpectingAnnotatableDirectiveAfterAttributes,
                                     which_attribute(temp), directiveString);
                             skiperror(SEMICOLON_TOKEN);
                         }
@@ -4385,7 +4435,7 @@ XMLElementContent
                     }
                     else if (temp.isAttribute())
                     {
-                        error(kError_InvalidAttribute);
+                        error(syntax_error,kError_InvalidAttribute);
                     }
                     else
                     {
@@ -4536,7 +4586,7 @@ XMLElementContent
             		for (int i = 0; i < second.items.size(); i++) {
             			Node kid = second.items.at(i);
             			if (!(kid instanceof PragmaNode)) {
-            				error(kError_Parser_NumericUseMisplaced);
+            				error(syntax_error,kError_Parser_NumericUseMisplaced);
             				break;
             			}
             		}
@@ -4636,7 +4686,6 @@ XMLElementContent
 
         id = parseIdentifier();
         int lt = lookahead();
-        int pos = scanner.input.positionOfMark();
         
         if (lt==COMMA_TOKEN || lookaheadSemicolon(mode)) 
         {
@@ -4645,24 +4694,23 @@ XMLElementContent
         else if (lt==TRUE_TOKEN) 
         {
             shift();
-            argument = nodeFactory.literalBoolean(true,pos);
+            argument = nodeFactory.literalBoolean(true,ctx.input.positionOfMark());
         }
         else if (lt==FALSE_TOKEN)
         {
             shift();
-            argument = nodeFactory.literalBoolean(false,pos);
+            argument = nodeFactory.literalBoolean(false,ctx.input.positionOfMark());
         }
         else if (lt==NUMBERLITERAL_TOKEN)
         {
-        	shift();
-            argument = nodeFactory.literalNumber(scanner.getCurrentTokenText(),pos);
+            argument = nodeFactory.literalNumber(scanner.getCurrentTokenText(match(NUMBERLITERAL_TOKEN)),
+                                               ctx.input.positionOfMark());
         }
         else if (lt==STRINGLITERAL_TOKEN)
         {
             boolean[] is_single_quoted = new boolean[1];
-            shift();
-            String enclosedText = scanner.getCurrentStringTokenText(is_single_quoted);
-            argument = nodeFactory.literalString(enclosedText, pos, is_single_quoted[0] );
+            String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
+            argument = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
         }
         else argument = parseIdentifier();
         
@@ -4716,17 +4764,8 @@ XMLElementContent
         shift(); //match(INCLUDE)
 
         boolean[] is_single_quoted = new boolean[1];
-        String filespec = null;
-        if (lookahead()==STRINGLITERAL_TOKEN)
-        {
-        	shift();
-        	filespec = scanner.getCurrentStringTokenText(is_single_quoted).trim();
-        }
-        else
-        {
-        	match(STRINGLITERAL_TOKEN);
-        }
-        
+        String filespec = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted).trim();
+
         CompilerHandler.FileInclude incl = null;
         if (ctx.handler != null)
         {
@@ -4771,7 +4810,7 @@ XMLElementContent
 	            }
 	            catch (FileNotFoundException ex)
 	            {
-	                error(ParseError.syntax, kError_Parser_UnableToOpenFile, fixed_filespec);
+	                error(syntax_error, kError_Parser_UnableToOpenFile, fixed_filespec);
 	                return null;
 	            }
         	}
@@ -4787,7 +4826,7 @@ XMLElementContent
         // make sure that we check the include path trail. This is to stop infinite recursion.
         if (ctx.statics.includePaths.contains(fixed_filespec))
         {
-            error(ParseError.syntax, kError_Parser_FileIncludesItself, fixed_filespec);
+            error(syntax_error, kError_Parser_FileIncludesItself, fixed_filespec);
             try { in.close(); } catch (IOException ex) {}
             return null;
         }
@@ -4808,45 +4847,41 @@ XMLElementContent
         first  = nodeFactory.literalString(fixed_filespec,ctx.input.positionOfMark(), is_single_quoted[0]);
 
         ProgramNode second = null;
-    	if (!ctx.scriptAssistParsing)
-    	{
-    		Context cx = new Context(ctx.statics);
-    		try
-    		{
-    			// cx.setEmitter(ctx.getEmitter());
-    			// cx.statics.nodeFactory = ctx.statics.nodeFactory;
-    			// cx.statics.global = ctx.statics.global;
-    			Parser p = null;
-    			if (in != null)
-    			{
-    				p = new Parser(cx, in, fixed_filespec, encoding, create_doc_info, save_comment_nodes,block_kind_stack, true);
-    				p.config_namespaces = this.config_namespaces;
-    				second = p.parseProgram();
-    			}
-    			else
-    			{
-    				p = new Parser(cx, text, fixed_filespec, create_doc_info, save_comment_nodes,block_kind_stack, true);
-    				p.config_namespaces = this.config_namespaces;
-    				second = p.parseProgram();
-    			}
-    		}
-    		finally
-    		{
-    			ctx.setPath(oldCtxPathSpec);
-    			// now we can remove the filename...
-    			ctx.statics.includePaths.removeLast();
-    			if (in != null)
-    			{
-    				try { in.close(); } catch (IOException ex) {}
-    			}
-    		}
-    		result = nodeFactory.includeDirective(cx, first, second);
-    	} 
-    	else
-    	{
-    		result = nodeFactory.includeDirective(ctx, first, second);
-    	}
-    	
+    	if (!ctx.scriptAssistParsing){
+	        Context cx = new Context(ctx.statics);
+	        try
+	        {
+	            // cx.setEmitter(ctx.getEmitter());
+	            // cx.statics.nodeFactory = ctx.statics.nodeFactory;
+	            // cx.statics.global = ctx.statics.global;
+            Parser p = null;
+		        if (in != null)
+		        {
+                p = new Parser(cx, in, fixed_filespec, encoding, create_doc_info, save_comment_nodes,block_kind_stack, true);
+                p.config_namespaces = this.config_namespaces;
+                second = p.parseProgram();
+		        }
+		        else
+		        {
+                p = new Parser(cx, text, fixed_filespec, create_doc_info, save_comment_nodes,block_kind_stack, true);
+                p.config_namespaces = this.config_namespaces;
+	            second = p.parseProgram();
+		        }
+	        }
+	        finally
+	        {
+	            ctx.setPath(oldCtxPathSpec);
+	            // now we can remove the filename...
+	            ctx.statics.includePaths.removeLast();
+	            if (in != null)
+		        {
+			        try { in.close(); } catch (IOException ex) {}
+		        }
+	        }
+	        result = nodeFactory.includeDirective(cx, first, second);
+	    } else
+	    	result = nodeFactory.includeDirective(ctx, first, second);
+
         if (debug)
         {
             System.err.println("finish parseIncludeDirective");
@@ -5069,8 +5104,8 @@ XMLElementContent
 
         PackageNameNode second;
         PackageNameNode third = null;
+
         int stmtPos = scanner.input.positionOfMark();
-        
         shift(); //match(IMPORT_TOKEN);
         second = parsePackageName(true);
         if (lookahead()==ASSIGN_TOKEN)
@@ -5139,6 +5174,9 @@ XMLElementContent
         {
             System.err.println("begin parseVariableBindingList");
         }
+
+        // ??? if first is null, then we can return null ???
+        // ??? How about if the following list is empty, can we avoid consing the list node ???
         
         Node first = parseVariableBinding(attrs, kind, mode);
         ListNode result = nodeFactory.list(null, first);
@@ -5205,6 +5243,7 @@ XMLElementContent
         if (lookahead()==ASSIGN_TOKEN)
         {
             shift();
+            lookahead();
             first = parseAssignmentExpression(mode);
             
             if (lookahead()==COMMA_TOKEN || 
@@ -5721,14 +5760,7 @@ XMLElementContent
         Node third = null;
         boolean no_anno = false;
 
-        int first = VAR_TOKEN;
-        
-        if (HAS_CONSTPARAMETERS && lookahead()==CONST_TOKEN)
-        {
-        	first = CONST_TOKEN;
-        	shift();
-        }
-        
+        int first = (HAS_CONSTPARAMETERS && lookahead()==CONST_TOKEN) ? match(CONST_TOKEN) : VAR_TOKEN;
         IdentifierNode second = parseIdentifier();
         
         if (lookahead()==COLON_TOKEN)
@@ -5839,19 +5871,19 @@ XMLElementContent
     	
         if (lt == VOID_TOKEN)
         {
-            error(ParseError.syntax, kError_Parser_keywordInsteadOfTypeExpr, Token.getTokenClassName(lt));
+            error(syntax_error, kError_Parser_keywordInsteadOfTypeExpr, scanner.getCurrentTokenText(nextToken));
             match(VOID_TOKEN);
             return true;
         }
         else if (lt != IDENTIFIER_TOKEN && lookahead(xmlid_tokens, xmlid_tokens_count))
         {
-            error(ParseError.syntax, kError_Parser_keywordInsteadOfTypeExpr, Token.getTokenClassName(lt));
+            error(syntax_error, kError_Parser_keywordInsteadOfTypeExpr, scanner.getCurrentTokenText(nextToken));
             match(xmlid_tokens, xmlid_tokens_count);
             return true;
         }
-        else if( ctx.dialect(8) && lt == IDENTIFIER_TOKEN && scanner.getCurrentTokenText().equals("Object") )
+        else if( ctx.dialect(8) && lt == IDENTIFIER_TOKEN && scanner.getCurrentTokenText(nextToken).equals("Object") )
         {
-        	error(kError_ColonObjectAnnoOutOfService);
+        	error(syntax_error, kError_ColonObjectAnnoOutOfService);
         	return true;
         }
         return false;
@@ -5873,7 +5905,7 @@ XMLElementContent
 
         if( block_kind_stack.last() != PACKAGE_TOKEN && block_kind_stack.last() != EMPTY_TOKEN )
         {
-            error(kError_InvalidClassNesting);
+            error(syntax_error,kError_InvalidClassNesting);
         }
 
         block_kind_stack.add(CLASS_TOKEN);
@@ -5924,7 +5956,9 @@ XMLElementContent
         IdentifierNode first = parseIdentifier();
         
         if (HAS_COMPOUNDCLASSNAMES)
-        {   
+        {
+            // result = parseClassNamePrime(first);
+            
             PackageIdentifiersNode list = null;
 
             while (lookahead()==DOT_TOKEN)
@@ -6042,10 +6076,12 @@ XMLElementContent
     /*
      * InterfaceDefinition
      *     interface ClassName ExtendsList Block
+
      */
 
     private Node parseInterfaceDefinition(AttributeListNode attrs, int mode)
     {
+
         if (debug)
         {
             System.err.println("begin parseInterfaceDefinition");
@@ -6121,8 +6157,7 @@ XMLElementContent
                 if(lookahead()==STRINGLITERAL_TOKEN)
                 {
                     boolean[] is_single_quoted = new boolean[1];
-                    shift();
-                    String enclosedText = scanner.getCurrentStringTokenText(is_single_quoted);
+                    String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
                     third = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0] );
                 }
                 else
@@ -6328,7 +6363,8 @@ XMLElementContent
     /*
      * PackageName
      * 	   stringLiteral
-     *     Identifier ('.' <Identifier>)*
+     *     Identifier
+     *     PackageName . Identifier
      */
 
     private PackageNameNode parsePackageName(boolean isDefinition)
@@ -6343,8 +6379,7 @@ XMLElementContent
         if (lookahead()==STRINGLITERAL_TOKEN)
         {
             boolean[] is_single_quoted = new boolean[1];
-            shift();
-            String enclosedText = scanner.getCurrentStringTokenText(is_single_quoted);
+            String enclosedText = scanner.getCurrentStringTokenText(match(STRINGLITERAL_TOKEN), is_single_quoted);
             LiteralStringNode first = nodeFactory.literalString(enclosedText, ctx.input.positionOfMark(), is_single_quoted[0]);
             result = nodeFactory.packageName(first);
         }

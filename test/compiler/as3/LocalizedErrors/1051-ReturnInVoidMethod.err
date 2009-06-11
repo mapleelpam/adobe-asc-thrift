@@ -1,5 +1,6 @@
+
 [Compiler] Error #1051: Return value must be undefined.
-   1051-ReturnInVoidMethod.as, Ln 6, Col 20:
+1051-ReturnInVoidMethod.as, Ln 6, Col 20:
 return true;
 ...................^
 

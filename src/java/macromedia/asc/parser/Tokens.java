@@ -216,7 +216,7 @@ public interface Tokens
 			"doublecolon",
 			"semicolon",
 			"questionmark",
-			"atsign",
+			"ampersand",
 			"leftbracket",
 			"rightbracket",
 			"bitwisexor",
@@ -361,7 +361,7 @@ public interface Tokens
 			"::",//"doublecolon"
 			";",//"semicolon"
 			"?",//"questionmark"
-			"@",//"atsign"
+			"@",//"ampersand"
 			"[",//"leftbracket"
 			"]",//"rightbracket"
 			"^",//"bitwisexor"

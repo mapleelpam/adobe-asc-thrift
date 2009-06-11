@@ -1,5 +1,5 @@
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before atsign.
+[Compiler] Error #1084: Syntax error: expecting leftparen before ampersand.
    StaticNameErr2.as, Ln 5, Col 22: 
        static function a@() {}
    .....................^

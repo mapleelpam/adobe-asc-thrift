@@ -1,3 +1,4 @@
+
 [Compiler] Error #1084: Syntax error: expecting identifier before break.
    EmptyNameErr36.as, Ln 5, Col 18: 
        function get break() {}
@@ -23,10 +24,10 @@
        function set break\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
-   EmptyNameErr36.as, Ln 6, Col 25: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
+   EmptyNameErr36.as, Ln 6, Col 27: 
        function set break\(e\) {}
-   ........................^
+   ..........................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr36.as, Ln 6, Col 27: 

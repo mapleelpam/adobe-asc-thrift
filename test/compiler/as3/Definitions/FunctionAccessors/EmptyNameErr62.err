@@ -4,10 +4,10 @@
        function set return\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
-   EmptyNameErr62.as, Ln 5, Col 26: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
+   EmptyNameErr62.as, Ln 5, Col 28: 
        function set return\(e\) {}
-   .........................^
+   ...........................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr62.as, Ln 5, Col 28: 

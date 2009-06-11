@@ -1,5 +1,6 @@
+
 [Compiler] Error #1039: Target of continue statement was not found.
-   1039-ContinueTargetNotFound.as, Ln 7, Col 22:
+1039-ContinueTargetNotFound.as, Ln 7, Col 22:
 continue test;
 .....................^
 

@@ -1,15 +1,16 @@
+
 [Compiler] Error #1084: Syntax error: expecting identifier before package.
-   NamespacePackageErr.as, Ln 23, Col 11:
+as3.Definitions.Packages.NamespacePackageErr.as, Ln 23, Col 11:
 namespace package foo {}
 ..........^
 
 [Compiler] Error #1086: Syntax error: expecting semicolon before leftbrace.
-   NamespacePackageErr.as, Ln 23, Col 23:
+as3.Definitions.Packages.NamespacePackageErr.as, Ln 23, Col 23:
 namespace package foo {}
 ......................^
 
 [Compiler] Error #1084: Syntax error: expecting rightbrace before trace.
-   NamespacePackageErr.as, Ln 25, Col 1:
+as3.Definitions.Packages.NamespacePackageErr.as, Ln 25, Col 1:
 trace\( "FAILED: cannot give a package an attribute" \);
 ^
 

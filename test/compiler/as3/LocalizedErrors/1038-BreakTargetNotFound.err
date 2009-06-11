@@ -1,5 +1,6 @@
+
 [Compiler] Error #1038: Target of break statement was not found.
-   1038-BreakTargetNotFound.as, Ln 7, Col 19:
+1038-BreakTargetNotFound.as, Ln 7, Col 19:
 break test;
 ..................^
 

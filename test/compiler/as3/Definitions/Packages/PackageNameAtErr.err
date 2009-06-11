@@ -1,5 +1,5 @@
 
-[Compiler] Error #1084: Syntax error: expecting identifier before atsign.
+[Compiler] Error #1084: Syntax error: expecting identifier before ampersand.
 as3.Definitions.Packages.PackageNameAtErr.as, Ln 23, Col 9:
 package @foo {}
 ........^

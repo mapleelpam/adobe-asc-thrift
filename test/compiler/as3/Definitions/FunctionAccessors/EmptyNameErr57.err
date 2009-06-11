@@ -24,10 +24,10 @@
        function get in\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
-   EmptyNameErr57.as, Ln 6, Col 22: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
+   EmptyNameErr57.as, Ln 6, Col 24: 
        function get in\(e\) {}
-   .....................^
+   .......................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr57.as, Ln 6, Col 24: 

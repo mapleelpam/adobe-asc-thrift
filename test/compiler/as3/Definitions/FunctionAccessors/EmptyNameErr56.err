@@ -4,10 +4,10 @@
        function set interface\(e\) {}
    .................^
 
-[Compiler] Error #1084: Syntax error: expecting leftparen before rightparen.
-   EmptyNameErr56.as, Ln 5, Col 29: 
+[Compiler] Error #1084: Syntax error: expecting leftparen before leftbrace.
+   EmptyNameErr56.as, Ln 5, Col 31: 
        function set interface\(e\) {}
-   ............................^
+   ..............................^
 
 [Compiler] Error #1084: Syntax error: expecting identifier before leftbrace.
    EmptyNameErr56.as, Ln 5, Col 31: 
