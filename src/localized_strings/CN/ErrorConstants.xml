@@ -1,4 +1,16 @@
 <?xml version='1.0' encoding='utf-8' standalone='no' ?>
+
+<!--
+
+	ADOBE SYSTEMS INCORPORATED
+	Copyright 2006-2007 Adobe Systems Incorporated
+	All Rights Reserved.
+
+	NOTICE: Adobe permits you to use, modify, and distribute this file
+	in accordance with the terms of the license agreement accompanying it.
+
+-->
+
 <!--  
 
    Note that error id="1179" does not need to be translated, its for internal use only.
@@ -716,4 +728,51 @@ switch(x)
 		The characters '/*' where found, which indicate the beginning of a comment, but the corresponding characters, '*/', which indicate the end of the comment block, were not found.
     ]]></description>
 	</error>
+	<error id="1205" label="kError_ParserExpectingLeftBraceOrStringLiteral">语法错误: 需要左花括号 ({) 或字符串文字 ("")。</error>
+	<error id="1206" label="kError_InvalidES4SuperStatement">super 语句只能用作构造函数初始值设定项列表中的最后一项。
+<description><![CDATA[
+		You cannot use the <code>super</code> statement within a constructor. You can 
+		use the <code>super</code> statement only as the last item in the constructor initializer list.
+	]]>
+	</description>
+    </error>
+	<error id="1207" label="kError_ThisUsedInInitializer">不能在属性初始值设定项中使用 this 关键字。
+    <description>
+	<![CDATA[
+		You cannot use the <code>this</code> keyword within a property initializer.
+	]]>
+	</description>
+    </error>
+	<error id="1208" label="kError_NonConstantConfigInit">配置值的初始值设定项必须是编译时常量。
+    <description>
+	<![CDATA[
+		The initializer of a configuration value must be a value known at compile time.  The initializer may be a constant string, number, or boolean, or 
+		a reference to another previously defined configuration value.
+	]]>
+	</description>
+    </error>
+	<error id="1209" label="kError_NonConstConfigVar">配置变量只能声明为 const。
+    <description>
+	<![CDATA[
+		When defining a configuration variable, it must be declared as const.
+	]]>
+	</description>
+    </error>
+	<error id="1210" label="kError_InvalidConfigLocation">配置值必须在程序或包的顶级声明。
+    <description>
+	<![CDATA[
+		A configuration value must be declared at the top level of a program or package.
+	]]>
+	</description>
+    </error>
+	<error id="1211" label="kError_ShadowedConfigNamespace">命名空间 %s 与配置命名空间冲突。
+    <description>
+	<![CDATA[
+		A namespace may not have the same name as a configuration namespace.
+	]]>
+	</description>
+    </error>
+	<error id="1212" label="kError_InvalidPrecision">精度必须是一个介于 1 和 34 之间的整数。</error>
+	<error id="1213" label="kError_Parser_NumericUseMisplaced">语法错误: 数字的 use 语句必须是块中的第一项。</error>
+	<error id="1214" label="kError_WrongVersion">不兼容的版本: 无法引用定义 %s（在版本 %s 中引入），来源为版本 %s 的代码。</error>
 </errors>

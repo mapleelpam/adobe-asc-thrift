@@ -1,4 +1,16 @@
 <?xml version='1.0' encoding='utf-8' standalone='no' ?>
+
+<!--
+
+	ADOBE SYSTEMS INCORPORATED
+	Copyright 2006-2007 Adobe Systems Incorporated
+	All Rights Reserved.
+
+	NOTICE: Adobe permits you to use, modify, and distribute this file
+	in accordance with the terms of the license agreement accompanying it.
+
+-->
+
 <AS2LintWarnings>
 
 <!-- ***Dont use ?? in these - use ? if you must; C++ translates ?? into a ^ symbol for some reason..***
@@ -806,6 +818,28 @@ function test() {
 <description>Delete removes dynamically defined properties from an object.  Declared properties of a class can not be deleted, the operation merely fails silently.  To free memory associated with this variable, set its value to null instead.</description>
   </warning>
 
+  <!-- If you update any of these strings, you must change MXMLC's equivalents in flex/sdk/modules/compiler/src/flex2/compiler_en.properties -->
+      <warning id="3602" label="kWarning_Deprecated">使用了已弃用的定义。</warning>
+      <warning id="3603" label="kWarning_Deprecated_specific">已弃用“%s”。
+         <description>This definition is deprecated and may be removed in the future.</description>
+      </warning>
+      <warning id="3604" label="kWarning_DeprecatedMessage">使用了已弃用的定义。</warning>
+      <warning id="3605" label="kWarning_DeprecatedMessage_specific">%s
+         <description></description>
+      </warning>
+      <warning id="3606" label="kWarning_DeprecatedUseReplacement">使用了已弃用的定义。</warning>
+      <warning id="3607" label="kWarning_DeprecatedUseReplacement_specific">已弃用“%s”。请使用“%s”。
+         <description></description>
+      </warning>
+      <warning id="3608" label="kWarning_DeprecatedSince">使用了已弃用的定义。</warning>
+      <warning id="3609" label="kWarning_DeprecatedSince_specific">ewZ文_'%s' has been deprecated since %s.  Please use '%s'.
+         <description></description>
+      </warning>
+      <warning id="3610" label="kWarning_DeprecatedSinceNoReplacement">使用了已弃用的定义。</warning>
+      <warning id="3611" label="kWarning_DeprecatedSinceNoReplacement_specific">pGc文_'%s' has been deprecated since %s.
+         <description></description>
+     </warning>
+ <!-- *** -->
 
 </warnings>
 

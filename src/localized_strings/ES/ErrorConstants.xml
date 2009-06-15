@@ -1,4 +1,16 @@
 <?xml version='1.0' encoding='utf-8' standalone='no' ?>
+
+<!--
+
+	ADOBE SYSTEMS INCORPORATED
+	Copyright 2006-2007 Adobe Systems Incorporated
+	All Rights Reserved.
+
+	NOTICE: Adobe permits you to use, modify, and distribute this file
+	in accordance with the terms of the license agreement accompanying it.
+
+-->
+
 <!--  
 
    Note that error id="1179" does not need to be translated, its for internal use only.
@@ -716,4 +728,51 @@ switch(x)
 		The characters '/*' where found, which indicate the beginning of a comment, but the corresponding characters, '*/', which indicate the end of the comment block, were not found.
     ]]></description>
 	</error>
+	<error id="1205" label="kError_ParserExpectingLeftBraceOrStringLiteral">Error de sintaxis: se esperaba una llave izquierda de apertura ({) o un literal de cadena ("").</error>
+	<error id="1206" label="kError_InvalidES4SuperStatement">Una sentencia super sólo se puede utilizar como el último elemento de la lista de inicializadores de un constructor.
+<description><![CDATA[
+		You cannot use the <code>super</code> statement within a constructor. You can 
+		use the <code>super</code> statement only as the last item in the constructor initializer list.
+	]]>
+	</description>
+    </error>
+	<error id="1207" label="kError_ThisUsedInInitializer">La palabra clave this no se puede utilizar en inicializadores de propiedades.
+    <description>
+	<![CDATA[
+		You cannot use the <code>this</code> keyword within a property initializer.
+	]]>
+	</description>
+    </error>
+	<error id="1208" label="kError_NonConstantConfigInit">El inicializador de un valor de configuración debe ser una constante en tiempo de compilación.
+    <description>
+	<![CDATA[
+		The initializer of a configuration value must be a value known at compile time.  The initializer may be a constant string, number, or boolean, or 
+		a reference to another previously defined configuration value.
+	]]>
+	</description>
+    </error>
+	<error id="1209" label="kError_NonConstConfigVar">Una variable de configuración sólo se puede declarar const.
+    <description>
+	<![CDATA[
+		When defining a configuration variable, it must be declared as const.
+	]]>
+	</description>
+    </error>
+	<error id="1210" label="kError_InvalidConfigLocation">Debe declararse un valor de configuración en el nivel superior de un programa o paquete.
+    <description>
+	<![CDATA[
+		A configuration value must be declared at the top level of a program or package.
+	]]>
+	</description>
+    </error>
+	<error id="1211" label="kError_ShadowedConfigNamespace">Existe un conflicto entre el espacio de nombres %s y un espacio de nombres de configuración.
+    <description>
+	<![CDATA[
+		A namespace may not have the same name as a configuration namespace.
+	]]>
+	</description>
+    </error>
+	<error id="1212" label="kError_InvalidPrecision">La precisión debe ser un número entero entre 1 y 34.</error>
+	<error id="1213" label="kError_Parser_NumericUseMisplaced">Error de sintaxis: la sentencia de uso numérico debe estar en primer lugar en el bloque.</error>
+	<error id="1214" label="kError_WrongVersion">Versión no compatible: no se puede hacer referencia a la definición %s introducida en la versión %s del código con la versión %s.</error>
 </errors>
