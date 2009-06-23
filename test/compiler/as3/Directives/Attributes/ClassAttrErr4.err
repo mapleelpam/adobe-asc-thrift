@@ -1,8 +1,8 @@
 
 [Compiler] Error #1127: Attribute public was specified multiple times.
-   ClassAttrErr4.as, Ln 3, Col 9: 
+   ClassAttrErr4.as, Ln 3, Col 16: 
    	public public public class ClassAttrErr4
-   ........^
+   .*........^
 
 [Compiler] Error #1127: Attribute public was specified multiple times.
    ClassAttrErr4.as, Ln 3, Col 2: 

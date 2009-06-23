@@ -1,10 +1,6 @@
-[Compiler] Error #1084: Syntax error: expecting identifier before return.
-   e7_3_13_Err.as, Ln 42, Col 9:
-return \( array \);
-........^
-[Compiler] Error #1084: Syntax error: expecting rightbrace before rightparen.
-   e7_3_13_Err.as, Ln 42, Col 24:
-return \( array \);
-.......................^
+[Compiler] Error #1093: Syntax error.
+   e7_3_13_Err.as, Ln 41, Col 35:
+\/\*\/\*array\[0\].actual="fail";\*\/\*\/
+..................................^
 
-2 errors found
+1 error found

@@ -116,6 +116,7 @@ public final class Scanner implements ErrorConstants
         ctx = cx;
         state = start_state;
         level = 0;
+        inXML = 0;
         states = new IntList();
         levels = new IntList();
         this.save_comments = save_comments;
@@ -137,7 +138,7 @@ public final class Scanner implements ErrorConstants
     {
         init(cx,save_comments);
         this.input = new InputBuffer(in, origin);
-        cx.input = this.input;
+        cx.input = this.input; // FIXME: how nicely external state altering.
     }
     
     /**
@@ -149,7 +150,7 @@ public final class Scanner implements ErrorConstants
     {
         init(cx,true);
         this.input = input;
-        cx.input = input;
+        cx.input = input; // so now we get to look around to find out who does this...
     }
 
     /**
@@ -301,33 +302,33 @@ public final class Scanner implements ErrorConstants
     private void skiperror(int kind)
     {
         //Debugger::trace("skipping error\n");
-        switch (kind)
-        {
-            case kError_Lexical_General:
-                return;
+    	switch (kind)
+    	{
+    	case kError_Lexical_General:
+    		return;
 
-            case kError_Lexical_LineTerminatorInSingleQuotedStringLiteral:
-            case kError_Lexical_LineTerminatorInDoubleQuotedStringLiteral:
-                while (true)
-                {
-                    char nc = nextchar();
-                    if (nc == '\'' || nc == 0)
-                    {
-                        return;
-                    }
-                }
+    	case kError_Lexical_LineTerminatorInSingleQuotedStringLiteral:
+    	case kError_Lexical_LineTerminatorInDoubleQuotedStringLiteral:
+    		while (true)
+    		{
+    			char nc = nextchar();
+    			if (nc == '\'' || nc == 0)
+    			{
+    				return;
+    			}
+    		}
 
-            case kError_Lexical_SyntaxError:
-            default:
-                while (true)
-                {
-                    char nc = nextchar();
-                    if (nc == ';' || nc == '\n' || nc == '\r' || nc == 0)
-                    {
-                        return;
-                    }
-                }
-        }
+    	case kError_Lexical_SyntaxError:
+    	default:
+    		while (true)
+    		{
+    			char nc = nextchar();
+    			if (nc == ';' || nc == '\n' || nc == '\r' || nc == 0)
+    			{
+    				return;
+    			}
+    		}
+    	}
     }
 
     /*
@@ -350,10 +351,11 @@ public final class Scanner implements ErrorConstants
      */
 
     public int state;
-    public int level;
-
-    public IntList states;
-    public IntList levels;
+    
+    private int level;
+    private int inXML = 0;
+    private IntList states;
+    private IntList levels;
 
     public void pushState()
     {
@@ -361,12 +363,14 @@ public final class Scanner implements ErrorConstants
         levels.add(level);
         state = start_state;
         level = 0;
+        inXML++;
     }
 
     public void popState()
     {
         state = states.removeLast();
         level = levels.removeLast();
+        if ( inXML > 0) inXML--;
     }
 
     private StringBuilder getDocTextBuffer(String doctagname)
@@ -1045,31 +1049,34 @@ public final class Scanner implements ErrorConstants
                 		}
                 		continue;
 
+                	case '>': 
+               			if ( inXML > 0) // ignore this if outside an XML context 
+               			{
+               				state = start_state;
+               				return makeToken( XMLTAGENDEND_TOKEN );
+               			}
+               			// FALL THROUGH
                 	default:
-                		// If the last token read is any of these, then the '/' can't start a div or div_assign...
+                		// If the last token read is any of these, then the '/' must start a div or div_assign...
 
                 		int lb = currentToken.id;
-                		if ( lb == LEFTPAREN_TOKEN || lb == COMMA_TOKEN     || lb == ASSIGN_TOKEN || lb == LEFTBRACKET_TOKEN || 
-                			 lb == RETURN_TOKEN    || lb == LEFTBRACE_TOKEN || lb == SEMICOLON_TOKEN )
-                		{
-                			state = slashregexp_state;
-                			retract(); // since we didn't use the current character for this decision.
-                			continue;	
-                		}
-                		else 
+                	
+                		if ( lb == IDENTIFIER_TOKEN || lb == NUMBERLITERAL_TOKEN || lb == RIGHTPAREN_TOKEN ||
+                		     lb == RIGHTBRACE_TOKEN || lb == RIGHTBRACKET_TOKEN )
                 		{
                 			/*
-                			 * tokens: /> /= /
+                			 * tokens: /= /
                 			 */
 
                 			state = start_state; 
-                			if (c=='>')
-                				return makeToken( XMLTAGENDEND_TOKEN );
                 			if (c=='=')
                 				return makeToken( DIVASSIGN_TOKEN );
                 			retract();
                 			return makeToken( DIV_TOKEN );	
                 		}
+                		state = slashregexp_state;
+                		retract();
+                		continue;
                 	}
                 }
 
@@ -1301,21 +1308,20 @@ public final class Scanner implements ErrorConstants
                         return makeToken(XMLPART_TOKEN, input.substringReplaceUnicodeEscapes(startofxml, pos()-1));
 
                     case '<':
-                        switch (nextchar())
-                        {
-                        case '/':
-                            --level;
-                            nextchar();
-                            mark();
-                            retract();
-                            state = endxmlname_state;
-                            continue;
-
-                        default:
-                            ++level;
-                        state = xmlliteral_state;
-                        continue;
-                        }
+                    	if (nextchar()=='/')
+                    	{
+                    		--level;
+                    		nextchar();
+                    		mark();
+                    		retract();
+                    		state = endxmlname_state;
+                    	}
+                    	else 
+                    	{
+                    		++level;
+                    		state = xmlliteral_state;
+                    	}
+                    	continue;
 
                     case '/':
                         if (nextchar()=='>')
