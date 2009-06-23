@@ -7,7 +7,7 @@ a\*/\)
 = 232\?;
 .....^
 [Compiler] Error #1093: Syntax error.
-sanity/strict/b115412.as, Ln 4, Col 2:
+   b115412.as, Ln 4, Col 2:
 \*/
 .^
 [Compiler] Error #1084: Syntax error: expecting identifier before end of program.
