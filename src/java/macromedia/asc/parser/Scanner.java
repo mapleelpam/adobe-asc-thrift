@@ -1050,7 +1050,7 @@ public final class Scanner implements ErrorConstants
                 		continue;
 
                 	case '>': 
-               			if ( inXML > 0) // ignore this if outside an XML context 
+               			// FIXME: Not exactly right???if ( inXML > 0) // ignore this if outside an XML context 
                			{
                				state = start_state;
                				return makeToken( XMLTAGENDEND_TOKEN );
