@@ -1347,9 +1347,9 @@ public final class Parser
                 if (inXMLTokenSet(lt))
                 {
                     result = concatXML(result,nodeFactory.literalString(separator_text,0));
-                    lt = lookahead();
-                    shift();
                     result = concatXML(result,nodeFactory.literalString(scanner.getCurrentTokenTextOrTypeText(lt),scanner.input.positionOfMark()));
+                    shift();
+                    lt = lookahead();
                 }
                 else
                 {
@@ -5175,7 +5175,7 @@ XMLElementContent
 
     /*
      * <VariableBinding>
-     *     <TypedIdentifier> <VariableInitialization>
+     *     <TypedIdentifier> <VariableInitialization>?
      */
 
     private Node parseVariableBinding(AttributeListNode attrs, int kind, int mode)
