@@ -316,7 +316,7 @@ public interface ErrorConstants
            new AscError(kError_InvalidFinalUsage, "The attribute final can only be used on a method defined in a class." ),
            new AscError(kError_InvalidNative, "The native attribute can only be used with function definitions." ),
            new AscError(kError_InvalidDynamic, "The dynamic attribute can only be used with class definitions." ),
-           new AscError(kError_Parser_keywordInsteadOfTypeExpr, "Syntax error: %s as not a valid type." ),
+           new AscError(kError_Parser_keywordInsteadOfTypeExpr, "Syntax error: %s is not a valid type." ),
            new AscError(kError_WrongNumberOfArguments, "Incorrect number of arguments.  Expected %s." ),
            new AscError(kError_TooManyArguments, "Incorrect number of arguments.  Expected no more than %s." ),
            new AscError(kError_BadRequiredParameter, "Required parameters are not permitted after optional parameters." ),

@@ -534,7 +534,7 @@ var str:String = i.assortment;</code></pre>
     <error id="1132"  label="kError_InvalidFinalUsage">The attribute final can only be used on a method defined in a class.</error>
     <error id="1133"  label="kError_InvalidNative">The native attribute can only be used with function definitions.</error>
     <error id="1134"  label="kError_InvalidDynamic">The dynamic attribute can only be used with class definitions.</error>
-    <error id="1135"  label="kError_Parser_keywordInsteadOfTypeExpr">Syntax error: %s as not a valid type.</error>
+    <error id="1135"  label="kError_Parser_keywordInsteadOfTypeExpr">Syntax error: %s is not a valid type.</error>
     <error id="1136"  label="kError_WrongNumberOfArguments">Incorrect number of arguments.  Expected %s.
 
 	<description><![CDATA[
