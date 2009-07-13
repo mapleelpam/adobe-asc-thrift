@@ -349,7 +349,8 @@ public class Compiler implements ErrorConstants
                                                         int dialect /*=0*/,
                                                             int target,
                                                                 boolean optimize,
-                                                                ObjectList<ConfigVar> optimizer_configs)
+							 ObjectList<ConfigVar> optimizer_configs,
+							 int api_version)
     {
         // Initialize the compiler before compiling anything
         init();
@@ -360,6 +361,7 @@ public class Compiler implements ErrorConstants
 		statics.use_static_semantics = use_static_semantics;
         statics.dialect = dialect;
         statics.setAbcVersion(target);
+		statics.setApiVersion(api_version);
         
         // set up use_namespaces anytime before parsing begins
         if (use_namespaces != null)
@@ -637,7 +639,8 @@ public class Compiler implements ErrorConstants
                 mainplug.dialect,
                 mainplug.target,
                 mainplug.optimize,
-                mainplug.optimizer_configs
+                mainplug.optimizer_configs,
+				mainplug.api_version
                     );
     }
 
@@ -674,7 +677,8 @@ public class Compiler implements ErrorConstants
             mainplug.dialect,
             mainplug.target,
             mainplug.optimize,
-            mainplug.optimizer_configs);
+            mainplug.optimizer_configs,
+			mainplug.api_version);
     }
     
     static void createProjector(String avmplus_exe, String pathspec, String scriptname, ByteList bytes)

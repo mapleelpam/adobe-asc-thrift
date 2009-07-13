@@ -22,6 +22,7 @@ import java.io.PrintStream;
 import macromedia.asc.util.Context;
 import macromedia.asc.util.ContextStatics;
 import macromedia.asc.util.ObjectList;
+import macromedia.asc.util.APIVersions;
 import static macromedia.asc.util.Version.*;
 import static macromedia.asc.embedding.avmplus.Features.*;
 
@@ -56,6 +57,7 @@ public class Main
     static int default_target = TARGET_AVM2;  // Default to FP10
     static int dialect = default_dialect;
     static int target = default_target;
+	static int api_version = -1;
 
     static boolean optimize = false;
 
@@ -167,7 +169,16 @@ public class Main
                             {
                                 do_help = true;
                             }
-                        }						break;
+                        }
+						else if (flag.length() == 4 && "-api".equals(flag))
+						{
+							api_version = Integer.parseInt(args[++i].trim());
+							if (api_version < APIVersions.min_version_num || api_version > APIVersions.max_version_num) {
+								System.err.println("attempt to use invalid api version = " + api_version);
+								do_help = true;
+							}
+						}
+						break;
 
 					case 'c':
 						if (flag.length() == 6 && "-coach".equals(flag))
@@ -409,6 +420,8 @@ public class Main
             System.out.println("  -config ns::name=value = define a configuration value in the namespace ns");
             System.out.println("  -use <namespace> = automatically use a namespace when compiling this code");
             System.out.println("  -avmtarget <vm version number> = emit bytecode for a specific VM version, 1 is AVM1, 2 is AVM2, etc");
+            System.out.println("  -api <version> = compile program as a specfic version between " + APIVersions.min_version_num +
+							   " and " + APIVersions.max_version_num);
             System.out.println("");
 			System.exit(1);
 		}
@@ -492,6 +505,7 @@ public class Main
             plug.optimize = optimize;
             plug.optimizer_configs = optimizer_configs;
             plug.configs = config_vars;
+			plug.api_version = api_version;
 
 			if(sanity_mode)
 			{

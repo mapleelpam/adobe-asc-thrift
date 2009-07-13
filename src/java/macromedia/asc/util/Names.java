@@ -61,6 +61,14 @@ public final class Names
         if (profile) tables++;
 	}
 
+	public void dump() {
+		for (int i = 0; i < name.length; ++i) {
+			System.out.println (name[i] + " '" + (namespace[i]==null?"":namespace[i].name+"' "+namespace[i].getNamespaceKind()));
+		}
+	}
+
+
+
     /**
      * The hash function must be based on the name only, 
      * so that searches for {name,type} entries can be found in the same bucket.
@@ -115,7 +123,7 @@ public final class Names
 	{
 	    int hv = hash(name);
         int id = hashTable[hv];
-     
+
         if (profile) lookups++;
         
         if ( id == -1 )
@@ -200,7 +208,7 @@ public final class Names
 		}
 		
 		int id = find(name, type);
-        
+
 		boolean hasIt = id != -1 && slot[id] != -1;
 		return hasIt;
 	}

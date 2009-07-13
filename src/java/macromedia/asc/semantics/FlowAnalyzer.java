@@ -4307,7 +4307,7 @@ else
             node.used_namespaces.addAll(usednamespaces_sets.back());  // makes a copy
 
             node.imported_names.putAll(importednames_sets.back());  // makes a copy
-            node.public_namespace  = cx.publicNamespace();  //public_namespaces.back();
+            node.public_namespace  = cx.publicNamespace();  // public_namespaces.back();
             node.default_namespace = default_namespaces.back();
 
             // clsdefs_sets is a stack of sets of class definitions.
@@ -4422,7 +4422,7 @@ else
 
                 if (node instanceof InterfaceDefinitionNode)
                 {
-                    node.default_namespace = node.cframe;
+                    node.default_namespace = node.cframe;  // class object and namespace all in one
                 }
 
                 if( node.attrs != null)

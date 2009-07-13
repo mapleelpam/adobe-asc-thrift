@@ -1349,6 +1349,27 @@ public final class Context implements ErrorConstants
         statics.userDefined.put(name, value);
     }
 
+	public final int MIN_API_MARK = 0xE000;
+	public final int MAX_API_MARK = 0xF8FF;
+
+	int getVersion(String uri) {
+		if (uri.length() == 0) return -1;
+		int last = uri.codePointAt(uri.length()-1);
+		if(last >= MIN_API_MARK && last <= MAX_API_MARK) {
+			return last-MIN_API_MARK;
+		}
+		return -1;
+	}
+
+	String stripVersion(String uri) {
+		int version = getVersion(uri);
+		if(version >= 0) {
+			uri = uri.substring(0, uri.length()-1);
+			//System.out.println("stripping "+version+" from uri='"+uri+"'");
+		}
+		return uri.intern();
+	}
+
     public ObjectValue getNamespace(String name)
     {
         return getNamespace(name, NS_PUBLIC);
@@ -1356,6 +1377,7 @@ public final class Context implements ErrorConstants
 
     public ObjectValue getNamespace(String name, byte ns_kind)
     {
+		name = stripVersion(name);
         assert name == name.intern();
         Map<String, ObjectValue> namespace_map;
 
@@ -1383,6 +1405,7 @@ public final class Context implements ErrorConstants
             val = new NamespaceValue(ns_kind);
             val.setValue(name);     // to indicate that this is a ct const value
             val.name = name;
+			assert name == name.intern();
             namespace_map.put(name,val);
         }
         return val;
@@ -1610,7 +1633,8 @@ public final class Context implements ErrorConstants
         {
             namespace_part.append(':');
         }
-        return namespace_part.append(name).append(kind_part).toString();
+        String debug_name = namespace_part.append(name).append(kind_part).toString();
+        return debug_name;
     }
 
     public QName computeQualifiedName(String region_part, String name, ObjectValue qualifier, int kind )
@@ -1669,5 +1693,55 @@ public final class Context implements ErrorConstants
         }
         return code;
     }
-    
+
+	public int getApiVersion()
+	{
+		return statics.apiVersion;
+	}
+
+	// a version is compatible with the current API if
+	// the api includes that version
+	public boolean isCompatibleVersion(int v) {
+		if (v < 0) return true;
+		int cv [] = getCompatibleVersions(v);
+		for (int c : cv) {
+			if (c == statics.apiVersion) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+    public int [] getCompatibleVersions(int v) {
+		assert v >= APIVersions.min_version_num;
+		return APIVersions.versions[v-APIVersions.min_version_num];
+    };
+
+    public String[] getVersionedURIs() {
+		return APIVersions.uris;
+    }
+
+	public boolean isVersionedURI(String uri) {
+		if(uri == "") {
+			return true;
+		}
+		for (String s : getVersionedURIs()) {
+			if (uri == s) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isValidAPIVersion(int v) {
+		return v >= APIVersions.min_version_num 
+			|| v <= APIVersions.max_version_num;
+	}
+
+	static {
+		for (String s : APIVersions.uris) {
+			s.intern();
+		}
+	}
+
 }

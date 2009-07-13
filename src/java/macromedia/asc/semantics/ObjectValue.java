@@ -308,6 +308,7 @@ public class ObjectValue extends Value implements Comparable
     	{
     		return false;
     	}
+
     	boolean ret = false;
     	ret = names == null ? false : names.containsKey(name, qualifier, Names.getTypeFromKind(kind));
         

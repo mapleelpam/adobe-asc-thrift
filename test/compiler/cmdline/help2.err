@@ -29,3 +29,4 @@ specified file available for import
 -config ns::name=value = define a configuration value in the namespace ns
 -use <namespace> = automatically use a namespace when compiling this code
 -avmtarget <vm version number> = emit bytecode for a specific VM version, 1 is AVM1, 2 is AVM2, etc
+-api <version> = compile program as a specfic version between 660 and 666

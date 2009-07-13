@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 package macromedia.abc;
-
+import static java.lang.System.*;
 import static macromedia.asc.parser.Tokens.EMPTY_TOKEN;
 import static macromedia.asc.semantics.Slot.*;
 import macromedia.asc.util.ObjectList;
@@ -18,6 +18,7 @@ import macromedia.asc.util.Context;
 import macromedia.asc.util.Namespaces;
 import macromedia.asc.util.IntList;
 import macromedia.asc.util.Decimal128;
+import macromedia.asc.util.APIVersions;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.*;
 import macromedia.asc.embedding.avmplus.ActionBlockConstants;
@@ -31,6 +32,8 @@ import macromedia.asc.embedding.avmplus.ActivationBuilder;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Erik Tierney
@@ -259,7 +262,6 @@ public final class AbcParser
 
             }
         }
-
     }
 
     void scanMethods()
@@ -398,6 +400,7 @@ public final class AbcParser
         public DefinitionNode def;
         public Slot slot;
     }
+
     DefAndSlot slotTrait(int nameID, int slotID, int typeID, int valueID, int value_kind, boolean is_const)
     {
         ObjectValue obj = ctx.scope();
@@ -407,8 +410,7 @@ public final class AbcParser
         QName qName = getQNameFromCPool(nameID);
         String simpleName = getStringFromCPool(qName.name);
 
-        ObjectValue ns = getNamespace(qName.nameSpace);
-
+        ObjectValue ns = getNamespace(qName);
         Namespaces names = new Namespaces();
         names.push_back(ns);
         TypeValue type = ctx.noType(); // cn: type will be set correctly during CE,
@@ -515,8 +517,7 @@ public final class AbcParser
         QName methQName = getQNameFromCPool(nameID);
 
         String methName = getStringFromCPool(methQName.name);
-        ObjectValue ns = getNamespace(methQName.nameSpace);
-
+        ObjectValue ns = getNamespace(methQName);
         return methodTrait(methName, ns, dispID, methInfo, attrs, kind);
     }
 
@@ -890,7 +891,7 @@ public final class AbcParser
         // Class name
         QName classQName = getQNameFromCPool(nameID);
         String className = getStringFromCPool(classQName.name);
-        ObjectValue ns = getNamespace(classQName.nameSpace);
+        ObjectValue ns = getNamespace(classQName);
 
         String region_name = region_name_stack.back();
         if( region_name.length() > 0 )
@@ -919,7 +920,7 @@ public final class AbcParser
             hasSuper = true;
 
             QName superQName = getQNameFromCPool((int)superID);
-            superNS = getNamespace(superQName.nameSpace);
+            superNS = getNamespace(superQName);
             superName = getFullName(superQName);
             simpleSuperName = getStringFromCPool(superQName.name);
         }
@@ -945,10 +946,10 @@ public final class AbcParser
 			String simpleIntName = getStringFromCPool(intName.name);
 			Namespaces intNamespaces;
 			if(intName.nsIsSet)
-			  intNamespaces = getNamespaces(intName.nameSpace);
+				intNamespaces = getNamespaces(intName.nameSpace, new TreeSet<Integer>());
 			else {
 				intNamespaces = new Namespaces(1); 
-				intNamespaces.add(getNamespace(intName.nameSpace));
+				intNamespaces.add(getNamespace(intName));
 			}
 		
             IdentifierNode ident = ctx.getNodeFactory().identifier(simpleIntName);
@@ -1111,10 +1112,28 @@ public final class AbcParser
             int attrs;
             long slotID, typeID, valueID, methInfo, dispID, classID;
             int value_kind = 0;
+			boolean ignore = false;
+
+			{
+				QName qName = getQNameFromCPool((int)nameID);
+				ObjectValue ns = getNamespace(qName);
+				String simpleName = getStringFromCPool(qName.name);
+				for (int ver : qName.versions) {
+					// if there is at least one compatible version 
+					// then don't ignore
+					if (ctx.isCompatibleVersion(ver)) {
+						ignore = false;
+						break;
+					}
+					else {
+						ignore = true;
+						continue;
+					}
+				}
+			}
 
             DefAndSlot d = null;
-            switch (tag)
-            {
+            switch (tag) {
             case ActionBlockConstants.TRAIT_Var:
             case ActionBlockConstants.TRAIT_Const:
                 slotID = buf.readU32();
@@ -1122,16 +1141,18 @@ public final class AbcParser
                 valueID = buf.readU32();
                 if( valueID > 0)
                     value_kind = buf.readU8();
-                d = slotTrait((int)nameID, (int)slotID, (int)typeID, (int)valueID, value_kind, (tag == ActionBlockConstants.TRAIT_Const));
-	            statements.items.add(d.def);
-	            if (node != null)
-	            {
-		            QName qName = getQNameFromCPool((int)nameID);
-		            String simpleName = getStringFromCPool(qName.name);
-		            ObjectValue ns = getNamespace(qName.nameSpace);
+				if (!ignore) {
+					d = slotTrait((int)nameID, (int)slotID, (int)typeID, (int)valueID, value_kind, (tag == ActionBlockConstants.TRAIT_Const));
+	                statements.items.add(d.def);
 
-		            node.toplevelDefinitions.add(new macromedia.asc.semantics.QName(ns, simpleName));
-	            }
+					if (node != null)
+					{
+						QName qName = getQNameFromCPool((int)nameID);
+						String simpleName = getStringFromCPool(qName.name);
+						ObjectValue ns = getNamespace(qName);
+						node.toplevelDefinitions.add(new macromedia.asc.semantics.QName(ns, simpleName));
+					}
+				}
                 break;
             case ActionBlockConstants.TRAIT_Method:
             case ActionBlockConstants.TRAIT_Getter:
@@ -1139,30 +1160,32 @@ public final class AbcParser
                 dispID = buf.readU32();
                 methInfo = buf.readU32();
                 attrs = (kind >> 4);
-                d = methodTrait((int)nameID, (int)dispID, (int)methInfo, attrs, tag);
-                statements.items.add(d.def);
-	            if (node != null)
-	            {
-		            QName qName = getQNameFromCPool((int)nameID);
-		            String simpleName = getStringFromCPool(qName.name);
-		            ObjectValue ns = getNamespace(qName.nameSpace);
-
-		            node.toplevelDefinitions.add(new macromedia.asc.semantics.QName(ns, simpleName));
-	            }
+				if (!ignore) {
+					d = methodTrait((int)nameID, (int)dispID, (int)methInfo, attrs, tag);
+					statements.items.add(d.def);
+					if (node != null)
+					{
+						QName qName = getQNameFromCPool((int)nameID);
+						String simpleName = getStringFromCPool(qName.name);
+						ObjectValue ns = getNamespace(qName);
+						node.toplevelDefinitions.add(new macromedia.asc.semantics.QName(ns, simpleName));
+					}
+				}
                 break;
             case ActionBlockConstants.TRAIT_Class:
                 slotID =  buf.readU32();
                 classID = buf.readU32();
-                d = classTrait((int)nameID, (int)slotID, (int)classID);
-                statements.items.add(d.def);
-	            if (node != null)
-	            {
-		            QName qName = getQNameFromCPool((int)nameID);
-		            String simpleName = getStringFromCPool(qName.name);
-		            ObjectValue ns = getNamespace(qName.nameSpace);
-
-		            node.toplevelDefinitions.add(new macromedia.asc.semantics.QName(ns, simpleName));
-	            }
+				if (!ignore) {
+					d = classTrait((int)nameID, (int)slotID, (int)classID);
+					statements.items.add(d.def);
+					if (node != null)
+					{
+						QName qName = getQNameFromCPool((int)nameID);
+						String simpleName = getStringFromCPool(qName.name);
+						ObjectValue ns = getNamespace(qName);
+						node.toplevelDefinitions.add(new macromedia.asc.semantics.QName(ns, simpleName));
+					}
+				}
                 break;
             case ActionBlockConstants.TRAIT_Function:
                 buf.skipEntries(2);
@@ -1316,6 +1339,7 @@ public final class AbcParser
         int name = 0;
         int nameSpace = 0;
         boolean nsIsSet = false;
+		Set<Integer> versions;
     };
 
     static class ParameterizedQName extends QName
@@ -1366,7 +1390,7 @@ public final class AbcParser
         return value;
     }
 
-    Namespaces getNamespaces(int namespaceSetID)
+    Namespaces getNamespaces(int namespaceSetID, Set<Integer> versions)
     {
         int orig = buf.pos();
 
@@ -1376,18 +1400,50 @@ public final class AbcParser
         Namespaces val = new Namespaces(count);
         for(int i = 0; i < count; ++i)
         {
-            val.add(getNamespace(buf.readU32()));
+            val.add(getNamespace(buf.readU32(), versions));
         }
         buf.seek(orig);
         return val;
     }
 
-    ObjectValue getNamespace(int namespaceID)
+	ObjectValue getNamespace(QName name) {
+		ObjectValue ns;
+		TreeSet<Integer> versions = new TreeSet<Integer> ();
+		if(name.nsIsSet) {
+			Namespaces nss = getNamespaces(name.nameSpace, versions);
+			if (nss.size() == 0) {
+				ns = ctx.publicNamespace();
+			}
+			else {
+				ns = nss.get(0);  // just need one since they all share the 
+				                  // same base uri
+			}
+		}
+		else {
+			ns = getNamespace(name.nameSpace, versions);
+		}
+		name.versions = versions;
+		return ns;
+	}
+
+	int getVersion(String uri) {
+		if (uri.length() == 0) return ctx.getApiVersion();
+		int last = uri.codePointAt(uri.length()-1);
+		if(last >= 0xE000 && last <= 0xF000) {
+			return last-0xE000;
+		}
+		return ctx.getApiVersion();
+	}
+
+    ObjectValue getNamespace(int namespaceID) {
+		return getNamespace(namespaceID, new TreeSet<Integer>());
+	}
+
+    ObjectValue getNamespace(int namespaceID, Set<Integer> vers)
     {
         ObjectValue ns = null;
         if( namespaceID == 0 )
         {
-            //
             ns = ctx.anyNamespace();
         }
         else
@@ -1397,31 +1453,34 @@ public final class AbcParser
             buf.seek( cPoolNsPositions[namespaceID] );
 
             int kind = buf.readU8();
+			String uri = getStringFromCPool(buf.readU32());
+			int ver = -1;
             switch(kind)
             {
             case ActionBlockConstants.CONSTANT_Namespace:
-                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()));
+				vers.add(getVersion(uri));
+                ns = ctx.getNamespace(uri);
                 break;
             case ActionBlockConstants.CONSTANT_PackageNamespace:
-                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()));
+				vers.add(getVersion(uri));
+                ns = ctx.getNamespace(uri);
                 ns.setPackage(true);
                 break;
             case ActionBlockConstants.CONSTANT_ProtectedNamespace:
-                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_PROTECTED);
+                ns = ctx.getNamespace(uri, Context.NS_PROTECTED);
                 break;
             case ActionBlockConstants.CONSTANT_PackageInternalNs:
-                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_INTERNAL);
+                ns = ctx.getNamespace(uri, Context.NS_INTERNAL);
                 break;
             case ActionBlockConstants.CONSTANT_PrivateNamespace:
-                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_PRIVATE);
+                ns = ctx.getNamespace(uri, Context.NS_PRIVATE);
                 break;
             case ActionBlockConstants.CONSTANT_ExplicitNamespace:
-                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_EXPLICIT);
+                ns = ctx.getNamespace(uri, Context.NS_EXPLICIT);
                 break;
             case ActionBlockConstants.CONSTANT_StaticProtectedNs:
-                ns = ctx.getNamespace(getStringFromCPool(buf.readU32()), Context.NS_STATIC_PROTECTED);
+                ns = ctx.getNamespace(uri, Context.NS_STATIC_PROTECTED);
                 break;
-
             }
             buf.seek(orig);
         }

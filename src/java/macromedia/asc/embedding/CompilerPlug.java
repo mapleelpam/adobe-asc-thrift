@@ -52,6 +52,7 @@ public class CompilerPlug
     public boolean optimize;
     public ObjectList<ConfigVar> configs;
     public ObjectList<ConfigVar> optimizer_configs;
+	public int api_version;
 
 	public CompilerPlug()
 	{

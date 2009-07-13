@@ -58,6 +58,7 @@ public class ScriptCompiler
     private static String outputDir;
 
     private static boolean builtinFlag;
+    private static boolean apiVersioningFlag;
 	private static boolean debugFlag;
 	private static boolean optimize;
     private static boolean check_version;
@@ -103,9 +104,7 @@ public class ScriptCompiler
             md();
 			ce();
             s.check_version = false;
-
             cg();
-
 
 			start = end;
 			end = file.size();
@@ -128,6 +127,7 @@ public class ScriptCompiler
 		boolean use_static_semantics = false;
 		boolean decimalFlag = false;
         boolean useas3 = false;
+		int apiVersion = -1;
 
         int target = TARGET_AVM2;
 
@@ -149,6 +149,10 @@ public class ScriptCompiler
 			if (args[i].equals("-builtin"))
 			{
 				builtinFlag = true;
+			}
+			else if (args[i].equals("-apiversioning"))
+			{
+				apiVersioningFlag = true;
 			}
 			else if (args[i].equals("-abcfuture"))
 			{
@@ -229,6 +233,14 @@ public class ScriptCompiler
             {
                 check_version = true;
             }
+            else if (args[i].equals("-api") )
+            {
+                apiVersion = Integer.parseInt(args[++i]);
+				if (!Context.isValidAPIVersion(apiVersion)) {
+					System.err.println("-api " + apiVersion + ", argument out of range");
+					System.exit(1);
+				}
+            }
             else if (args[i].equals("-swf") )
             {
                 swfOptions = args[++i];
@@ -240,9 +252,15 @@ public class ScriptCompiler
 			}
 		}
 
+		if (apiVersioningFlag && !builtinFlag) {
+			System.err.println("API Versioning only available on builtins");
+			System.exit(1);
+		}
+
 		TypeValue.init();
 		ObjectValue.init();
 		s = new ContextStatics();
+        s.setApiVersion(apiVersion);
         s.setAbcVersion(target);
         s.use_static_semantics = use_static_semantics;
         if( useas3 )
@@ -790,10 +808,15 @@ public class ScriptCompiler
 
 	private static void cg() throws Throwable
 	{
+		boolean errorsFound = false;
 		for (int i = 0, length = file.size(); i < length; i++)
 		{
 			if (cx.get(i).errorCount() == 0 && file.get(i).getName().endsWith(".as") && emitter.get(i) != null)
 			{
+				if (apiVersioningFlag)
+				{
+				    emitter.get(i).apiVersioning();
+				}
 				cx.get(i).setEmitter(emitter.get(i));
 				cx.get(i).pushScope(node.get(i).frame);
 				CodeGenerator generator = new CodeGenerator(cx.get(i).getEmitter());
@@ -819,6 +842,13 @@ public class ScriptCompiler
 
 				cx.get(i).popScope();
 			}
+			if (cx.get(i).errorCount() > 0) {
+				errorsFound = true;
+			}
+		}
+
+		if (errorsFound) {
+			return;
 		}
 
         if (builtinFlag)
@@ -843,7 +873,6 @@ public class ScriptCompiler
         {
             out_dir = new File(outputDir);
         }
-
 
         if (optimize)
 			bytes = Optimizer.optimize(bytes);

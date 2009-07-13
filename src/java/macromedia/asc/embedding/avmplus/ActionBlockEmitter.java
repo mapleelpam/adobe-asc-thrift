@@ -17,6 +17,7 @@
 
 package macromedia.asc.embedding.avmplus;
 
+import static java.lang.System.*;
 import macromedia.abc.BytecodeBuffer;
 import macromedia.asc.parser.LiteralNumberNode;
 import macromedia.asc.parser.MetaDataEvaluator;
@@ -38,6 +39,7 @@ import macromedia.asc.util.DoubleNumberConstant;
 import macromedia.asc.util.DecimalNumberConstant;
 import macromedia.asc.util.IntNumberConstant;
 import macromedia.asc.util.UintNumberConstant;
+import macromedia.asc.util.APIVersions;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -512,18 +514,82 @@ public class ActionBlockEmitter extends Emitter
 
     private Map<ObjectValue, Integer> nsConstants = new HashMap<ObjectValue, Integer>();
 
-    int addNamespace(ObjectValue ns)
+	/*
+
+	  The idea with versioning is that when a namespace is added to the
+	  constant pool its uri is marked with a version number if it is versioned.
+	  The VM creates aliases to versioned bindings for every compatible version.
+	  Thus code compiles against any one of those versions will see the bindings.
+
+	  precondition: there is only one object that represents all versions of a
+	  namespace. the version that is set is set once and encoded into the uri.
+
+	 */
+
+
+    int addNamespace(ObjectValue ns) {
+		return addNamespace(ns, -1);
+	}
+
+	String markURI(ObjectValue ns, int v) {
+		if (v < 0 || !isVersionedNamespace(ns)) {
+			return ns.name;
+		}
+		String uri = ns.name + (char)(0xE000+v);
+		return uri;
+	}
+
+	private String formatNSKind(ObjectValue ns) {
+        switch( ns.getNamespaceKind() )
+		{
+		case Context.NS_PRIVATE:
+			return "private";
+		case Context.NS_PROTECTED:
+		case Context.NS_STATIC_PROTECTED: 
+			return "protected";
+		case Context.NS_INTERNAL:
+			return "internal";
+		default:
+			return "public";
+		}
+	}
+
+	boolean isVersionedNamespace(ObjectValue ns) {
+        switch( ns.getNamespaceKind() )
+		{
+		case Context.NS_PRIVATE:
+		case Context.NS_PROTECTED:
+		case Context.NS_STATIC_PROTECTED: 
+		case Context.NS_INTERNAL:
+			break;
+		default:
+			if (cx.isVersionedURI(ns.name)) {
+			   return true;
+			}
+			break;
+		}
+		return false;
+	}
+
+    int addNamespace(ObjectValue ns, int v)
     {
         if( ns == cx.anyNamespace() )
             return 0;
         else
         {
-            if( nsConstants.containsKey(ns) )
-            {
-                return nsConstants.get(ns);
-            }
+			/* 
+			   FIXME this breaks versioning, but need to make sure there's not
+			   signicant performance cost by commenting it out.
 
-            int namespace_name_index = ab.addUtf8Constant(bytecodeFactory.ConstantUtf8Info(ns.name));
+			   if (nsConstants.containsKey(ns) )
+			   {
+			       return nsConstants.get(ns);
+			   }
+
+			*/
+
+			String uri = markURI(ns, v);
+			int namespace_name_index = ab.addUtf8Constant(bytecodeFactory.ConstantUtf8Info(uri));
             int namespace_index;
             if ( ns.isPackage() )
             {
@@ -542,7 +608,7 @@ public class ActionBlockEmitter extends Emitter
                     case Context.NS_PROTECTED:
                         namespace_index = ab.addNsConstant(bytecodeFactory.ConstantProtectedNamespace(namespace_name_index));
                         break;
-                    case Context.NS_STATIC_PROTECTED:
+                    case Context.NS_STATIC_PROTECTED: 
                         namespace_index = ab.addNsConstant(bytecodeFactory.ConstantStaticProtectedNamespace(namespace_name_index));
                         break;
                     default:
@@ -563,6 +629,30 @@ public class ActionBlockEmitter extends Emitter
             if( ns != null )
             {
                 int ns_index = addNamespace(ns);
+                namespace_set.add(IntegerPool.getNumber(ns_index));
+            }
+            else
+            {
+                cx.internalError("internal error: non object value for namespace");
+            }
+        }
+        int ns_set_index = ab.addNsSetConstant(bytecodeFactory.ConstantNamespaceSet(namespace_set));
+        return ns_set_index;
+    }
+
+    int makeVersionedNamespaceSet(ObjectValue ns, TreeSet<Integer> versions)
+    {
+        Set<Integer> namespace_set = new TreeSet<Integer>();
+		if (versions.size() == 0)
+        {
+            cx.internalError("internal error: empty versions set");
+        }
+		else
+        for( Integer v : versions )
+        {
+            if( ns != null )
+            {
+                int ns_index = addNamespace(ns, v.intValue());
                 namespace_set.add(IntegerPool.getNumber(ns_index));
             }
             else
@@ -2339,6 +2429,97 @@ public class ActionBlockEmitter extends Emitter
         DebugLine(ab.code, pos);
     }
 
+	private int getVersionFromOldMetadata(String s) {
+		int v = -1;
+		if (s.equals("9")) {
+			v = 660;  // never happens
+		}
+		else
+		if (s.equals("air1")) {
+			v = 661;
+		}
+		else
+		if (s.equals("10")) {
+			v = 662;
+		}
+		else
+		if (s.equals("air1.5")) {
+			v = 663;
+		}
+ 		else
+		if (s.equals("air1.5.1")) {
+			v = 664;
+		}
+		else
+		if (s.equals("10.1")) {
+			v = 665;
+		}
+		else
+		if (s.equals("airAthena")) {
+			v = 666;
+		}
+		else
+		if (s.equals("100")) {  // TESTAUTOMATION
+			v = 667;
+		}
+		else {
+            cx.internalError("internal error: unrecognized value '" + s + "' in 'Version' metadata");
+		}
+		return v;
+	}
+
+	private TreeSet<Integer> apiVersionsOfSlot(Slot slot, String name, ObjectValue ns) 
+	{
+		assert doingAPIVersioning;
+
+		// get metadata from slot
+		// get api metadata from slot
+		// compute version metadata values
+
+		TreeSet<Integer> versions = new TreeSet<Integer>();
+		ArrayList<MetaDataNode> list = slot.getMetadata();
+		if (list != null)
+		for (MetaDataNode md : list) {
+			if (md.id == "API") {
+				for(int i = 0; i < md.count(); ++i) {
+					boolean err = false;
+					try {
+						int v = Integer.parseInt(md.getValue(i));
+						versions.add(v);
+						//System.out.println("API "+v);
+						if (v<APIVersions.min_version_num || v>APIVersions.max_version_num) {
+							err = true;
+						}
+					}
+					catch (Exception x) {
+						err = true;
+					}
+					if (err) {
+						cx.internalError("internal error: unrecognized version '" + md.getValue(i) + "' in API metadata");
+					}
+				}
+			}
+			else
+			if (md.id == "Version") {
+				for(int i = 0; i < md.count(); ++i) {
+					int v = getVersionFromOldMetadata(md.getValue(i));
+					//System.out.println("Version "+v);
+					versions.add(v);
+				}
+			}
+		}
+
+		if (versions.size() == 0) {
+			versions.add(APIVersions.min_version_num);
+		}
+		else 
+		if (!isVersionedNamespace(ns)) {
+			versions.add(APIVersions.min_version_num);
+			System.err.println("warning: ignoring version metadata on " + formatNSKind(ns) + " method " + name + " in namespace " + ns.name);
+		}
+		return versions;
+	}
+
     protected void addSlotTrait(ObjectValue obj, ObjectList<ByteList> traits, String name, Qualifiers quals)
     {
         Builder bui = obj.builder;
@@ -2373,17 +2554,31 @@ public class ActionBlockEmitter extends Emitter
                 qual_it = i.hasNext() ? i.next() : null;
                 continue;
             }
-            
+
+			/*
+
+			Get the api version the binding was introduced and mark the
+			namespace with that version.
+
+			*/
+
             while( true )
             {
                 if( ns != null )
                 {
-                    int ns_index = addNamespace(ns);
-                    namespaces.add(ns_index);
+                    int ns_index;
+					if (doingAPIVersioning) {
+						TreeSet<Integer> versions = apiVersionsOfSlot(slot, name, ns);
+						ns_index = makeVersionedNamespaceSet(ns, versions);
+					}
+					else {
+						ns_index = addNamespace(ns);
+					}
+					namespaces.add(ns_index);
                 }
                 else
                 {
-                    cx.internalError("internal error: non object value for namespace");
+                    cx.internalError(pos, "internal error: non object value for namespace");
                 }
 
                 qual_it = i.hasNext() ? i.next() : null;
@@ -2413,7 +2608,14 @@ public class ActionBlockEmitter extends Emitter
             }
 
             int name_index  = ab.addUtf8Constant(bytecodeFactory.ConstantUtf8Info(name));
-            int qname_index = ab.addMultiNameConstant(bytecodeFactory.ConstantQualifiedName(name_index,namespaces.back(),false));
+            int qname_index;
+
+			if (doingAPIVersioning) {
+				qname_index = ab.addMultiNameConstant(bytecodeFactory.ConstantMultiname(name_index,namespaces.back(),false));
+			}
+			else {
+				qname_index = ab.addMultiNameConstant(bytecodeFactory.ConstantQualifiedName(name_index,namespaces.back(),false));
+			}
 
             // Using the last namespace, get the slot for the name
 
@@ -2588,12 +2790,19 @@ public class ActionBlockEmitter extends Emitter
 
             if( ns != null )
             {
-                int ns_index = addNamespace(ns);
-                namespaces.add(ns_index);
+                int ns_index;
+				if (doingAPIVersioning) {
+					TreeSet<Integer> versions = apiVersionsOfSlot(slot, name, ns);
+					ns_index = makeVersionedNamespaceSet(ns, versions);
+				}
+				else {
+					ns_index = addNamespace(ns);
+				}
+				namespaces.add(ns_index);
             }
             else
             {
-                cx.internalError("internal error: non object value for namespace");
+                cx.internalError(pos, "internal error: non object value for namespace");
             }
 
             int method_info = -1;
@@ -2614,7 +2823,14 @@ public class ActionBlockEmitter extends Emitter
             }
 
             int name_index  = ab.addUtf8Constant(bytecodeFactory.ConstantUtf8Info(name));
-            int qname_index = ab.addMultiNameConstant(bytecodeFactory.ConstantQualifiedName(name_index,namespaces.back(),false));
+
+			int qname_index;
+			if (doingAPIVersioning) {
+				qname_index = ab.addMultiNameConstant(bytecodeFactory.ConstantMultiname(name_index,namespaces.back(),false));
+			}
+			else {
+				qname_index = ab.addMultiNameConstant(bytecodeFactory.ConstantQualifiedName(name_index,namespaces.back(),false));
+			}
 
             IntList  metaDataIndices = addMetadata(metaData);
 
@@ -2655,7 +2871,7 @@ public class ActionBlockEmitter extends Emitter
             
             header_out.println("const int abcpackage_" + constName + " = " + package_info + ";");
             if (package_info >= native_package_count)
-                native_package_count = package_info+1;
+                native_package_count = package_info+;
         }
 */
 
@@ -5647,6 +5863,7 @@ public class ActionBlockEmitter extends Emitter
         }
     }
 
+	// DEPRECATED
     protected void NewNamespace(ObjectValue ns)
     {
         showLineNumber();
@@ -8319,6 +8536,11 @@ protected void Setsuper(ByteList code,int index)
         }
     }
 
+	private boolean doingAPIVersioning = false;
+	public void apiVersioning() {
+	    doingAPIVersioning = true;
+	}
+
     public void reorderMainScript()
     {
         ab.scripts.add(ab.scripts.remove(0));
@@ -8370,7 +8592,7 @@ protected void Setsuper(ByteList code,int index)
 	    		int name_index = bc.readU32();
 		    	return cleanupString(ab.constant_utf8_pool.get(uri_index-1))+"_"+cleanupString(ab.constant_utf8_pool.get(name_index-1));
     		}
-    	}    	
+    	}
     	return "";
     }
     
@@ -8420,8 +8642,8 @@ protected void Setsuper(ByteList code,int index)
                     native_package_count = package_info+1;
             }
         }
-
     }
+
     public String header_str()
     {
         dumpPackageInfos();

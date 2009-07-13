@@ -665,7 +665,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 
 	public Value evaluate(Context cx, FunctionDefinitionNode node)
 	{
-        FunctionDefinitionNode fdn = node;
+         FunctionDefinitionNode fdn = node;
         int kind = fdn.fexpr.kind;
         ReferenceValue ref = fdn.fexpr.ref;
         Slot func_slot = null;

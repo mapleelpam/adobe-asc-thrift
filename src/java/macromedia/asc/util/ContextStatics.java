@@ -163,7 +163,15 @@ public class ContextStatics
         
         return Features.TARGET_AVM1;
     }
-    
+
+	public void setApiVersion(int v)
+	{
+		if (v < 0) {
+			v = APIVersions.versions[0][APIVersions.versions[0].length-1];
+		}
+		this.apiVersion = v;
+	}
+
     public void setAbcVersion(int targetAVM)
     {
         switch(targetAVM)
@@ -184,6 +192,7 @@ public class ContextStatics
         abc_version = targetAVM;
     }
     int abc_version = 1;
+	public int apiVersion = -1;
     public boolean es4_numerics = false;
     public boolean es4_nullability = false;
     public boolean es4_vectors = true;
