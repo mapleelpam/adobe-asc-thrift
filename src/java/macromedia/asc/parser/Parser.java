@@ -23,7 +23,6 @@ import java.util.ListIterator;
 import java.util.BitSet;
 
 import macromedia.asc.semantics.ReferenceValue;
-import macromedia.asc.semantics.NamespaceValue;
 import macromedia.asc.util.*;
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.*;
@@ -835,7 +834,7 @@ public final class Parser
         		}
         		else
         		{
-        			// TODO: --testing, for '*=', rewrite it as '*' '='
+        			// for '*=', rewrite it as '*' '='
         			 changeLookahead(ASSIGN_TOKEN);
         		}
         	}
@@ -1207,6 +1206,13 @@ public final class Parser
         return result;
     }
 
+    /*
+     * XMLElement
+     * 	: '<' '>'  => xmllist=true
+     * 	| '<' <XMLName> <XMLAttributes> '>' <XMLElement> '</' <XMLName> '>'
+     *  | '<' <XMLName> <XMLAttributes> '>' <XMLElement> '</' xmllist? '>'
+     *  ;
+     */
     Node parseXMLElement()
     {
         Node result;
@@ -1295,6 +1301,18 @@ public final class Parser
     	return nodeFactory.binaryExpression(PLUS_TOKEN,left,right);
     }
 
+    /*
+     * XMLName
+     * 	: '{' <ExpressionList> '}'
+     * 	| XMLNAME 
+     * 	;
+     * 
+     * XMLNAME: XMLNAMESTART XMLNAMECHAR*
+     * 
+     * XMLNAMECHAR: [A-Z] | [0-9] | ':' | '_' | '.';
+     * XMLNAMESTART: [A-z] | '_' | ':';
+     */
+    
     Node parseXMLName(Node first)
     {
         Node result;
@@ -1310,7 +1328,15 @@ public final class Parser
         }
         else
         {
-            if (inXMLTokenSet(lt))
+        	// TODO: XMLname recognition is incorrect
+        	//
+        	// According to the XML standard, A name starts with
+        	// A-z_: (+unicode) followed by A-z0-9_:.- (+unicode)
+        	// ALso our rules allow whitespace, which is fundamentally wrong.
+        	// Though we're just packing a string really, 
+        	// TODO: Replace all of this with an XML recognizer on the scan level.
+        	
+            if (inXMLTokenSet(lt) || lt == COLON_TOKEN)
             {
             	shift();
                 result  = concatXML(first,nodeFactory.literalString(scanner.getCurrentTokenTextOrTypeText(lt),scanner.input.positionOfMark()));
@@ -1379,6 +1405,7 @@ public final class Parser
     Node parseXMLAttribute(Node first)
     {
         Node result = parseXMLName(first);
+        
         if (lookahead()==ASSIGN_TOKEN)
         {
             shift();
@@ -3489,10 +3516,8 @@ XMLElementContent
             System.err.println("begin parseBlock");
         }
 
-        StatementListNode result;
-
         match(LEFTBRACE_TOKEN);
-        result = parseDirectives(first, null/*stmts*/);
+        StatementListNode result = parseDirectives(first, null/*stmts*/);
         match(RIGHTBRACE_TOKEN);
 
         if (debug)
@@ -5732,7 +5757,8 @@ XMLElementContent
 
     /*
      * RestParameter
-     *     '...' Parameter?
+     *     : '...' <Parameter>
+     *     ;
      */
 
     private ParameterNode parseRestParameter()
@@ -5862,7 +5888,7 @@ XMLElementContent
     }
 
     /*
-     * ClassDefinition
+     * ClassDefinition:
      *     'class' ClassName Inheritance Block
      */
 
@@ -5895,6 +5921,13 @@ XMLElementContent
         nodeFactory.StartClassDefs();
         InheritanceNode second = parseInheritance();
         StatementListNode third = parseBlock();
+        
+        if ( third == null )
+        {
+            // Class had an empty body.  Create an empty list to represent { }
+            third = nodeFactory.statementList(null, null);
+        }
+        
         Node result = nodeFactory.classDefinition(ctx, attrs, first.ident, second, third, first.non_nullable);
         block_kind_stack.removeLast();
         current_class_name = temp_class_name;
