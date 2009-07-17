@@ -1,0 +1,4 @@
+warning: ignoring version metadata on public method test in namespace notAnApprovedPackage
+nonApprovedPackageWarning: \d+
+Files: 2 Time: \d+ms
+VerifyError: Error #1033.*$

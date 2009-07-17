@@ -43,7 +43,7 @@ timestamps = True
 fd,tmpfile = tempfile.mkstemp()
 os.close(fd)
 
-globs = { 'avm':'', 'asc':'', 'globalabc':'', 'playerglobalabc':'', 'exclude':[], 'tmpfile':tmpfile, 'config':'asc-smokes', 'failmsgs':[],'expfailmsgs':[],
+globs = { 'avm':'', 'asc':'', 'builtinabc':'', 'playerglobalabc':'', 'exclude':[], 'tmpfile':tmpfile, 'config':'asc-smokes', 'failmsgs':[],'expfailmsgs':[],
           'unpassmsgs':[],'allfails':0,'allexpfails':0,'allunpass':0,'allpasses':0,'allskips':0, 'regexOutput':False, 'toplevelabc':'', 'full':False}
 
 globs['toplevelabc'] = abspath(abspath(dirname(sys.argv[0]))+'/../../abc/toplevel.abc')
@@ -53,7 +53,9 @@ if 'AVM' in environ:
 if 'ASC' in environ:
   globs['asc'] = environ['ASC']
 if 'GLOBALABC' in environ:
-  globs['globalabc'] = environ['GLOBALABC']
+  globs['builtinabc'] = environ['GLOBALABC']
+if 'BUILTINABC' in environ:
+  globs['builtinabc'] = environ['BUILTINABC']
 if 'PLAYERGLOBALABC' in environ:
   globs['playerglobalabc'] = environ['PLAYERGLOBALABC']
 if 'CVS' in environ:
@@ -76,7 +78,7 @@ def js_print(m, start_tag="<p><tt>", end_tag="</tt></p>"):
     js_output_f.write("%s %s %s\n" % (start_tag, m, end_tag))
     js_output_f.flush()
 
-# yet another way to specify asc,avm,globalabc ...from a file
+# yet another way to specify asc,avm,builtinabc ...from a file
 pf = 'runtests.properties'
 if os.path.exists(pf):
   verbose_print( "reading properties from file '%s'" % (pf) )
@@ -98,7 +100,8 @@ def usage(c):
   print " -v --verbose         enable additional output"
   print " -E --avm             avmplus command to use"
   print " -a --asc             compiler to use"
-  print " -g --globalabc       location of global.abc"
+  print " -b --builtinabc      location of builtinabc"
+  print " -g --globalabc       (deprecated - use builtinabc) location of global.abc"
   print " -p --playerglobalabc location of playerglobal.abc"
   print "    --toplevelabc     location of toplevel.abc"
   print " -f --full            do a full coverage pass (all switches and options exercised"
@@ -111,7 +114,7 @@ def usage(c):
   exit(c)
 
 try:
-  opts, args = getopt(argv[1:], "vE:a:g:x:htc:p:rf", ["verbose","avm=","asc=","globalabc=","exclude=","help","notime",
+  opts, args = getopt(argv[1:], "vE:a:g:b:x:htc:p:rf", ["verbose","avm=","asc=","builtinabc=","globalabc=","exclude=","help","notime",
                                 "config=","playerglobalabc=","regex","toplevelabc=","full"])
 except:
   usage(2)
@@ -127,8 +130,10 @@ for o, v in opts:
     globs['avm'] = v
   elif o in ("-a", "--asc"):
     globs['asc'] = v
+  elif o in ("-b", "--builtinabc"):
+    globs['builtinabc'] = v
   elif o in ("-g", "--globalabc"):
-    globs['globalabc'] = v
+    globs['builtinabc'] = v
   elif o in ("-x", "--exclude"):
     globs['exclude'] += v.split(",")
   elif o in ("-t", "--notime"):
@@ -220,30 +225,38 @@ def run_avm(abc):
   finally:
     f.close()
   return output
+
+# Substitute the actual file locations for the filenames in testconfig.txt
+def substTestconfigFilenames(str):
+    if globs['playerglobalabc']:
+      str = re.sub(' playerglobal\.abc', ' '+globs['playerglobalabc'], str)
+    str = re.sub(' global\.abc', ' '+globs['builtinabc'], str)
+    str = re.sub(' builtin\.abc', ' '+globs['builtinabc'], str)
+    str = re.sub(' toplevel\.abc', ' '+globs['toplevelabc'], str)
+    str = re.sub(' avmshell', ' '+globs['avm'], str)
+    str = re.sub(' asc.jar', ' '+globs['asc'], str)
+    return str
   
 def compile_test(as):
-  asc, globalabc, playerglobalabc = globs['asc'], globs['globalabc'], globs['playerglobalabc']
+  asc, builtinabc, playerglobalabc = globs['asc'], globs['builtinabc'], globs['playerglobalabc']
   if not isfile(asc):
     exit("ERROR: cannot build %s, ASC environment variable or --asc must be set to asc.jar" % as)
-  if not isfile(globalabc):
-    exit("ERROR: global.abc %s does not exist, GLOBALABC environment variable or --globalabc must be set to global.abc" % globalabc)
+  if not isfile(builtinabc):
+    exit("ERROR: builtin.abc %s does not exist, BUILTINABC environment variable or --builtinabc must be set to builtin.abc" % builtinabc)
   
-  if asc.endswith(".jar"):
-    cmd = "java -jar " + asc
+  # use the override command defined in testconfig
+  if globs['settings'].has_key('asc.override'):
+    cmd = substTestconfigFilenames(globs['settings']['asc.override'])
   else:
-    cmd = asc
-  # sub out correct locations for global abc files
-  if globs['settings'].has_key('asc.args'):
-    ascargs=globs['settings']['asc.args']
-    if playerglobalabc:
-      ascargs=re.sub(' playerglobal\.abc', ' '+playerglobalabc, ascargs)
-    ascargs=re.sub(' global\.abc', ' '+globalabc, ascargs)
-    ascargs=re.sub(' builtin\.abc', ' '+globalabc, ascargs)
-    ascargs=re.sub(' toplevel\.abc', ' '+globs['toplevelabc'], ascargs)
-    ascargs=re.sub(' avmshell', ' '+globs['avm'], ascargs)
-    cmd+= " "+ascargs
-  else:
-    cmd += " -import " + globalabc
+    if asc.endswith(".jar"):
+      cmd = "java -jar " + asc
+    else:
+      cmd = asc
+    if globs['settings'].has_key('asc.args'):
+      ascargs=substTestconfigFilenames(globs['settings']['asc.args'])
+      cmd += " "+ascargs
+    else:
+      cmd += " -import " + builtinabc
 
   (dir, file) = split(as)
   verbose_print("   compiling %s" % file)
@@ -262,6 +275,15 @@ def compile_test(as):
         output.append(line)
   finally:
     f.close()
+  
+  # if we are using asc.override, may need to clean up .cpp and .h files generated from api-versioning tests
+  if globs['settings'].has_key('asc.override'):
+    fileroot = os.path.splitext(as)[0]
+    if exists(fileroot+'.h'):
+      os.remove(fileroot+'.h')
+    if exists(fileroot+'.cpp'):
+      os.remove(fileroot+'.cpp')
+  
   return output
 
 # Unused function?
@@ -274,7 +296,7 @@ def fixExpected(expected):
   for i in range(len(expected)):
     expected[i] = expected[i].strip()
     if expected[i].startswith("[Compiler]"):
-      expected[i] = "\[Compiler\]" + expected[i][10:]
+      expected[i] = r"\[Compiler\]" + expected[i][10:]
     if expected[i].startswith("[Coach]"):
       expected[i] = "\[Coach\]" + expected[i][7:]
     if expected[i].endswith(".^"):
@@ -335,8 +357,16 @@ if not asc: # or not isfile(avm.split()[0]): /* isfile() fails for alias on OSX 
   print("ERROR: cannot run %s, ASC environment variable or --asc must be set to asc" % avm)
   exit(1)
 
-js_print("Executing %d tests using vm: %s" % (len(tests), asc));
+js_print("Compiling %d tests using asc: %s" % (len(tests), asc))
+js_print("Executing %d tests using vm: %s" % (len(tests), globs['avm']))
 testnum = len(tests)
+
+# load the root testconfig into mem
+testconfigLines = []
+if isfile('./testconfig.txt'):
+    for line in open('./testconfig.txt').read().splitlines():
+      if not line.startswith('#'):
+        testconfigLines.append(line)
 
 for ast in tests:
   if ast.startswith('./'):
@@ -353,18 +383,18 @@ for ast in tests:
   asc_args=None
   settings=dict()
   lines=[]
+  
+  # load any subdirectory testconfig.txt
   if isfile(dir+'/testconfig.txt'):
     lines=open(dir+'/testconfig.txt').read().splitlines()
     for i in range(len(lines)):
       if len(lines[i])>0 and not lines[i].startswith('#'):
         lines[i]=dir+'/'+lines[i]
-  if isfile('./testconfig.txt'):
-    for line in open('./testconfig.txt').read().splitlines():
-      lines.append(line)
+  
+  lines.extend(testconfigLines)
+  
   # process testconfig.txt lines
   for line in lines:
-    if line.startswith("#"):
-      continue
     fields=line.split(',',3) #maxsplit=3 so that any commas in last field are preserved
     for f in range(len(fields)):
       fields[f]=fields[f].strip()
@@ -427,11 +457,12 @@ for ast in tests:
     for i in range(len(expected)):
       try:
         if not re.match(expected[i],actual[i]):
-          if result:
-            fail_print(as,pr=False,expected=expectFail)
+          if result: # print the failing filename
+            fail_print(ast,pr=False,expected=expectFail) 
             result=False
           fail_print( "  FAILED matching line %d\n  expected:[%s]\n  actual  :[%s]" % (i+1,expected[i],actual[i]),expected=expectFail)
       except:
+        print "except"
         if result:
           fail_print(ast,pr=False,expected=expectFail)
           result=False

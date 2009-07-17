@@ -18,7 +18,7 @@ var v2:Vector.<String> = new<String>\[new MyClass\(\)\];
 .*vectorStrictErrors.as, Ln 55, Col 26:
 var i = new <int>\[0,1,2\].nonexistantproperty;
 .........................\^
-\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: Vector.
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: NotADefinedClass.
 .*vectorStrictErrors.as, Ln 58, Col 14:
 var v4 = new <NotADefinedClass> \[4,5\];
 .............\^

@@ -1,0 +1,4 @@
+warning: ignoring version metadata on internal method x in namespace avmplus
+internalVar: \d+
+Files: 2 Time: \d+ms
+VerifyError: Error #1033.*$

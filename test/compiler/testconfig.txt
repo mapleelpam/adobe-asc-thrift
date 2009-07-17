@@ -1,6 +1,7 @@
 # fields are test names, setting name, configurations, values
 # available setting names:
 #     asc.args       : specify asc command line arguments in the values field. 
+#     asc.override   : compile the file using the given cmd - file will be appended to the end of the line
 #     avm.args       : specify avm command line args or include files in the values field.
 #     skip           : skip the specified tests,  Place reason in values field.
 #     expectedfailure: Test is expected to fail.  Place bug number in the values field.
@@ -30,6 +31,7 @@ as3/Vector/asc-3699                                      ,    asc.args         ,
 as3/Vector/asc-3704                                      ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
 as3/Vector/assignIncompatible                            ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
 as3/Vector/typeError1                                    ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
+as3/Vector/ASC-3682                                      ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
 sanity/strict/.*                                         ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc -import toplevel.abc
 sanity/strict/xml_dynamic                                ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc -import toplevel.abc
 sanity/strict/toStringRadix                              ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc -import toplevel.abc
@@ -97,3 +99,6 @@ cmdline/config                                           ,    asc.args         ,
 cmdline/sanity                                           ,    asc.args         , asc-full|asc-smokes   ,    -sanity
 cmdline/exe                                              ,    asc.args         , asc-full|asc-smokes   ,    -exe avmshell
 cmdline/swf                                              ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import playerglobal.abc -swf swf,550,400,-g,-usenetwork
+# API Versioning test - these use the ScriptCompiler
+versioning/.*                , asc.override , asc-full|asc-smokes , java -ea -DAS3 -DAVMPLUS -classpath asc.jar macromedia.asc.embedding.ScriptCompiler -abcfuture -import builtin.abc -builtin -apiversioning
+versioning/invalidAPI_1      , expectedfailure ,  asc-full|asc-smokes , pending bug

@@ -1,0 +1,4 @@
+warning: ignoring version metadata on private method x in namespace avmplus:Test
+privateConst: \d+
+Files: 2 Time: \d+ms
+VerifyError: Error #1033.*$

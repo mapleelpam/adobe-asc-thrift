@@ -1,0 +1,5 @@
+internal error: unrecognized version '' in API metadata
+.*invalidAPI_1.as, Ln 1, Col 1:
+package avmplus \{
+\^
+Files: 2 Time: \d+ms

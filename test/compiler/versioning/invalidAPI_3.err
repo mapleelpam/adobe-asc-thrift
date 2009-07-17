@@ -1,0 +1,5 @@
+internal error: unrecognized version '2222' in API metadata
+.*invalidAPI_3.as, Ln 1, Col 1:
+package avmplus \{
+\^
+Files: 2 Time: \d+ms
