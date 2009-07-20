@@ -821,4 +821,20 @@ public final class ReferenceValue extends Value implements ErrorConstants
         }
         type_params.add(type);
     }
+    
+    /**
+     * Get the name of the type for use in a diagnostic.
+     * @return The type name if the type's not parameterized.
+     * @return The name of the type's parameter, if it is.
+     * @note Assumes there's only one type parameter, and
+     *   that the parameterized type name is noise.  These
+     *   assumptions hold for Vector use cases.
+     */
+    public String getDiagnosticTypeName()
+    {
+    	if ( null == type_params || type_params.size() == 0)
+    		return name;
+    	else
+    		return type_params.at(0).getDiagnosticTypeName();
+    }
 }

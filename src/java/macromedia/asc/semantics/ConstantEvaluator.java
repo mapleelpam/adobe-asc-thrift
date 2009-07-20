@@ -1137,7 +1137,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 	        {
 	        	if ( initializer_typeref.isReference() )
 	        	{
-	        		cx.error(node.type.pos(), kError_UnknownType, ((ReferenceValue)initializer_typeref).name);
+	        		cx.error(node.type.pos(), kError_UnknownType, ((ReferenceValue)initializer_typeref).getDiagnosticTypeName());
 	        	}
 	        	else
 	        	{
@@ -1294,9 +1294,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                             else
                             {
                                 if( qualified_pkg_name != null )
-                                    cx.error(node.selector.expr.pos(), kError_UnfoundPackageProperty, node.ref.name, qualified_pkg_name);
+                                    cx.error(node.selector.expr.pos(), kError_UnfoundPackageProperty, node.ref.getDiagnosticTypeName(), qualified_pkg_name);
                                 else
-                                    cx.error(node.selector.expr.pos(), kError_UnfoundProperty,node.ref.name);
+                                    cx.error(node.selector.expr.pos(), kError_UnfoundProperty,node.ref.getDiagnosticTypeName());
                             }
                         }
                     }
@@ -2572,7 +2572,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             Slot typeSlot = node.typeref.getSlot(cx);
             if (typeSlot == null  || typeSlot.getValue() == null)
             {
-                cx.error(node.variable.type.pos(), kError_UnknownType, node.typeref.name);
+                cx.error(node.variable.type.pos(), kError_UnknownType, node.typeref.getDiagnosticTypeName());
                 slot.setType(type = cx.noType().getDefaultTypeInfo());
             }
             else
@@ -2590,7 +2590,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 else
                 {
                     // The value of the slot is not a type, so it's an unknown type
-                    cx.error(node.variable.type.pos(), kError_UnknownType, node.typeref.name);
+                    cx.error(node.variable.type.pos(), kError_UnknownType, node.typeref.getDiagnosticTypeName());
                     slot.setType(type = cx.noType().getDefaultTypeInfo());
                 }
             }
@@ -2957,7 +2957,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
             else
             {
-                cx.error(node.result.pos(), kError_UnknownType, node.typeref.name);
+                cx.error(node.result.pos(), kError_UnknownType, node.typeref.getDiagnosticTypeName());
             }
         }
         else
@@ -2998,7 +2998,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
             else
             {
-                cx.error(node.result.pos(), kError_UnknownType, node.typeref.name);
+                cx.error(node.result.pos(), kError_UnknownType, node.typeref.getDiagnosticTypeName());
             }
         }
         else
@@ -3176,7 +3176,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
             else
             {
-                cx.error(node.type.pos(), kError_UnknownType, node.typeref.name);
+                cx.error(node.type.pos(), kError_UnknownType, node.typeref.getDiagnosticTypeName());
                 slot.setType(type = cx.noType().getDefaultTypeInfo());
             }
         }
@@ -3242,7 +3242,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
             }
             else
             {
-                cx.error(node.type.pos(), kError_UnknownType, node.typeref.name);
+                cx.error(node.type.pos(), kError_UnknownType, node.typeref.getDiagnosticTypeName());
                 slot.setType(type = cx.noType().getDefaultTypeInfo());
             }
         }

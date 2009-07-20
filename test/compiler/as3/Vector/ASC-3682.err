@@ -1,0 +1,49 @@
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: NoSuchClass.
+.*ASC-3682.as, Ln 1, Col 25:
+function badParameter\(x:Vector.<NoSuchClass>\)
+........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: BadReturnType.
+.*ASC-3682.as, Ln 6, Col 26:
+function badReturnType\(\):Vector.<BadReturnType>
+.........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: BadReturnType.
+.*ASC-3682.as, Ln 6, Col 26:
+function badReturnType\(\):Vector.<BadReturnType>
+.........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: NoSuchClass.
+.*ASC-3682.as, Ln 1, Col 25:
+function badParameter\(x:Vector.<NoSuchClass>\)
+........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: NoSuchClass.
+.*ASC-3682.as, Ln 1, Col 25:
+function badParameter\(x:Vector.<NoSuchClass>\)
+........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: NoSuchClass.
+.*ASC-3682.as, Ln 1, Col 25:
+function badParameter\(x:Vector.<NoSuchClass>\)
+........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: NoSuchClass.
+.*ASC-3682.as, Ln 1, Col 25:
+function badParameter\(x:Vector.<NoSuchClass>\)
+........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: BadReturnType.
+.*ASC-3682.as, Ln 6, Col 26:
+function badReturnType\(\):Vector.<BadReturnType>
+.........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: BadReturnType.
+.*ASC-3682.as, Ln 6, Col 26:
+function badReturnType\(\):Vector.<BadReturnType>
+.........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: BadReturnType.
+.*ASC-3682.as, Ln 6, Col 26:
+function badReturnType\(\):Vector.<BadReturnType>
+.........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: BadReturnType.
+.*ASC-3682.as, Ln 6, Col 26:
+function badReturnType\(\):Vector.<BadReturnType>
+.........................\^
+\[Compiler\] Error #1046: Type was not found or was not a compile-time constant: BadVariableBinding.
+.*ASC-3682.as, Ln 10, Col 11:
+var bogus:Vector.<BadVariableBinding>;
+..........\^
+12 errors found
