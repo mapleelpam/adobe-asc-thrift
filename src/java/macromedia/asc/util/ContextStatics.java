@@ -58,19 +58,22 @@ public class ContextStatics
 	public static final int LANG_EN		= 0;
     public static final int LANG_CN		= 1;
     public static final int LANG_CS		= 2;
-	public static final int LANG_DE		= 3;
-	public static final int LANG_ES		= 4;
-	public static final int LANG_FR		= 5;
-	public static final int LANG_IT		= 6;
-	public static final int LANG_JP		= 7;
-	public static final int LANG_KR		= 8;
-	public static final int LANG_NL		= 9;
-	public static final int LANG_PL		= 10;
-    public static final int LANG_PT		= 11;
-    public static final int LANG_RU		= 12;
-    public static final int LANG_SV		= 13;
-    public static final int LANG_TR		= 14;
-    public static final int LANG_TW		= 15;
+	public static final int LANG_DA		= 3;
+	public static final int LANG_DE		= 4;
+	public static final int LANG_ES		= 5;
+	public static final int LANG_FI		= 6;
+	public static final int LANG_FR		= 7;
+	public static final int LANG_IT		= 8;
+	public static final int LANG_JP		= 9;
+	public static final int LANG_KR		= 10;
+	public static final int LANG_NB		= 11;
+	public static final int LANG_NL		= 12;
+	public static final int LANG_PL		= 13;
+    public static final int LANG_PT		= 14;
+    public static final int LANG_RU		= 15;
+    public static final int LANG_SV		= 16;
+    public static final int LANG_TR		= 17;
+    public static final int LANG_TW		= 18;
 
 	ObjectValue global;
 
