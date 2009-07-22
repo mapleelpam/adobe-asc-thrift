@@ -100,5 +100,7 @@ cmdline/sanity                                           ,    asc.args         ,
 cmdline/exe                                              ,    asc.args         , asc-full|asc-smokes   ,    -exe avmshell
 cmdline/swf                                              ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import playerglobal.abc -swf swf,550,400,-g,-usenetwork
 # API Versioning test - these use the ScriptCompiler
+cmdline/invalidCommandlineApi, asc.args, asc-full|asc-smokes , -import global.abc -api 123
+cmdline/importApi, asc.args, asc-full|asc-smokes , -import global.abc -api 662
 versioning/.*                , asc.override , asc-full|asc-smokes , java -ea -DAS3 -DAVMPLUS -classpath asc.jar macromedia.asc.embedding.ScriptCompiler -abcfuture -import builtin.abc -builtin -apiversioning
 versioning/invalidAPI_1      , expectedfailure ,  asc-full|asc-smokes , pending bug
