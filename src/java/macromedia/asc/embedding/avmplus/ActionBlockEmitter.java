@@ -2450,17 +2450,25 @@ public class ActionBlockEmitter extends Emitter
 		if (s.equals("air1.5.1")) {
 			v = 664;
 		}
-		else
-		if (s.equals("10.1")) {
+ 		else
+		if (s.equals("10.0.32")) {
 			v = 665;
 		}
-		else
-		if (s.equals("airAthena")) {
+ 		else
+		if (s.equals("air1.5.2")) {
 			v = 666;
 		}
 		else
-		if (s.equals("100")) {  // TESTAUTOMATION
+		if (s.equals("10.1")) {
 			v = 667;
+		}
+		else
+		if (s.equals("airAthena") || s.equals("air2.0")) {
+			v = 668;
+		}
+		else
+		if (s.equals("100")) {  // TESTAUTOMATION
+			v = 668;
 		}
 		else {
             cx.internalError("internal error: unrecognized value '" + s + "' in 'Version' metadata");
@@ -2515,7 +2523,7 @@ public class ActionBlockEmitter extends Emitter
 		else 
 		if (!isVersionedNamespace(ns)) {
 			versions.add(APIVersions.min_version_num);
-			System.err.println("warning: ignoring version metadata on " + formatNSKind(ns) + " method " + name + " in namespace " + ns.name);
+			//System.err.println("warning: ignoring version metadata on " + formatNSKind(ns) + " method " + name + " in namespace " + ns.name);
 		}
 		return versions;
 	}
