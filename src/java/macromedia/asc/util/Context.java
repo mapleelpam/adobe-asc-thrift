@@ -981,7 +981,7 @@ public final class Context implements ErrorConstants
         else if (language.equals("IT")) langID = ContextStatics.LANG_IT;
         else if (language.equals("JP")) langID = ContextStatics.LANG_JP;
         else if (language.equals("KR")) langID = ContextStatics.LANG_KR;
-        else if (language.equals("NB")) langID = ContextStatics.LANG_NB;
+        else if (language.equals("NO")) langID = ContextStatics.LANG_NB;
         else if (language.equals("NL")) langID = ContextStatics.LANG_NL;
         else if (language.equals("PL")) langID = ContextStatics.LANG_PL;
         else if (language.equals("PT")) langID = ContextStatics.LANG_PT;
