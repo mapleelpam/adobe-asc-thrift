@@ -1233,7 +1233,71 @@ public class Printer
 		{
 			printOpcode(opNames[OP_callpropvoid] + " cpool[" + index + "]" + " = " + getConstantMultinameValue(index) + " argc=" + argc);
 		}
-	}
+
+        public void OP_li8()
+        {
+            printOpcode(opNames[OP_li8]);
+        }
+
+        public void OP_li16()
+        {
+            printOpcode(opNames[OP_li16]);
+        }
+
+        public void OP_li32()
+        {
+            printOpcode(opNames[OP_li32]);
+        }
+
+        public void OP_lf32()
+        {
+            printOpcode(opNames[OP_lf32]);
+        }
+
+        public void OP_lf64()
+        {
+            printOpcode(opNames[OP_lf64]);
+        }
+        public void OP_si8()
+        {
+            printOpcode(opNames[OP_si8]);
+        }
+
+        public void OP_si16()
+        {
+            printOpcode(opNames[OP_si16]);
+        }
+
+        public void OP_si32()
+        {
+            printOpcode(opNames[OP_si32]);
+        }
+
+        public void OP_sf32()
+        {
+            printOpcode(opNames[OP_sf32]);
+        }
+
+        public void OP_sf64()
+        {
+            printOpcode(opNames[OP_sf64]);
+        }
+
+        public void OP_sxi1()
+        {
+            printOpcode(opNames[OP_sxi1]);
+        }
+
+        public void OP_sxi8()
+        {
+            printOpcode(opNames[OP_sxi8]);
+        }
+
+        public void OP_sxi16()
+        {
+            printOpcode(opNames[OP_sxi16]);
+        }
+    }
 
 	private static void print(String s)
 	{

@@ -397,4 +397,30 @@ public interface Visitor
 	void OP_callsupervoid(int index, int argc);
 
 	void OP_callpropvoid(int index, int argc);
+
+    void OP_li8();
+
+    void OP_li16();
+
+    void OP_li32();
+
+    void OP_lf32();
+
+    void OP_lf64();
+
+    void OP_si8();
+
+    void OP_si16();
+
+    void OP_si32();
+
+    void OP_sf32();
+
+    void OP_sf64();
+
+    void OP_sxi1();
+
+    void OP_sxi8();
+
+    void OP_sxi16();
 }

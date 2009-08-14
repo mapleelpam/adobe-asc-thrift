@@ -1695,7 +1695,73 @@ public final class Decoder
 					v.OP_callpropvoid(index, argc);
 					continue;
 				}
-				default:
+                case OP_li8:
+                {
+                    v.OP_li8();
+                    continue;
+                }
+                case OP_li16:
+                {
+                    v.OP_li16();
+                    continue;
+                }
+                case OP_li32:
+                {
+                    v.OP_li32();
+                    continue;
+                }
+                case OP_lf32:
+                {
+                    v.OP_lf32();
+                    continue;
+                }
+                case OP_lf64:
+                {
+                    v.OP_lf64();
+                    continue;
+                }
+                case OP_si8:
+                {
+                    v.OP_si8();
+                    continue;
+                }
+                case OP_si16:
+                {
+                    v.OP_si16();
+                    continue;
+                }
+                case OP_si32:
+                {
+                    v.OP_si32();
+                    continue;
+                }
+                case OP_sf32:
+                {
+                    v.OP_sf32();
+                    continue;
+                }
+                case OP_sf64:
+                {
+                    v.OP_sf64();
+                    continue;
+                }
+                case OP_sxi1:
+                {
+                    v.OP_sxi1();
+                    continue;
+                }
+                case OP_sxi8:
+                {
+                    v.OP_sxi8();
+                    continue;
+                }
+                case OP_sxi16:
+                {
+                    v.OP_sxi16();
+                    continue;
+                }
+
+                default:
 				{
 					throw new DecoderException("unknown opcode?? " + opcode);
 				}

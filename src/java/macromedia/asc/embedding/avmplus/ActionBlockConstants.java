@@ -172,6 +172,9 @@ public interface ActionBlockConstants
     int OP_callproplex =  0x4C;
     int OP_callsupervoid = 0x4E;
     int OP_callpropvoid = 0x4F;
+    int OP_sxi1 = 0x50;
+    int OP_sxi8 = 0x51;
+    int OP_sxi16 = 0x52;
     int OP_applytype = 0x53;
 
     int OP_newobject = 0x55;

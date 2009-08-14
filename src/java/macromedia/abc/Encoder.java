@@ -2781,6 +2781,110 @@ public class Encoder implements Visitor
 		}
 	}
 
+    public void OP_li8()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_li8);
+        }
+    }
+
+    public void OP_li16()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_li16);
+        }
+    }
+
+    public void OP_li32()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_li32);
+        }
+    }
+
+    public void OP_lf32()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_lf32);
+        }
+    }
+
+    public void OP_lf64()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_lf64);
+        }
+    }
+
+    public void OP_si8()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_si8);
+        }
+    }
+
+    public void OP_si16()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_si16);
+        }
+    }
+
+    public void OP_si32()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_si32);
+        }
+    }
+
+    public void OP_sf32()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_sf32);
+        }
+    }
+
+    public void OP_sf64()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_sf64);
+        }
+    }
+
+    public void OP_sxi1()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_sxi1);
+        }
+    }
+
+    public void OP_sxi8()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_sxi8);
+        }
+    }
+
+    public void OP_sxi16()
+    {
+        if( opcodePass == 1 )
+        {
+            beginop(OP_sxi16);
+        }
+    }
+
     class ByteArrayPool2 extends ByteArrayPool
     {
         ByteArrayPool2(int[] sizes)

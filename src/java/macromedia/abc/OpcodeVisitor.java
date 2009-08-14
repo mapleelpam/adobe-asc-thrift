@@ -208,4 +208,17 @@ public class OpcodeVisitor implements Visitor
 	public void OP_pushconstant(int id) {}
 	public void OP_callsupervoid(int index, int argc) {}
 	public void OP_callpropvoid(int index, int argc) {}
+    public void OP_li8(){}
+    public void OP_li16(){}
+    public void OP_li32(){}
+    public void OP_lf32(){}
+    public void OP_lf64(){}
+    public void OP_si8(){}
+    public void OP_si16(){}
+    public void OP_si32(){}
+    public void OP_sf32(){}
+    public void OP_sf64(){}
+    public void OP_sxi1(){}
+    public void OP_sxi8(){}
+    public void OP_sxi16(){}
 }
