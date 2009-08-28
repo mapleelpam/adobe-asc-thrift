@@ -237,10 +237,10 @@ def substTestconfigFilenames(str):
     str = re.sub(' asc.jar', ' '+globs['asc'], str)
     return str
   
-def compile_test(as):
+def compile_test(testname):
   asc, builtinabc, playerglobalabc = globs['asc'], globs['builtinabc'], globs['playerglobalabc']
   if not isfile(asc):
-    exit("ERROR: cannot build %s, ASC environment variable or --asc must be set to asc.jar" % as)
+    exit("ERROR: cannot build %s, ASC environment variable or --asc must be set to asc.jar" % testname)
   if not isfile(builtinabc):
     exit("ERROR: builtin.abc %s does not exist, BUILTINABC environment variable or --builtinabc must be set to builtin.abc" % builtinabc)
   
@@ -258,17 +258,17 @@ def compile_test(as):
     else:
       cmd += " -import " + builtinabc
 
-  (dir, file) = split(as)
+  (dir, file) = split(testname)
   verbose_print("   compiling %s" % file)
   output=[]
   try:
     if globs['full']: # compile test w/ multiple command line options
-      ignore = run_pipe("%s %s %s" % (cmd,"-f" ,as))
-      ignore = run_pipe("%s %s %s" % (cmd,"-i" ,as))
-      ignore = run_pipe("%s %s %s" % (cmd,"-m" ,as))
-      ignore = run_pipe("%s %s %s" % (cmd,"-p" ,as))
-      ignore = run_pipe("%s %s %s" % (cmd,"-d" ,as))
-    f = run_pipe("%s %s" % (cmd,as))
+      ignore = run_pipe("%s %s %s" % (cmd,"-f" ,testname))
+      ignore = run_pipe("%s %s %s" % (cmd,"-i" ,testname))
+      ignore = run_pipe("%s %s %s" % (cmd,"-m" ,testname))
+      ignore = run_pipe("%s %s %s" % (cmd,"-p" ,testname))
+      ignore = run_pipe("%s %s %s" % (cmd,"-d" ,testname))
+    f = run_pipe("%s %s" % (cmd,testname))
     for line in f:
       line = line.strip()
       if line:
