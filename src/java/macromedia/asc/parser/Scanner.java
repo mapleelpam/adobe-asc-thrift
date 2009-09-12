@@ -46,6 +46,7 @@ public final class Scanner implements ErrorConstants
     
     private class Tok {
     	int id;
+    	int lookback;
     	String text;
     }
     
@@ -190,9 +191,19 @@ public final class Scanner implements ErrorConstants
         input.textMark();
     }
 
+
+    private final int makeCommentToken(int id, String text)
+    {
+        currentToken.id = id;
+        // leave currentToken.lookback alone, comments dont count.
+        currentToken.text = text;
+        return id;
+    }
+    
     private final int makeToken(int id, String text)
     {
         currentToken.id = id;
+        currentToken.lookback = id;
         currentToken.text = text;
         return id;
     }
@@ -200,6 +211,7 @@ public final class Scanner implements ErrorConstants
     private final int makeToken(int id)
     {
         currentToken.id = id;
+        currentToken.lookback = id;
         currentToken.text = null;
     	return id;
     }
@@ -1014,7 +1026,7 @@ public final class Scanner implements ErrorConstants
                 						break line_comment;
                 					}
                 					retract(); // don't include newline in line comment. (Sec 7.3)
-                					return makeToken( SLASHSLASHCOMMENT_TOKEN, input.copyReplaceUnicodeEscapes() );
+                					return makeCommentToken( SLASHSLASHCOMMENT_TOKEN, input.copyReplaceUnicodeEscapes() );
                 				}
                 			}
                 		continue;
@@ -1059,7 +1071,7 @@ public final class Scanner implements ErrorConstants
                 	default:
                 		// If the last token read is any of these, then the '/' must start a div or div_assign...
 
-                		int lb = currentToken.id;
+                		int lb = currentToken.lookback;
                 	
                 		if ( lb == IDENTIFIER_TOKEN || lb == NUMBERLITERAL_TOKEN || lb == RIGHTPAREN_TOKEN ||
                 		     lb == RIGHTBRACE_TOKEN || lb == RIGHTBRACKET_TOKEN )
@@ -1389,7 +1401,7 @@ public final class Scanner implements ErrorConstants
                     case '*':
                         if ( nextchar() == '/' ){
                             state = start_state;
-                            return makeToken( BLOCKCOMMENT_TOKEN, new String());
+                            return makeCommentToken( BLOCKCOMMENT_TOKEN, new String());
                         }
                         retract(); 
                         state = doccomment_state; 
@@ -1440,7 +1452,6 @@ public final class Scanner implements ErrorConstants
                         if (doctextbuf == null) 
                             doctextbuf = getDocTextBuffer(doctagname);
                         doctextbuf.append('\n');
-                        state = doccomment_state; 
                         continue;
                     
                     case 0:    
@@ -1451,8 +1462,7 @@ public final class Scanner implements ErrorConstants
                     default:
                         if (doctextbuf == null) 
                             doctextbuf = getDocTextBuffer(doctagname);
-                        doctextbuf.append((char)(c)); 
-                        state = doccomment_state; 
+                        doctextbuf.append((char)(c));  
                         continue;
                     }
                 }
@@ -1473,11 +1483,10 @@ public final class Scanner implements ErrorConstants
                         }
                         String doctext = doctextbuf.toString(); // ??? does this needs escape conversion ???
                         state = start_state; 
-                        return makeToken(DOCCOMMENT_TOKEN,doctext);
+                        return makeCommentToken(DOCCOMMENT_TOKEN,doctext);
                     }
 
                     case '*':  
-                        state = doccommentstar_state; 
                         continue;
                     
                     case 0:    
@@ -1572,31 +1581,28 @@ public final class Scanner implements ErrorConstants
                     blockcommentbuf.append(c);
                     switch ( c )                    
                     {
-                    case '*':  state = blockcommentstar_state; continue;
-                    case '\r': case '\n': isFirstTokenOnLine = true; 
-                    state = blockcomment_state; continue;
-                    case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
-                    default:   state = blockcomment_state; continue;
+                    case '*': 
+                    	c = nextchar();
+                    	if (c == '/')
+                    	{
+                            state = start_state;
+                            blockcommentbuf.append(c);
+                            String blocktext = blockcommentbuf.toString(); // ??? needs escape conversion
+                            return makeCommentToken( BLOCKCOMMENT_TOKEN, blocktext );
+                    	}
+                    	retract();
+                    	break;
+                    	
+                    case '\r': case '\n': 
+                    	isFirstTokenOnLine = true; 
+                    	break;
+                    
+                    case 0:    
+                    	error(kError_BlockCommentNotTerminated); 
+                    	state = start_state; 
+                    	break;
                     }
-                }
-
-                case blockcommentstar_state:
-                {
-                    c = nextchar();
-                    blockcommentbuf.append(c);
-                    switch ( c )
-                    {
-                    case '/':  
-                    {
-                        state = start_state;
-                        String blocktext = blockcommentbuf.toString(); // ??? needs escape conversion
-                        return makeToken( BLOCKCOMMENT_TOKEN, blocktext );
-                    }
-                    case '*':  state = blockcommentstar_state; continue;
-                    case 0:    error(kError_BlockCommentNotTerminated); state = start_state; continue;
-                    default:   state = blockcomment_state; continue;
-                    // if not a slash, then keep looking for an end comment.
-                    }
+                    continue;
                 }
 
                 /*
