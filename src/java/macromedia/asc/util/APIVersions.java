@@ -69,6 +69,7 @@ public static String uris [] = {
   "flash.profiler",
   "flash.sampler",
   "flash.security",
+  "flash.sensors",
   "flash.system",
   "flash.text",
   "flash.text.engine",
