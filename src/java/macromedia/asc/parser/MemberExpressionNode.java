@@ -33,14 +33,14 @@ public class MemberExpressionNode extends Node
     public SelectorNode selector;
     public ReferenceValue ref;  // don't delete, alias for selector ref
     
-//	int authOrigToken = -1;
-//	
-//	public void setOrigToken(int token){
-//		authOrigToken = token;
-//	}
-//	public int getOrigToken(){
-//		return authOrigToken;
-//	}
+	int authOrigToken = -1;
+	
+	public void setOrigToken(int token){
+		authOrigToken = token;
+	}
+	public int getOrigToken(){
+		return authOrigToken;
+	}
 	
     public MemberExpressionNode(Node base, SelectorNode selector, int pos)
     {

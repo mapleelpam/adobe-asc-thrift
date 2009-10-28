@@ -282,7 +282,7 @@ public class InputBuffer
          return l + startLineNumber;  
      }
      
-     private final int getLineStartPos(int srcPos)
+     public final int getLineStartPos(int srcPos)
      {
          int l = getLineMapIndex(srcPos);
          
@@ -294,6 +294,17 @@ public class InputBuffer
          return lineMap[l-1];
      }
      
+    /*
+     * text
+     *
+     * Provide the caller with a reference to the full text of the program.
+     */
+
+    public String source()
+    {
+        return text;
+    }
+
     /**
      * Scanner position mark
      * Scanner only.
