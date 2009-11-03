@@ -1185,7 +1185,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 TypeInfo[] actual = new TypeInfo[]{null};
                 node.base = cx.coerce(node.base,actual,cx.noType().getDefaultTypeInfo(),false,true);
                 type = cx.noType().getDefaultTypeInfo();
-                node.ref.setBase(type.getPrototype());
+                if ( node.ref != null )
+                    node.ref.setBase(type.getPrototype());
             }
             else
                 type = base.getType(cx);
