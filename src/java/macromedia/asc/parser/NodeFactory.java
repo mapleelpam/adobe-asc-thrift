@@ -187,12 +187,12 @@ public final class NodeFactory implements ErrorConstants
 		{
 			node = this.memberExpression(null, this.setExpression(lhs, this.argumentList(null, rhs),is_constinit));
 		}
-// Appears unused....		
-//		if (cx.scriptAssistParsing){
-//			MemberExpressionNode exprNode = (MemberExpressionNode)node;
-//			if (exprNode != null && (prevOp != op))
-//				exprNode.setOrigToken(prevOp);
-//		}
+		// required by flash pro
+		if (cx.scriptAssistParsing){
+			MemberExpressionNode exprNode = (MemberExpressionNode)node;
+			if (exprNode != null && (prevOp != op))
+				exprNode.setOrigToken(prevOp);
+		}
 		node.setPositionNonterminal(lhs, pos);
 		return node;
 	}
