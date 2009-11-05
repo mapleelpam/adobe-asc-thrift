@@ -612,6 +612,8 @@ public final class NodeFactory implements ErrorConstants
 	        if( vard != null )
 	        {
 	            StatementListNode stmtlist = this.statementList(this.statementList(null,vard),node);
+	            if ( stmtlist != null )
+	            	stmtlist.is_loop = true;
 	            node = stmtlist;
 	        }
 	
