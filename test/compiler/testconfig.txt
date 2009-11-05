@@ -1,4 +1,4 @@
-# fields are test names, setting name, configurations, values
+# fields are test names, configurations, setting name, values
 # available setting names:
 #     asc.args       : specify asc command line arguments in the values field. 
 #     asc.override   : compile the file using the given cmd - file will be appended to the end of the line
@@ -8,100 +8,92 @@
 #
 # see README.txt for details
 #
-# Test Name                                              ,  Setting Name       , Configuration         ,     Values
+# Test Name                                              , Configuration    , Setting Name        ,     Values
 # ------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # requires -strict to produce error
-as3/LocalizedErrors/1049-IllegalAssignmentToConst        ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1118-ImplicitCoercionToSubtype       ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1129-DuplicateInterfaceDefErr        ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1136-IncorrectArgsErr                ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1137-IncorrectArgsNoMoreThanErr      ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1061-StaticCallToUndefinedMethod     ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1180-UndefinedMethodErr              ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1188-IllegalAssgnErr                 ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1190-BaseClassNotCTCErr              ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1195-InaccessibleMethodErr           ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-as3/LocalizedErrors/1087-ExtraCharsAfterEndOfProgram     ,    skip             , asc-full|asc-smokes   ,    cpeyer: investigating
-as3/Warnings/.*                                          ,    asc.args         , asc-full|asc-smokes   ,    -warnings -AS3 -import global.abc -import playerglobal.abc
-as3/Vector/vectorWarnings                                ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc
-as3/Vector/vectorStrictErrors                            ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
-as3/Vector/vectorUndefClass                              ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
-as3/Vector/valueConversionError                          ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
-as3/Vector/asc-3699                                      ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
-as3/Vector/asc-3704                                      ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
-as3/Vector/assignIncompatible                            ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
-as3/Vector/typeError1                                    ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
-as3/Vector/ASC-3682                                      ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc
-sanity/strict/.*                                         ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc -import toplevel.abc
-sanity/strict/xml_dynamic                                ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc -import toplevel.abc
-sanity/strict/toStringRadix                              ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc -import toplevel.abc
-sanity/strict/doubleToInt                                ,    asc.args         , asc-full|asc-smokes   ,    -strict -AS3 -import global.abc -import toplevel.abc
-sanity/strict/boidshack                                  ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc -avmtarget 1 -import toplevel.abc
-#import order tests
-sanity/importorder-b                                     ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/importorder-a.as
-sanity/importorder-b                                     ,    avm.args         , asc-full|asc-smokes   ,    sanity/importorder-a.abc
-sanity/importorder                                       ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/importorder-b.as -import sanity/importorder-a.as
-sanity/importorder                                       ,    avm.args         , asc-full|asc-smokes   ,    sanity/importorder-a.abc sanity/importorder-b.abc
-sanity/importorder_abc                                   ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/importorder-a.abc -import sanity/importorder-b.abc
-sanity/importorder_abc                                   ,    avm.args         , asc-full|asc-smokes   ,    sanity/importorder-a.abc sanity/importorder-b.abc
-sanity/bug123884                                         ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc -import toplevel.abc -import sanity/bug123884-import.abc
-sanity/bug123884                                         ,    avm.args         , asc-full|asc-smokes   ,    sanity/bug123884-import.abc
-sanity/strict/b191112                                    ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc -import toplevel.abc -import sanity/strict/b191112-import.abc
-sanity/strict/b191112                                    ,    avm.args         , asc-full|asc-smokes   ,    sanity/strict/b191112-import.abc
-#illegal-override tests
-sanity/IllegalOverrideClass                              ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideClass                              ,    avm.args         , asc-full|asc-smokes   ,    sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideInterfaceMethod                    ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideInterfaceMethod                    ,    avm.args         , asc-full|asc-smokes   ,    sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideInterfaceGetter                    ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideInterfaceGetter                    ,    avm.args         , asc-full|asc-smokes   ,    sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideInterfaceSetter                    ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideInterfaceSetter                    ,    avm.args         , asc-full|asc-smokes   ,    sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideClass_fail                         ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideClass_fail                         ,    avm.args         , asc-full|asc-smokes   ,    sanity/IllegalOverrideBaseNew.abc
-sanity/IllegalOverrideInterfaceMethod_fail               ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideInterfaceMethod_fail               ,    avm.args         , asc-full|asc-smokes   ,    sanity/IllegalOverrideBaseNew.abc
-sanity/IllegalOverrideInterfaceGetter_fail               ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideInterfaceGetter_fail               ,    avm.args         , asc-full|asc-smokes   ,    sanity/IllegalOverrideBaseNew.abc
-sanity/IllegalOverrideInterfaceSetter_fail               ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import sanity/IllegalOverrideBaseOld.abc
-sanity/IllegalOverrideInterfaceSetter_fail               ,    avm.args         , asc-full|asc-smokes   ,    sanity/IllegalOverrideBaseNew.abc
+as3/LocalizedErrors/1049-IllegalAssignmentToConst        , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1118-ImplicitCoercionToSubtype       , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1129-DuplicateInterfaceDefErr        , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1136-IncorrectArgsErr                , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1137-IncorrectArgsNoMoreThanErr      , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1061-StaticCallToUndefinedMethod     , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1180-UndefinedMethodErr              , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1188-IllegalAssgnErr                 , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1190-BaseClassNotCTCErr              , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1195-InaccessibleMethodErr           , .*               ,    asc.args         ,    -strict -import builtin.abc
+as3/LocalizedErrors/1087-ExtraCharsAfterEndOfProgram     , .*               ,    skip             ,    cpeyer: investigating
+as3/Warnings/.*                                          , .*               ,    asc.args         ,    -warnings -AS3 -import builtin.abc -import playerglobal.abc
+as3/Vector/vectorWarnings                                , .*               ,    asc.args         ,    -warnings -import builtin.abc
+as3/Vector/vectorStrictErrors                            , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc
+as3/Vector/vectorUndefClass                              , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc
+as3/Vector/valueConversionError                          , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc
+as3/Vector/asc-3699                                      , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc
+as3/Vector/asc-3704                                      , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc
+as3/Vector/assignIncompatible                            , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc
+as3/Vector/typeError1                                    , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc
+as3/Vector/ASC-3682                                      , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc
+sanity/strict/.*                                         , .*               ,    asc.args         ,    -strict -import builtin.abc -import shell_toplevel.abc
+sanity/strict/xml_dynamic                                , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc -import shell_toplevel.abc
+sanity/strict/toStringRadix                              , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc -import shell_toplevel.abc
+sanity/strict/doubleToInt                                , .*               ,    asc.args         ,    -strict -AS3 -import builtin.abc -import shell_toplevel.abc
+sanity/strict/boidshack                                  , .*               ,    asc.args         ,    -strict -import shell_toplevel.abc  -avmtarget 1 -import builtin.abc
+
+
+# import order tests
+sanity/importorder-b                                     , .*               ,    asc.args         ,    -import builtin.abc -import sanity/importorder/importorder-a.as
+sanity/importorder-b                                     , .*               ,    avm.args         ,    sanity/importorder/importorder-a.abc
+sanity/importorder                                       , .*               ,    asc.args         ,    -import builtin.abc -import sanity/importorder/importorder-b.as -import sanity/importorder/importorder-a.as
+sanity/importorder                                       , .*               ,    avm.args         ,    sanity/importorder/importorder-a.abc sanity/importorder/importorder-b.abc
+sanity/importorder_abc                                   , .*               ,    asc.args         ,    -import builtin.abc -import sanity/importorder/importorder-a.abc -import sanity/importorder/importorder-b.abc
+sanity/importorder_abc                                   , .*               ,    avm.args         ,    sanity/importorder/importorder-a.abc sanity/importorder/importorder-b.abc
+sanity/bug123884                                         , .*               ,    asc.args         ,    -strict -import builtin.abc -import shell_toplevel.abc -import sanity/bug123884/bug123884-import.abc
+sanity/bug123884                                         , .*               ,    avm.args         ,    sanity/bug123884/bug123884-import.abc
+sanity/strict/b191112                                    , .*               ,    asc.args         ,    -strict -import builtin.abc -import shell_toplevel.abc -import sanity/strict/b191112/b191112-import.abc
+sanity/strict/b191112                                    , .*               ,    avm.args         ,    sanity/strict/b191112/b191112-import.abc
+
 # include (-in) smoke test
-sanity/hello                                             ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -in sanity/hello.as -in sanity/hello.as -in sanity/hello.as
-sanity/metadata2                                         ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -md
-sanity/strict/unused/.*                                  ,    skip             , asc-full|asc-smokes   ,    unused feature test that may be needed in the future
+sanity/hello                                             , .*               ,    asc.args         ,    -import builtin.abc -in sanity/hello.as -in sanity/hello.as -in sanity/hello.as
+sanity/metadata2                                         , .*               ,    asc.args         ,    -import builtin.abc -md
+sanity/strict/unused/.*                                  , .*               ,    skip             ,    unused feature test that may be needed in the future
+
 # requires -coach
-errors-and-warnings/.*                                   ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc -import playerglobal.abc
-# expected failures, under investigating
-errors-and-warnings/warning1060                          ,    expectedfailure  , asc-full|asc-smokes   ,    cpeyer: investigating
+errors-and-warnings/.*                                   , .*               ,    asc.args         ,    -warnings -import builtin.abc -import playerglobal.abc
+
+# expected failures under investigation
+errors-and-warnings/warning1060                          , .*               ,    expectedfailure  ,    cpeyer: investigating
+
 # bug regressions
-bugs/ASC-96                                              ,    asc.args         , asc-full|asc-smokes   ,    -coach -import global.abc
-bugs/ASC-1564                                            ,    asc.args         , asc-full|asc-smokes   ,    -md -import global.abc
-bugs/ASC-3250                                            ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc
-bugs/ASC-3310                                            ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc -import playerglobal.abc -swf MainPocket,100,100
-bugs/ASC-3334a                                           ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -avmtarget 1
-bugs/ASC-3334b                                           ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -avmtarget 2
-bugs/ASC-3384                                            ,    asc.args         , asc-full|asc-smokes   ,    -strict -import global.abc
-bugs/ASC-3414                                            ,    asc.args         , asc-full|asc-smokes   ,    -warnings -import global.abc
-cmdline/help1                                            ,    asc.args         , asc-full|asc-smokes   ,    -help
-cmdline/help2                                            ,    asc.args         , asc-full|asc-smokes   ,    -
-cmdline/static_semantics                                 ,    asc.args         , asc-full|asc-smokes   ,    -! -import global.abc
-cmdline/show_bytes                                       ,    asc.args         , asc-full|asc-smokes   ,    -b -import global.abc
-cmdline/show_flow                                        ,    asc.args         , asc-full|asc-smokes   ,    -f -import global.abc
-cmdline/show_parse_trees                                 ,    asc.args         , asc-full|asc-smokes   ,    -p -import global.abc
-cmdline/show_instructions                                ,    asc.args         , asc-full|asc-smokes   ,    -i -import global.abc
-cmdline/movieclip                                        ,    asc.args         , asc-full|asc-smokes   ,    -movieclip -import global.abc
-cmdline/metadata                                         ,    asc.args         , asc-full|asc-smokes   ,    -md -import global.abc
-cmdline/m                                                ,    asc.args         , asc-full|asc-smokes   ,    -m -import global.abc
-cmdline/abcfuture                                        ,    asc.args         , asc-full|asc-smokes   ,    -abcfuture -import global.abc
-cmdline/avmtarget                                        ,    asc.args         , asc-full|asc-smokes   ,    -avmtarget 3 -import global.abc
-cmdline/avmtargetn                                       ,    asc.args         , asc-full|asc-smokes   ,    -avmtarget n -import global.abc
-cmdline/config                                           ,    asc.args         , asc-full|asc-smokes   ,    -config 1 -import global.abc
-cmdline/sanity                                           ,    asc.args         , asc-full|asc-smokes   ,    -sanity
-cmdline/exe                                              ,    asc.args         , asc-full|asc-smokes   ,    -exe avmshell
-cmdline/swf                                              ,    asc.args         , asc-full|asc-smokes   ,    -import global.abc -import playerglobal.abc -swf swf,550,400,-g,-usenetwork
+bugs/ASC-96                                              , .*               ,    asc.args         ,    -coach -import builtin.abc
+bugs/ASC-1564                                            , .*               ,    asc.args         ,    -md -import builtin.abc
+bugs/ASC-2218                                            ,  .*              ,    asc.args         ,    -import global.abc -coach
+bugs/ASC-3250                                            , .*               ,    asc.args         ,    -warnings -import builtin.abc
+bugs/ASC-3310                                            , .*               ,    asc.args         ,    -warnings -import builtin.abc -import playerglobal.abc -swf MainPocket,100,100
+bugs/ASC-3334a                                           , .*               ,    asc.args         ,    -import builtin.abc -avmtarget 1
+bugs/ASC-3334b                                           , .*               ,    asc.args         ,    -import builtin.abc -avmtarget 2
+bugs/ASC-3384                                            , .*               ,    asc.args         ,    -strict -import builtin.abc
+bugs/ASC-3414                                            , .*               ,    asc.args         ,    -warnings -import builtin.abc
+cmdline/help1                                            , .*               ,    asc.args         ,    -help
+cmdline/help2                                            , .*               ,    asc.args         ,    -
+cmdline/static_semantics                                 , .*               ,    asc.args         ,    -! -import builtin.abc
+cmdline/show_bytes                                       , .*               ,    asc.args         ,    -b -import builtin.abc
+cmdline/show_flow                                        , .*               ,    asc.args         ,    -f -import builtin.abc
+cmdline/show_parse_trees                                 , .*               ,    asc.args         ,    -p -import builtin.abc
+cmdline/show_instructions                                , .*               ,    asc.args         ,    -i -import builtin.abc
+cmdline/movieclip                                        , .*               ,    asc.args         ,    -movieclip -import builtin.abc
+cmdline/metadata                                         , .*               ,    asc.args         ,    -md -import builtin.abc
+cmdline/m                                                , .*               ,    asc.args         ,    -m -import builtin.abc
+cmdline/abcfuture                                        , .*               ,    asc.args         ,    -abcfuture -import builtin.abc
+cmdline/avmtarget                                        , .*               ,    asc.args         ,    -avmtarget 3 -import builtin.abc
+cmdline/avmtargetn                                       , .*               ,    asc.args         ,    -avmtarget n -import builtin.abc
+cmdline/config                                           , .*               ,    asc.args         ,    -config 1 -import builtin.abc
+cmdline/sanity                                           , .*               ,    asc.args         ,    -sanity
+cmdline/exe                                              , .*               ,    asc.args         ,    -exe avmshell
+cmdline/swf                                              , .*               ,    asc.args         ,    -import builtin.abc -import playerglobal.abc -swf swf,550,400,-g,-usenetwork
+
 # API Versioning test - these use the ScriptCompiler
-cmdline/invalidCommandlineApi, asc.args, asc-full|asc-smokes , -import global.abc -api 123
-cmdline/importApi, asc.args, asc-full|asc-smokes , -import global.abc -api 662
-versioning/.*                , asc.override , asc-full|asc-smokes , java -ea -DAS3 -DAVMPLUS -classpath asc.jar macromedia.asc.embedding.ScriptCompiler -abcfuture -import builtin.abc -builtin -apiversioning
-versioning/invalidAPI_1      , expectedfailure ,  asc-full|asc-smokes , pending bug
-versioning/.*                , skip , asc-full|asc-smokes , skip versioning until it lands in tamarin-central
+cmdline/invalidCommandlineApi                            , .*               , asc.args            , -import builtin.abc -api 123
+cmdline/importApi                                        , .*               , asc.args            , -import builtin.abc -api 662
+#versioning/.*                                            , .*               , asc.override        , java -ea -DAS3 -DAVMPLUS -classpath asc.jar macromedia.asc.embedding.ScriptCompiler -abcfuture -import builtin.abc -builtin -apiversioning
+#versioning/invalidAPI_1                                 , .*              , expectedfailure      , pending bug
+versioning/.*                                           , .*               , skip                , skip versioning until it lands in tamarin-central
