@@ -50,13 +50,13 @@ except ImportError:
 class AscRuntest(RuntestBase):
     fullRun = False
     regexOutput = False
+    writeResultProperties = True
     
 
     def __init__(self):
         # Set threads to # of available cpus/cores
         self.threads = detectCPUs()
         RuntestBase.__init__(self)
-        self.writeResultProperties = True
 
     def setEnvironVars(self):
         RuntestBase.setEnvironVars(self)
@@ -275,7 +275,7 @@ class AscRuntest(RuntestBase):
             
             (f,err,exitcode) = self.run_pipe('%s %s' % (cmd,as_file))
             output = []
-            for line in f+err:
+            for line in err+f:
                 line = line.strip()
                 self.verbose_print(line)
                 if line:
