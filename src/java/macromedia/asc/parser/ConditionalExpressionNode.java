@@ -52,6 +52,12 @@ public class ConditionalExpressionNode extends Node
 			return null;
 		}
 	}
+	
+	public void voidResult()
+	{
+		this.thenexpr.voidResult();
+		this.elseexpr.voidResult();
+	}
 
 	public String toString()
 	{
