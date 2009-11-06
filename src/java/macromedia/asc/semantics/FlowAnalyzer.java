@@ -24,6 +24,7 @@ import macromedia.asc.util.*;
 import macromedia.asc.util.graph.*;
 
 import java.util.*;
+import static java.lang.System.*;
 
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.semantics.Slot.*;
@@ -876,9 +877,13 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
             {
                 node.ref.setBase(node.base);  // inherited from member expression
             }
-            node.ref.getSlot(cx, SET_TOKEN);
 
-            node.gen_bits = getEmitter().NewDef(node);
+            // if in a with block, we can't trust the resolution of the slot
+            if (cx.statics.withDepth == -1) 
+            {
+                node.ref.getSlot(cx, SET_TOKEN);
+                node.gen_bits = getEmitter().NewDef(node);
+            }
         }
 
         if (node.ref == null)
@@ -889,13 +894,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         {
             node.args.evaluate(cx, this);
 
-            // cn: 2-15-04.  Disabled experiment below.  This was preventing the slot for the class definition itself from having
-            //   its gen_bits set.  Along with a few other bugs, this prevented the
-            //   the compiler from recognizing the type of the variable which referred to a class, allowing this:
-            //   class AAA {  static const bb=22; }
-            //   AAA.bb = 44; // should be a compile error, but compiler doesn't know the type of AAA and so lets it slide.
-
-            //if( slot_index >= 0 ) // experiment
+            if (cx.statics.withDepth == -1)
             {
                 Slot slot = null;
                 node.ref.setBase(node.base);  // inherited attribute
