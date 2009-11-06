@@ -771,6 +771,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">Precisie moet een geheel getal tussen 1 en 34 zijn.</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">Syntaxisfout: instructie voor numeriek gebruik moet eerste in blok zijn.</error>
 	<error id="1214" label="kError_WrongVersion">Incompatibele versie: kan niet verwijzen naar definitie %s die in versie %s is geïntroduceerd via code met versie %s.</error>
 </errors>

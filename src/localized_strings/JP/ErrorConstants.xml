@@ -783,6 +783,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">精度は 1 ～ 34 の整数である必要があります。</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">シンタックスエラー : 数値を使用するステートメントはブロックの先頭にある必要があります。</error>
 	<error id="1214" label="kError_WrongVersion">互換性のないバージョン : 定義 %s (バージョン %s で導入) をバージョン %s のコードから参照できません。</error>
 </errors>

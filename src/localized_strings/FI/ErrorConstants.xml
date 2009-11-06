@@ -773,6 +773,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">Tarkkuuden pitää olla kokonaisluku 1-34.</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">Syntaksivirhe: numeerisen ilmaisun pitää olla ensimmäisenä lohkossa.</error>
 	<error id="1214" label="kError_WrongVersion">Yhteensopimaton versio: määritykseen %s, joka esiteltiin versiossa %s, ei voi viitata version %s koodista.</error>
 </errors>

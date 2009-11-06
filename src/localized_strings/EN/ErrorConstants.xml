@@ -773,7 +773,6 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">Precision must be an integer between 1 and 34.</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">Syntax error: numeric use statement must be first in block.</error>
 	<error id="1214" label="kError_WrongVersion">Incompatible Version: can not reference definition %s introduced in version %s from code with version %s.</error>
 	<error id="1215" label="kError_LossyConversion">Invalid initialization: conversion to type %s loses data.</error>
 </errors>

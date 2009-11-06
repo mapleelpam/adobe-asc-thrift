@@ -773,6 +773,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">精確度必須是介於 1 和 34 之間的整數。</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">語法錯誤: 數值的 use 陳述式必須是區塊中的第一個項目。</error>
 	<error id="1214" label="kError_WrongVersion">不相容的版本: 無法參照定義 %s (在版本 %s 中從版本 %s 的程式碼引進)。</error>
 </errors>

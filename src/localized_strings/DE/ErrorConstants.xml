@@ -773,6 +773,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">Präzision muss eine ganze Zahl zwischen 1 und 34 sein.</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">Syntaxfehler: numeric use-Anweisung muss zuerst im Block stehen.</error>
 	<error id="1214" label="kError_WrongVersion">Inkompatible Version: Definition %s, die aus Code von Version %s eingeführt wurde, kann nicht mit Version %s referenziert werden.</error>
 </errors>

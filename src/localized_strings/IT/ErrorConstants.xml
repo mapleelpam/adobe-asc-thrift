@@ -773,6 +773,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">Il valore di Precision deve essere un numero intero compreso tra 1 e 34.</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">Errore di sintassi: l'istruzione per l'uso numerico deve essere la prima del blocco.</error>
 	<error id="1214" label="kError_WrongVersion">Versione incompatibile: impossibile fare riferimento alla definizione %s introdotta nella versione %s dal codice della versione %s.</error>
 </errors>

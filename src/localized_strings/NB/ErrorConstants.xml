@@ -773,6 +773,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">Nøyaktigheten må være et heltall mellom 1 og 34.</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">Syntaksfeil: numerisk brukssetning må være først i blokken.</error>
 	<error id="1214" label="kError_WrongVersion">Inkompatibel versjon: kan ikke referere til definisjonen %s som ble introdusert i versjon %s fra kode med versjon %s.</error>
 </errors>

@@ -771,6 +771,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">Значение точности должно являться целым числом от 1 до 34.</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">Синтаксическая ошибка: оператор использования чисел должен находиться в блоке первым.</error>
 	<error id="1214" label="kError_WrongVersion">Несовместимая версия: невозможно сослаться на определение %s, представленное в версии %s из кода с версией %s.</error>
 </errors>

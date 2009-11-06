@@ -19,7 +19,7 @@ package macromedia.asc.embedding;
 public interface ErrorConstants
 {
    static final int kNumLanguages = 19;
-   static final int kNumErrorConstants = 179;
+   static final int kNumErrorConstants = 178;
 
 
       public static final int kError_OverrideOfFuncNotMarkedForOverride = 1024;
@@ -180,7 +180,6 @@ public interface ErrorConstants
       public static final int kError_InvalidConfigLocation = 1210;
       public static final int kError_ShadowedConfigNamespace = 1211;
       public static final int kError_InvalidPrecision = 1212;
-      public static final int kError_Parser_NumericUseMisplaced = 1213;
       public static final int kError_WrongVersion = 1214;
       public static final int kError_LossyConversion = 1215;
       public static final int kError_AmbiguousReference = 1000;
@@ -386,7 +385,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
            new AscError(kError_ShadowedConfigNamespace, "Namespace %s conflicts with a configuration namespace." ),
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -568,7 +566,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "配置值必须在程序或包的顶级声明。" ),
            new AscError(kError_ShadowedConfigNamespace, "命名空间 %s 与配置命名空间冲突。" ),
            new AscError(kError_InvalidPrecision, "精度必须是一个介于 1 和 34 之间的整数。" ),
-           new AscError(kError_Parser_NumericUseMisplaced, "语法错误: 数字的 use 语句必须是块中的第一项。" ),
            new AscError(kError_WrongVersion, "不兼容的版本: 无法引用定义 %s（在版本 %s 中引入），来源为版本 %s 的代码。" ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -750,7 +747,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
            new AscError(kError_ShadowedConfigNamespace, "Namespace %s conflicts with a configuration namespace." ),
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -932,7 +928,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "En konfigurationsværdi skal erklæres på et programs eller en pakkes øverste niveau." ),
            new AscError(kError_ShadowedConfigNamespace, "Navneområdet %s skaber konflikt med en konfigurationsnavneområde." ),
            new AscError(kError_InvalidPrecision, "Præcision skal være et heltal mellem 1 og 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntaksfejl: numeriske brugserklæringer skal være først i blokken." ),
            new AscError(kError_WrongVersion, "Inkompatibel version: kan ikke henvise til definitionen %s introduceret i version %s fra kode med version %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -1114,7 +1109,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "Konfigurationswerte müssen auf der obersten Ebene eines Programms oder Pakets deklariert werden." ),
            new AscError(kError_ShadowedConfigNamespace, "Namespace %s konfligiert mit einem Konfigurations-Namespace." ),
            new AscError(kError_InvalidPrecision, "Präzision muss eine ganze Zahl zwischen 1 und 34 sein." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntaxfehler: numeric use-Anweisung muss zuerst im Block stehen." ),
            new AscError(kError_WrongVersion, "Inkompatible Version: Definition %s, die aus Code von Version %s eingeführt wurde, kann nicht mit Version %s referenziert werden." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -1296,7 +1290,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "Debe declararse un valor de configuración en el nivel superior de un programa o paquete." ),
            new AscError(kError_ShadowedConfigNamespace, "Existe un conflicto entre el espacio de nombres %s y un espacio de nombres de configuración." ),
            new AscError(kError_InvalidPrecision, "La precisión debe ser un número entero entre 1 y 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Error de sintaxis: la sentencia de uso numérico debe estar en primer lugar en el bloque." ),
            new AscError(kError_WrongVersion, "Versión no compatible: no se puede hacer referencia a la definición %s introducida en la versión %s del código con la versión %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -1478,7 +1471,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "Määritysarvo pitää määrittää ohjelman tai paketin ylimmällä tasolla." ),
            new AscError(kError_ShadowedConfigNamespace, "Nimitila %s on ristiriidassa määritysnimitilan kanssa." ),
            new AscError(kError_InvalidPrecision, "Tarkkuuden pitää olla kokonaisluku 1-34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntaksivirhe: numeerisen ilmaisun pitää olla ensimmäisenä lohkossa." ),
            new AscError(kError_WrongVersion, "Yhteensopimaton versio: määritykseen %s, joka esiteltiin versiossa %s, ei voi viitata version %s koodista." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -1660,7 +1652,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "Une valeur de configuration doit être déclarée au niveau supérieur d’un programme ou d’un package." ),
            new AscError(kError_ShadowedConfigNamespace, "L’espace de noms %s est en conflit avec un espace de noms de configuration." ),
            new AscError(kError_InvalidPrecision, "La valeur de précision doit être un entier compris entre 1 et 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Erreur de syntaxe : l’instruction numeric use doit être placée au début du bloc." ),
            new AscError(kError_WrongVersion, "Version incompatible : impossible de référencer la définition %s introduite dans la version %s à partir de code associé à la version %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -1842,7 +1833,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "Un valore di configurazione deve essere dichiarato nel livello principale di un programma o di un pacchetto." ),
            new AscError(kError_ShadowedConfigNamespace, "Lo spazio dei nomi % è in conflitto con uno spazio dei nomi di configurazione." ),
            new AscError(kError_InvalidPrecision, "Il valore di Precision deve essere un numero intero compreso tra 1 e 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Errore di sintassi: l'istruzione per l'uso numerico deve essere la prima del blocco." ),
            new AscError(kError_WrongVersion, "Versione incompatibile: impossibile fare riferimento alla definizione %s introdotta nella versione %s dal codice della versione %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -2024,7 +2014,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "設定値はプログラムまたはパッケージの最上位レベルで宣言される必要があります。" ),
            new AscError(kError_ShadowedConfigNamespace, "名前空間 %s は設定名前空間と競合しています。" ),
            new AscError(kError_InvalidPrecision, "精度は 1 ～ 34 の整数である必要があります。" ),
-           new AscError(kError_Parser_NumericUseMisplaced, "シンタックスエラー : 数値を使用するステートメントはブロックの先頭にある必要があります。" ),
            new AscError(kError_WrongVersion, "互換性のないバージョン : 定義 %s (バージョン %s で導入) をバージョン %s のコードから参照できません。" ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -2206,7 +2195,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "구성 값은 프로그램 또는 패키지의 맨 위 레벨에서 선언되어야 합니다." ),
            new AscError(kError_ShadowedConfigNamespace, "네임스페이스 %s이(가) 구성 네임스페이스와 충돌합니다." ),
            new AscError(kError_InvalidPrecision, "정밀도는 1 - 34 사이의 정수여야 합니다." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "구문 오류: 숫자 사용 명령문이 블록의 처음에 사용되어야 합니다." ),
            new AscError(kError_WrongVersion, "호환되지 않는 버전: 정의 %s(%s 버전에 도입됨)을(를) %s 버전의 코드에서 참조할 수 없습니다." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -2388,7 +2376,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "En konfigureringsverdi må deklareres på toppnivå i et program eller en pakke." ),
            new AscError(kError_ShadowedConfigNamespace, "Navneområdet %s er i konflikt med et konfigureringsnavneområde." ),
            new AscError(kError_InvalidPrecision, "Nøyaktigheten må være et heltall mellom 1 og 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntaksfeil: numerisk brukssetning må være først i blokken." ),
            new AscError(kError_WrongVersion, "Inkompatibel versjon: kan ikke referere til definisjonen %s som ble introdusert i versjon %s fra kode med versjon %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -2570,7 +2557,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "Een configuratiewaarde moet op het bovenste niveau van een programma of pakket worden gedeclareerd." ),
            new AscError(kError_ShadowedConfigNamespace, "Naamruimte %s veroorzaakt een conflict met een configuratienaamruimte." ),
            new AscError(kError_InvalidPrecision, "Precisie moet een geheel getal tussen 1 en 34 zijn." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntaxisfout: instructie voor numeriek gebruik moet eerste in blok zijn." ),
            new AscError(kError_WrongVersion, "Incompatibele versie: kan niet verwijzen naar definitie %s die in versie %s is geïntroduceerd via code met versie %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -2752,7 +2738,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
            new AscError(kError_ShadowedConfigNamespace, "Namespace %s conflicts with a configuration namespace." ),
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -2934,7 +2919,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "Um valor de configuração deve ser declarado no nível superior de um programa ou pacote." ),
            new AscError(kError_ShadowedConfigNamespace, "O namespace %s está em conflito com um namespace de configuração." ),
            new AscError(kError_InvalidPrecision, "A precisão deve ser um número inteiro entre 1 e 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Erro de sintaxe: instrução de uso numérico deve estar primeiro em bloco." ),
            new AscError(kError_WrongVersion, "Versão incompatível: não é possível fazer referência à definição %s introduzida na versão %s do código com a versão %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -3116,7 +3100,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "Переменная конфигурации  должна быть объявлена на верхнем уровне программы или пакета." ),
            new AscError(kError_ShadowedConfigNamespace, "Пространство имен %s конфликтует с пространством имен конфигурации." ),
            new AscError(kError_InvalidPrecision, "Значение точности должно являться целым числом от 1 до 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Синтаксическая ошибка: оператор использования чисел должен находиться в блоке первым." ),
            new AscError(kError_WrongVersion, "Несовместимая версия: невозможно сослаться на определение %s, представленное в версии %s из кода с версией %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -3298,7 +3281,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "Ett konfigurationsvärde måste definieras på programmets eller paketets toppnivå." ),
            new AscError(kError_ShadowedConfigNamespace, "Det finns en konflikt mellan namnutrymmet %s och ett konfigurationsnamnutrymme." ),
            new AscError(kError_InvalidPrecision, "Precision måste vara ett heltal mellan 1 och 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntaxfel: programstats om numerisk användning måste vara först i blocket." ),
            new AscError(kError_WrongVersion, "Inkompatibel version: det går inte att skapa referens för definitionen %s som lanserades i version %s utifrån koden med version %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -3480,7 +3462,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "A configuration value must be declared at the top level of a program or package." ),
            new AscError(kError_ShadowedConfigNamespace, "Namespace %s conflicts with a configuration namespace." ),
            new AscError(kError_InvalidPrecision, "Precision must be an integer between 1 and 34." ),
-           new AscError(kError_Parser_NumericUseMisplaced, "Syntax error: numeric use statement must be first in block." ),
            new AscError(kError_WrongVersion, "Incompatible Version: can not reference definition %s introduced in version %s from code with version %s." ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };
@@ -3662,7 +3643,6 @@ public interface ErrorConstants
            new AscError(kError_InvalidConfigLocation, "必須在程式或套件的最上層宣告組態值。" ),
            new AscError(kError_ShadowedConfigNamespace, "名稱空間 %s 與組態空間名稱發生衝突。" ),
            new AscError(kError_InvalidPrecision, "精確度必須是介於 1 和 34 之間的整數。" ),
-           new AscError(kError_Parser_NumericUseMisplaced, "語法錯誤: 數值的 use 陳述式必須是區塊中的第一個項目。" ),
            new AscError(kError_WrongVersion, "不相容的版本: 無法參照定義 %s (在版本 %s 中從版本 %s 的程式碼引進)。" ),
            new AscError(kError_LossyConversion, "Invalid initialization: conversion to type %s loses data." ),
    };

@@ -773,6 +773,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">精度必须是一个介于 1 和 34 之间的整数。</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">语法错误: 数字的 use 语句必须是块中的第一项。</error>
 	<error id="1214" label="kError_WrongVersion">不兼容的版本: 无法引用定义 %s（在版本 %s 中引入），来源为版本 %s 的代码。</error>
 </errors>

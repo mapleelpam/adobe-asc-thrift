@@ -775,6 +775,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">Præcision skal være et heltal mellem 1 og 34.</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">Syntaksfejl: numeriske brugserklæringer skal være først i blokken.</error>
 	<error id="1214" label="kError_WrongVersion">Inkompatibel version: kan ikke henvise til definitionen %s introduceret i version %s fra kode med version %s.</error>
 </errors>

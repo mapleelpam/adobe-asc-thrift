@@ -770,6 +770,5 @@ switch(x)
 	</description>
     </error>
 	<error id="1212" label="kError_InvalidPrecision">Precision måste vara ett heltal mellan 1 och 34.</error>
-	<error id="1213" label="kError_Parser_NumericUseMisplaced">Syntaxfel: programstats om numerisk användning måste vara först i blocket.</error>
 	<error id="1214" label="kError_WrongVersion">Inkompatibel version: det går inte att skapa referens för definitionen %s som lanserades i version %s utifrån koden med version %s.</error>
 </errors>

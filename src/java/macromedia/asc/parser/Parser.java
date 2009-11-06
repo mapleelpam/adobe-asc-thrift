@@ -4592,24 +4592,6 @@ XMLElementContent
             }
             else 
             {
-            	if (t instanceof PragmaNode) 
-            	{
-              		list.has_pragma = true;
-              		
-            		// make sure it's at the top of the block
-            		if (list != null) 
-            		{
-            			for (int i = 0; i < list.items.size(); i++) 
-            			{
-            				Node kid = list.items.at(i);
-            				if (!(kid instanceof PragmaNode)) 
-            				{
-            					error(kError_Parser_NumericUseMisplaced);
-            					break;
-            				}
-            			}
-            		}
-            	}
             	list = nodeFactory.statementList(list, t);
             }
         }
