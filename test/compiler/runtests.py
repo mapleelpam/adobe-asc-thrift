@@ -95,9 +95,9 @@ class AscRuntest(RuntestBase):
         self.setOptions()
         self.parseOptions()
         self.setTimestamp()
+        self.checkPath()
         if not self.config:
             self.determineConfig()
-        self.checkPath()
         if self.htmlOutput and not self.rebuildtests:
             self.createOutputFile()
         self.tests = self.getTestsList(self.args)

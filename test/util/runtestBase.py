@@ -307,6 +307,8 @@ class RuntestBase:
                 cputype='ppc64'
             elif re.search('(ppc)', f):
                 cputype='ppc'
+            elif re.search('(mips)', f.lower()):
+                cputype='mips'
             elif re.search('(32-bit|80386|i386)', f):
                 cputype='x86'
             elif re.search('(64-bit|x86-64|x86_64|Mono/\.Net)', f):
@@ -317,7 +319,7 @@ class RuntestBase:
                 
         except:
             try:
-                cputype={'AMD64':'x86','x86':'x86','i386':'x86','i686':'x86','x86_64':'x64','i86pc':'x86','Power Macintosh':'ppc','sun4u':'x86','':'x86'}[platform.machine()]
+                cputype={'AMD64':'x86','x86':'x86','i386':'x86','i686':'x86','x86_64':'x64','i86pc':'x86','Power Macintosh':'ppc','sun4u':'x86','mips':'mips','':'x86'}[platform.machine()]
                 if cputype == 'x86' and splitext(self.avm)[0][-2:] == '64':
                     cputype == 'x64'
             except:
@@ -475,6 +477,9 @@ class RuntestBase:
             for t in self.args:
                 newargs.append(convertFromCygwin(t))
             self.args = newargs
+        
+        if not self.rebuildtests:
+            self.checkExecutable(self.avm, 'AVM environment variable or --avm must be set to avmplus')
 
     def createOutputFile(self):
         # set the output file name.  let's base its name on the date and platform,
@@ -968,9 +973,6 @@ class RuntestBase:
     ### Run Tests ###
     
     def preProcessTests(self):  # don't need AVM if rebuilding tests
-        if not self.rebuildtests:
-            self.checkExecutable(self.avm, 'AVM environment variable or --avm must be set to avmplus')
-            
         self.js_print('current configuration: %s' % self.config, overrideQuiet=True)
         self.js_print('Executing %d tests against vm: %s' % (len(self.tests), self.avm), overrideQuiet=True);
 
@@ -1106,12 +1108,12 @@ class RuntestBase:
             if self.js_output:
                 print 'Results were written to %s' % self.js_output
 
-            if self.writeResultProperties:
-                logfile = open('result.properties', 'w')
-                if self.allfails>0:
-                  logfile.write("failures=%d" % self.allfails)
-                else:
-                  logfile.write("no failures")  
+        if self.writeResultProperties:
+            logfile = open('result.properties', 'w')
+            if self.allfails>0:
+              logfile.write("failures=%d" % self.allfails)
+            else:
+              logfile.write("no failures")  
 
         if self.ashErrors:
             exit(1)
