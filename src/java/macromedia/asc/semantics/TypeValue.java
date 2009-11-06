@@ -39,6 +39,7 @@ public final class TypeValue extends ObjectValue
     public static TypeValue newTypeValue(Context cx, Builder builder, QName name, int type_id)
     {
         String fullname = name.toString();
+ 
         TypeValue type = cx.userDefined(fullname);
         if (type == null)
         {
@@ -204,5 +205,16 @@ public final class TypeValue extends ObjectValue
         if( types == null )
             types = new HashMap<String, Slot>();
         types.put(name, s);
+    }
+    
+    /**
+     *  Propagate type data from an uinstantiated parameterized type (e.g., Vector)
+     *  to a specialized instantiation (e.g., Vector&lt;int&gt;
+     *  @param this - the specialized, instantiated type.
+     *  @param uninstantiated_type - the "parent" uninstantiated type.
+     */
+    public void copyInstantiationData(TypeValue uninstantiated_type)
+    {
+    	this.builder.is_final = uninstantiated_type.builder.is_final;
     }
 }

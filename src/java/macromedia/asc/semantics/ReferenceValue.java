@@ -510,6 +510,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     }
                     else
                     {
+                    	//  Create a TypeValue that represents the instantiated type.
                         ObjectValue prot_ns = cx.getNamespace(fullname.toString(), Context.NS_PROTECTED);
                         ObjectValue static_prot_ns = cx.getNamespace(fullname.toString(), Context.NS_STATIC_PROTECTED);
 
@@ -517,8 +518,12 @@ public final class ReferenceValue extends Value implements ErrorConstants
                         cframe.type = cx.typeType().getDefaultTypeInfo();
                         ObjectValue iframe = new ObjectValue(cx,new InstanceBuilder(fullname),cframe);
                         cframe.prototype = iframe;
+                        
+                        //  TODO: Allow for other parameterized types some day.
+                        TypeValue uninstantiated_generic = cx.vectorObjType();
 
-                        FlowAnalyzer.inheritClassSlotsStatic(cframe, iframe, cx.vectorObjType(), cx);
+                        FlowAnalyzer.inheritClassSlotsStatic(cframe, iframe, uninstantiated_generic, cx);
+                        cframe.copyInstantiationData(uninstantiated_generic);
                     }
                     slot = obj.getSlot(cx, slot_id);
                     slot.setValue(cframe);
