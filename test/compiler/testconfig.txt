@@ -52,6 +52,16 @@ sanity/bug123884                                         , .*               ,   
 sanity/strict/b191112                                    , .*               ,    asc.args         ,    -strict -import builtin.abc -import shell_toplevel.abc -import sanity/strict/b191112/b191112-import.abc
 sanity/strict/b191112                                    , .*               ,    avm.args         ,    sanity/strict/b191112/b191112-import.abc
 
+#illegal-override tests
+sanity/IllegalOverrideClass_fail                         , .*               ,    asc.args         ,    -import builtin.abc -in sanity/IllegalOverrideClass_fail/IllegalOverrideBaseOld.as
+sanity/IllegalOverrideClass_fail                         , .*               ,    avm.args         ,    sanity/IllegalOverrideClass_fail/IllegalOverrideBaseNew.abc
+sanity/IllegalOverrideInterfaceMethod_fail               , .*               ,    asc.args         ,    -import builtin.abc -in sanity/IllegalOverrideInterfaceMethod_fail/IllegalOverrideBaseOld.as
+sanity/IllegalOverrideInterfaceMethod_fail               , .*               ,    avm.args         ,    sanity/IllegalOverrideInterfaceMethod_fail/IllegalOverrideBaseNew.abc
+sanity/IllegalOverrideInterfaceGetter_fail               , .*               ,    asc.args         ,    -import builtin.abc -in sanity/IllegalOverrideInterfaceGetter_fail/IllegalOverrideBaseOld.as
+sanity/IllegalOverrideInterfaceGetter_fail               , .*               ,    avm.args         ,    sanity/IllegalOverrideInterfaceGetter_fail/IllegalOverrideBaseNew.abc
+sanity/IllegalOverrideInterfaceSetter_fail               , .*               ,    asc.args         ,    -import builtin.abc -in sanity/IllegalOverrideInterfaceSetter_fail/IllegalOverrideBaseOld.as
+sanity/IllegalOverrideInterfaceSetter_fail               , .*               ,    avm.args         ,    sanity/IllegalOverrideInterfaceSetter_fail/IllegalOverrideBaseNew.abc
+
 # include (-in) smoke test
 sanity/hello                                             , .*               ,    asc.args         ,    -import builtin.abc -in sanity/hello.as -in sanity/hello.as -in sanity/hello.as
 sanity/metadata2                                         , .*               ,    asc.args         ,    -import builtin.abc -md
@@ -98,13 +108,4 @@ cmdline/importApi                                        , .*               , as
 #versioning/invalidAPI_1                                 , .*              , expectedfailure      , pending bug
 versioning/.*                                           , .*               , skip                , skip versioning until it lands in tamarin-central
 
-# Failures due to new test harness - Investigating
-cmdline/show_flow , .* , skip , Failures due to new test harness - Investigating
-sanity/class_ctor , .* , skip , Failures due to new test harness - Investigating
-sanity/IllegalOverrideClass_fail , .* , skip , Failures due to new test harness - Investigating
-sanity/IllegalOverrideInterfaceGetter_fail , .* , skip , Failures due to new test harness - Investigating
-sanity/IllegalOverrideInterfaceMethod_fail , .* , skip , Failures due to new test harness - Investigating
-sanity/IllegalOverrideInterfaceSetter_fail , .* , skip , Failures due to new test harness - Investigating
-sanity/strict/b198376 , .* , skip , Failures due to new test harness - Investigating
-test/ConstVariables, .* , skip , Failures due to new test harness - Investigating
-cmdline/exe, .* , skip , Failures due to new test harness - Investigating
+sanity/class_ctor                   , .* , skip , test results vary between tamarin-central and tamarin-redux - skipping until tamarin-central is updated.

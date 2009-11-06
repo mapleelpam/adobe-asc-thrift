@@ -4,7 +4,7 @@ class a
             function a(v)
             {
                         this[v] = 1
-                        print("success")
+                        //print("success")
             }
 }
 class b extends a 

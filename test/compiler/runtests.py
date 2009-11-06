@@ -116,7 +116,7 @@ class AscRuntest(RuntestBase):
             avmargs = settings['.*']['avm.args']
         cmd="%s %s %s" % (self.avm,avmargs,abc)
         f,err,exit = self.run_pipe(cmd)
-        for line in f:
+        for line in err+f:
             line = line.strip()
             if line:
                 if not (line[0:3] == 'at ' and line[-1] == ')'):  #don't record error location, so we strip it out
@@ -163,20 +163,30 @@ class AscRuntest(RuntestBase):
             outputCalls.append((self.verbose_print,(line,)))
             
         expected=[]
-        if isfile("%s.err" % root):
-            fileobject=open("%s.err" % root)
-            for line in fileobject:
-                line = line.strip()
-                if line:
-                    expected.append(line)
-        elif isfile("%s.out" % root):
-            fileobject=open("%s.out" % root)
-            for line in fileobject:
-                line = line.strip()
-                if line:
-                    expected.append(line)
-        else:
-            expected=["%s.abc, [\d]+ bytes written" % splitext(split(ast)[1])[0]]
+        
+        if self.vmtype == 'releasedebugger':
+            if isfile('%s.err_s' % root):
+                expected = self.loadExpected(root,'err_s')
+            elif isfile('%s.err_sd' % root):
+                expected = self.loadExpected(root,'err_sd')      
+        elif self.vmtype == 'debugdebugger':
+            if isfile('%s.err_sd' % root):
+                expected = self.loadExpected(root,'err_sd')
+            elif isfile('%s.err_d' % root):
+                expected = self.loadExpected(root,'err_d')
+        elif self.vmtype == 'debug':
+            if isfile('%s.err_d' % root):
+                expected = self.loadExpected(root,'err_d')
+            elif isfile('%s.err_sd' % root):
+                expected = self.loadExpected(root,'err_sd')
+                
+        if not expected:
+            if isfile("%s.err" % root):
+                expected = self.loadExpected(root,'err')
+            elif isfile("%s.out" % root):
+                expected = self.loadExpected(root,'out')
+            else:
+                expected=["%s.abc, [\d]+ bytes written" % splitext(split(ast)[1])[0]]
         
         if len(expected) != len(actual):
             if settings.has_key('.*') and settings['.*'].has_key('expectedfailure'):
@@ -309,6 +319,15 @@ class AscRuntest(RuntestBase):
             if re.match(".*\(\).*",expected[i]):
                 p=re.compile("\(\)")
                 expected[i] = p.sub("\(\)",expected[i])
+        return expected
+    
+    def loadExpected(self, root, ext):
+        fileobject=open("%s.%s" % (root, ext))
+        expected = []
+        for line in fileobject:
+            line = line.strip()
+            if line:
+                expected.append(line)
         return expected
     
     def regexReplace(self, match):

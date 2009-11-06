@@ -1,3 +1,4 @@
+show_flow.abc, \d+ bytes written
 \$init:
 B0: Pred \{ \} Succ \{ B1 \} Def \{ \} Gen \{ \} Kill \{ \} In \{ \} Out \{ \}null
 B1: Pred \{ B0 \} Succ \{ \} Def \{ \} Gen \{ \} Kill \{ \} In \{ \} Out \{ \}
@@ -10,4 +11,4 @@ B1: Pred \{ B0 \} Succ \{ \} Def \{ d0 d1 \} Gen \{ d0 d1 \} Kill \{ \} In \{ \}
 SetExpression
 B2: Pred \{ \} Succ \{ \} Def \{ \} Gen \{ \} Kill \{ \} In \{ \} Out \{ \}
 terminal block for return
-show_flow.abc, \d+ bytes written
+
