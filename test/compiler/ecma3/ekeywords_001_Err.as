@@ -35,7 +35,7 @@
     var result = "failed";
 
     try {
-		super;
+		super.foo;
 	} 
 	catch (x) {
 		if (x instanceof SyntaxError)
