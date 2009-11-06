@@ -3442,7 +3442,7 @@ XMLElementContent
                 matchSemicolon(mode);
             }
         }
-        else  // super expression
+        else if ( lookahead() == DOT_TOKEN || lookahead() == LEFTBRACKET_TOKEN ) // super expression
         {
             Node t = parseFullPostfixExpressionPrime(first);
             if (lookahead()==ASSIGN_TOKEN) // ISSUE: what about compound assignment?
@@ -3451,6 +3451,14 @@ XMLElementContent
             }
             result = nodeFactory.expressionStatement(parseListExpressionPrime(mode, nodeFactory.list(null, t)));
             matchSemicolon(mode);
+        }
+        else
+        {
+        	error(ParseError.EOS, kError_Parser_ExpectedToken,
+        			Token.getTokenClassName(LEFTPAREN_TOKEN),
+        			scanner.getCurrentTokenTextOrTypeText(lookahead()));
+        	result = nodeFactory.error(kError_Parser_ExpectedToken);
+        	skiperror(SEMICOLON_TOKEN);
         }
 
         if (debug)
