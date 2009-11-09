@@ -4391,6 +4391,13 @@ XMLElementContent
                         }
                     }
                 }
+                else
+                {
+                    if (ctx.errorCount() == 0) 
+                    { 
+                        matchSemicolon(mode);  // don't check if an error has already occured
+                    }
+                }
             }
         }
 
