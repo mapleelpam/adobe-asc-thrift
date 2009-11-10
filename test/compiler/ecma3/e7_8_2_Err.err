@@ -1,9 +1,9 @@
-[Compiler] Error #1086: Syntax error: expecting semicolon before 2.
-ecma3/e7_8_2_Err.as, Ln 42, Col 7:
-{1 2 } 3;
-......^
-[Compiler] Error #1083: Syntax error: else is unexpected.
-ecma3/e7_8_2_Err.as, Ln 48, Col 1:
+\[Compiler\] Error #1086: Syntax error: expecting semicolon before 2.
+.*e7_8_2_Err.as, Ln 42, Col 7:
+\{1 2 \} 3;
+......\^
+\[Compiler\] Error #1083: Syntax error: else is unexpected.
+.*e7_8_2_Err.as, Ln 48, Col 1:
 else c=d;
-^
+\^
 2 errors found

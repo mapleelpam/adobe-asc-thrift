@@ -83,7 +83,7 @@ class AscRuntest(RuntestBase):
                 self.sourceExt = v
             elif o in ('--threads',):
                 self.threads=int(v)
-            elif o in ('r','--regex',):
+            elif o in ('-r','--regex',):
                 self.regexOutput = True
             elif o in ('--full',):
                 self.fullRun = True
