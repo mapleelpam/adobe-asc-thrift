@@ -49,19 +49,26 @@
 
 import os, sys, getopt, datetime, pipes, glob, itertools, tempfile, string, re, platform, shutil
 import subprocess, random
-from os.path import *
+from os.path import abspath, basename, dirname, exists, isdir, isfile, split, splitext
 from os import getcwd,environ
 from datetime import datetime
 from glob import glob
 from sys import argv, exit
 from getopt import getopt
 from itertools import count
-from killableprocess import Popen
 from time import time,sleep
 import shutil
+import which
 
 import threadpool
 import subProcess
+
+# For Python 2.6 and above, use native subprocess.Popen
+if sys.version_info[0] >= 3 or (sys.version_info[0] == 2 and sys.version_info[1] >= 6):
+    from subprocess import Popen
+else:
+    from killableprocess import Popen
+
 
 # runtestUtils must be imported after "from os.path import *" as walk is overridden
 from runtestUtils import *
@@ -273,9 +280,6 @@ class RuntestBase:
         # {CPU_ARCH}-{OS}-{VM}-{VERSION}-{VMSWITCH}
         # ================================================
         
-        self.determineOS()
-        
-        
         try:
             # Try and determine CPU architecture of the AVM, if it fails drop back to platform.machine()
             cputype = ''
@@ -326,9 +330,10 @@ class RuntestBase:
                 print("ERROR: cpu_arch '%s' is unknown, expected values are (x86,ppc), use runtests.py --config x86-win-tvm-release to manually set the configuration" % (platform.machine()))
                 exit(1)
                 
+        self.vmtype = 'release'
         if self.osName=='winmobile-emulator':
             self.vmtype = 'release'
-        elif not self.runSource:
+        elif not self.runSource and not self.rebuildtests:
             (f,err,exitcode) = self.run_pipe('%s' % self.avm)
             # determine avmshell type
             if re.search('debug-debugger',f[1]):
@@ -438,18 +443,29 @@ class RuntestBase:
         if exe:
             exe = exe.split()[0]    # only check first arg if there are more than one
         if not isfile(exe):
-            exit('ERROR: cannot find %s, %s' % (exe, msg))
-        if not os.access(exe, os.X_OK):
+            # exe might be in path - check there
             try:
-                import stat
-                os.chmod(exe, stat.S_IXUSR)
-            except:
+                if not which.which(exe):
+                    exit('ERROR: cannot find %s, %s' % (exe, msg))
+            except which.WhichError:
+                exit('ERROR: cannot find %s, %s' % (exe, msg))
+        if not os.access(exe, os.X_OK):
+            # check in path
+            try:
+                if not os.access(which.which(exe)[0], os.X_OK):
+                    try:
+                        import stat
+                        os.chmod(exe, stat.S_IXUSR)
+                    except:
+                        exit('ERROR: cannot execute %s, check the executable flag' % exe)
+            except which.WhichError:
                 exit('ERROR: cannot execute %s, check the executable flag' % exe)
 
     def checkPath(self,additionalVars=[]):
         '''Check to see if running using windows python and if so, convert any cygwin paths to win paths
             Takes additional variables to check as a list of strings
         '''
+        self.determineOS()
         if self.osName == 'win':
             def convertFromCygwin(cygpath):
                 if cygpath.find('\\') == -1:
@@ -459,23 +475,15 @@ class RuntestBase:
                     except:
                         pass
                 return cygpath
-            # check for .exe in avm, avm2
-            try:
-                if self.avm and not isfile(self.avm) and self.avm[-4:] != '.exe':
-                    self.avm += '.exe'
-                if self.avm2 and not isfile(self.avm2) and self.avm2[-4:] != '.exe':
-                    self.avm2 += '.exe'
-            except:
-                pass
             
             selfVarsToCheck = ['avm','asc','builtinabc','shellabc','java']
             selfVarsToCheck.extend(additionalVars)
             for var in selfVarsToCheck:
-                setattr(self, var, convertFromCygwin(getattr(self,var)))
+                setattr(self, var, convertFromCygwin(getattr(self,var)).strip())
                 
             newargs = []
             for t in self.args:
-                newargs.append(convertFromCygwin(t))
+                newargs.append(convertFromCygwin(t).strip())
             self.args = newargs
         
         if not self.rebuildtests:
@@ -650,7 +658,6 @@ class RuntestBase:
     
     def compile_test(self, as_file, extraArgs=[]):
         asc, builtinabc, shellabc, ascargs = self.asc, self.builtinabc, self.shellabc, self.ascargs
-        
         # if there is a .build file available (which is an executable script) run that file instead
         # of compiling with asc
         as_base = as_file[0:as_file.rfind('.')]
@@ -950,12 +957,17 @@ class RuntestBase:
                 self.lock.release()
             
             starttime=time()
-            output = p.stdout.readlines()
-            err = p.stderr.readlines()
-            if self.threads == 1:
-                exitCode = p.wait(self.testTimeOut) # abort if timeout exceeded    
-            else:
-                exitCode = p.wait(-1) # Kill signal only works for main thread
+            (output, err) = p.communicate()
+            output = output.split('\n') if output else []
+            if output and output[-1].strip() == '': # strip empty line at end
+                output = output[:-1]
+            err = err.split('\n') if err else []
+            if err and err[-1].strip() == '':
+                err = err[:-1]
+            if self.debug:
+                print('output: %s' % output)
+                print('err: %s' % err)
+            exitCode = p.returncode
             
             if exitCode < 0 and self.testTimeOut>-1 and time()-starttime>self.testTimeOut:  # process timed out
                 return ('', err, exitCode)
