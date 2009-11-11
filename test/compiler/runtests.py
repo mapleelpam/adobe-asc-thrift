@@ -261,8 +261,12 @@ class AscRuntest(RuntestBase):
                 cmd += ' %s' % arg
             
             if settings.has_key('.*') and settings['.*'].has_key('asc.args'):
+                configAscargs = settings['.*']['asc.args']
+                if not self.useShell:   # if we're running windows python
+                    configAscargs = configAscargs.replace('\(','(')
+                    configAscargs = configAscargs.replace('\)',')')
                 # override the standard asc args and use settings from testconfig
-                cmd += ' '+self.substTestconfigFilenames(settings['.*']['asc.args'])
+                cmd += ' '+self.substTestconfigFilenames(configAscargs)
             else:    
                 cmd += ' -import %s' % builtinabc
                 # include files from directory with same name as test

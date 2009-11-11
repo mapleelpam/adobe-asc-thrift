@@ -139,6 +139,7 @@ class RuntestBase:
     show_time = False
     timestampcheck = True
     timestamps = True
+    useShell = True
     verbose = False
     verify = False
     writeResultProperties = False   # used by the asc runtests.py to write to a result.properties file used by the asc ant scripts
@@ -359,14 +360,19 @@ class RuntestBase:
             # determine if api versioning switch is available
             if re.search('(api)', f):
                 self.apiVersioning = True
+            
+        wordcode = '-wordcode' if re.search('wordcode', self.avm) else ''
         
-        self.config = cputype+'-'+self.osName+'-tvm-'+self.vmtype+self.vmargs.replace(" ", "")
+        self.config = cputype+'-'+self.osName+'-tvm-'+self.vmtype+wordcode+self.vmargs.replace(" ", "")
     
     def determineOS(self):
         _os = platform.system()
         ostype = ''
-        if re.search('(CYGWIN_NT|Windows)', _os):
+        if re.search('(CYGWIN_NT)', _os):
             ostype='win'
+        if re.search('(Windows)', _os):
+            ostype='win'
+            self.useShell = False
         if re.search('(Darwin)', _os):
             ostype='mac'
         if re.search('(Linux)', _os):
@@ -951,7 +957,7 @@ class RuntestBase:
         try:
             self.lock.acquire()
             try:
-                p = Popen((cmd), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                p = Popen((cmd), shell=self.useShell, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self.currentPids.append(p)
             finally:
                 self.lock.release()
