@@ -139,6 +139,17 @@ public final class NodeFactory implements ErrorConstants
         
         if (op != ASSIGN_TOKEN)
 		{
+            //  Strip parentheses off the lhs expression; these cause
+            //  trouble in the operator-assignment variants, when an
+            //  obfuscated MemberExpression gets re-used on both sides
+            //  of the assignment and its lvalue-centric flags confound
+            //  rvalue processing.
+            while ( lhs.isList() && ((ListNode)lhs).items.size() == 1)
+            {
+
+            	lhs = ((ListNode)lhs).items.get(0);
+            }
+            
 			op = op == MULTASSIGN_TOKEN ? op = MULT_TOKEN :
 				op == DIVASSIGN_TOKEN ? op = DIV_TOKEN :
 				op == MODULUSASSIGN_TOKEN ? op = MODULUS_TOKEN :
