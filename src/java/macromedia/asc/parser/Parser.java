@@ -2668,6 +2668,7 @@ XMLElementContent
         else
         {
             second = parseArgumentsWithRest(allowIn_mode);
+            second.is_bracket_selector = true;
         }
 
         match(RIGHTBRACKET_TOKEN);
