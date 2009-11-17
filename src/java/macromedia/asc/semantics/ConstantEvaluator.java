@@ -268,7 +268,15 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
     void PreprocessDefinitionTypeInfo(Context cx, FunctionCommonNode fcn)
     {
         ObjectValue fun = fcn.fun;
-        cx.pushScope(fun.activation);
+
+		// FIXME this could be a function expressions that was hoisted out of a
+		// block that is conditionally compiled out. If so it is dead code that
+		// is not properly initialized at this point (e.g fun == null), so we
+		// need to check and bail out if so. The better fix would be to not add
+		// it to the definition list in the first place.
+		if (fun==null) return;
+
+		cx.pushScope(fun.activation);
 
         if( fcn.def != null && fcn.def.version > -1)
             cx.pushVersion(fcn.def.version);
