@@ -1,0 +1,5 @@
+\[Compiler\] Error #1135: Syntax error: LiteralArray is not a valid type.
+.*ASC-3791.as, Ln 1, Col 34:
+var v:Vector.<int> = \[0,2,4\].<int>;
+.................................\^
+1 error found

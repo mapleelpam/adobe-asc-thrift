@@ -1,0 +1,1 @@
+var v:Vector.<int> = [0,2,4].<int>; 
