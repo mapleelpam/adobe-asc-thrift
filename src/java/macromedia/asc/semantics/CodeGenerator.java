@@ -1345,10 +1345,16 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
                     temp_val_reg = allocateTemp();
                     StoreRegister(reg_offset+temp_val_reg,expr_type.getTypeId());
                 }
-
+   
                 if( slot.getMethodID() >= 0  && cx.globalScope() == slot.declaredBy) // If it is a setter, invoke it.
                 {
                     InvokeMethod(false/*is_virtual*/,GetMethodInfo(slot.getMethodName()), 1);
+                    
+                    //  callstatic's semantics leave a value on the stack; a void setter 
+                    //  doesn't return anything, so pop this pseudo return value to keep
+                    //  the stack balanced.
+                    if ( node.void_result )
+                    	Pop();
                 }
                 else // If it is a variable and we know the index, then store it
                 if( varIndex >= 0 && !is_const)
