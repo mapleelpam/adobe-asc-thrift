@@ -212,6 +212,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 ForStatementNode    fsn = it instanceof ForStatementNode ? (ForStatementNode)it : null;
                 WhileStatementNode    wsn = it instanceof WhileStatementNode ? (WhileStatementNode)it : null;
                 IfStatementNode        isn = it instanceof IfStatementNode ? (IfStatementNode)it : null;
+                DoStatementNode		dsn = it instanceof DoStatementNode ? (DoStatementNode)it : null;
 
                 if (stln != null)
                 {
@@ -235,6 +236,12 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 else if (wsn != null)
                 {
                     StatementListNode sln = wsn.statement instanceof StatementListNode ? (StatementListNode)(wsn.statement) : null;
+                    if (sln != null)
+                        PreprocessDefinitionTypeInfo(cx,sln.items,false);
+                }
+                else if ( dsn != null )
+                {
+                    StatementListNode sln = dsn.statements instanceof StatementListNode ? (StatementListNode)(dsn.statements) : null;
                     if (sln != null)
                         PreprocessDefinitionTypeInfo(cx,sln.items,false);
                 }
