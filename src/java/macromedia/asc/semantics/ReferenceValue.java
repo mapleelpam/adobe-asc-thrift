@@ -33,6 +33,8 @@ import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.util.BitSet.*;
 import static macromedia.asc.semantics.Slot.CALL_Method;
 
+import static java.lang.System.out;
+
 /**
  * ReferenceValue
  *
@@ -250,7 +252,12 @@ public final class ReferenceValue extends Value implements ErrorConstants
                 // This base must be an object since
                 // we already have found a slot.
             }
-            else if (getScopeIndex() >= 0)
+            else if (getScopeIndex() >= 0 &&
+                     getScopeIndex() < cx.getScopes().size())  
+                     // FIXME the second condition is a targeted fix for ASC-3734
+                     // the evaluator for FunctionCommonNode isn't managing scopes
+                     // properly with nested scopes, and it shows when there is an
+                     // reference to a named function expression
             {
                 base = cx.getScopes().get(getScopeIndex());
             }
