@@ -17,6 +17,8 @@
 
 package macromedia.asc.semantics;
 
+import static java.lang.System.out;
+
 import macromedia.asc.parser.Node;
 import macromedia.asc.parser.Tokens;
 import macromedia.asc.util.BitSet;
@@ -400,15 +402,15 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     Namespaces hasNamespaces2 = obj.hasNames(cx,opposite_kind,name,namespaces);
                     if (hasNamespaces2 != null)
                     {
+                        boolean isOnlyProtected = hasNamespaces.size() == 1 ? hasNamespaces.at(0).isProtected() : false;
                         for( int i = 0; i < hasNamespaces2.size(); i++ )
                         {
                             localQualifier = hasNamespaces2.at(i);
-                            if( !error_reported && !hasNamespaces.contains(localQualifier) )
+                            // NOTE ignore protected namespaces if hasNamespaces has a protected namespace only
+                            if( !error_reported && !(isOnlyProtected && localQualifier.isProtected()) && !hasNamespaces.contains(localQualifier) )
                             {
-                                // We resolved a get/set in a different namespace than the original
-                                // get/set was in.  This will cause a runtime error, so report it here
-                                cx.error(this.src_position, kError_AmbiguousReference, name);
-                                error_reported = true;
+                                // this will trigger an error below
+                                hasNamespaces.add(localQualifier);
                                 break;
                             }
                         }
