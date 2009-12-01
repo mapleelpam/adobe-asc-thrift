@@ -61,6 +61,8 @@ public class FunctionCommonNode extends Node
 	public ObjectValue public_namespace;
 
 	private int flags;
+
+	private boolean void_result;
 	
 	private static final int USER_DEFINED_BODY_Flag = 1;
 	private static final int IS_FUNDEF_Flag         = 2;
@@ -167,5 +169,15 @@ public class FunctionCommonNode extends Node
 	public boolean isExceptionsUsed()
 	{
 		return (flags & EXCEPTIONS_USED_Flag) != 0;
+	}
+	
+	public void voidResult()
+	{
+		this.void_result = true;
+	}
+	
+	public boolean isVoidResult()
+	{
+		return this.void_result;
 	}
 }

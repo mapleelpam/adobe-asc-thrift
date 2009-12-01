@@ -3620,22 +3620,29 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         if (doingMethod())
         {
-        	boolean anon_with_identifier = node.fun != null && node.fun.builder instanceof FunctionBuilder && ((FunctionBuilder)node.fun.builder).is_named_anonymous; 
-        	if( anon_with_identifier )
-        	{
-        		NewObject(0);
-        		PushWith();
-        	}
-            NewFunctionObject(node.internal_name);
-
+            boolean anon_with_identifier = node.fun != null && node.fun.builder instanceof FunctionBuilder && ((FunctionBuilder)node.fun.builder).is_named_anonymous; 
             if( anon_with_identifier )
             {
-            	Dup();
-            	GetBaseObject(cx.getScopeDepth()-frame.firstInnerScope);
-            	Swap();
-            	SetProperty(node.identifier.name, new Namespaces(cx.publicNamespace()), true, false, false, false);
-            	PopScope();
+                NewObject(0);
+                PushWith();
             }
+            NewFunctionObject(node.internal_name);
+            
+            if( anon_with_identifier )
+            {
+                if ( !node.isVoidResult() ) {
+                    Dup();
+                }
+                GetBaseObject(cx.getScopeDepth()-frame.firstInnerScope);
+                Swap();
+                SetProperty(node.identifier.name, new Namespaces(cx.publicNamespace()), true, false, false, false);
+                PopScope();
+            }
+            else
+            if ( node.isVoidResult() ) {
+                Pop();
+            }
+
             return null;  // defer until the current method is done.
         }
 
