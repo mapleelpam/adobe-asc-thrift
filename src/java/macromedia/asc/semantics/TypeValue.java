@@ -126,6 +126,7 @@ public final class TypeValue extends ObjectValue
             }
         }
         else
+        if (type != null) // type == null -> * type
         {
             InterfaceWalker interfaceWalker = new InterfaceWalker(type);
             while (interfaceWalker.hasNext())
