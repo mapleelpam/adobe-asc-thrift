@@ -147,7 +147,6 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 					{
 						KeylessValue value = (KeylessValue) getexpr.expr.evaluate(cx, this);
 						current.id = value.obj;
-						System.out.println ("current.id="+current.id);
 					}
 				}
 			}
