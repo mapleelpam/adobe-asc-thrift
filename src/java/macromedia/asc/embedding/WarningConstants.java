@@ -17,7 +17,7 @@
 package macromedia.asc.embedding;
 public class WarningConstants
 {
-   static final int kNumWarningConstants = 519;
+   static final int kNumWarningConstants = 521;
    static final int kNumPropertyWarnings = 174;
    static final int kNumMethodWarnings = 218;
    static final int kNumEventWarnings = 81;
@@ -73,27 +73,29 @@ public class WarningConstants
       public static final int kWarning_BadNullAssignment_specific = 1103;
       public static final int kWarning_NoConstructor = 1104;
       public static final int kWarning_NoConstructor_specific = 1105;
-      public static final int kUnsupportedProp_MaxScroll = 2103;
-      public static final int kUnsupportedProp_Level = 2104;
+      public static final int kWarning_UnexpectedEmptyStatement = 1106;
+      public static final int kWarning_UnexpectedEmptyStatement_specific = 1107;
       public static final int kUnsupportedProp_Parent = 2105;
       public static final int kUnsupportedProp_Root = 2106;
       public static final int kWarning_ConstNotInitialized = 1110;
-      public static final int kUnsupportedProp_Button_Target = 2108;
-      public static final int kUnsupportedProp_MovieClip_Parent = 2109;
+      public static final int kWarning_ConstNotInitialized_specific = 1111;
+      public static final int kWarning_BadArrayCast = 1112;
       public static final int kWarning_BadArrayCast_specific = 1113;
       public static final int kWarning_NoExplicitSuperCallInConstructor = 1114;
       public static final int kWarning_NoExplicitSuperCallInConstructor_specific = 1115;
       public static final int kUnsupportedProp_TargetPath = 2113;
-      public static final int kUnsupportedProp_Video_Height = 2114;
+      public static final int kUnsupportedProp_MaxScroll = 2103;
       public static final int kUnsupportedProp_Video_Width = 2115;
-      public static final int kWarning_ConstNotInitialized_specific = 1111;
-      public static final int kWarning_BadArrayCast = 1112;
+      public static final int kUnsupportedProp__Proto__ = 2116;
+      public static final int kUnsupportedProp_Stage = 2117;
       public static final int kUnsupportedProp__remoteClass = 2118;
+      public static final int kUnsupportedProp_Button_Target = 2108;
+      public static final int kUnsupportedProp_MovieClip_Parent = 2109;
       public static final int kUnsupportedProp_TextField_Url = 2098;
       public static final int kUnsupportedProp_TextField_Variable = 2099;
       public static final int kUnsupportedProp_Scroll = 2112;
-      public static final int kUnsupportedProp__Proto__ = 2116;
-      public static final int kUnsupportedProp_Stage = 2117;
+      public static final int kUnsupportedProp_Video_Height = 2114;
+      public static final int kUnsupportedProp_Level = 2104;
       public static final int kUnsupportedProp_Arguments_Caller = 2107;
       public static final int kUnsupportedProp_MovieClip_hitArea = 2111;
       public static final int kWarning_Event_onStatus = 3187;
@@ -716,6 +718,8 @@ public class WarningConstants
         warningConstantsEN[index++] = new AscWarning(kWarning_BadNullAssignment_specific, "null used where a %s value was expected." );
         warningConstantsEN[index++] = new AscWarning(kWarning_NoConstructor, "Missing constructor." );
         warningConstantsEN[index++] = new AscWarning(kWarning_NoConstructor_specific, "No constructor function was specified for class %s." );
+        warningConstantsEN[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsEN[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
         warningConstantsEN[index++] = new AscWarning(kWarning_ConstNotInitialized, "Constant not initialized." );
         warningConstantsEN[index++] = new AscWarning(kWarning_ConstNotInitialized_specific, "The constant was not initialized." );
         warningConstantsEN[index++] = new AscWarning(kWarning_BadArrayCast, "Possibly invalid Array cast operation." );
@@ -1717,6 +1721,8 @@ public class WarningConstants
         warningConstantsCN[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "ewZ文_'%s' has been deprecated since %s.  Please use '%s'." );
         warningConstantsCN[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "使用了已弃用的定义。" );
         warningConstantsCN[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "pGc文_'%s' has been deprecated since %s." );
+        warningConstantsCN[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsCN[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsCS= new AscWarning[kNumWarningConstants]; 
@@ -2233,6 +2239,8 @@ public class WarningConstants
         warningConstantsCS[index++] = new AscWarning(kWarning_DefinitionShadowedByPackageName_specific, "Název definice je stejný jako název importovaného balíčku. Nekvalifikované odkazy na tento název povedou na příslušný balíček a ne na definici." );
         warningConstantsCS[index++] = new AscWarning(kWarning_DeleteOfFixedProperty, "Možný pokus o odstranění pevné vlastnosti." );
         warningConstantsCS[index++] = new AscWarning(kWarning_DeleteOfFixedProperty_specific, "Deklarovanou vlastnost %s nelze odstranit. Chcete-li uvolnit přiřazenou paměť, nastavte její hodnotu na null." );
+        warningConstantsCS[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsCS[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
         warningConstantsCS[index++] = new AscWarning(kWarning_Deprecated, "Use of deprecated definition." );
         warningConstantsCS[index++] = new AscWarning(kWarning_Deprecated_specific, "'%s' has been deprecated." );
         warningConstantsCS[index++] = new AscWarning(kWarning_DeprecatedMessage, "Use of deprecated definition." );
@@ -2769,6 +2777,8 @@ public class WarningConstants
         warningConstantsDA[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "%s' har været frarådet siden %s. Brug '%s'." );
         warningConstantsDA[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Brug af frarådet definition." );
         warningConstantsDA[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "%s' har været frarådet siden %s." );
+        warningConstantsDA[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsDA[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsDE= new AscWarning[kNumWarningConstants]; 
@@ -3295,6 +3305,8 @@ public class WarningConstants
         warningConstantsDE[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "„%s“ wird seit %s nicht mehr verwendet. Verwenden Sie „%s“." );
         warningConstantsDE[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Verwendung einer veralteten Definition." );
         warningConstantsDE[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "„%s“ wird seit %s nicht mehr verwendet." );
+        warningConstantsDE[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsDE[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsES= new AscWarning[kNumWarningConstants]; 
@@ -3821,6 +3833,8 @@ public class WarningConstants
         warningConstantsES[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "%s' está en desuso desde %s.  Utilice '%s'." );
         warningConstantsES[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Uso de definición desfasada." );
         warningConstantsES[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "%s' está en desuso desde %s." );
+        warningConstantsES[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsES[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsFI= new AscWarning[kNumWarningConstants]; 
@@ -4347,6 +4361,8 @@ public class WarningConstants
         warningConstantsFI[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "%s' on ollut pois käytöstä alkaen %s.  Käytä määritystä '%s'." );
         warningConstantsFI[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Käytöstä poistetun määrityksen käyttö." );
         warningConstantsFI[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "%s' on ollut pois käytöstä alkaen %s." );
+        warningConstantsFI[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsFI[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsFR= new AscWarning[kNumWarningConstants]; 
@@ -4873,6 +4889,8 @@ public class WarningConstants
         warningConstantsFR[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "L’utilisation de '%s' est déconseillée depuis %s. Veuillez utiliser '%s'." );
         warningConstantsFR[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Utilisation d’une définition déconseillée." );
         warningConstantsFR[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "L’utilisation de '%s' est déconseillée depuis %s." );
+        warningConstantsFR[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsFR[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsIT= new AscWarning[kNumWarningConstants]; 
@@ -5399,6 +5417,8 @@ public class WarningConstants
         warningConstantsIT[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "%s' è stato contrassegnato come obsoleto a partire da %s. Utilizzare '%s'." );
         warningConstantsIT[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Utilizzo di una definizione obsoleta." );
         warningConstantsIT[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "%s' è stato contrassegnato come obsoleto a partire da %s." );
+        warningConstantsIT[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsIT[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsJP= new AscWarning[kNumWarningConstants]; 
@@ -5925,6 +5945,8 @@ public class WarningConstants
         warningConstantsJP[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "\"%s\" は %s 以降推奨されていません。\"%s\" を使用してください。" );
         warningConstantsJP[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "推奨されない定義を使用しています。" );
         warningConstantsJP[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "\"%s\" は %s 以降推奨されていません。" );
+        warningConstantsJP[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsJP[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsKR= new AscWarning[kNumWarningConstants]; 
@@ -6451,6 +6473,8 @@ public class WarningConstants
         warningConstantsKR[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "%s'이(가) %s 이후로 더 이상 사용되지 않습니다. '%s'을(를) 사용하십시오." );
         warningConstantsKR[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "더 이상 사용되지 않는 정의가 사용되었습니다." );
         warningConstantsKR[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "%s'이(가) %s 이후로 더 이상 사용되지 않습니다." );
+        warningConstantsKR[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsKR[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsNB= new AscWarning[kNumWarningConstants]; 
@@ -6977,6 +7001,8 @@ public class WarningConstants
         warningConstantsNB[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "%s har vært avskrevet siden %s. Bruk %s." );
         warningConstantsNB[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Bruk av avskrevet definisjon." );
         warningConstantsNB[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "%s har vært avskrevet siden %s." );
+        warningConstantsNB[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsNB[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsNL= new AscWarning[kNumWarningConstants]; 
@@ -7503,6 +7529,8 @@ public class WarningConstants
         warningConstantsNL[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "%s' is afgeschaft sinds '%s'. Gebruik '%s'." );
         warningConstantsNL[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Gebruik van afgeschafte definitie." );
         warningConstantsNL[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "%s' is afgeschaft sinds '%s'." );
+        warningConstantsNL[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsNL[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsPL= new AscWarning[kNumWarningConstants]; 
@@ -8019,6 +8047,8 @@ public class WarningConstants
         warningConstantsPL[index++] = new AscWarning(kWarning_DefinitionShadowedByPackageName_specific, "Nazwa definicji jest taka sama jak nazwa importowanego pakietu.  Niekwalifikowane odniesienia do tej nazwy będą wskazywały na pakiet, a nie definicję." );
         warningConstantsPL[index++] = new AscWarning(kWarning_DeleteOfFixedProperty, "Możliwa próba usunięcia stałej właściwości." );
         warningConstantsPL[index++] = new AscWarning(kWarning_DeleteOfFixedProperty_specific, "Nie można usunąć zadeklarowanej właściwości %s. Aby zwolnić skojarzoną pamięć, należy ustawić w tej właściwości wartość null." );
+        warningConstantsPL[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsPL[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
         warningConstantsPL[index++] = new AscWarning(kWarning_Deprecated, "Use of deprecated definition." );
         warningConstantsPL[index++] = new AscWarning(kWarning_Deprecated_specific, "'%s' has been deprecated." );
         warningConstantsPL[index++] = new AscWarning(kWarning_DeprecatedMessage, "Use of deprecated definition." );
@@ -8555,6 +8585,8 @@ public class WarningConstants
         warningConstantsPT[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "%s' está obsoleto desde %s. Use '%s'." );
         warningConstantsPT[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Uso de definição obsoleta." );
         warningConstantsPT[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "%s' está obsoleto desde %s." );
+        warningConstantsPT[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsPT[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsRU= new AscWarning[kNumWarningConstants]; 
@@ -9081,6 +9113,8 @@ public class WarningConstants
         warningConstantsRU[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "\"%s\" устарело с %s. Используйте \"%s\"." );
         warningConstantsRU[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Использование устаревшего определения." );
         warningConstantsRU[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "\"%s\" устарело с %s." );
+        warningConstantsRU[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsRU[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsSV= new AscWarning[kNumWarningConstants]; 
@@ -9607,6 +9641,8 @@ public class WarningConstants
         warningConstantsSV[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "%s fasades ut %s. Använd %s istället." );
         warningConstantsSV[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "Det går inte att använda en funktion som har fasats ut." );
         warningConstantsSV[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "%s fasades ut %s." );
+        warningConstantsSV[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsSV[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
    static final AscWarning[] warningConstantsTR= new AscWarning[kNumWarningConstants]; 
@@ -10123,6 +10159,8 @@ public class WarningConstants
         warningConstantsTR[index++] = new AscWarning(kWarning_DefinitionShadowedByPackageName_specific, "Tanım adı içe aktarılan bir paket adıyla aynıdır.  Bu adla ilgili nitelenmemiş başvurular pakete çözülecektir, tanıma değil." );
         warningConstantsTR[index++] = new AscWarning(kWarning_DeleteOfFixedProperty, "Sabit bir özelliği silme girişimi." );
         warningConstantsTR[index++] = new AscWarning(kWarning_DeleteOfFixedProperty_specific, "%s bildirilen özelliği silinemiyor. İlişkilendirilmiş bellekte alan açmak için, değerini boş olarak ayarlayın." );
+        warningConstantsTR[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsTR[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
         warningConstantsTR[index++] = new AscWarning(kWarning_Deprecated, "Use of deprecated definition." );
         warningConstantsTR[index++] = new AscWarning(kWarning_Deprecated_specific, "'%s' has been deprecated." );
         warningConstantsTR[index++] = new AscWarning(kWarning_DeprecatedMessage, "Use of deprecated definition." );
@@ -10659,6 +10697,8 @@ public class WarningConstants
         warningConstantsTW[index++] = new AscWarning(kWarning_DeprecatedSince_specific, "「%s」從 %s 起已經過時。請使用「%s」。" );
         warningConstantsTW[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement, "使用已過時的定義。" );
         warningConstantsTW[index++] = new AscWarning(kWarning_DeprecatedSinceNoReplacement_specific, "「%s」從 %s 起已經過時。" );
+        warningConstantsTW[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement, "Empty statement." );
+        warningConstantsTW[index++] = new AscWarning(kWarning_UnexpectedEmptyStatement_specific, "Empty statement found where block of code expected. Did you typed ; accidentally?" );
    };
 
     static final AscWarningInstance[] unsupportedProperties =

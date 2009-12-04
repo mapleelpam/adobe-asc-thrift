@@ -274,6 +274,20 @@ Conditions such as this are not flagged as a problem without this warning, the f
 	</description>
     </warning>
     
+    <warning id="1106" hidden="true" label="kWarning_UnexpectedEmptyStatement">Empty statement.</warning>
+	<warning id="1107" label="kWarning_UnexpectedEmptyStatement_specific">Empty statement found where block of code expected. Did you typed ; accidentally?
+	<description>
+		<![CDATA[
+		It is common to accidentally type ; before block of code.
+<pre><code> if (x == y);
+{
+	trace("This code will be executed no matter what are the x and y values.")
+}
+</code></pre>
+		]]>
+	</description>
+	</warning>
+    
 	<warning id="1110" hidden="true" label="kWarning_ConstNotInitialized">Constant not initialized.</warning>
 	<warning id="1111" label="kWarning_ConstNotInitialized_specific">The constant was not initialized.</warning>
 	<warning id="1112" hidden="true" label="kWarning_BadArrayCast">Possibly invalid Array cast operation.</warning>

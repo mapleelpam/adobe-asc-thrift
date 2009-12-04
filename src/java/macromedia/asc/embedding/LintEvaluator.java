@@ -1447,7 +1447,22 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		}
 
 		if( node.thenactions != null)
+		{
+			if (!first_pass)
+  			{
+				StatementListNode thenList = (node.thenactions instanceof StatementListNode) ? (StatementListNode)(node.thenactions) : null;
+  				if ( thenList != null && thenList.items.size() == 1 )
+  				{
+  					Node item = thenList.items.get(0);
+  					if (item instanceof EmptyStatementNode)
+  					{
+  						warning(node.getPosition(), cx.input, kWarning_UnexpectedEmptyStatement);
+  					}
+  				}
+  			}
+			
 			node.thenactions.evaluate(cx,this);
+		}
 
 		if( node.elseactions != null)
 			node.elseactions.evaluate(cx,this);
@@ -1490,8 +1505,22 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 	public Value evaluate( Context cx, WhileStatementNode node )
 	{
 		if( node.statement != null)
+		{
+			if (!first_pass)
+  			{
+				StatementListNode thenList = (node.statement instanceof StatementListNode) ? (StatementListNode)(node.statement) : null;
+  				if ( thenList != null && thenList.items.size() == 1 )
+  				{
+  					Node item = thenList.items.get(0);
+  					if (item instanceof EmptyStatementNode)
+  					{
+  						warning(node.getPosition(), cx.input, kWarning_UnexpectedEmptyStatement);
+  					}
+  				}
+  			}
+			
 			node.statement.evaluate(cx,this);
-
+		}
 		if( node.expr != null)
 			node.expr.evaluate(cx,this);
 
@@ -1521,6 +1550,19 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 		}
 		if( node.statement != null )
 		{
+			if (!first_pass)
+  			{
+				StatementListNode thenList = (node.statement instanceof StatementListNode) ? (StatementListNode)(node.statement) : null;
+  				if ( thenList != null && thenList.items.size() == 1 )
+  				{
+  					Node item = thenList.items.get(0);
+  					if (item instanceof EmptyStatementNode)
+  					{
+  						warning(node.getPosition(), cx.input, kWarning_UnexpectedEmptyStatement);
+  					}
+  				}
+  			}
+			
 			node.statement.evaluate(cx,this);
 		}
 		return null;
