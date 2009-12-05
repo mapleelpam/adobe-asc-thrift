@@ -86,7 +86,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 
 	public Value evaluate(Context cx, IdentifierNode node)
 	{
-		return new KeylessValue(node.name);  // caller deletes
+		return new KeylessValue(node.name);
 	}
 
 	public Value evaluate(Context cx, MetaDataNode node)
@@ -335,10 +335,10 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 		return null;
 	};
 
-    public Value evaluate(Context cx, QualifiedIdentifierNode node)
-    {
-        return null;
-    };
+	public Value evaluate(Context cx, QualifiedIdentifierNode node)
+	{
+		return new KeylessValue(node.name);  // just return the simple name
+	};
 
     public Value evaluate(Context cx, QualifiedExpressionNode node)
     {

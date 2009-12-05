@@ -275,7 +275,7 @@ Conditions such as this are not flagged as a problem without this warning, the f
     </warning>
     
     <warning id="1106" hidden="true" label="kWarning_UnexpectedEmptyStatement">Empty statement.</warning>
-	<warning id="1107" label="kWarning_UnexpectedEmptyStatement_specific">Empty statement found where block of code expected. Did you typed ; accidentally?
+	<warning id="1107" label="kWarning_UnexpectedEmptyStatement_specific">Empty statement found where block of code expected. Did you type ';' accidentally?
 	<description>
 		<![CDATA[
 		It is common to accidentally type ; before block of code.
