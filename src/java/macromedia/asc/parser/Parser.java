@@ -502,7 +502,7 @@ public final class Parser
      * attempted. the next lookahead will initialize it again.
      */
    
-    private final int match(int expectedTokenClass)
+    public final int match(int expectedTokenClass)
     {
         int result;
         int lt = lookahead();
