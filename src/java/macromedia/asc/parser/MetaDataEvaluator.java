@@ -795,6 +795,15 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
             		node.iframe.setInitOnly(true);
 
             	init.evaluate(cx, this);
+            	
+            	if( debugging && init instanceof FunctionDefinitionNode )
+            	{
+            		FunctionDefinitionNode fdn = (FunctionDefinitionNode)init;
+            		if (fdn.fexpr.ref != null && "$construct".equals(fdn.fexpr.ref.name) )
+            		{
+            			addCtorPositionMetadata(cx, node, fdn);
+            		}
+            	}
 
 				if( cx.statics.es4_nullability && !init.isDefinition() )
             		node.iframe.setInitOnly(false);
@@ -829,13 +838,27 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 		return null;
 	}
 
-    private void addPositionMetadata(Context cx, DefinitionNode def) {
+	private MetaDataNode makePositionMetadata(Context cx, DefinitionNode def, boolean is_ctor)
+	{
         MetaDataNode mn = cx.getNodeFactory().metaData(null, -1);
-        mn.id = "__go_to_definition_help";
+        mn.id = is_ctor? "__go_to_ctor_definition_help" : "__go_to_definition_help";
         mn.values = new Value[2];
         mn.values[0] = new KeyValuePair("file", cx.getErrorOrigin());
         mn.values[1] = new KeyValuePair("pos", String.valueOf(def.pos()) );
-        def.addMetaDataNode(mn);
+        
+        return mn;
+	}
+
+	// Add the ctors position info as metadata on the class - this is neccessary because
+	// ctors don't get an entry in the Classes Traits, and all metadata hangs off of the Traits
+	private void addCtorPositionMetadata(Context cx, ClassDefinitionNode cdn, FunctionDefinitionNode ctor)
+	{
+        cdn.addMetaDataNode(makePositionMetadata(cx, ctor, true));
+	}
+	
+	// Add position metadata to a definition - Builder uses this to jump to definition.
+    private void addPositionMetadata(Context cx, DefinitionNode def) {
+        def.addMetaDataNode(makePositionMetadata(cx, def, false));
     }
 
 	public Value evaluate(Context cx, ClassNameNode node)
