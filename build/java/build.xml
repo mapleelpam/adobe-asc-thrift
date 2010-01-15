@@ -116,7 +116,7 @@
 		<jar file="${lib.dir}/asc.jar" basedir="${basedir}/classes" includes="macromedia/asc/**/*,macromedia/abc/**/*,adobe/abc/**/*">
             <manifest>
                 <attribute name="Main-Class" value="macromedia.asc.embedding.Main"/>
-                <attribute name="Class-Path" value="clover.jar"/>
+                <attribute name="Class-Path" value="${lib.dir}/clover.jar"/>
                 <attribute name="Implementation-Version" value="1.0 build ${build.number}"/>
             </manifest>
         </jar>
