@@ -30,8 +30,8 @@
 -->
 	
 <warnings>
-	<warning id="1008" hidden="true" label="kWarning_NoTypeDecl">Tyyppimääritys puuttuu.</warning>
-	<warning id="1009" label="kWarning_NoTypeDecl_specific">Kohteella %s '%s' ei ole tyyppimääritystä.
+	<warning id="1008" hidden="true" label="kWarning_NoTypeDecl">Puuttuva tyyppimääritys.</warning>
+	<warning id="1009" label="kWarning_NoTypeDecl_specific">%s '%s' has no type declaration.
 	
 	<description>
 		<![CDATA[
@@ -40,8 +40,8 @@
 		Enable this warning if you want to be reminded when you fail to use a type declaration.
 		]]>
 	</description></warning>
-	<warning id="1012" hidden="true" label="kWarning_BadUndefinedComparision">Epälooginen vertaus määrittämättömään.  Vain tyypittömät muuttujat (tai tyyppiä * olevat muuttujat) voivat olla määrittämättömiä.</warning>
-	<warning id="1013" label="kWarning_BadUndefinedComparision_specific">Tyyppiä %s olevat muuttujat eivät voi olla määrittämättömiä. Määrittämättömän arvon tyypiksi pakotetaan %s ennen vertailua.
+	<warning id="1012" hidden="true" label="kWarning_BadUndefinedComparision">Epälooginen vertaus määrittämättömään kohteeseen.  Vain tyypittömät muuttujat (tai tyyppiä * olevat muuttujat) voivat olla määrittämättömiä.</warning>
+	<warning id="1013" label="kWarning_BadUndefinedComparision_specific">Variables of type %s cannot be undefined. The value undefined will be type coerced to %s before comparison.
 	<description>
 		<![CDATA[
 	Only variables of type * can be undefined.  With a few exceptions, uninitialized variables have a default value of <code>null</code> rather than <code>undefined</code>.  
@@ -50,8 +50,8 @@
 	</description>
 	</warning>
 	
-	<warning id="1030" hidden="true" label="kWarning_ConstructorReturnsValue">Uudessa ilmauksessa käytetty funktio palauttaa arvon.  Tuloksena saadaan funktion palauttama arvo, ei uutta kyseisen funktion esiintymää.</warning>
-	<warning id="1031" label="kWarning_ConstructorReturnsValue_specific">Siirto-ongelma: Uuden kohteen %s tuloksena saadaan kohteen %s palauttama arvo, ei uutta kyseisen funktion esiintymää.
+	<warning id="1030" hidden="true" label="kWarning_ConstructorReturnsValue">Uudessa lauseessa käytetty funktio palauttaa arvon.  Tuloksena saadaan funktion palauttama arvo, ei uutta kyseisen funktion esiintymää.</warning>
+	<warning id="1031" label="kWarning_ConstructorReturnsValue_specific">Migration issue: Result of new %s will be the return value of %s, rather than a new instance of that function.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  The detected code behaves differently in ActionScript 3.0 than in ActionScript 2.0, as shown in the following example:
@@ -70,8 +70,8 @@
 </description>	
 	</warning>
 
-	<warning id="1034" hidden="true" label="kWarning_BooleanConstructorWithNoArgs">Boolean() ilman argumentteja palauttaa arvon false ActionScript 3.0:ssa.  Boolean() palautti määrittämättömän arvon ActionScript 2.0:ssa.</warning>
-	<warning id="1035" label="kWarning_BooleanConstructorWithNoArgs_specific">Arvon Boolean() käyttö ilman argumentteja.
+	<warning id="1034" hidden="true" label="kWarning_BooleanConstructorWithNoArgs">Boolean() ilman argumentteja palauttaa arvon false ActionScript 3.0:ssa. Boolean() palautti määrittämättömän ActionScript 2.0:ssa.</warning>
+	<warning id="1035" label="kWarning_BooleanConstructorWithNoArgs_specific">Use of Boolean() with no arguments.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  The <code>Boolean()</code> function returns <code>false</code> in ActionScript 3.0, but <code>undefined</code> in ActionScript 2.0.
@@ -80,7 +80,7 @@
 	</warning>
 	
 	<warning id="1038" hidden="true" label="kWarning_NumberFromStringChanges">ActionScript 3.0:ssa välilyönnit ohitetaan ja '' palauttaa arvon 0. Number() palauttaa NaN-arvon ActionScript 2.0:ssa, jos parametri on '' tai jos se sisältää välilyönnin.</warning>
-	<warning id="1039" label="kWarning_NumberFromStringChanges_specific">Siirto-ongelma: Kun funktio Number('') kutsutaan tyhjän merkkijonoargumentin kanssa, se palauttaa 0-arvon ActionScript 3.0:ssa ja NaN-arvon ActionScript 2.0:ssa.
+	<warning id="1039" label="kWarning_NumberFromStringChanges_specific">Migration issue: When the Number('') function is called with an empty string argument it returns 0 in ActionScript 3.0, and NaN in ActionScript 2.0.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  The <code>Number()</code> method called with a String argument skips over all white space in the string and return a default value of 0 if no digits are detected.
@@ -90,7 +90,7 @@ In ActionScript 2.0, any white space in the string causes the result to be NaN.
 	</warning>
 
 	<warning id="1044" hidden="true" label="kWarning_ArrayToStringChanges">Array.toString()-muoto on muuttunut.</warning>
-	<warning id="1045" label="kWarning_ArrayToStringChanges_specific">Siirto-ongelma: Array.toString()-käsittelyn arvo null sekä määrittämättömät elementit ovat muuttuneet.
+	<warning id="1045" label="kWarning_ArrayToStringChanges_specific">Migration issue: Array.toString() handling of null and undefined elements has changed.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  In ActionScript 2.0, <code>null</code> array elements convert to <code>null</code> and <code>undefined</code> elements convert to <code>undefined</code>.  
@@ -101,7 +101,7 @@ you may need to adjust your code for this difference.
 	</warning>
 	
 	<warning id="1058" hidden="true" label="kWarning_DepricatedPropertyError">Tukematon ActionScript 2.0 -ominaisuus.</warning>
-	<warning id="1059" label="kWarning_DepricatedPropertyError_specific">Siirto-ongelma: Ominaisuutta %s ei enää tueta.  %s.
+	<warning id="1059" label="kWarning_DepricatedPropertyError_specific">Migration issue: The property %s is no longer supported.  %s.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  The property you are attempting to use does not exist in ActionScript 3.0.
@@ -110,7 +110,7 @@ you may need to adjust your code for this difference.
 	</warning>
 
 	<warning id="1060" hidden="true" label="kWarning_DepricatedFunctionError">Tukematon ActionScript 2.0 -funktio.</warning>
-	<warning id="1061" label="kWarning_DepricatedFunctionError_specific">Siirto-ongelma: Metodia %s ei enää tueta.  %s.
+	<warning id="1061" label="kWarning_DepricatedFunctionError_specific">Migration issue: The method %s is no longer supported.  %s.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  The method you are attempting to use does not exist in ActionScript 3.0.
@@ -119,15 +119,15 @@ you may need to adjust your code for this difference.
 	</warning>
 	
 	<warning id="1066" label="kWarning_ChangesInResolve">__resolve ei enää ole tuettu.</warning>
-	<warning id="1067" label="kWarning_ChangesInResolve_specific">Siirto-ongelma: __resolve ei enää ole tuettu.  Käytä uutta Proxy-luokkaa vastaavia toimintoja varten.
+	<warning id="1067" label="kWarning_ChangesInResolve_specific">Migration issue: __resolve is no longer supported.  Use the new Proxy class for similar functionality.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  See Proxy in this language reference for more information on the replacement for <code>__resolve</code>.
 		]]>
 	</description>
 	</warning>
-	<warning id="1070" hidden="true" label="kWarning_LevelNotSupported">_level ei enää ole tuettu. Lisätietoja on flash.display-paketissa.</warning>
-	<warning id="1071" label="kWarning_LevelNotSupported_specific">Siirto-ongelma: _level ei enää ole tuettu. Lisätietoja on flash.display-paketissa.
+	<warning id="1070" hidden="true" label="kWarning_LevelNotSupported">_level ei ole enää tuettu. Lisätietoja on flash.display-paketissa.</warning>
+	<warning id="1071" label="kWarning_LevelNotSupported_specific">Migration issue: _level is no longer supported. For more information, see the flash.display package.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  The property you are attempting to use does not exist in ActionScript 3.0.
@@ -136,7 +136,7 @@ you may need to adjust your code for this difference.
 	</warning>
 	
 	<warning id="1072" hidden="true" label="kWarning_ClassIsSealed">Luokka on suljettu.  Siihen ei voi lisätä jäseniä dynaamisesti.</warning>
-	<warning id="1073" label="kWarning_ClassIsSealed_specific">Siirto-ongelma: %s ei ole dynaaminen luokka.  Esiintymiin ei voida lisätä jäseniä dynaamisesti.
+	<warning id="1073" label="kWarning_ClassIsSealed_specific">Migration issue: %s is not a dynamic class.  Instances cannot have members added to them dynamically.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  In ActionScript 2.0, many classes such as Number are dynamic, which means that new properties can
@@ -144,8 +144,8 @@ be added to instances of those classes at run time.  This warning results from c
 		]]>
 	</description>
 	</warning>
-	<warning id="1082" hidden="true" label="kWarning_ScopingChangeInThis">Tämän avainsanan näkymä on muuttunut.  Luokan esiintymästä puretut luokkametodit palauttavat tästä aina kyseisen esiintymän.  ActionScript 2.0:ssa tämä haetaan dynaamisesti metodin kutsun lähteen perusteella.</warning>
-	<warning id="1083" label="kWarning_ScopingChangeInThis_specific">Siirto-ongelma: metodi %s toimii eri tavoin ActionScript 3.0:ssa tämän avainsanan muuttuneen näkymän johdosta. Katso lisätietoja varoituksesta 1083.
+	<warning id="1082" hidden="true" label="kWarning_ScopingChangeInThis">Tämän avainsanan näkymä on muuttunut.  Luokan esiintymästä puretut luokkamenetelmät palauttavat tästä aina kyseisen esiintymän.  ActionScript 2.0:ssa tämä haetaan dynaamisesti menetelmän kutsun lähteen perusteella.</warning>
+	<warning id="1083" label="kWarning_ScopingChangeInThis_specific">Migration issue: Method %s will behave differently in ActionScript 3.0 due to the change in scoping for the this keyword. See the entry for warning 1083 for additional information.
 <description>
 		<![CDATA[
 		This is a code migration warning.  This warning is generated when a method of an object is used as a value, usually as a callback function.
@@ -167,8 +167,8 @@ f(); // prints 1 in ActionScript 3.0, 22 in ActionScript 2.0</code></pre>		]]>
 	</description>
 	</warning>
 	
-	<warning id="1084" hidden="true" label="kWarning_MissingNamespaceDecl">Namespace-määritys puuttuu (esimerkiksi muuttujaa ei ole määritetty muotoon public, private jne.).</warning>
-	<warning id="1085" label="kWarning_MissingNamespaceDecl_specific">Kohteen %s näkymäksi tulee oletusnimitila: sisäinen %s.  Se ei ole näkyvissä tämän paketin ulkopuolella.
+	<warning id="1084" hidden="true" label="kWarning_MissingNamespaceDecl">Puuttuva nimitilamääritys (esimerkiksi muuttujaa ei ole määritetty julkiseksi, yksityiseksi ja niin edelleen).</warning>
+	<warning id="1085" label="kWarning_MissingNamespaceDecl_specific">%s will be scoped to the default namespace: %s internal.  It will not be visible outside of this package.
 <description>
 	<![CDATA[
 	Not declaring a namespace is a coding style preference.  Enable this warning if you want to be reminded when you forget to declare a namespace or access specifier for a definition.
@@ -178,8 +178,8 @@ f(); // prints 1 in ActionScript 3.0, 22 in ActionScript 2.0</code></pre>		]]>
 </description>
 	</warning>
 
-	<warning id="1086" hidden="true" label="kWarning_ForVarInChanges">ActionScript 3.0 käy läpi objektin ominaisuudet "for x in target" -lausekkeessa satunnaisjärjestyksessä.</warning>
-	<warning id="1087" label="kWarning_ForVarInChanges_specific">Siirto-ongelma: ActionScript 3.0 käy läpi objektin ominaisuudet "for x in target" -lausekkeessa satunnaisjärjestyksessä.
+	<warning id="1086" hidden="true" label="kWarning_ForVarInChanges">ActionScript 3.0 iterates over an object's properties within a "for x in target" statement in random order.</warning>
+	<warning id="1087" label="kWarning_ForVarInChanges_specific">Migration issue: ActionScript 3.0 iterates over an object's properties within a "for x in target" statement in random order.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  In ActionScript 2.0, the order in which the properties of an object were processed was always the same.  
@@ -188,8 +188,8 @@ In ActionScript 3.0, the order is random and can change from machine to machine.
 	</description>
 	</warning>
 	
-	<warning id="1088" hidden="true" label="kWarning_InternalError">Kokoajan sisäinen virhe.</warning>
-	<warning id="1089" label="kWarning_InternalError_specific">Virhekoodi: %s.
+	<warning id="1088" hidden="true" label="kWarning_InternalError">Sisäinen virhe kokoajassa.</warning>
+	<warning id="1089" label="kWarning_InternalError_specific">Error code: %s.
 	<description>
 		<![CDATA[
 		This is due to either a corrupt source file or a bug in the compiler code.  Please contact Adobe, Inc. to file a bug.
@@ -197,7 +197,7 @@ In ActionScript 3.0, the order is random and can change from machine to machine.
 	</description>
 	</warning>
 	<warning id="1090" hidden="true" label="kWarning_DepricatedEventHandlerError">EventHandler-kohdetta ei ole lisätty kuuntelijaksi.</warning>
-	<warning id="1091" label="kWarning_DepricatedEventHandlerError_specific">Siirto-ongelma: %s
+	<warning id="1091" label="kWarning_DepricatedEventHandlerError_specific">Migration issue: %s
 	<description>
 		<![CDATA[
 		This is a code migration warning.  In ActionScript 2.0 declaring a method by a special name (such as <code>onMouseDown</code>) would cause Flash to
@@ -207,8 +207,8 @@ receive that event.  See <code>addEventListener</code> in this language referenc
 	</description>
 	</warning>
 	
-    <warning id="1092" hidden="true" label="kWarning_NegativeUintLiteral">Negatiivinen arvo muuttuu suureksi positiiviseksi arvoksi uint-datatyypille määritettäessä.</warning>
-    <warning id="1093" label="kWarning_NegativeUintLiteral_specific">Käytettiin negatiivista arvoa, kun odotettiin (ei-negatiivista) uint-arvoa.
+    <warning id="1092" hidden="true" label="kWarning_NegativeUintLiteral">Negatiivinen arvo muuttuu suureksi positiiviseksi arvoksi, kun se määritetään uint-datatyypille.</warning>
+    <warning id="1093" label="kWarning_NegativeUintLiteral_specific">Negative value used where a uint (non-negative) value is expected.
 	<description>
 		<![CDATA[
 		Assigning a negative value to a uint data type results in an extremely large positive value. <code>var x:uint = -1;  trace(x); // 4294967295</code>.
@@ -217,7 +217,7 @@ receive that event.  See <code>addEventListener</code> in this language referenc
 	</warning>
 	
 	<warning id="1096" hidden="true" label="kWarning_BadNullComparision">Epälooginen vertaus null-kohteeseen.</warning>
-	<warning id="1097" label="kWarning_BadNullComparision_specific">Epälooginen vertaus null-kohteeseen.  Tyyppiä %s olevat muuttujat eivät voi olla null-arvoisia.
+	<warning id="1097" label="kWarning_BadNullComparision_specific">Illogical comparison with null.  Variables of type %s cannot be null.
 	<description>
 		<![CDATA[
 		Instances of Boolean, int, uint, and Number cannot be <code>null</code>.  The comparison operator type converts <code>null</code> to <code>false</code> before
@@ -225,8 +225,8 @@ comparing it to a Boolean, or to 0 before comparing it with a Number, int, or ui
 		]]>
 	</description>
     </warning>
-	<warning id="1098" hidden="true" label="kWarning_BadNaNComparision">Epälooginen vertaus NaN-kohteeseen. NaN-kohdetta koskevat vertailuoperaatiot tuottavat arvion false, koska NaN != NaN.</warning>
-	<warning id="1099" label="kWarning_BadNaNComparision_specific">Epälooginen vertaus NaN-kohteeseen.  Tämä lauseke tuottaa aina arvion false.
+	<warning id="1098" hidden="true" label="kWarning_BadNaNComparision">Illogical comparison with NaN. Any comparison operation involving NaN will evaluate to false because NaN != NaN.</warning>
+	<warning id="1099" label="kWarning_BadNaNComparision_specific">Illogical comparison with NaN.  This statement always evaluates to false.
 	<description>
 		<![CDATA[
 		<code>NaN</code> has the unique mathematical property that any comparison involving it evaluates to <code>false</code>.  Use the global <code>isNaN()</code> function to detect a NaN value instead, as in the following example:
@@ -238,7 +238,7 @@ trace(isNaN(NaN)); // true
 	</warning>
 	
 	<warning id="1100" hidden="true" label="kWarning_AssignmentWithinConditional">Ehdon sisältämä määritys.</warning>
-	<warning id="1101" label="kWarning_AssignmentWithinConditional_specific">Ehdon sisältämä määritys.  Tarkoititko kohdetta == kohteen = sijaan?
+	<warning id="1101" label="kWarning_AssignmentWithinConditional_specific">Assignment within conditional.  Did you mean == instead of =?
 
 <description>
 		<![CDATA[
@@ -255,16 +255,16 @@ if (x = y) { trace("x is assigned y's value of true, making the conditional test
 
 
 </warning>
-	<warning id="1102" hidden="true" label="kWarning_BadNullAssignment">Mahdoton null-määritys.</warning>
-	<warning id="1103" label="kWarning_BadNullAssignment_specific">Käytettiin null-arvoa, kun odotettiin arvoa %s. 
+	<warning id="1102" hidden="true" label="kWarning_BadNullAssignment">Impossible null assignment.</warning>
+	<warning id="1103" label="kWarning_BadNullAssignment_specific">null used where a %s value was expected. 
 	<description>
 		<![CDATA[
 		Boolean, Number, int, and uint variables cannot be assigned <code>null</code> as a value. The <code>null</code> value is implicitly cast to <code>false</code> when assigned to a Boolean, and to <code>0</code> when assigned to an int, uint, or Number.
 		]]>
 	</description>
 	</warning>
-	<warning id="1104" hidden="true" label="kWarning_NoConstructor">Konstruktori puuttuu.</warning>
-	<warning id="1105" label="kWarning_NoConstructor_specific">Konstruktorifunktiota ei määritetty luokalle %s.
+	<warning id="1104" hidden="true" label="kWarning_NoConstructor">Puuttuva konstruktori.</warning>
+	<warning id="1105" label="kWarning_NoConstructor_specific">No constructor function was specified for class %s.
 	<description>
 		<![CDATA[
 		Not specifying a constructor function is a coding style preference.  Enable this warning if you want to always declare constructors for classes.  
@@ -274,12 +274,26 @@ Conditions such as this are not flagged as a problem without this warning, the f
 	</description>
     </warning>
     
-	<warning id="1110" hidden="true" label="kWarning_ConstNotInitialized">Vakiota ei alustettu.</warning>
-	<warning id="1111" label="kWarning_ConstNotInitialized_specific">Vakiota ei alustettu.</warning>
+    <warning id="1106" hidden="true" label="kWarning_UnexpectedEmptyStatement">Empty statement.</warning>
+	<warning id="1107" label="kWarning_UnexpectedEmptyStatement_specific">Empty statement found where block of code expected. Did you type ';' accidentally?
+	<description>
+		<![CDATA[
+		It is common to accidentally type ; before block of code.
+<pre><code> if (x == y);
+{
+	trace("This code will be executed no matter what are the x and y values.")
+}
+</code></pre>
+		]]>
+	</description>
+	</warning>
+    
+	<warning id="1110" hidden="true" label="kWarning_ConstNotInitialized">Vakiota ei alustettu</warning>
+	<warning id="1111" label="kWarning_ConstNotInitialized_specific">The constant was not initialized.</warning>
 	<warning id="1112" hidden="true" label="kWarning_BadArrayCast">Mahdollisesti virheellinen Array-värivääristymäoperaatio.</warning>
-	<warning id="1113" label="kWarning_BadArrayCast_specific">Array(x) toimii samoin kuin uusi Array(x).  Arvon määrittämisessä Array-tyypille oikea Array-arvon ilmaus on x, ei Array(x).</warning>
-	<warning id="1114" hidden="true" label="kWarning_NoExplicitSuperCallInConstructor">Super()-lauseketta ei kutsuttu konstruktorissa.</warning>
-	<warning id="1115" label="kWarning_NoExplicitSuperCallInConstructor_specific">Super()-lauseke suoritetaan ennen tähän konstruktoriin siirtymistä.  Lisää super()-kutsu konstruktorissa, jos haluat hallita, koska se suoritetaan.
+	<warning id="1113" label="kWarning_BadArrayCast_specific">Array(x) behaves the same as new Array(x).  To cast a value to type Array use the expression x as Array instead of Array(x).</warning>
+	<warning id="1114" hidden="true" label="kWarning_NoExplicitSuperCallInConstructor">Lauseketta super() ei kutsuttu konstruktorissa.</warning>
+	<warning id="1115" label="kWarning_NoExplicitSuperCallInConstructor_specific">The super() statement will be executed prior to entering this constructor.  Add a call to super() within the constructor if you want to explicitly control when it is executed.
 	<description>
 		<![CDATA[
 		Adding a call to <code>super()</code> within the constructor is a coding style preference.  Enable this warning if you want to always be explicit about when <code>super()</code> is called.
@@ -287,435 +301,435 @@ This can help catch cases where you meant to call <code>super()</code> after som
 		]]>
 	</description></warning>
 
-	<warning id="2090" hidden="true" label="kUnsupportedProp_version">Käytä sen sijaan kohdetta Capabilities.version.</warning>
-	<warning id="2091" hidden="true" label="kUnsupportedProp_Focusrect">Lisätietoja on kohteessa InteractiveObject.focusRect.</warning>
-	<warning id="2092" hidden="true" label="kUnsupportedProp_Highquality">Lisätietoja on kohteessa Stage.quality.</warning>
-	<warning id="2093" hidden="true" label="kUnsupportedProp_DisplayObj_HighQuality">Lisätietoja on kohteessa Stage.quality.</warning>
-	<warning id="2094" hidden="true" label="kUnsupportedProp_DisplayObj_Quality">Lisätietoja on kohteessa Stage.quality.</warning>
-	<warning id="2095" hidden="true" label="kUnsupportedProp_Quality">Lisätietoja on kohteessa Stage.quality.</warning>
-	<warning id="2096" hidden="true" label="kUnsupportedProp_TextField_Soundbuftime">Käytä sen sijaan static-ominaisuutta flash.media.SoundMixer.bufferTime.</warning>
-	<warning id="2097" hidden="true" label="kUnsupportedProp_TextField_Target">Tätä toimintoa ei enää tueta.</warning>
-	<warning id="2098" hidden="true" label="kUnsupportedProp_TextField_Url">Lisätietoja on kohteessa LoaderInfo.url.</warning>
-	<warning id="2099" hidden="true" label="kUnsupportedProp_TextField_Variable">Tätä toimintoa ei enää tueta.</warning>
-	<warning id="2102" hidden="true" label="kUnsupportedProp_NewLine">Käytä rivinvaihtona kohdetta '\n'.</warning>
-	<warning id="2103" hidden="true" label="kUnsupportedProp_MaxScroll">Lisätietoja on kohteessa textField.maxScroll.</warning>
-	<warning id="2104" hidden="true" label="kUnsupportedProp_Level">ActionScript 3.0:ssa ei tunneta käsitettä taso. Sen sijaan ohjelma ohjaa suoraan näyttöluetteloon. Lisätietoja on paketissa flash.display.</warning>
-	<warning id="2105" hidden="true" label="kUnsupportedProp_Parent">Käytä sen sijaan yläominaisuutta.</warning>
-	<warning id="2106" hidden="true" label="kUnsupportedProp_Root">Tämä ominaisuus on poistettu. Lähin vastaava ominaisuus on Stage, joka toimii ActionScript 3.0:n näyttöluettelon juurena.</warning>
-	<warning id="2107" hidden="true" label="kUnsupportedProp_Arguments_Caller">Yritä sen sijaan määrittää kutsuja funktion argumentiksi.</warning>
-	<warning id="2108" hidden="true" label="kUnsupportedProp_Button_Target">Tätä toimintoa ei enää tueta.</warning>
-	<warning id="2109" hidden="true" label="kUnsupportedProp_MovieClip_Parent">Käytä sen sijaan yläominaisuutta.</warning>
-	<warning id="2110" hidden="true" label="kUnsupportedProp_MovieClip_target">Tätä toimintoa ei enää tueta.</warning>
-	<warning id="2111" hidden="true" label="kUnsupportedProp_MovieClip_hitArea">Lisätietoja on kohteessa Sprite.hitArea.</warning>
-	<warning id="2112" hidden="true" label="kUnsupportedProp_Scroll">Katso lisätietoja luokan flash.text.TextField ominaisuuksista scrollH ja scrollV.</warning>
-	<warning id="2113" hidden="true" label="kUnsupportedProp_TargetPath">Käytä MovieClip-objekteja suoraan argumentteina polkujen sijaan.</warning>
-	<warning id="2114" hidden="true" label="kUnsupportedProp_Video_Height">Lisätietoja on kohteessa Video.videoHeight.</warning>
-	<warning id="2115" hidden="true" label="kUnsupportedProp_Video_Width">Lisätietoja on kohteessa Video.videoWidth.</warning>
-	<warning id="2116" hidden="true" label="kUnsupportedProp__Proto__">Lisätietoja on vanhentuneessa kohteessa __proto__.</warning>
-	<warning id="2117" hidden="true" label="kUnsupportedProp_Stage">Lisätietoja on kohteessa DisplayObject.stage.</warning>
-	<warning id="2118" hidden="true" label="kUnsupportedProp__remoteClass">Käytä sen sijaan registerClass()-metodia flash.net-paketissa.</warning>
-	<warning id="2617" hidden="true" label="kUnsupportedMeth_random">Käytä sen sijaan kohdetta Math.random().</warning>
-	<warning id="2618" hidden="true" label="kUnsupportedMeth_chr">Käytä sen sijaan kohdetta String.fromCharCode().</warning>
-	<warning id="2619" hidden="true" label="kUnsupportedMeth_mbchr">Käytä sen sijaan kohdetta String.fromCharCode().</warning>
-	<warning id="2621" hidden="true" label="kUnsupportedMeth_ord">Käytä sen sijaan kohdetta String.charCodeAt().</warning>
-	<warning id="2622" hidden="true" label="kUnsupportedMeth_mbord">Käytä sen sijaan kohdetta String.charCodeAt().</warning>
-	<warning id="2623" hidden="true" label="kUnsupportedMeth_substring">Käytä sen sijaan metodia String.substr.</warning>
-	<warning id="2624" hidden="true" label="kUnsupportedMeth_mbsubstring">Käytä sen sijaan metodia String.substr.</warning>
-	<warning id="2625" hidden="true" label="kUnsupportedMeth_length">Käytä sen sijaan argumentin length-ominaisuutta.</warning>
-	<warning id="2626" hidden="true" label="kUnsupportedMeth_mblength">Käytä sen sijaan argumentin length-ominaisuutta.</warning>
-	<warning id="2627" hidden="true" label="kUnsupportedMeth_ASNative">Lisätietoja on kohteen ASnative muutoksissa.</warning>
-	<warning id="2628" hidden="true" label="kUnsupportedMeth_addProperty">Määritä ominaisuudet sen sijaan suoraan esiintymässä käyttäen dot (.) -merkintää.</warning>
-	<warning id="2629" hidden="true" label="kUnsupportedMeth_getProperty">Käytä ominaisuuksia sen sijaan suoraan käyttäen dot (.) -merkintää.</warning>
-	<warning id="2630" hidden="true" label="kUnsupportedMeth_setProperty">Määritä ominaisuudet sen sijaan suoraan esiintymässä käyttäen dot (.) -merkintää.</warning>
-	<warning id="2631" hidden="true" label="kUnsupportedMeth_asfunction">Lisätietoja on kohteissa TextEvent.LINK ja addEventListener().</warning>
-	<warning id="2633" hidden="true" label="kUnsupportedMeth_clearInterval">Tämä metodin on siirretty pakettiin flash.utils.</warning>
-	<warning id="2634" hidden="true" label="kUnsupportedMeth_duplicateMovieClip">Korvattu uudella MovieClip-luokan konstruktorifunktiolla.</warning>
-	<warning id="2636" hidden="true" label="kUnsupportedMeth_fscommand">Siirretty pakettiin flash.system. Katso myös luokasta flash.external.ExternalInterface tietoja Javascript/ActionScript-tietoliikenteestä.</warning>
-	<warning id="2638" hidden="true" label="kUnsupportedMeth_getURL">Tietoja vastaavista toiminnoista on kohteessa flash.net.URLLoader.  Paketti flash.net sisältää myös pakettitason funktiot navigateToURL() ja sendToURL().</warning>
-	<warning id="2639" hidden="true" label="kUnsupportedMeth_gotoAndPlay">Lisätietoja on kohteessa MovieClip.gotoAndPlay().</warning>
-	<warning id="2640" hidden="true" label="kUnsupportedMeth_gotoAndStop">Lisätietoja on kohteessa MovieClip.gotoAndStop().</warning>
-	<warning id="2641" hidden="true" label="kUnsupportedMeth_play">Lisätietoja on kohteessa MovieClip.play().</warning>
-	<warning id="2642" hidden="true" label="kUnsupportedMeth_print">Lisätietoja on kohteessa PrintJob.start().</warning>
-	<warning id="2643" hidden="true" label="kUnsupportedMeth_printAsBitmap">Lisätietoja on kohteessa PrintJob.</warning>
-	<warning id="2644" hidden="true" label="kUnsupportedMeth_printAsBitmapNum">Lisätietoja on kohteessa PrintJob.</warning>
-	<warning id="2645" hidden="true" label="kUnsupportedMeth_printNum">Lisätietoja on kohteessa PrintJob.</warning>
-	<warning id="2646" hidden="true" label="kUnsupportedMeth_removeMovieClip">Käytä kohdetta Container.removeChild(childName). Lisätietoja on luokassa DisplayObjectContainer.</warning>
-	<warning id="2647" hidden="true" label="kUnsupportedMeth_setInterval">Siirretty pakettiin flash.utils.  Harkitse Timer-luokan käyttöä.</warning>
-	<warning id="2648" hidden="true" label="kUnsupportedMeth_nextFrame">Lisätietoja on kohteessa MovieClip.nextFrame().</warning>
-	<warning id="2649" hidden="true" label="kUnsupportedMeth_startDrag">Lisätietoja on kohteessa MovieClip.startDrag().</warning>
-	<warning id="2650" hidden="true" label="kUnsupportedMeth_stop">Lisätietoja on kohteessa MovieClip.stop().</warning>
-	<warning id="2651" hidden="true" label="kUnsupportedMeth_stopAllSounds">Lisätietoja on kohteessa Sound.stopAllSounds().</warning>
-	<warning id="2652" hidden="true" label="kUnsupportedMeth_stopDrag">Lisätietoja on kohteessa MovieClip.stopDrag().</warning>
-	<warning id="2653" hidden="true" label="kUnsupportedMeth_tellTarget">Käytä sen sijaan dot (.) -operaattoria tai with-lauseketta.</warning>
-	<warning id="2654" hidden="true" label="kUnsupportedMeth_toggleHighQuality">Lisätietoja on kohteissa DisplayObject.stage ja Stage.quality.</warning>
-	<warning id="2656" hidden="true" label="kUnsupportedMeth_unloadMovie">Käytä sen sijaan kohdetta DisplayObjectContainer.removeChild(childName). Lisätietoja on luokassa DisplayObjectContainer.</warning>
-	<warning id="2657" hidden="true" label="kUnsupportedMeth_unloadMovieNum">Käytä sen sijaan kohdetta DisplayObjectContainer.removeChild(childName). Lisätietoja on luokassa DisplayObjectContainer.</warning>
-	<warning id="2658" hidden="true" label="kUnsupportedMeth_updateAfterEvent">Tämä ei ole enää yleinen funktio, mutta se on yhä käytettävissä luokkien TimerEvent, MouseEvent ja KeyboardEvent metodina.</warning>
-	<warning id="2659" hidden="true" label="kUnsupportedMeth_Video_attachVideo">Lisätietoja on kohteissa Video.attachNetStream ja Video.attachCamera.</warning>
-	<warning id="2660" hidden="true" label="kUnsupportedMeth_TextField_StyleSheet_load">Käytä URLLoader-luokkaa lataamiseen ja tulosten välittämiseen kohteeseen StyleSheet.parseCSS().</warning>
-	<warning id="2663" hidden="true" label="kUnsupportedMeth_Object_registerClass">ActionScript 3.0:ssa kaikki luokat on rekisteröity oletuksena.  Jos käytössä on AMF, katso lisätietoja kohteesta flash.utils.registerClassAlias().</warning>
-	<warning id="2664" hidden="true" label="kUnsupportedMeth_Object_unwatch">Käytä aksessoriominaisuuksia (get-/set-funktioita) tai flash.utils.Proxy-luokkaa vastaavia toimintoja varten.</warning>
-	<warning id="2665" hidden="true" label="kUnsupportedMeth_Object_watch">Käytä aksessoriominaisuuksia (get-/set-funktioita) tai flash.utils.Proxy-luokkaa vastaavia toimintoja varten.</warning>
-	<warning id="2666" hidden="true" label="kUnsupportedMeth_loadMovie">Lisätietoja on kohteessa MovieClip.loadMovie().</warning>
-	<warning id="2667" hidden="true" label="kUnsupportedMeth_loadMovieNum">Lisätietoja on kohteessa MovieClip.loadMovieNum().</warning>
-	<warning id="2668" hidden="true" label="kUnsupportedMeth_loadVariables">Lisätietoja on kohteessa Loader.load().</warning>
-	<warning id="2669" hidden="true" label="kUnsupportedMeth_loadVariablesNum">Lisätietoja on kohteessa Loader.load().</warning>
-	<warning id="2678" hidden="true" label="kUnsupportedMeth_Stage_addListener">Lisätietoja on kohteessa addEventListener (eventName, kuuntelija, useCapture, prioriteetti).</warning>
-	<warning id="2679" hidden="true" label="kUnsupportedMeth_Stage_removeListener">Lisätietoja on kohteessa removeEventListener (eventName, kuuntelija, useCapture).</warning>
-	<warning id="2680" hidden="true" label="kUnsupportedMeth_TextField_addListener">Lisätietoja on kohteessa addEventListener (eventName, kuuntelija, useCapture, prioriteetti).</warning>
-	<warning id="2681" hidden="true" label="kUnsupportedMeth_TextField_removeListener">Lisätietoja on kohteessa removeEventListener (eventName, kuuntelija, useCapture).</warning>
-	<warning id="2682" hidden="true" label="kUnsupportedMeth_Mouse_addListener">Lisätietoja on kohteessa addEventListener (eventName, kuuntelija, useCapture, prioriteetti).</warning>
-	<warning id="2683" hidden="true" label="kUnsupportedMeth_Mouse_removeListener">Lisätietoja on kohteessa removeEventListener (eventName, kuuntelija, useCapture).</warning>
-	<warning id="2684" hidden="true" label="kUnsupportedMeth_Keyboard_addListener">Lisätietoja on kohteessa addEventListener (eventName, kuuntelija, useCapture, prioriteetti).</warning>
-	<warning id="2685" hidden="true" label="kUnsupportedMeth_Keyboard_removeListener">Lisätietoja on kohteessa removeEventListener (eventName, kuuntelija, useCapture).</warning>
-	<warning id="2686" hidden="true" label="kUnsupportedMeth_Sound_attachSound">Käytä SWF-luokkaa äänien luomiseen kirjastosta.</warning>
-	<warning id="3187" hidden="true" label="kWarning_Event_onStatus">Flash Player ei laukaise onStatus-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('status', callback_handler).</warning>
-	<warning id="3188" hidden="true" label="kWarning_Event_onID3">Flash Player ei laukaise onID3-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('id3', callback_handler).</warning>
-	<warning id="3189" hidden="true" label="kWarning_Event_onLoad">Flash Player ei laukaise onLoad-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('load', callback_handler).</warning>
-	<warning id="3190" hidden="true" label="kWarning_Event_onSoundComplete">Flash Player ei laukaise onSoundComplete-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('soundComplete', callback_handler).</warning>
-	<warning id="3191" hidden="true" label="kWarning_Event_onSetFocus">Flash Player ei laukaise onSetFocus-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('focusIn', callback_handler).</warning>
-	<warning id="3192" hidden="true" label="kWarning_Event_onResize">Flash Player ei laukaise onResize-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('resize', callback_handler).</warning>
-	<warning id="3193" hidden="true" label="kWarning_Event_onChanged">Flash Player ei laukaise onChanged-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('change', callback_handler).</warning>
-	<warning id="3194" hidden="true" label="kWarning_Event_onKillFocus">Flash Player ei laukaise onKillFocus-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('focusOut', callback_handler).</warning>
-	<warning id="3195" hidden="true" label="kWarning_Event_onScroller">Flash Player ei laukaise onScroller-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('scroll', callback_handler).</warning>
-	<warning id="3198" hidden="true" label="kWarning_Event_onMouseDown">Flash Player ei laukaise onMouseDown-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseDown', callback_handler).</warning>
-	<warning id="3199" hidden="true" label="kWarning_Event_onMouseUp">Flash Player ei laukaise onMouseUp-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseUp', callback_handler).</warning>
-	<warning id="3200" hidden="true" label="kWarning_Event_onMouseMove">Flash Player ei laukaise onMouseMove-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseMove', callback_handler).</warning>
-	<warning id="3201" hidden="true" label="kWarning_Event_onMouseWheel">Flash Player ei laukaise onMouseWheel-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseWheel', callback_handler).</warning>
-	<warning id="3202" hidden="true" label="kWarning_Event_onKeyDown">Flash Player ei laukaise onKeyDown-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('keyDown', callback_handler).</warning>
-	<warning id="3203" hidden="true" label="kWarning_Event_onKeyUp">Flash Player ei laukaise onKeyUp-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('keyUp', callback_handler).</warning>
-	<warning id="3204" hidden="true" label="kWarning_Event_onData">Flash Player ei laukaise onData-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('data', callback_handler).</warning>
-	<warning id="3205" hidden="true" label="kWarning_Event_onHTTPStatus">Flash Player ei laukaise onHTTPStatus-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('httpStatus', callback_handler).</warning>
-	<warning id="3206" hidden="true" label="kWarning_Event_onDragOut">Flash Player ei laukaise onDragOut-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseOut', callback_handler).</warning>
-	<warning id="3207" hidden="true" label="kWarning_Event_onDragOver">Flash Player ei laukaise onDragOver-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseOver', callback_handler).</warning>
-	<warning id="3211" hidden="true" label="kWarning_Event_onPress">Flash Player ei laukaise onPress-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseDown', callback_handler).</warning>
-	<warning id="3212" hidden="true" label="kWarning_Event_onRelease">Flash Player ei laukaise onRelease-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('click', callback_handler).</warning>
-	<warning id="3213" hidden="true" label="kWarning_Event_onReleaseOutside">Flash Player ei laukaise onReleaseOutside-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseUp', callback_handler).</warning>
-	<warning id="3214" hidden="true" label="kWarning_Event_onRollOut">Flash Player ei laukaise onRollOut-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseOut', callback_handler).</warning>
-	<warning id="3215" hidden="true" label="kWarning_Event_onRollOver">Flash Player ei laukaise onRollOver-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('mouseOver', callback_handler).</warning>
-	<warning id="3217" hidden="true" label="kWarning_Event_onActivity">Flash Player ei laukaise onActivity-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('activity', callback_handler).</warning>
-	<warning id="3219" hidden="true" label="kWarning_Event_onSelect">Flash Player ei laukaise onSelect-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('menuSelect', callback_handler).</warning>
-	<warning id="3226" hidden="true" label="kWarning_Event_onEnterFrame">Flash Player ei laukaise onEnterFrame-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('enterFrame', callback_handler).</warning>
-	<warning id="3240" hidden="true" label="kWarning_Event_onUnload">Flash Player ei laukaise onUnload-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('unload', callback_handler).</warning>
-	<warning id="3241" hidden="true" label="kWarning_Event_onLoadComplete">Flash Player ei laukaise onLoadComplete-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('load', callback_handler).</warning>
-	<warning id="3242" hidden="true" label="kWarning_Event_onLoadError">Flash Player ei laukaise onLoadError-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('error', callback_handler).</warning>
-	<warning id="3243" hidden="true" label="kWarning_Event_onLoadInit">Flash Player ei laukaise onLoadInit-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('init', callback_handler).</warning>
-	<warning id="3244" hidden="true" label="kWarning_Event_onLoadProgress">Flash Player ei laukaise onLoadProgress-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('progress', callback_handler).</warning>
-	<warning id="3245" hidden="true" label="kWarning_Event_onLoadStart">Flash Player ei laukaise onLoadStart-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('start', callback_handler).</warning>
-	<warning id="3249" hidden="true" label="kWarning_Event_onClose">Flash Player ei laukaise onClose-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('close', callback_handler).</warning>
-	<warning id="3250" hidden="true" label="kWarning_Event_onConnect">Flash Player ei laukaise onConnect-tapahtumakäsittelijää automaattisesti ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('connect', callback_handler).</warning>
-	<warning id="3252" hidden="true" label="kWarning_Event_onXML">Flash Player ei laukaise onXML:ää automaattisesti ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('xml', callback_handler).</warning>
-	<warning id="3253" hidden="true" label="kUnsupportedMeth_hasChildNodes">Käytä sen sijaan ominaisuutta hasChildNodes.</warning>
+	<warning id="2090" hidden="true" label="kUnsupportedProp_version">Use Capabilities.version instead.</warning>
+	<warning id="2091" hidden="true" label="kUnsupportedProp_Focusrect">For more information, see InteractiveObject.focusRect.</warning>
+	<warning id="2092" hidden="true" label="kUnsupportedProp_Highquality">For more information, see Stage.quality.</warning>
+	<warning id="2093" hidden="true" label="kUnsupportedProp_DisplayObj_HighQuality">For more information, see Stage.quality.</warning>
+	<warning id="2094" hidden="true" label="kUnsupportedProp_DisplayObj_Quality">For more information, see Stage.quality.</warning>
+	<warning id="2095" hidden="true" label="kUnsupportedProp_Quality">For more information, see Stage.quality.</warning>
+	<warning id="2096" hidden="true" label="kUnsupportedProp_TextField_Soundbuftime">Use the static property flash.media.SoundMixer.bufferTime instead.</warning>
+	<warning id="2097" hidden="true" label="kUnsupportedProp_TextField_Target">This functionality is no longer supported.</warning>
+	<warning id="2098" hidden="true" label="kUnsupportedProp_TextField_Url">For more information, see LoaderInfo.url.</warning>
+	<warning id="2099" hidden="true" label="kUnsupportedProp_TextField_Variable">This functionality is no longer supported.</warning>
+	<warning id="2102" hidden="true" label="kUnsupportedProp_NewLine">Use '\n' for newline.</warning>
+	<warning id="2103" hidden="true" label="kUnsupportedProp_MaxScroll">For more information, see textField.maxScroll.</warning>
+	<warning id="2104" hidden="true" label="kUnsupportedProp_Level">The concept of levels does not exist in ActionScript 3.0, which instead provides direct access to the display list. See the flash.display package for details.</warning>
+	<warning id="2105" hidden="true" label="kUnsupportedProp_Parent">Use the parent property instead.</warning>
+	<warning id="2106" hidden="true" label="kUnsupportedProp_Root">This property has been removed. The closest equivalent is the Stage, which serves as the root of the ActionScript 3.0 display list.</warning>
+	<warning id="2107" hidden="true" label="kUnsupportedProp_Arguments_Caller">Try declaring caller as an argument of the function instead.</warning>
+	<warning id="2108" hidden="true" label="kUnsupportedProp_Button_Target">This functionality is no longer supported.</warning>
+	<warning id="2109" hidden="true" label="kUnsupportedProp_MovieClip_Parent">Use the parent property instead.</warning>
+	<warning id="2110" hidden="true" label="kUnsupportedProp_MovieClip_target">This functionality is no longer supported.</warning>
+	<warning id="2111" hidden="true" label="kUnsupportedProp_MovieClip_hitArea">For more information, see Sprite.hitArea.</warning>
+	<warning id="2112" hidden="true" label="kUnsupportedProp_Scroll">For more information, see the scrollH and scrollV properties of flash.text.TextField class.</warning>
+	<warning id="2113" hidden="true" label="kUnsupportedProp_TargetPath">Use MovieClip objects directly as arguments instead of paths.</warning>
+	<warning id="2114" hidden="true" label="kUnsupportedProp_Video_Height">For more information, see Video.videoHeight.</warning>
+	<warning id="2115" hidden="true" label="kUnsupportedProp_Video_Width">For more information, see Video.videoWidth.</warning>
+	<warning id="2116" hidden="true" label="kUnsupportedProp__Proto__">For more information, see obsolete  __proto__.</warning>
+	<warning id="2117" hidden="true" label="kUnsupportedProp_Stage">For more information, see DisplayObject.stage.</warning>
+	<warning id="2118" hidden="true" label="kUnsupportedProp__remoteClass">Use the registerClass() method in the flash.net package instead.</warning>
+	<warning id="2617" hidden="true" label="kUnsupportedMeth_random">Use Math.random() instead.</warning>
+	<warning id="2618" hidden="true" label="kUnsupportedMeth_chr">Use String.fromCharCode() instead.</warning>
+	<warning id="2619" hidden="true" label="kUnsupportedMeth_mbchr">Use String.fromCharCode() instead.</warning>
+	<warning id="2621" hidden="true" label="kUnsupportedMeth_ord">Use String.charCodeAt() instead.</warning>
+	<warning id="2622" hidden="true" label="kUnsupportedMeth_mbord">Use String.charCodeAt() instead.</warning>
+	<warning id="2623" hidden="true" label="kUnsupportedMeth_substring">Use the String.substr method instead.</warning>
+	<warning id="2624" hidden="true" label="kUnsupportedMeth_mbsubstring">Use the String.substr method instead.</warning>
+	<warning id="2625" hidden="true" label="kUnsupportedMeth_length">Use the length property of the argument instead.</warning>
+	<warning id="2626" hidden="true" label="kUnsupportedMeth_mblength">Use the length property of the argument instead.</warning>
+	<warning id="2627" hidden="true" label="kUnsupportedMeth_ASNative">For more information, see changes to ASnative.</warning>
+	<warning id="2628" hidden="true" label="kUnsupportedMeth_addProperty">Set properties directly on the instance using dot (.) notation instead.</warning>
+	<warning id="2629" hidden="true" label="kUnsupportedMeth_getProperty">Access properties directly using dot (.) notation instead.</warning>
+	<warning id="2630" hidden="true" label="kUnsupportedMeth_setProperty">Set properties directly on the instance using dot (.) notation instead.</warning>
+	<warning id="2631" hidden="true" label="kUnsupportedMeth_asfunction">For more information, see TextEvent.LINK and addEventListener().</warning>
+	<warning id="2633" hidden="true" label="kUnsupportedMeth_clearInterval">This method has moved to the flash.utils package.</warning>
+	<warning id="2634" hidden="true" label="kUnsupportedMeth_duplicateMovieClip">Replaced by new MovieClip class constructor function.</warning>
+	<warning id="2636" hidden="true" label="kUnsupportedMeth_fscommand">Moved to flash.system package. Also, please see flash.external.ExternalInterface class for Javascript/ActionScript communication.</warning>
+	<warning id="2638" hidden="true" label="kUnsupportedMeth_getURL">For equivalent functionality, see flash.net.URLLoader.  The flash.net package also contains package-level functions navigateToURL() and sendToURL().</warning>
+	<warning id="2639" hidden="true" label="kUnsupportedMeth_gotoAndPlay">For more information, see MovieClip.gotoAndPlay().</warning>
+	<warning id="2640" hidden="true" label="kUnsupportedMeth_gotoAndStop">For more information, see MovieClip.gotoAndStop().</warning>
+	<warning id="2641" hidden="true" label="kUnsupportedMeth_play">For more information, see MovieClip.play().</warning>
+	<warning id="2642" hidden="true" label="kUnsupportedMeth_print">For more information, see PrintJob.start().</warning>
+	<warning id="2643" hidden="true" label="kUnsupportedMeth_printAsBitmap">For more information, see PrintJob.</warning>
+	<warning id="2644" hidden="true" label="kUnsupportedMeth_printAsBitmapNum">For more information, see PrintJob.</warning>
+	<warning id="2645" hidden="true" label="kUnsupportedMeth_printNum">For more information, see PrintJob.</warning>
+	<warning id="2646" hidden="true" label="kUnsupportedMeth_removeMovieClip">Use Container.removeChild(childName). For more information, see the DisplayObjectContainer class.</warning>
+	<warning id="2647" hidden="true" label="kUnsupportedMeth_setInterval">Moved to the flash.utils package.  Consider using the Timer class instead.</warning>
+	<warning id="2648" hidden="true" label="kUnsupportedMeth_nextFrame">For more information, see MovieClip.nextFrame().</warning>
+	<warning id="2649" hidden="true" label="kUnsupportedMeth_startDrag">For more information, see MovieClip.startDrag().</warning>
+	<warning id="2650" hidden="true" label="kUnsupportedMeth_stop">For more information, see MovieClip.stop().</warning>
+	<warning id="2651" hidden="true" label="kUnsupportedMeth_stopAllSounds">For more information, see Sound.stopAllSounds().</warning>
+	<warning id="2652" hidden="true" label="kUnsupportedMeth_stopDrag">For more information, see MovieClip.stopDrag().</warning>
+	<warning id="2653" hidden="true" label="kUnsupportedMeth_tellTarget">Use the dot (.) operator or the with statement instead.</warning>
+	<warning id="2654" hidden="true" label="kUnsupportedMeth_toggleHighQuality">For more information, see DisplayObject.stage and Stage.quality.</warning>
+	<warning id="2656" hidden="true" label="kUnsupportedMeth_unloadMovie">Use DisplayObjectContainer.removeChild(childName) instead. For more information, see the DisplayObjectContainer class.</warning>
+	<warning id="2657" hidden="true" label="kUnsupportedMeth_unloadMovieNum">Use DisplayObjectContainer.removeChild(childName) instead. For more information, see the DisplayObjectContainer class.</warning>
+	<warning id="2658" hidden="true" label="kUnsupportedMeth_updateAfterEvent">This function is no longer a global function, but is still available as a method of the TimerEvent, MouseEvent, and KeyboardEvent classes.</warning>
+	<warning id="2659" hidden="true" label="kUnsupportedMeth_Video_attachVideo">For more information, see Video.attachNetStream, Video.attachCamera.</warning>
+	<warning id="2660" hidden="true" label="kUnsupportedMeth_TextField_StyleSheet_load">Use the URLLoader class to perform loading and pass the result to StyleSheet.parseCSS()</warning>
+	<warning id="2663" hidden="true" label="kUnsupportedMeth_Object_registerClass">In ActionScript 3.0 all classes are registered by default.  If you are using AMF, see flash.utils.registerClassAlias() for more information.</warning>
+	<warning id="2664" hidden="true" label="kUnsupportedMeth_Object_unwatch">Use accessor properties (get/set functions) or the flash.utils.Proxy class for similar functionality.</warning>
+	<warning id="2665" hidden="true" label="kUnsupportedMeth_Object_watch">Use accessor properties (get/set functions) or the flash.utils.Proxy class for similar functionality.</warning>
+	<warning id="2666" hidden="true" label="kUnsupportedMeth_loadMovie">For more information, see MovieClip.loadMovie().</warning>
+	<warning id="2667" hidden="true" label="kUnsupportedMeth_loadMovieNum">For more information, see MovieClip.loadMovieNum().</warning>
+	<warning id="2668" hidden="true" label="kUnsupportedMeth_loadVariables">For more information, see Loader.load().</warning>
+	<warning id="2669" hidden="true" label="kUnsupportedMeth_loadVariablesNum">For more information, see Loader.load().</warning>
+	<warning id="2678" hidden="true" label="kUnsupportedMeth_Stage_addListener">For more information, see addEventListener ( eventName, listener, useCapture, priority ).</warning>
+	<warning id="2679" hidden="true" label="kUnsupportedMeth_Stage_removeListener">For more information, see removeEventListener ( eventName, listener, useCapture).</warning>
+	<warning id="2680" hidden="true" label="kUnsupportedMeth_TextField_addListener">For more information, see addEventListener ( eventName, listener, useCapture, priority ).</warning>
+	<warning id="2681" hidden="true" label="kUnsupportedMeth_TextField_removeListener">For more information, see removeEventListener ( eventName, listener, useCapture).</warning>
+	<warning id="2682" hidden="true" label="kUnsupportedMeth_Mouse_addListener">For more information, see addEventListener ( eventName, listener, useCapture, priority ).</warning>
+	<warning id="2683" hidden="true" label="kUnsupportedMeth_Mouse_removeListener">For more information, see removeEventListener ( eventName, listener, useCapture).</warning>
+	<warning id="2684" hidden="true" label="kUnsupportedMeth_Keyboard_addListener">For more information, see addEventListener ( eventName, listener, useCapture, priority ).</warning>
+	<warning id="2685" hidden="true" label="kUnsupportedMeth_Keyboard_removeListener">For more information, see removeEventListener ( eventName, listener, useCapture).</warning>
+	<warning id="2686" hidden="true" label="kUnsupportedMeth_Sound_attachSound">Use SWF class to create sounds from library</warning>
+	<warning id="3187" hidden="true" label="kWarning_Event_onStatus">The onStatus event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'status', callback_handler).</warning>
+	<warning id="3188" hidden="true" label="kWarning_Event_onID3">The onID3 event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'id3', callback_handler).</warning>
+	<warning id="3189" hidden="true" label="kWarning_Event_onLoad">The onLoad event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'load', callback_handler).</warning>
+	<warning id="3190" hidden="true" label="kWarning_Event_onSoundComplete">The onSoundComplete event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'soundComplete', callback_handler).</warning>
+	<warning id="3191" hidden="true" label="kWarning_Event_onSetFocus">The onSetFocus event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'focusIn', callback_handler).</warning>
+	<warning id="3192" hidden="true" label="kWarning_Event_onResize">The onResize event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'resize', callback_handler).</warning>
+	<warning id="3193" hidden="true" label="kWarning_Event_onChanged">The onChanged event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'change', callback_handler).</warning>
+	<warning id="3194" hidden="true" label="kWarning_Event_onKillFocus">The onKillFocus event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'focusOut', callback_handler).</warning>
+	<warning id="3195" hidden="true" label="kWarning_Event_onScroller">The onScroller event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'scroll', callback_handler).</warning>
+	<warning id="3198" hidden="true" label="kWarning_Event_onMouseDown">The onMouseDown event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseDown', callback_handler).</warning>
+	<warning id="3199" hidden="true" label="kWarning_Event_onMouseUp">The onMouseUp event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseUp', callback_handler).</warning>
+	<warning id="3200" hidden="true" label="kWarning_Event_onMouseMove">The onMouseMove event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseMove', callback_handler).</warning>
+	<warning id="3201" hidden="true" label="kWarning_Event_onMouseWheel">The onMouseWheel event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseWheel', callback_handler).</warning>
+	<warning id="3202" hidden="true" label="kWarning_Event_onKeyDown">The onKeyDown event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'keyDown', callback_handler).</warning>
+	<warning id="3203" hidden="true" label="kWarning_Event_onKeyUp">The onKeyUp event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'keyUp', callback_handler).</warning>
+	<warning id="3204" hidden="true" label="kWarning_Event_onData">The onData event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'data', callback_handler).</warning>
+	<warning id="3205" hidden="true" label="kWarning_Event_onHTTPStatus">The onHTTPStatus event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'httpStatus', callback_handler).</warning>
+	<warning id="3206" hidden="true" label="kWarning_Event_onDragOut">The onDragOut event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseOut', callback_handler).</warning>
+	<warning id="3207" hidden="true" label="kWarning_Event_onDragOver">The onDragOver event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseOver', callback_handler).</warning>
+	<warning id="3211" hidden="true" label="kWarning_Event_onPress">The onPress event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseDown', callback_handler).</warning>
+	<warning id="3212" hidden="true" label="kWarning_Event_onRelease">The onRelease event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'click', callback_handler).</warning>
+	<warning id="3213" hidden="true" label="kWarning_Event_onReleaseOutside">The onReleaseOutside event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseUp', callback_handler).</warning>
+	<warning id="3214" hidden="true" label="kWarning_Event_onRollOut">The onRollOut event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseOut', callback_handler).</warning>
+	<warning id="3215" hidden="true" label="kWarning_Event_onRollOver">The onRollOver event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'mouseOver', callback_handler).</warning>
+	<warning id="3217" hidden="true" label="kWarning_Event_onActivity">The onActivity event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'activity', callback_handler).</warning>
+	<warning id="3219" hidden="true" label="kWarning_Event_onSelect">The onSelect event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'menuSelect', callback_handler).</warning>
+	<warning id="3226" hidden="true" label="kWarning_Event_onEnterFrame">The onEnterFrame is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'enterFrame', callback_handler).</warning>
+	<warning id="3240" hidden="true" label="kWarning_Event_onUnload">The onUnload event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'unload', callback_handler).</warning>
+	<warning id="3241" hidden="true" label="kWarning_Event_onLoadComplete">The onLoadComplete is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'load', callback_handler).</warning>
+	<warning id="3242" hidden="true" label="kWarning_Event_onLoadError">The onLoadError event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'error', callback_handler).</warning>
+	<warning id="3243" hidden="true" label="kWarning_Event_onLoadInit">The onLoadInit event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'init', callback_handler).</warning>
+	<warning id="3244" hidden="true" label="kWarning_Event_onLoadProgress">The onLoadProgress event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'progress', callback_handler).</warning>
+	<warning id="3245" hidden="true" label="kWarning_Event_onLoadStart">The onLoadStart is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'start', callback_handler).</warning>
+	<warning id="3249" hidden="true" label="kWarning_Event_onClose">The onClose event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'close', callback_handler).</warning>
+	<warning id="3250" hidden="true" label="kWarning_Event_onConnect">The onConnect event handler is not triggered automatically by Flash player in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'connect', callback_handler).</warning>
+	<warning id="3252" hidden="true" label="kWarning_Event_onXML">onXML is not triggered automatically by Flash Player in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( 'xml', callback_handler).</warning>
+	<warning id="3253" hidden="true" label="kUnsupportedMeth_hasChildNodes">Use the property hasChildNodes instead.</warning>
 
-  <warning id="3254" hidden="true" label="kUnsupportedMeth_XMLEvent">XMLEvent-luokka on vanhentunut. Xml-tapahtumaa ole enää lähetetä. Vain data-tapahtuma lähetetään tiedostonlatauksen aikana.</warning>
-  <warning id="3255" hidden="true" label="kUnsupportedMeth_XMLDoc">XMLDoc-luokka on saanut uuden nimen XMLDocument.</warning>
-  <warning id="3256" hidden="true" label="kUnsupportedMeth_Accessibility_isActive">Käytä sen sijaan ominaisuutta Accessibility.active.</warning>
-  <warning id="3257" hidden="true" label="kUnsupportedProp_ActivityEvent_ACTIVITY_TYPE">Käytä sen sijaan vakiota ActivityEvent.ACTIVITY.</warning>
-  <warning id="3258" hidden="true" label="kUnsupportedMeth_SimpleButton_getDepth">Käytä sen sijaan kohdetta DisplayObjectContainer.parent.getChildIndex. Katso ohje DisplayObjectContainer-luokassa, joka on MovieClipin laajentama.</warning>
-  <warning id="3259" hidden="true" label="kUnsupportedMeth_SimpleButton_swapDepths">Käytä sen sijaan kohdetta DisplayObjectContainer.parent.setChildIndex. Katso ohje DisplayObjectContainer-luokassa, joka on MovieClipin laajentama.</warning>
-  <warning id="3260" hidden="true" label="kUnsupportedMeth_SimpleButton_getInstanceAtDepth">Käytä sen sijaan kohdetta DisplayObjectContainer.getChildAt. Katso ohje DisplayObjectContainer-luokassa, joka on MovieClipin laajentama.</warning>
-  <warning id="3261" hidden="true" label="kUnsupportedMeth_SimpleButton_getNextHighestDepth">Käytä sen sijaan kohdetta DisplayObjectContainer.numChildren. DisplayObjectContainer.addChild lisää aina uuden aliobjektin indeksiin DisplayObjectContainer.numChildren.</warning>
-  <warning id="3262" hidden="true" label="kUnsupportedMeth_ByteArray_available">Käytä sen sijaan ominaisuutta ByteArray.bytesAvailable.</warning>
-  <warning id="3263" hidden="true" label="kUnsupportedMeth_ByteArray_getFilePointer">Käytä sen sijaan ominaisuutta ByteArray.position.</warning>
-  <warning id="3264" hidden="true" label="kUnsupportedMeth_ByteArray_seek">Käytä sen sijaan ominaisuutta ByteArray.position.</warning>
-  <warning id="3265" hidden="true" label="kUnsupportedMeth_Camera_get">Käytä sen sijaan metodia Camera.getCamera().</warning>
-  <warning id="3266" hidden="true" label="kUnsupportedProp_Camera_currentFps">Käytä sen sijaan ominaisuutta Camera.currentFPS.</warning>
-  <warning id="3267" hidden="true" label="kUnsupportedMeth_Camera_setKeyFrameInterval">Käytä sen sijaan ominaisuutta Camera.keyFrameInterval.</warning>
-  <warning id="3268" hidden="true" label="kUnsupportedMeth_Camera_setLoopback">Käytä sen sijaan ominaisuutta Camera.loopback.</warning>
-  <warning id="3269" hidden="true" label="kUnsupportedMeth_ColorTransform_getRGB">Käytä sen sijaan ominaisuutta ColorTransform.color.</warning>
-  <warning id="3270" hidden="true" label="kUnsupportedMeth_ColorTransform_setRGB">Käytä sen sijaan ominaisuutta ColorTransform.color.</warning>
-  <warning id="3271" hidden="true" label="kUnsupportedMeth_DisplayObjectContainer_getTextSnapshot">Käytä sen sijaan ominaisuutta Container.textSnapshot.</warning>
-  <warning id="3272" hidden="true" label="kUnsupportedMeth_ContextMenu_copy">Käytä sen sijaan metodia ContextMenu.clone().</warning>
-  <warning id="3273" hidden="true" label="kUnsupportedProp_ContextMenu_forward_back">Käytä sen sijaan ominaisuutta ContextMenu.forwardAndBack.</warning>
-  <warning id="3274" hidden="true" label="kUnsupportedMeth_ContextMenuItem_copy">Käytä sen sijaan metodia ContextMenuItem.clone().</warning>
-  <warning id="3275" hidden="true" label="kUnsupportedMeth_CustomActions_listActions">Käytä sen sijaan ominaisuutta CustomActions.actionsList.</warning>
-  <warning id="3276" hidden="true" label="kUnsupportedProp_DataEvent_DATA_TYPE">Käytä sen sijaan vakiota DataEvent.DATA.</warning>
-  <warning id="3277" hidden="true" label="kUnsupportedProp_DisplayObject_xscale">Käytä sen sijaan ominaisuutta DisplayObject.scaleX.</warning>
-  <warning id="3278" hidden="true" label="kUnsupportedProp_DisplayObject__xscale">Käytä sen sijaan ominaisuutta DisplayObject.scaleX.</warning>
-  <warning id="3279" hidden="true" label="kUnsupportedProp_DisplayObject_yscale">Käytä sen sijaan ominaisuutta DisplayObject.scaleY.</warning>
-  <warning id="3280" hidden="true" label="kUnsupportedProp_DisplayObject__yscale">Käytä sen sijaan ominaisuutta DisplayObject.scaleY.</warning>
-  <warning id="3281" hidden="true" label="kUnsupportedProp_DisplayObject_xmouse">Käytä sen sijaan ominaisuutta DisplayObject.mouseX.</warning>
-  <warning id="3282" hidden="true" label="kUnsupportedProp_DisplayObject__xmouse">Käytä sen sijaan ominaisuutta DisplayObject.mouseX.</warning>
-  <warning id="3283" hidden="true" label="kUnsupportedProp_DisplayObject_ymouse">Käytä sen sijaan ominaisuutta DisplayObject.mouseY.</warning>
-  <warning id="3284" hidden="true" label="kUnsupportedProp_DisplayObject__ymouse">Käytä sen sijaan ominaisuutta DisplayObject.mouseY.</warning>
-  <warning id="3285" hidden="true" label="kUnsupportedProp_DisplayObject_setRootClass">Tätä ominaisuutta ei enää tueta.</warning>
-  <warning id="3286" hidden="true" label="kUnsupportedProp_DisplayObject_mapSymbolToClass">Tätä ominaisuutta ei enää tueta.</warning>
-  <warning id="3287" hidden="true" label="kUnsupportedProp_DisplayObject__name">Käytä sen sijaan ominaisuutta DisplayObject.name.</warning>
-  <warning id="3288" hidden="true" label="kUnsupportedProp_DisplayObject__parent">Käytä sen sijaan ominaisuutta DisplayObject.parent.</warning>
-  <warning id="3289" hidden="true" label="kUnsupportedProp_DisplayObject__mask">Käytä sen sijaan ominaisuutta DisplayObject.mask.</warning>
-  <warning id="3290" hidden="true" label="kUnsupportedProp_DisplayObject__visible">Käytä sen sijaan ominaisuutta DisplayObject.visible.</warning>
-  <warning id="3291" hidden="true" label="kUnsupportedProp_DisplayObject__x">Käytä sen sijaan ominaisuutta DisplayObject.x.</warning>
-  <warning id="3292" hidden="true" label="kUnsupportedProp_DisplayObject__y">Käytä sen sijaan ominaisuutta DisplayObject.y.</warning>
-  <warning id="3293" hidden="true" label="kUnsupportedProp_DisplayObject__rotation">Käytä sen sijaan ominaisuutta DisplayObject.rotation.</warning>
-  <warning id="3294" hidden="true" label="kUnsupportedProp_DisplayObject__alpha">Käytä sen sijaan ominaisuutta DisplayObject.alpha.</warning>
-  <warning id="3295" hidden="true" label="kUnsupportedProp_DisplayObject__width">Käytä sen sijaan ominaisuutta DisplayObject.width.</warning>
-  <warning id="3296" hidden="true" label="kUnsupportedProp_DisplayObject__height">Käytä sen sijaan ominaisuutta DisplayObject.height.</warning>
-  <warning id="3297" hidden="true" label="kUnsupportedMeth_ExternalInterface_available">Käytä sen sijaan ominaisuutta ExternalInterface.available.</warning>
-  <warning id="3298" hidden="true" label="kUnsupportedProp_ErrorEvent_ERROR_TYPE">Käytä sen sijaan vakiota ErrorEvent.ERROR.</warning>
-  <warning id="3299" hidden="true" label="kUnsupportedMeth_Event_isDefaultPrevented">Käytä sen sijaan ominaisuutta Event.isDefaultPrevented.</warning>
-  <warning id="3300" hidden="true" label="kUnsupportedProp_Event_ACTIVATE_TYPE">Käytä sen sijaan vakiota Event.ACTIVATE.</warning>
-  <warning id="3301" hidden="true" label="kUnsupportedProp_Event_ADDED_TYPE">Käytä sen sijaan vakiota Event.ADDED.</warning>
-  <warning id="3302" hidden="true" label="kUnsupportedProp_Event_CANCEL_TYPE">Käytä sen sijaan vakiota Event.CANCEL.</warning>
-  <warning id="3303" hidden="true" label="kUnsupportedProp_Event_CHANGE_TYPE">Käytä sen sijaan vakiota Event.CHANGE.</warning>
-  <warning id="3304" hidden="true" label="kUnsupportedProp_Event_CLOSE_TYPE">Käytä sen sijaan vakiota Event.CLOSE.</warning>
-  <warning id="3305" hidden="true" label="kUnsupportedProp_Event_COMPLETE_TYPE">Käytä sen sijaan vakiota Event.COMPLETE.</warning>
-  <warning id="3306" hidden="true" label="kUnsupportedProp_Event_CONNECT_TYPE">Käytä sen sijaan vakiota Event.CONNECT.</warning>
-  <warning id="3307" hidden="true" label="kUnsupportedProp_Event_DEACTIVATE_TYPE">Käytä sen sijaan vakiota Event.DEACTIVATE.</warning>
-  <warning id="3308" hidden="true" label="kUnsupportedProp_Event_ENTER_FRAME_TYPE">Käytä sen sijaan vakiota Event.ENTER_FRAME.</warning>
-  <warning id="3309" hidden="true" label="kUnsupportedProp_Event_ID3_TYPE">Käytä sen sijaan vakiota Event.ID3.</warning>
-  <warning id="3310" hidden="true" label="kUnsupportedProp_Event_INIT_TYPE">Käytä sen sijaan vakiota Event.INIT.</warning>
-  <warning id="3311" hidden="true" label="kUnsupportedProp_Event_MOUSE_LEAVE_TYPE">Käytä sen sijaan vakiota Event.MOUSE_LEAVE.</warning>
-  <warning id="3312" hidden="true" label="kUnsupportedProp_Event_OPEN_TYPE">Käytä sen sijaan vakiota Event.OPEN.</warning>
-  <warning id="3313" hidden="true" label="kUnsupportedProp_Event_REMOVED_TYPE">Käytä sen sijaan vakiota Event.REMOVED.</warning>
-  <warning id="3314" hidden="true" label="kUnsupportedProp_Event_RENDER_TYPE">Käytä sen sijaan vakiota Event.RENDER.</warning>
-  <warning id="3315" hidden="true" label="kUnsupportedProp_Event_RESIZE_TYPE">Käytä sen sijaan vakiota Event.RESIZE.</warning>
-  <warning id="3316" hidden="true" label="kUnsupportedProp_Event_SCROLL_TYPE">Käytä sen sijaan vakiota Event.SCROLL.</warning>
-  <warning id="3317" hidden="true" label="kUnsupportedProp_Event_SELECT_TYPE">Käytä sen sijaan vakiota Event.SELECT.</warning>
-  <warning id="3318" hidden="true" label="kUnsupportedProp_Event_SOUND_COMPLETE_TYPE">Käytä sen sijaan vakiota Event.SOUND_COMPLETE.</warning>
-  <warning id="3319" hidden="true" label="kUnsupportedProp_Event_TAB_CHILDREN_CHANGE_TYPE">Käytä sen sijaan vakiota Event.TAB_CHILDREN_CHANGE.</warning>
-  <warning id="3320" hidden="true" label="kUnsupportedProp_Event_TAB_ENABLED_CHANGE_TYPE">Käytä sen sijaan vakiota Event.TAB_ENABLED_CHANGE.</warning>
-  <warning id="3321" hidden="true" label="kUnsupportedProp_Event_TAB_INDEX_CHANGE_TYPE">Käytä sen sijaan vakiota Event.TAB_INDEX_CHANGE.</warning>
-  <warning id="3322" hidden="true" label="kUnsupportedProp_Event_UNLOAD_TYPE">Käytä sen sijaan vakiota Event.UNLOAD.</warning>
-  <warning id="3323" hidden="true" label="kUnsupportedProp_FocusEvent_FOCUS_IN_TYPE">Käytä sen sijaan vakiota FocusEvent.FOCUS_IN.</warning>
-  <warning id="3324" hidden="true" label="kUnsupportedProp_FocusEvent_FOCUS_OUT_TYPE">Käytä sen sijaan vakiota FocusEvent.FOCUS_OUT.</warning>
-  <warning id="3325" hidden="true" label="kUnsupportedProp_FocusEvent_KEY_FOCUS_CHANGE_TYPE">Käytä sen sijaan vakiota FocusEvent.KEY_FOCUS_CHANGE.</warning>
-  <warning id="3326" hidden="true" label="kUnsupportedProp_FocusEvent_MOUSE_FOCUS_CHANGE_TYPE">Käytä sen sijaan vakiota FocusEvent.MOUSE_FOCUS_CHANGE.</warning>
-  <warning id="3327" hidden="true" label="kUnsupportedMeth_Graphics_beginImageFill">Käytä sen sijaan metodia Graphics.beginBitmapFill().</warning>
-  <warning id="3328" hidden="true" label="kUnsupportedProp_BitmapFilter_XYZ_QUALITY">Käytä sen sijaan ominaisuutta BitmapFilter.quality.</warning>
-  <warning id="3329" hidden="true" label="kUnsupportedMeth_Keyboard_getAscii">Käytä sen sijaan kohdetta KeyboardEvent.charCode.</warning>
-  <warning id="3330" hidden="true" label="kUnsupportedMeth_Keyboard_getCode">Käytä sen sijaan kohdetta KeyboardEvent.keyCode.</warning>
-  <warning id="3331" hidden="true" label="kUnsupportedMeth_Keyboard_isDown">Lisätietoja on luokassa KeyboardEvent.</warning>
-  <warning id="3332" hidden="true" label="kUnsupportedMeth_Keyboard_isToggled">Lisätietoja on kohteissa KeyboardEvent.ctrlKey, KeyboardEvent.altKey ja KeyboardEvent.shiftKey.</warning>
-  <warning id="3333" hidden="true" label="kUnsupportedProp_Keyboard_PGDN">Käytä sen sijaan vakiota PAGE_DOWN.</warning>
-  <warning id="3334" hidden="true" label="kUnsupportedProp_Keyboard_PGUP">Käytä sen sijaan vakiota PAGE_UP.</warning>
-  <warning id="3335" hidden="true" label="kUnsupportedProp_Keyboard_DELETEKEY">Käytä sen sijaan vakiota DELETE.</warning>
-  <warning id="3336" hidden="true" label="kUnsupportedProp_Keyboard_CAPSLOCK">Käytä sen sijaan vakiota CAPS_LOCK.</warning>
-  <warning id="3337" hidden="true" label="kUnsupportedProp_Keyboard_NUMPAD">Käytä sen sijaan yhtä vakioista NUMPAD_0 -> NUMPAD_9.</warning>
+  <warning id="3254" hidden="true" label="kUnsupportedMeth_XMLEvent">The XMLEvent class is obsolete, and the xml event is no longer dispatched. Only the data event is dispatched during file loading.</warning>
+  <warning id="3255" hidden="true" label="kUnsupportedMeth_XMLDoc">The XMLDoc class has been renamed XMLDocument.</warning>
+  <warning id="3256" hidden="true" label="kUnsupportedMeth_Accessibility_isActive">Use the Accessibility.active property instead.</warning>
+  <warning id="3257" hidden="true" label="kUnsupportedProp_ActivityEvent_ACTIVITY_TYPE">Use ActivityEvent.ACTIVITY constant instead.</warning>
+  <warning id="3258" hidden="true" label="kUnsupportedMeth_SimpleButton_getDepth">Use DisplayObjectContainer.parent.getChildIndex instead. See help for the DisplayObjectContainer class, which is extended by MovieClip.</warning>
+  <warning id="3259" hidden="true" label="kUnsupportedMeth_SimpleButton_swapDepths">Use DisplayObjectContainer.parent.setChildIndex instead. See help for the DisplayObjectContainer class, which is extended by MovieClip.</warning>
+  <warning id="3260" hidden="true" label="kUnsupportedMeth_SimpleButton_getInstanceAtDepth">Use DisplayObjectContainer.getChildAt instead. See help for the DisplayObjectContainer class, which is extended by MovieClip.</warning>
+  <warning id="3261" hidden="true" label="kUnsupportedMeth_SimpleButton_getNextHighestDepth">Use DisplayObjectContainer.numChildren instead. DisplayObjectContainer.addChild always adds the new child to index DisplayObjectContainer.numChildren.</warning>
+  <warning id="3262" hidden="true" label="kUnsupportedMeth_ByteArray_available">Use the ByteArray.bytesAvailable property instead.</warning>
+  <warning id="3263" hidden="true" label="kUnsupportedMeth_ByteArray_getFilePointer">Use the ByteArray.position property instead.</warning>
+  <warning id="3264" hidden="true" label="kUnsupportedMeth_ByteArray_seek">Use the ByteArray.position property instead.</warning>
+  <warning id="3265" hidden="true" label="kUnsupportedMeth_Camera_get">Use the Camera.getCamera() method instead.</warning>
+  <warning id="3266" hidden="true" label="kUnsupportedProp_Camera_currentFps">Use the Camera.currentFPS property instead.</warning>
+  <warning id="3267" hidden="true" label="kUnsupportedMeth_Camera_setKeyFrameInterval">Use the Camera.keyFrameInterval property instead.</warning>
+  <warning id="3268" hidden="true" label="kUnsupportedMeth_Camera_setLoopback">Use the Camera.loopback property instead.</warning>
+  <warning id="3269" hidden="true" label="kUnsupportedMeth_ColorTransform_getRGB">Use the ColorTransform.color property instead.</warning>
+  <warning id="3270" hidden="true" label="kUnsupportedMeth_ColorTransform_setRGB">Use the ColorTransform.color property instead.</warning>
+  <warning id="3271" hidden="true" label="kUnsupportedMeth_DisplayObjectContainer_getTextSnapshot">Use the Container.textSnapshot property instead.</warning>
+  <warning id="3272" hidden="true" label="kUnsupportedMeth_ContextMenu_copy">Use the ContextMenu.clone() method instead.</warning>
+  <warning id="3273" hidden="true" label="kUnsupportedProp_ContextMenu_forward_back">Use the ContextMenu.forwardAndBack property instead.</warning>
+  <warning id="3274" hidden="true" label="kUnsupportedMeth_ContextMenuItem_copy">Use the ContextMenuItem.clone() method instead.</warning>
+  <warning id="3275" hidden="true" label="kUnsupportedMeth_CustomActions_listActions">Use the CustomActions.actionsList property instead.</warning>
+  <warning id="3276" hidden="true" label="kUnsupportedProp_DataEvent_DATA_TYPE">Use the DataEvent.DATA constant instead.</warning>
+  <warning id="3277" hidden="true" label="kUnsupportedProp_DisplayObject_xscale">Use the DisplayObject.scaleX property instead.</warning>
+  <warning id="3278" hidden="true" label="kUnsupportedProp_DisplayObject__xscale">Use the DisplayObject.scaleX property instead.</warning>
+  <warning id="3279" hidden="true" label="kUnsupportedProp_DisplayObject_yscale">Use the DisplayObject.scaleY property instead.</warning>
+  <warning id="3280" hidden="true" label="kUnsupportedProp_DisplayObject__yscale">Use the DisplayObject.scaleY property instead.</warning>
+  <warning id="3281" hidden="true" label="kUnsupportedProp_DisplayObject_xmouse">Use the DisplayObject.mouseX property instead.</warning>
+  <warning id="3282" hidden="true" label="kUnsupportedProp_DisplayObject__xmouse">Use the DisplayObject.mouseX property instead.</warning>
+  <warning id="3283" hidden="true" label="kUnsupportedProp_DisplayObject_ymouse">Use the DisplayObject.mouseY property instead.</warning>
+  <warning id="3284" hidden="true" label="kUnsupportedProp_DisplayObject__ymouse">Use the DisplayObject.mouseY property instead.</warning>
+  <warning id="3285" hidden="true" label="kUnsupportedProp_DisplayObject_setRootClass">This feature is no longer supported.</warning>
+  <warning id="3286" hidden="true" label="kUnsupportedProp_DisplayObject_mapSymbolToClass">This feature is no longer supported.</warning>
+  <warning id="3287" hidden="true" label="kUnsupportedProp_DisplayObject__name">Use the DisplayObject.name property instead.</warning>
+  <warning id="3288" hidden="true" label="kUnsupportedProp_DisplayObject__parent">Use the DisplayObject.parent property instead.</warning>
+  <warning id="3289" hidden="true" label="kUnsupportedProp_DisplayObject__mask">Use the DisplayObject.mask property instead.</warning>
+  <warning id="3290" hidden="true" label="kUnsupportedProp_DisplayObject__visible">Use the DisplayObject.visible property instead.</warning>
+  <warning id="3291" hidden="true" label="kUnsupportedProp_DisplayObject__x">Use the DisplayObject.x property instead.</warning>
+  <warning id="3292" hidden="true" label="kUnsupportedProp_DisplayObject__y">Use the DisplayObject.y property instead.</warning>
+  <warning id="3293" hidden="true" label="kUnsupportedProp_DisplayObject__rotation">Use the DisplayObject.rotation property instead.</warning>
+  <warning id="3294" hidden="true" label="kUnsupportedProp_DisplayObject__alpha">Use the DisplayObject.alpha property instead.</warning>
+  <warning id="3295" hidden="true" label="kUnsupportedProp_DisplayObject__width">Use the DisplayObject.width property instead.</warning>
+  <warning id="3296" hidden="true" label="kUnsupportedProp_DisplayObject__height">Use the DisplayObject.height property instead.</warning>
+  <warning id="3297" hidden="true" label="kUnsupportedMeth_ExternalInterface_available">Use the ExternalInterface.available property instead.</warning>
+  <warning id="3298" hidden="true" label="kUnsupportedProp_ErrorEvent_ERROR_TYPE">Use the ErrorEvent.ERROR constant instead.</warning>
+  <warning id="3299" hidden="true" label="kUnsupportedMeth_Event_isDefaultPrevented">Use the Event.isDefaultPrevented property instead.</warning>
+  <warning id="3300" hidden="true" label="kUnsupportedProp_Event_ACTIVATE_TYPE">Use the Event.ACTIVATE constant instead.</warning>
+  <warning id="3301" hidden="true" label="kUnsupportedProp_Event_ADDED_TYPE">Use the Event.ADDED constant instead.</warning>
+  <warning id="3302" hidden="true" label="kUnsupportedProp_Event_CANCEL_TYPE">Use the Event.CANCEL constant instead.</warning>
+  <warning id="3303" hidden="true" label="kUnsupportedProp_Event_CHANGE_TYPE">Use the Event.CHANGE constant instead.</warning>
+  <warning id="3304" hidden="true" label="kUnsupportedProp_Event_CLOSE_TYPE">Use the Event.CLOSE constant instead.</warning>
+  <warning id="3305" hidden="true" label="kUnsupportedProp_Event_COMPLETE_TYPE">Use the Event.COMPLETE constant instead.</warning>
+  <warning id="3306" hidden="true" label="kUnsupportedProp_Event_CONNECT_TYPE">Use the Event.CONNECT constant instead.</warning>
+  <warning id="3307" hidden="true" label="kUnsupportedProp_Event_DEACTIVATE_TYPE">Use the Event.DEACTIVATE constant instead.</warning>
+  <warning id="3308" hidden="true" label="kUnsupportedProp_Event_ENTER_FRAME_TYPE">Use the Event.ENTER_FRAME constant instead.</warning>
+  <warning id="3309" hidden="true" label="kUnsupportedProp_Event_ID3_TYPE">Use the Event.ID3 constant instead.</warning>
+  <warning id="3310" hidden="true" label="kUnsupportedProp_Event_INIT_TYPE">Use the Event.INIT constant instead.</warning>
+  <warning id="3311" hidden="true" label="kUnsupportedProp_Event_MOUSE_LEAVE_TYPE">Use the Event.MOUSE_LEAVE constant instead.</warning>
+  <warning id="3312" hidden="true" label="kUnsupportedProp_Event_OPEN_TYPE">Use the Event.OPEN constant instead.</warning>
+  <warning id="3313" hidden="true" label="kUnsupportedProp_Event_REMOVED_TYPE">Use the Event.REMOVED constant instead.</warning>
+  <warning id="3314" hidden="true" label="kUnsupportedProp_Event_RENDER_TYPE">Use the Event.RENDER constant instead.</warning>
+  <warning id="3315" hidden="true" label="kUnsupportedProp_Event_RESIZE_TYPE">Use the Event.RESIZE constant instead.</warning>
+  <warning id="3316" hidden="true" label="kUnsupportedProp_Event_SCROLL_TYPE">Use the Event.SCROLL constant instead.</warning>
+  <warning id="3317" hidden="true" label="kUnsupportedProp_Event_SELECT_TYPE">Use the Event.SELECT constant instead.</warning>
+  <warning id="3318" hidden="true" label="kUnsupportedProp_Event_SOUND_COMPLETE_TYPE">Use the Event.SOUND_COMPLETE constant instead.</warning>
+  <warning id="3319" hidden="true" label="kUnsupportedProp_Event_TAB_CHILDREN_CHANGE_TYPE">Use the Event.TAB_CHILDREN_CHANGE constant instead.</warning>
+  <warning id="3320" hidden="true" label="kUnsupportedProp_Event_TAB_ENABLED_CHANGE_TYPE">Use the Event.TAB_ENABLED_CHANGE constant instead.</warning>
+  <warning id="3321" hidden="true" label="kUnsupportedProp_Event_TAB_INDEX_CHANGE_TYPE">Use the Event.TAB_INDEX_CHANGE constant instead.</warning>
+  <warning id="3322" hidden="true" label="kUnsupportedProp_Event_UNLOAD_TYPE">Use the Event.UNLOAD constant instead.</warning>
+  <warning id="3323" hidden="true" label="kUnsupportedProp_FocusEvent_FOCUS_IN_TYPE">Use the FocusEvent.FOCUS_IN constant instead.</warning>
+  <warning id="3324" hidden="true" label="kUnsupportedProp_FocusEvent_FOCUS_OUT_TYPE">Use the FocusEvent.FOCUS_OUT constant instead.</warning>
+  <warning id="3325" hidden="true" label="kUnsupportedProp_FocusEvent_KEY_FOCUS_CHANGE_TYPE">Use the FocusEvent.KEY_FOCUS_CHANGE constant instead.</warning>
+  <warning id="3326" hidden="true" label="kUnsupportedProp_FocusEvent_MOUSE_FOCUS_CHANGE_TYPE">Use the FocusEvent.MOUSE_FOCUS_CHANGE constant instead.</warning>
+  <warning id="3327" hidden="true" label="kUnsupportedMeth_Graphics_beginImageFill">Use the Graphics.beginBitmapFill() method instead.</warning>
+  <warning id="3328" hidden="true" label="kUnsupportedProp_BitmapFilter_XYZ_QUALITY">Use the BitmapFilter.quality property instead.</warning>
+  <warning id="3329" hidden="true" label="kUnsupportedMeth_Keyboard_getAscii">Use KeyboardEvent.charCode instead.</warning>
+  <warning id="3330" hidden="true" label="kUnsupportedMeth_Keyboard_getCode">Use KeyboardEvent.keyCode instead.</warning>
+  <warning id="3331" hidden="true" label="kUnsupportedMeth_Keyboard_isDown">For more information, see the KeyboardEvent class.</warning>
+  <warning id="3332" hidden="true" label="kUnsupportedMeth_Keyboard_isToggled">For more information, see KeyboardEvent.ctrlKey, KeyboardEvent.altKey, and KeyboardEvent.shiftKey.</warning>
+  <warning id="3333" hidden="true" label="kUnsupportedProp_Keyboard_PGDN">Use the PAGE_DOWN constant instead.</warning>
+  <warning id="3334" hidden="true" label="kUnsupportedProp_Keyboard_PGUP">Use the PAGE_UP constant instead.</warning>
+  <warning id="3335" hidden="true" label="kUnsupportedProp_Keyboard_DELETEKEY">Use the DELETE constant instead.</warning>
+  <warning id="3336" hidden="true" label="kUnsupportedProp_Keyboard_CAPSLOCK">Use the CAPS_LOCK constant instead.</warning>
+  <warning id="3337" hidden="true" label="kUnsupportedProp_Keyboard_NUMPAD">Use one of the NUMPAD_0 -> NUMPAD_9 constants instead.</warning>
  
-  <warning id="3338" hidden="true" label="kUnsupportedProp_InteractiveObject__focusrect">Käytä sen sijaan ominaisuutta InteractiveObject.focusRect.</warning>
-  <warning id="3339" hidden="true" label="kUnsupportedProp_InteractiveObject_menu">Käytä sen sijaan ominaisuutta InteractiveObject.contextMenu.</warning>
-  <warning id="3340" hidden="true" label="kUnsupportedProp_KeyboardEvent_ascii">Käytä sen sijaan ominaisuutta KeyboardEvent.charCode.</warning>
-  <warning id="3341" hidden="true" label="kUnsupportedProp_KeyboardEvent_code">Käytä sen sijaan ominaisuutta KeyboardEvent.keyCode.</warning>
-  <warning id="3342" hidden="true" label="kUnsupportedProp_Loader_loaderInfo">Käytä sen sijaan ominaisuutta Loader.contentLoaderInfo.</warning>
-  <warning id="3343" hidden="true" label="kUnsupportedProp_Loader_preload">Tätä ominaisuutta ei enää tueta.</warning>
-  <warning id="3344" hidden="true" label="kUnsupportedProp_Loader_loadCached">Tätä ominaisuutta ei enää tueta.</warning>
-  <warning id="3345" hidden="true" label="kUnsupportedProp_LoaderInfo_loaderUrl">Käytä sen sijaan ominaisuutta LoaderInfo.loaderURL.</warning>
-  <warning id="3346" hidden="true" label="kUnsupportedMeth_LocalConnection_domain">Käytä sen sijaan ominaisuutta LocalConnection.domain.</warning>
-  <warning id="3347" hidden="true" label="kUnsupportedProp_ContextMenuEvent_menuOwner">Käytä sen sijaan ominaisuutta MenuEvent.contextMenuOwner.</warning>
-  <warning id="3348" hidden="true" label="kUnsupportedMeth_Microphone_get">Käytä sen sijaan metodia Microphone.getMicrophone().</warning>
-  <warning id="3349" hidden="true" label="kUnsupportedMeth_MovieClip_attachMovie">Jos MovieClip-aliluokan nimi on A, käytä muuttujaa mc= new A(); addChild(mc). Lisätietoja on luokassa DisplayObjectContainer.</warning>
-  <warning id="3350" hidden="true" label="kUnsupportedMeth_MovieClip_createEmptyMovieClip">Käytä muuttujaa mc= new MovieClip(); addChild(mc). Lisätietoja on luokassa DisplayObjectContainer.</warning>
-  <warning id="3351" hidden="true" label="kUnsupportedMeth_MovieClip_createTextField">Käytä muuttujaa tf= new TextField(); addChild(mc). Lisätietoja on luokassa DisplayObjectContainer.</warning>
-  <warning id="3352" hidden="true" label="kUnsupportedMeth_MovieClip_removeMovieClip">Käytä kohdetta Container.removeChild(childName). Lisätietoja on luokassa DisplayObjectContainer.</warning>
-  <warning id="3353" hidden="true" label="kUnsupportedMeth_MovieClip_loadMovie">Käytä muuttujaa l = new Loader(); addChild(l); l.load(new URLRequest("your url"));. Lisätietoja on Loader- ja DisplayObjectContainer-luokissa.</warning>
-  <warning id="3354" hidden="true" label="kUnsupportedMeth_MovieClip_unloadMovie">Käytä sen sijaan kohdetta DisplayObjectContainer.removeChild(childName). Lisätietoja on luokassa DisplayObjectContainer.</warning>
-  <warning id="3355" hidden="true" label="kUnsupportedMeth_MovieClip_unloadMovieNum">Käytä sen sijaan kohdetta DisplayObjectContainer.removeChild(childName). Lisätietoja on luokassa DisplayObjectContainer.</warning>
-  <warning id="3356" hidden="true" label="kUnsupportedMeth_MovieClip_getDepth">Käytä sen sijaan kohdetta DisplayObjectContainer.parent.getChildIndex. Lisätietoja on luokassa DisplayObjectContainer, jota MovieClip laajentaa.</warning>
-  <warning id="3357" hidden="true" label="kUnsupportedMeth_MovieClip_swapDepths">Käytä sen sijaan kohdetta DisplayObjectContainer.parent.setChildIndex. Lisätietoja on luokassa DisplayObjectContainer, jota MovieClip laajentaa.</warning>
-  <warning id="3358" hidden="true" label="kUnsupportedMeth_MovieClip_getInstanceAtDepth">Käytä sen sijaan kohdetta DisplayObjectContainer.getChildAt. Lisätietoja on luokassa DisplayObjectContainer, jota MovieClip laajentaa.</warning>
-  <warning id="3359" hidden="true" label="kUnsupportedMeth_MovieClip_getNextHighestDepth">Käytä sen sijaan kohdetta DisplayObjectContainer.numChildren. DisplayObjectContainer.addChild lisää aina uuden aliobjektin indeksiin DisplayObjectContainer.numChildren.</warning>
-  <warning id="3360" hidden="true" label="kUnsupportedMeth_MovieClip_attachAudio">Lisätietoja on kohteessa DisplayObject.addChild.</warning>
-  <warning id="3361" hidden="true" label="kUnsupportedMeth_MovieClip_getBytesLoaded">Lisätietoja on kohteessa LoaderInfo.bytesLoaded sekä Loader-luokassa.</warning>
-  <warning id="3362" hidden="true" label="kUnsupportedMeth_MovieClip_getBytesTotal">Lisätietoja on kohteessa LoaderInfo.bytesTotal sekä Loader-luokassa.</warning>
-  <warning id="3363" hidden="true" label="kUnsupportedMeth_MovieClip_getURL">Tietoja vastaavista toiminnoista on kohteessa flash.net.URLLoader.  Paketti flash.net sisältää myös pakettitason funktiot navigateToURL() ja sendToURL().</warning>
-  <warning id="3364" hidden="true" label="kUnsupportedProp_MovieClip_url">Lisätietoja on kohteessa LoaderInfo.url sekä Loader-luokassa.</warning>
-  <warning id="3365" hidden="true" label="kUnsupportedProp_MovieClip__url">Lisätietoja on kohteessa LoaderInfo.url sekä Loader-luokassa.</warning>
-  <warning id="3366" hidden="true" label="kUnsupportedMeth_MovieClip_setMask">Käytä sen sijaan ominaisuutta MovieClip.mask.</warning>
-  <warning id="3367" hidden="true" label="kUnsupportedMeth_MovieClip_getSWFVersion">Lisätietoja on kohteessa LoaderInfo.swfVersion sekä Loader-luokassa.</warning>
-  <warning id="3368" hidden="true" label="kUnsupportedProp_MovieClip__currentframe">Käytä sen sijaan ominaisuutta MovieClip.currentFrame.</warning>
-  <warning id="3369" hidden="true" label="kUnsupportedProp_MovieClip__framesloaded">Käytä sen sijaan ominaisuutta MovieClip.framesLoaded.</warning>
-  <warning id="3370" hidden="true" label="kUnsupportedProp_MovieClip__totalframes">Käytä sen sijaan ominaisuutta MovieClip.totalFrames.</warning>
-  <warning id="3371" hidden="true" label="kUnsupportedProp_MovieClip_lockroot">Lisätietoja on kohteessa displayObjectInstance.root.</warning>
-  <warning id="3372" hidden="true" label="kUnsupportedProp_MovieClip__lockroot">Lisätietoja on kohteessa displayObjectInstance.root.</warning>
-  <warning id="3373" hidden="true" label="kUnsupportedProp_MovieClip__soundbuftime">Käytä sen sijaan staattista ominaisuutta flash.media.SoundMixer.bufferTime.</warning>
-  <warning id="3374" hidden="true" label="kUnsupportedMeth_MovieClip_clear">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3375" hidden="true" label="kUnsupportedMeth_MovieClip_beginFill">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3376" hidden="true" label="kUnsupportedMeth_MovieClip_beginGradientFill">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3377" hidden="true" label="kUnsupportedMeth_MovieClip_lineGradientStyle">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3378" hidden="true" label="kUnsupportedMeth_MovieClip_beginImageFill">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3379" hidden="true" label="kUnsupportedMeth_MovieClip_lineStyle">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3380" hidden="true" label="kUnsupportedMeth_MovieClip_drawRect">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3381" hidden="true" label="kUnsupportedMeth_MovieClip_drawRoundRect">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3382" hidden="true" label="kUnsupportedMeth_MovieClip_drawRoundRectComplex">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3383" hidden="true" label="kUnsupportedMeth_MovieClip_drawCircle">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3384" hidden="true" label="kUnsupportedMeth_MovieClip_moveTo">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3385" hidden="true" label="kUnsupportedMeth_MovieClip_lineTo">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3386" hidden="true" label="kUnsupportedMeth_MovieClip_curveTo">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3387" hidden="true" label="kUnsupportedMeth_MovieClip_endFill">Lisätietoja on luokassa Graphics.</warning>
-  <warning id="3388" hidden="true" label="kUnsupportedMeth_NetStream_setBufferTime">Käytä sen sijaan ominaisuutta NetStream.bufferTime.</warning>
-  <warning id="3389" hidden="true" label="kUnsupportedProp_NetStream_currentFps">Käytä sen sijaan ominaisuutta NetStream.currentFPS.</warning>
-  <warning id="3390" hidden="true" label="kUnsupportedProp_NetStream_videocodec">Käytä sen sijaan ominaisuutta NetStream.videoCodec.</warning>
-  <warning id="3391" hidden="true" label="kUnsupportedProp_NetStream_audiocodec">Käytä sen sijaan ominaisuutta NetStream.audioCodec.</warning>
-  <warning id="3392" hidden="true" label="kUnsupportedMeth_ProductManager_isIntalled">Käytä sen sijaan ominaisuutta ProductManager.isInstalled.</warning>
-  <warning id="3393" hidden="true" label="kUnsupportedMeth_ProductManager_installedVersion">Käytä sen sijaan ominaisuutta ProductManager.installedVersion.</warning>
-  <warning id="3394" hidden="true" label="kUnsupportedMeth_ProductManager_isRunning">Käytä sen sijaan ominaisuutta ProductManager.isRunning.</warning>
-  <warning id="3395" hidden="true" label="kUnsupportedMeth_Point_addTo">Käytä sen sijaan metodia Point.add().</warning>
-  <warning id="3396" hidden="true" label="kUnsupportedProp_Proxy_delDescendants">Käytä sen sijaan ominaisuutta Proxy.deleteDescendants.</warning>
-  <warning id="3397" hidden="true" label="kUnsupportedMeth_Profiler_heapdump">Käytä sen sijaan metodia heapDump().</warning>
-  <warning id="3398" hidden="true" label="kUnsupportedProp_ProgressEvent_current">Käytä sen sijaan ominaisuutta ProgressEvent.bytesLoaded.</warning>
-  <warning id="3399" hidden="true" label="kUnsupportedProp_ProgressEvent_total">Käytä sen sijaan ominaisuutta ProgressEvent.bytesTotal.</warning>
-  <warning id="3400" hidden="true" label="kUnsupportedMeth_Rectangle_isEmpty">Käytä sen sijaan ominaisuutta Rectangle.isEmpty.</warning>  
-  <warning id="3401" hidden="true" label="kUnsupportedMeth_SoundTransform_setPan">Käytä sen sijaan ominaisuutta SoundTransform.pan.</warning>
-  <warning id="3402" hidden="true" label="kUnsupportedMeth_Socket_available">Käytä sen sijaan ominaisuutta Sockect.bytesAvailable.</warning>
-  <warning id="3403" hidden="true" label="kUnsupportedMeth_SharedObject_getSize">Käytä sen sijaan ominaisuutta SharedObject.size.</warning>
-  <warning id="3404" hidden="true" label="kUnsupportedMeth_SharedObject_setFps">Käytä sen sijaan ominaisuutta SharedObject.fps.</warning>
-  <warning id="3405" hidden="true" label="kUnsupportedMeth_Sprite_getSWF">Tätä ei enää tueta.</warning>
-  <warning id="3406" hidden="true" label="kUnsupportedMeth_Sprite_constructChild">Käytä sen sijaan metodia Sprite.constructChildren().</warning>
-  <warning id="3407" hidden="true" label="kUnsupportedProp_Sprite__droptarget">Käytä sen sijaan ominaisuutta Sprite.dropTarget.</warning>
-  <warning id="3408" hidden="true" label="kUnsupportedMeth_Stage_getFocus">Käytä sen sijaan ominaisuutta Stage.focus.</warning>
-  <warning id="3409" hidden="true" label="kUnsupportedMeth_Stage_setFocus">Käytä sen sijaan ominaisuutta Stage.focus.</warning>
-  <warning id="3411" hidden="true" label="kUnsupportedProp_Stage_showMenu">Käytä sen sijaan ominaisuutta Stage.showDefaultContextMenu.</warning>
-  <warning id="3412" hidden="true" label="kUnsupportedMeth_StyleSheet_getStyleNames">Käytä sen sijaan ominaisuutta StyleSheet.styleNames.</warning>
-  <warning id="3413" hidden="true" label="kUnsupportedMeth_StyleSheet_onData">Käytä URLLoader-esiintymää StyleSheet-tietojen lataamiseen ja välitä lataajatiedot StyleSheet.parseCSS-metodille. Lisätietoja on URLLoader- ja EventDispatcher-luokissa.</warning>
-  <warning id="3414" hidden="true" label="kUnsupportedMeth_StyleSheet_load">Käytä URLLoader-esiintymää StyleSheet-tietojen lataamiseen ja välitä lataajatiedot StyleSheet.parseCSS-metodille. Lisätietoja on URLLoader- ja EventDispatcher-luokissa.</warning>
-  <warning id="3415" hidden="true" label="kUnsupportedProp_StyleSheet_loaded">Käytä URLLoader-esiintymää StyleSheet-tietojen lataamiseen ja välitä lataajatiedot StyleSheet.parseCSS-metodille. Lisätietoja on URLLoader- ja EventDispatcher-luokissa.</warning>
-  <warning id="3416" hidden="true" label="kUnsupportedMeth_StyleSheet_getBytesLoaded">Käytä URLLoader-esiintymää StyleSheet-tietojen lataamiseen ja välitä lataajatiedot StyleSheet.parseCSS-metodille. Lisätietoja on URLLoader- ja EventDispatcher-luokissa.</warning>
-  <warning id="3417" hidden="true" label="kUnsupportedMeth_StyleSheet_getBytesTotal">Käytä URLLoader-esiintymää StyleSheet-tietojen lataamiseen ja välitä lataajatiedot StyleSheet.parseCSS-metodille. Lisätietoja on URLLoader- ja EventDispatcher-luokissa.</warning>
-  <warning id="3418" hidden="true" label="kUnsupportedMeth_IME_getEnabled">Käytä sen sijaan ominaisuutta IME.enabled.</warning>
-  <warning id="3419" hidden="true" label="kUnsupportedMeth_IME_setEnabled">Käytä sen sijaan ominaisuutta IME.enabled.</warning>
-  <warning id="3420" hidden="true" label="kUnsupportedMeth_IME_getInstance">Käytä sen sijaan ominaisuutta IME.instance.</warning>
-  <warning id="3421" hidden="true" label="kUnsupportedMeth_IME_getConversionMode">Käytä sen sijaan ominaisuutta IME.conversionMode.</warning>
-  <warning id="3422" hidden="true" label="kUnsupportedMeth_IME_setConversionMode">Käytä sen sijaan ominaisuutta IME.conversionMode.</warning>
-  <warning id="3423" hidden="true" label="kUnsupportedProp_System_getAvmplusVersion">Käytä sen sijaan ominaisuutta System.vmVersion.</warning>
-  <warning id="3424" hidden="true" label="kUnsupportedProp_SWFLoaderInfo_SWFVersion">Käytä sen sijaan ominaisuutta SWFLoaderInfo.swfVersion.</warning>
-  <warning id="3425" hidden="true" label="kUnsupportedProp_SWFLoaderInfo_ASVersion">Käytä sen sijaan ominaisuutta SWFLoaderInfo.actionScriptVersion.</warning>
-  <warning id="3426" hidden="true" label="kUnsupportedMeth_TextField_getNewTextFormat">Käytä sen sijaan ominaisuutta TextField.defaultTextFormat.</warning>
-  <warning id="3427" hidden="true" label="kUnsupportedMeth_TextField_setNewTextFormat">Käytä sen sijaan ominaisuutta TextField.defaultTextFormat.</warning>
-  <warning id="3428" hidden="true" label="kUnsupportedMeth_TextField_getDepth">Käytä sen sijaan kohdetta DisplayObjectContainer.parent.getChildIndex. Lisätietoja on luokassa DisplayObjectContainer, jota MovieClip laajentaa.</warning>
-  <warning id="3429" hidden="true" label="kUnsupportedMeth_TextField_swapDepths">Käytä sen sijaan kohdetta DisplayObjectContainer.parent.setChildIndex. Lisätietoja on luokassa DisplayObjectContainer, jota MovieClip laajentaa.</warning>
-  <warning id="3430" hidden="true" label="kUnsupportedMeth_TextField_getInstanceAtDepth">Käytä sen sijaan kohdetta DisplayObjectContainer.getChildAt. Lisätietoja on luokassa DisplayObjectContainer, jota MovieClip laajentaa.</warning>
-  <warning id="3431" hidden="true" label="kUnsupportedMeth_TextField_getNextHighestDepth">Käytä sen sijaan kohdetta DisplayObjectContainer.numChildren.  DisplayObjectContainer.addChild lisää aina uuden aliobjektin indeksiin DisplayObjectContainer.numChildren.</warning>
-  <warning id="3432" hidden="true" label="kUnsupportedMeth_TextField_replaceSel">Käytä sen sijaan metodia TextField.replaceSelectedText().</warning>
-  <warning id="3433" hidden="true" label="kUnsupportedMeth_TextField_getLineIndexOfCharacter">Käytä sen sijaan metodia TextField.getLineIndexOfChar().</warning>
-  <warning id="3434" hidden="true" label="kUnsupportedMeth_TextField_getSelectionBeginIndex">Käytä sen sijaan ominaisuutta TextField.selectionBeginIndex.</warning>
-  <warning id="3435" hidden="true" label="kUnsupportedMeth_TextField_getSelectionEndIndex">Käytä sen sijaan ominaisuutta TextField.selectionEndIndex.</warning>
-  <warning id="3436" hidden="true" label="kUnsupportedMeth_TextField_getCaretIndex">Käytä sen sijaan ominaisuutta TextField.caretIndex.</warning>
-  <warning id="3437" hidden="true" label="kUnsupportedMeth_TextField_getFontList">Käytä sen sijaan metodia Font.enumerateFonts().</warning>
-  <warning id="3438" hidden="true" label="kUnsupportedProp_TextField_maxscroll">Käytä sen sijaan ominaisuutta TextField.maxScrollV.</warning>
-  <warning id="3439" hidden="true" label="kUnsupportedProp_TextField_hscroll">Käytä sen sijaan ominaisuutta TextField.scrollH.</warning>
-  <warning id="3440" hidden="true" label="kUnsupportedProp_TextField_maxhscroll">Käytä sen sijaan ominaisuutta TextField.maxScrollH.</warning>
-  <warning id="3441" hidden="true" label="kUnsupportedProp_TextField_newTextFormat">Käytä sen sijaan ominaisuutta TextField.defaultTextFormat.</warning>
-  <warning id="3442" hidden="true" label="kUnsupportedMeth_TextFormat_getTextExtent">Luo tilapäinen TextField ja käytä kohdetta TextField.getLineMetrics.</warning>
-  <warning id="3443" hidden="true" label="kUnsupportedMeth_TextSnapshot_getCount">Käytä sen sijaan ominaisuutta TextSnapshot.charCount.</warning>
-  <warning id="3444" hidden="true" label="kUnsupportedProp_URLLoader_navigate">Käytä sen sijaan navigateToURL()-metodia flash.net-paketissa.</warning>
-  <warning id="3445" hidden="true" label="kUnsupportedMeth_URLLoader_send">Käytä sen sijaan sendToURL()-metodia flash.net-paketissa.</warning>
-  <warning id="3446" hidden="true" label="kUnsupportedProp_URLLoader_binary">Käytä sen sijaan ominaisuutta URLLoader.dataFormat.</warning>
-  <warning id="3447" hidden="true" label="kUnsupportedMeth_URLStream_available">Käytä sen sijaan ominaisuutta URLStream.bytesAvailable.</warning>
-  <warning id="3448" hidden="true" label="kUnsupportedProp_URLRequest_digest">Tätä ominaisuutta ei enää tueta.</warning>
-  <warning id="3449" hidden="true" label="kUnsupportedProp_URLRequest_importToSandbox">Käytä sen sijaan ominaisuutta URLRequest.applicationDomain.</warning>
-  <warning id="3450" hidden="true" label="kUnsupportedMeth_URLRequest_addRequestHeader">Lisää pyyntöotsikoita asettamalla ominaisuus URLRequest.requestHeaders URLRequestHeader-objekteille.</warning>
-  <warning id="3451" hidden="true" label="kUnsupportedMeth_XMLDocument_load">Käytä URLLoader-esiintymää XML-tiedoston lataamiseen ja välitä URLLoaders-tiedot XMLDocuments-konstruktorille. Lisätietoja on URLLoader- ja EventDispatcher-luokissa.</warning>
-  <warning id="3452" hidden="true" label="kUnsupportedMeth_XMLDocument_send">Käytä sen sijaan sendToURL()-metodia flash.net-paketissa.</warning>
-  <warning id="3453" hidden="true" label="kUnsupportedMeth_XMLDocument_sendAndLoad">Aseta URLRequest-objektin postData-ominaisuus ja käytä sitä URLLoader-objektin kanssa XML-tiedoston lataamiseen.  Välitä URLLoaders-tiedot XMLDocuments-konstruktorille. Lisätietoja on URLLoader-, URLRequest- ja EventDispatcher-luokissa.</warning>
-  <warning id="3454" hidden="true" label="kUnsupportedMeth_XMLDocument_onData">Käytä URLLoader-esiintymää XML-tiedoston lataamiseen ja välitä URLLoaders-tiedot XMLDocuments-konstruktorille. Lisätietoja on URLLoader- ja EventDispatcher-luokissa.</warning>
-  <warning id="3455" hidden="true" label="kUnsupportedMeth_XMLDocument_addRequestHeader">Lisää pyyntöotsikoita asettamalla ominaisuus URLRequest.requestHeaders URLRequestHeader-objekteille.</warning>
-  <warning id="3456" hidden="true" label="kUnsupportedMeth_XMLDocument_getBytesLoaded">Lisätietoja on kohteessa URLLoader.bytesLoaded sekä URLLoader-luokassa.</warning>
-  <warning id="3457" hidden="true" label="kUnsupportedMeth_XMLDocument_getBytesTotal">Lisätietoja on kohteessa URLLoader.bytesTotal sekä URLLoader-luokassa.</warning>
-  <warning id="3458" hidden="true" label="kUnsupportedProp_XMLDocument_loaded">Käytä URLLoader-esiintymää XML-tiedoston lataamiseen ja välitä lataajatiedot StyleSheet.parseCSS-metodille. Lisätietoja on URLLoader- ja EventDispatcher-luokissa.</warning>
-  <warning id="3459" hidden="true" label="kUnsupportedProp_XMLDocument_contentType">Käytä sen sijaan ominaisuutta URLRequest.contentType.</warning>
-  <warning id="3460" hidden="true" label="kUnsupportedProp_XMLDocument_status">Tarkista XMLDocument-konstruktorin tai XMLDocument.parseXML-metodin palauttamat mahdolliset poikkeukset. Lisätietoja on kohteessa XMLDocument.</warning>
+  <warning id="3338" hidden="true" label="kUnsupportedProp_InteractiveObject__focusrect">Use the InteractiveObject.focusRect property instead.</warning>
+  <warning id="3339" hidden="true" label="kUnsupportedProp_InteractiveObject_menu">Use the InteractiveObject.contextMenu property instead.</warning>
+  <warning id="3340" hidden="true" label="kUnsupportedProp_KeyboardEvent_ascii">Use the KeyboardEvent.charCode property instead.</warning>
+  <warning id="3341" hidden="true" label="kUnsupportedProp_KeyboardEvent_code">Use the KeyboardEvent.keyCode property instead.</warning>
+  <warning id="3342" hidden="true" label="kUnsupportedProp_Loader_loaderInfo">Use the Loader.contentLoaderInfo property instead.</warning>
+  <warning id="3343" hidden="true" label="kUnsupportedProp_Loader_preload">This feature is no longer supported.</warning>
+  <warning id="3344" hidden="true" label="kUnsupportedProp_Loader_loadCached">This feature is no longer supported.</warning>
+  <warning id="3345" hidden="true" label="kUnsupportedProp_LoaderInfo_loaderUrl">Use the LoaderInfo.loaderURL property instead.</warning>
+  <warning id="3346" hidden="true" label="kUnsupportedMeth_LocalConnection_domain">Use the LocalConnection.domain property instead.</warning>
+  <warning id="3347" hidden="true" label="kUnsupportedProp_ContextMenuEvent_menuOwner">Use the MenuEvent.contextMenuOwner property instead.</warning>
+  <warning id="3348" hidden="true" label="kUnsupportedMeth_Microphone_get">Use the Microphone.getMicrophone() method instead.</warning>
+  <warning id="3349" hidden="true" label="kUnsupportedMeth_MovieClip_attachMovie">If the MovieClip subclass name is A use var mc= new A(); addChild(mc). For more information, see the DisplayObjectContainer class.</warning>
+  <warning id="3350" hidden="true" label="kUnsupportedMeth_MovieClip_createEmptyMovieClip">Use var mc= new MovieClip(); addChild(mc). For more information, see the DisplayObjectContainer class.</warning>
+  <warning id="3351" hidden="true" label="kUnsupportedMeth_MovieClip_createTextField">Use var tf= new TextField(); addChild(mc). For more information, see the DisplayObjectContainer class.</warning>
+  <warning id="3352" hidden="true" label="kUnsupportedMeth_MovieClip_removeMovieClip">Use Container.removeChild(childName). For more information, see the DisplayObjectContainer class.</warning>
+  <warning id="3353" hidden="true" label="kUnsupportedMeth_MovieClip_loadMovie">Use var l = new Loader(); addChild(l); l.load(new URLRequest("your url"));. For more information, see the Loader and DisplayObjectContainer classes.</warning>
+  <warning id="3354" hidden="true" label="kUnsupportedMeth_MovieClip_unloadMovie">Use DisplayObjectContainer.removeChild(childName) instead. For more information, see the DisplayObjectContainer class.</warning>
+  <warning id="3355" hidden="true" label="kUnsupportedMeth_MovieClip_unloadMovieNum">Use DisplayObjectContainer.removeChild(childName) instead. For more information, see the DisplayObjectContainer class.</warning>
+  <warning id="3356" hidden="true" label="kUnsupportedMeth_MovieClip_getDepth">Use DisplayObjectContainer.parent.getChildIndex instead. For more information, see the DisplayObjectContainer class, is extended by MovieClip.</warning>
+  <warning id="3357" hidden="true" label="kUnsupportedMeth_MovieClip_swapDepths">Use DisplayObjectContainer.parent.setChildIndex instead. For more information, see the DisplayObjectContainer class, which is extended by MovieClip.</warning>
+  <warning id="3358" hidden="true" label="kUnsupportedMeth_MovieClip_getInstanceAtDepth">Use DisplayObjectContainer.getChildAt instead. For more information, see the DisplayObjectContainer class, which is extended by MovieClip.</warning>
+  <warning id="3359" hidden="true" label="kUnsupportedMeth_MovieClip_getNextHighestDepth">Use DisplayObjectContainer.numChildren instead. DisplayObjectContainer.addChild always adds the new child to index DisplayObjectContainer.numChildren.</warning>
+  <warning id="3360" hidden="true" label="kUnsupportedMeth_MovieClip_attachAudio">For more information, see DisplayObject.addChild.</warning>
+  <warning id="3361" hidden="true" label="kUnsupportedMeth_MovieClip_getBytesLoaded">For more information, see LoaderInfo.bytesLoaded and the Loader class.</warning>
+  <warning id="3362" hidden="true" label="kUnsupportedMeth_MovieClip_getBytesTotal">For more information, see LoaderInfo.bytesTotal and the Loader class.</warning>
+  <warning id="3363" hidden="true" label="kUnsupportedMeth_MovieClip_getURL">For equivalent functionality, see flash.net.URLLoader.  The flash.net package also contains package-level functions navigateToURL() and sendToURL().</warning>
+  <warning id="3364" hidden="true" label="kUnsupportedProp_MovieClip_url">For more information, see LoaderInfo.url and the Loader class.</warning>
+  <warning id="3365" hidden="true" label="kUnsupportedProp_MovieClip__url">For more information, see LoaderInfo.url and the Loader class.</warning>
+  <warning id="3366" hidden="true" label="kUnsupportedMeth_MovieClip_setMask">Use the MovieClip.mask property instead.</warning>
+  <warning id="3367" hidden="true" label="kUnsupportedMeth_MovieClip_getSWFVersion">For more information, see LoaderInfo.swfVersion and the Loader class.</warning>
+  <warning id="3368" hidden="true" label="kUnsupportedProp_MovieClip__currentframe">Use the MovieClip.currentFrame property instead.</warning>
+  <warning id="3369" hidden="true" label="kUnsupportedProp_MovieClip__framesloaded">Use the MovieClip.framesLoaded property instead.</warning>
+  <warning id="3370" hidden="true" label="kUnsupportedProp_MovieClip__totalframes">Use the MovieClip.totalFrames property instead.</warning>
+  <warning id="3371" hidden="true" label="kUnsupportedProp_MovieClip_lockroot">For more information, see displayObjectInstance.root.</warning>
+  <warning id="3372" hidden="true" label="kUnsupportedProp_MovieClip__lockroot">For more information, see displayObjectInstance.root.</warning>
+  <warning id="3373" hidden="true" label="kUnsupportedProp_MovieClip__soundbuftime">Use the static propery flash.media.SoundMixer.bufferTime instead.</warning>
+  <warning id="3374" hidden="true" label="kUnsupportedMeth_MovieClip_clear">For more information, see the Graphics class.</warning>
+  <warning id="3375" hidden="true" label="kUnsupportedMeth_MovieClip_beginFill">For more information, see the Graphics class.</warning>
+  <warning id="3376" hidden="true" label="kUnsupportedMeth_MovieClip_beginGradientFill">For more information, see the Graphics class.</warning>
+  <warning id="3377" hidden="true" label="kUnsupportedMeth_MovieClip_lineGradientStyle">For more information, see the Graphics class.</warning>
+  <warning id="3378" hidden="true" label="kUnsupportedMeth_MovieClip_beginImageFill">For more information, see the Graphics class.</warning>
+  <warning id="3379" hidden="true" label="kUnsupportedMeth_MovieClip_lineStyle">For more information, see the Graphics class.</warning>
+  <warning id="3380" hidden="true" label="kUnsupportedMeth_MovieClip_drawRect">For more information, see the Graphics class.</warning>
+  <warning id="3381" hidden="true" label="kUnsupportedMeth_MovieClip_drawRoundRect">For more information, see the Graphics class.</warning>
+  <warning id="3382" hidden="true" label="kUnsupportedMeth_MovieClip_drawRoundRectComplex">For more information, see the Graphics class.</warning>
+  <warning id="3383" hidden="true" label="kUnsupportedMeth_MovieClip_drawCircle">For more information, see the Graphics class.</warning>
+  <warning id="3384" hidden="true" label="kUnsupportedMeth_MovieClip_moveTo">For more information, see the Graphics class.</warning>
+  <warning id="3385" hidden="true" label="kUnsupportedMeth_MovieClip_lineTo">For more information, see the Graphics class.</warning>
+  <warning id="3386" hidden="true" label="kUnsupportedMeth_MovieClip_curveTo">For more information, see the Graphics class.</warning>
+  <warning id="3387" hidden="true" label="kUnsupportedMeth_MovieClip_endFill">For more information, see the Graphics class.</warning>
+  <warning id="3388" hidden="true" label="kUnsupportedMeth_NetStream_setBufferTime">Use the NetStream.bufferTime property instead.</warning>
+  <warning id="3389" hidden="true" label="kUnsupportedProp_NetStream_currentFps">Use the NetStream.currentFPS property instead.</warning>
+  <warning id="3390" hidden="true" label="kUnsupportedProp_NetStream_videocodec">Use the NetStream.videoCodec property instead.</warning>
+  <warning id="3391" hidden="true" label="kUnsupportedProp_NetStream_audiocodec">Use the NetStream.audioCodec property instead.</warning>
+  <warning id="3392" hidden="true" label="kUnsupportedMeth_ProductManager_isIntalled">Use the ProductManager.isInstalled property instead.</warning>
+  <warning id="3393" hidden="true" label="kUnsupportedMeth_ProductManager_installedVersion">Use the ProductManager.installedVersion property instead.</warning>
+  <warning id="3394" hidden="true" label="kUnsupportedMeth_ProductManager_isRunning">Use the ProductManager.isRunning property instead.</warning>
+  <warning id="3395" hidden="true" label="kUnsupportedMeth_Point_addTo">Use the Point.add() method instead.</warning>
+  <warning id="3396" hidden="true" label="kUnsupportedProp_Proxy_delDescendants">Use the Proxy.deleteDescendants property instead.</warning>
+  <warning id="3397" hidden="true" label="kUnsupportedMeth_Profiler_heapdump">Use the heapDump() method instead.</warning>
+  <warning id="3398" hidden="true" label="kUnsupportedProp_ProgressEvent_current">Use the ProgressEvent.bytesLoaded property instead.</warning>
+  <warning id="3399" hidden="true" label="kUnsupportedProp_ProgressEvent_total">Use the ProgressEvent.bytesTotal property instead.</warning>
+  <warning id="3400" hidden="true" label="kUnsupportedMeth_Rectangle_isEmpty">Use the Rectangle.isEmpty property instead.</warning>  
+  <warning id="3401" hidden="true" label="kUnsupportedMeth_SoundTransform_setPan">Use the SoundTransform.pan property instead.</warning>
+  <warning id="3402" hidden="true" label="kUnsupportedMeth_Socket_available">Use the Sockect.bytesAvailable property instead.</warning>
+  <warning id="3403" hidden="true" label="kUnsupportedMeth_SharedObject_getSize">Use the SharedObject.size property instead.</warning>
+  <warning id="3404" hidden="true" label="kUnsupportedMeth_SharedObject_setFps">Use the SharedObject.fps property instead.</warning>
+  <warning id="3405" hidden="true" label="kUnsupportedMeth_Sprite_getSWF">This is no longer supported.</warning>
+  <warning id="3406" hidden="true" label="kUnsupportedMeth_Sprite_constructChild">Use the Sprite.constructChildren() method instead.</warning>
+  <warning id="3407" hidden="true" label="kUnsupportedProp_Sprite__droptarget">Use the Sprite.dropTarget property instead.</warning>
+  <warning id="3408" hidden="true" label="kUnsupportedMeth_Stage_getFocus">Use the Stage.focus property instead.</warning>
+  <warning id="3409" hidden="true" label="kUnsupportedMeth_Stage_setFocus">Use the Stage.focus property instead.</warning>
+  <warning id="3411" hidden="true" label="kUnsupportedProp_Stage_showMenu">Use the Stage.showDefaultContextMenu property instead.</warning>
+  <warning id="3412" hidden="true" label="kUnsupportedMeth_StyleSheet_getStyleNames">Use the StyleSheet.styleNames property instead.</warning>
+  <warning id="3413" hidden="true" label="kUnsupportedMeth_StyleSheet_onData">Use an instance of URLLoader to load the StyleSheet data, and then pass the loaders data to the StyleSheet.parseCSS method. For more information, see the URLLoader and EventDispatcher classes.</warning>
+  <warning id="3414" hidden="true" label="kUnsupportedMeth_StyleSheet_load">Use an instance of URLLoader to load the StyleSheet data, and then pass the loaders data to the StyleSheet.parseCSS method. For more information, see the URLLoader and EventDispatcher classes.</warning>
+  <warning id="3415" hidden="true" label="kUnsupportedProp_StyleSheet_loaded">Use an instance of URLLoader to load the StyleSheet data, and then pass the loaders data to the StyleSheet.parseCSS method. For more information, see the URLLoader and EventDispatcher classes.</warning>
+  <warning id="3416" hidden="true" label="kUnsupportedMeth_StyleSheet_getBytesLoaded">Use an instance of URLLoader to load the StyleSheet data, and then pass the loaders data to the StyleSheet.parseCSS method. For more information, see the URLLoader and EventDispatcher classes.</warning>
+  <warning id="3417" hidden="true" label="kUnsupportedMeth_StyleSheet_getBytesTotal">Use an instance of URLLoader to load the StyleSheet data, and then pass the loaders data to the StyleSheet.parseCSS method. For more information, see the URLLoader and EventDispatcher classes.</warning>
+  <warning id="3418" hidden="true" label="kUnsupportedMeth_IME_getEnabled">Use the IME.enabled property instead.</warning>
+  <warning id="3419" hidden="true" label="kUnsupportedMeth_IME_setEnabled">Use the IME.enabled property instead.</warning>
+  <warning id="3420" hidden="true" label="kUnsupportedMeth_IME_getInstance">Use the IME.instance property instead.</warning>
+  <warning id="3421" hidden="true" label="kUnsupportedMeth_IME_getConversionMode">Use the IME.conversionMode property instead.</warning>
+  <warning id="3422" hidden="true" label="kUnsupportedMeth_IME_setConversionMode">Use the IME.conversionMode property instead.</warning>
+  <warning id="3423" hidden="true" label="kUnsupportedProp_System_getAvmplusVersion">Use the System.vmVersion property instead.</warning>
+  <warning id="3424" hidden="true" label="kUnsupportedProp_SWFLoaderInfo_SWFVersion">Use the SWFLoaderInfo.swfVersion property instead.</warning>
+  <warning id="3425" hidden="true" label="kUnsupportedProp_SWFLoaderInfo_ASVersion">Use the SWFLoaderInfo.actionScriptVersion property instead.</warning>
+  <warning id="3426" hidden="true" label="kUnsupportedMeth_TextField_getNewTextFormat">Use the TextField.defaultTextFormat property instead.</warning>
+  <warning id="3427" hidden="true" label="kUnsupportedMeth_TextField_setNewTextFormat">Use the TextField.defaultTextFormat property instead.</warning>
+  <warning id="3428" hidden="true" label="kUnsupportedMeth_TextField_getDepth">Use DisplayObjectContainer.parent.getChildIndex instead. For more information, see the DisplayObjectContainer class, which MovieClip extends.</warning>
+  <warning id="3429" hidden="true" label="kUnsupportedMeth_TextField_swapDepths">Use DisplayObjectContainer.parent.setChildIndex instead. For more information, see the DisplayObjectContainer class, which MovieClip extends.</warning>
+  <warning id="3430" hidden="true" label="kUnsupportedMeth_TextField_getInstanceAtDepth">Use DisplayObjectContainer.getChildAt instead. For more information, see the DisplayObjectContainer class, which MovieClip extends.</warning>
+  <warning id="3431" hidden="true" label="kUnsupportedMeth_TextField_getNextHighestDepth">Use DisplayObjectContainer.numChildren instead.  DisplayObjectContainer.addChild always adds the new child to index DisplayObjectContainer.numChildren.</warning>
+  <warning id="3432" hidden="true" label="kUnsupportedMeth_TextField_replaceSel">Use the TextField.replaceSelectedText() method instead.</warning>
+  <warning id="3433" hidden="true" label="kUnsupportedMeth_TextField_getLineIndexOfCharacter">Use the TextField.getLineIndexOfChar() method instead.</warning>
+  <warning id="3434" hidden="true" label="kUnsupportedMeth_TextField_getSelectionBeginIndex">Use the TextField.selectionBeginIndex property instead.</warning>
+  <warning id="3435" hidden="true" label="kUnsupportedMeth_TextField_getSelectionEndIndex">Use the TextField.selectionEndIndex property instead.</warning>
+  <warning id="3436" hidden="true" label="kUnsupportedMeth_TextField_getCaretIndex">Use the TextField.caretIndex property instead.</warning>
+  <warning id="3437" hidden="true" label="kUnsupportedMeth_TextField_getFontList">Use the Font.enumerateFonts() method instead.</warning>
+  <warning id="3438" hidden="true" label="kUnsupportedProp_TextField_maxscroll">Use the TextField.maxScrollV property instead.</warning>
+  <warning id="3439" hidden="true" label="kUnsupportedProp_TextField_hscroll">Use the TextField.scrollH property instead.</warning>
+  <warning id="3440" hidden="true" label="kUnsupportedProp_TextField_maxhscroll">Use the TextField.maxScrollH property instead.</warning>
+  <warning id="3441" hidden="true" label="kUnsupportedProp_TextField_newTextFormat">Use the TextField.defaultTextFormat property instead.</warning>
+  <warning id="3442" hidden="true" label="kUnsupportedMeth_TextFormat_getTextExtent">Create a temporary TextField and use TextField.getLineMetrics instead.</warning>
+  <warning id="3443" hidden="true" label="kUnsupportedMeth_TextSnapshot_getCount">Use the TextSnapshot.charCount property instead.</warning>
+  <warning id="3444" hidden="true" label="kUnsupportedProp_URLLoader_navigate">Use the navigateToURL() method in the flash.net package instead.</warning>
+  <warning id="3445" hidden="true" label="kUnsupportedMeth_URLLoader_send">Use the sendToURL() method in the flash.net package instead.</warning>
+  <warning id="3446" hidden="true" label="kUnsupportedProp_URLLoader_binary">Use the URLLoader.dataFormat property instead.</warning>
+  <warning id="3447" hidden="true" label="kUnsupportedMeth_URLStream_available">Use the URLStream.bytesAvailable property instead.</warning>
+  <warning id="3448" hidden="true" label="kUnsupportedProp_URLRequest_digest">This property is no longer supported.</warning>
+  <warning id="3449" hidden="true" label="kUnsupportedProp_URLRequest_importToSandbox">Use the URLRequest.applicationDomain property instead.</warning>
+  <warning id="3450" hidden="true" label="kUnsupportedMeth_URLRequest_addRequestHeader">To add request headers, set the URLRequest.requestHeaders property to an array of URLRequestHeader objects.</warning>
+  <warning id="3451" hidden="true" label="kUnsupportedMeth_XMLDocument_load">Use an instance of URLLoader to load the XML file, then pass the URLLoaders data to the XMLDocuments constructor. For more information, see the URLLoader and EventDispatcher classes.</warning>
+  <warning id="3452" hidden="true" label="kUnsupportedMeth_XMLDocument_send">Use the sendToURL() method in the flash.net package instead.</warning>
+  <warning id="3453" hidden="true" label="kUnsupportedMeth_XMLDocument_sendAndLoad">Set a URLRequest object postData property and use it with a URLLoader object to load the XML file.  Pass the URLLoaders data to the XMLDocuments constructor. For more information, see the URLLoader, URLRequest and EventDispatcher classes.</warning>
+  <warning id="3454" hidden="true" label="kUnsupportedMeth_XMLDocument_onData">Use an instance of URLLoader to load the XML file, then pass the URLLoaders data to the XMLDocuments constructor. For more information, see the URLLoader and EventDispatcher classes.</warning>
+  <warning id="3455" hidden="true" label="kUnsupportedMeth_XMLDocument_addRequestHeader">To add request headers, set the URLRequest.requestHeaders property to an array of URLRequestHeader objects.</warning>
+  <warning id="3456" hidden="true" label="kUnsupportedMeth_XMLDocument_getBytesLoaded">For more information, see URLLoader.bytesLoaded and the URLLoader class.</warning>
+  <warning id="3457" hidden="true" label="kUnsupportedMeth_XMLDocument_getBytesTotal">For more information, see URLLoader.bytesTotal and the URLLoader class.</warning>
+  <warning id="3458" hidden="true" label="kUnsupportedProp_XMLDocument_loaded">Use an instance of URLLoader to load the XML file, then pass the loaders data to the StyleSheet.parseCSS method. For more information, see the URLLoader and EventDispatcher classes.</warning>
+  <warning id="3459" hidden="true" label="kUnsupportedProp_XMLDocument_contentType">Use the URLRequest.contentType property instead.</warning>
+  <warning id="3460" hidden="true" label="kUnsupportedProp_XMLDocument_status">Check for the possible exceptions thrown by the XMLDocument constructor or the XMLDocument.parseXML method instead. For more information, see XMLDocument.</warning>
 
   <!-- renamed types could be detected with a prop access ala "Keyboard.DELETE" or as a function ala "a = Image(b)".  The following kUnsupportedProp_ strings are duplicated below for catching the kUnsupportedMeth_ cases -->
-  <warning id="3461" hidden="true" label="kUnsupportedProp_Button">Button-luokka on saanut uuden nimen SimpleButton.</warning>
-  <warning id="3462" hidden="true" label="kUnsupportedProp_Container">Container-luokka on saanut uuden nimen DisplayObjectContainer.</warning>
-  <warning id="3463" hidden="true" label="kUnsupportedProp_Image">Image-luokka on saanut uuden nimen BitmapData.</warning>
-  <warning id="3464" hidden="true" label="kUnsupportedProp_ImageFilter">ImageFilter-luokka on saanut uuden nimen BitmapFilter.</warning>
-  <warning id="3465" hidden="true" label="kUnsupportedProp_ImageSprite">ImageSprite-luokka on saanut uuden nimen Bitmap.</warning>
-  <warning id="3466" hidden="true" label="kUnsupportedProp_ImageLoaderInfo">ImageLoaderInfo-luokka on saanut uuden nimen BitmapLoaderInfo.</warning>
-  <warning id="3467" hidden="true" label="kUnsupportedProp_ImeEvent">ImeEvent-luokka on saanut uuden nimen IMEEvent.</warning>
-  <warning id="3468" hidden="true" label="kUnsupportedProp_Key">Key-luokka on saanut uuden nimen Keyboard.</warning>
-  <warning id="3469" hidden="true" label="kUnsupportedProp_LineMetrics">LineMetrics-luokka on saanut uuden nimen TextLineMetrics.</warning>
-  <warning id="3470" hidden="true" label="kUnsupportedProp_LoadVars">Lisätietoja on URLVariables-luokassa sekä ominaisuuksissa URLRequest.urlVariables, URLRequest.postData ja URLLoader.dataFormat.</warning>
-  <warning id="3471" hidden="true" label="kUnsupportedProp_MenuEvent">MenuEvent-luokka on saanut uuden nimen ContextMenuEvent.</warning>
-  <warning id="3472" hidden="true" label="kUnsupportedProp_SystemCapabilities">SystemCapabilities-luokka on saanut uuden nimen Capabilities.</warning>
-  <warning id="3473" hidden="true" label="kUnsupportedProp_TextExtents">Käytä sen sijaan ominaisuutta TextField.getLineMetrics.</warning>
+  <warning id="3461" hidden="true" label="kUnsupportedProp_Button">The Button class has been renamed SimpleButton.</warning>
+  <warning id="3462" hidden="true" label="kUnsupportedProp_Container">The Container class has been renamed DisplayObjectContainer.</warning>
+  <warning id="3463" hidden="true" label="kUnsupportedProp_Image">The Image class has been renamed BitmapData.</warning>
+  <warning id="3464" hidden="true" label="kUnsupportedProp_ImageFilter">The ImageFilter class has been renamed BitmapFilter.</warning>
+  <warning id="3465" hidden="true" label="kUnsupportedProp_ImageSprite">The ImageSprite class has been renamed Bitmap.</warning>
+  <warning id="3466" hidden="true" label="kUnsupportedProp_ImageLoaderInfo">The ImageLoaderInfo class has been renamed BitmapLoaderInfo.</warning>
+  <warning id="3467" hidden="true" label="kUnsupportedProp_ImeEvent">The ImeEvent class has been renamed IMEEvent.</warning>
+  <warning id="3468" hidden="true" label="kUnsupportedProp_Key">The Key class has been renamed Keyboard.</warning>
+  <warning id="3469" hidden="true" label="kUnsupportedProp_LineMetrics">The LineMetrics class has been renamed TextLineMetrics.</warning>
+  <warning id="3470" hidden="true" label="kUnsupportedProp_LoadVars">For more information, see the URLVariables class, the URLRequest.urlVariables and URLRequest.postData properties, and the URLLoader.dataFormat property.</warning>
+  <warning id="3471" hidden="true" label="kUnsupportedProp_MenuEvent">The MenuEvent class has been renamed ContextMenuEvent.</warning>
+  <warning id="3472" hidden="true" label="kUnsupportedProp_SystemCapabilities">The SystemCapabilities class has been renamed Capabilities.</warning>
+  <warning id="3473" hidden="true" label="kUnsupportedProp_TextExtents">Use the TextField.getLineMetrics property instead.</warning>
 
-  <warning id="3475" hidden="true" label="kUnsupportedMeth_Button">Button-luokka on saanut uuden nimen SimpleButton.</warning>
-  <warning id="3476" hidden="true" label="kUnsupportedMeth_Container">Container-luokka on saanut uuden nimen DisplayObjectContainer.</warning>
-  <warning id="3477" hidden="true" label="kUnsupportedMeth_Image">Image-luokka on saanut uuden nimen BitmapData.</warning>
-  <warning id="3478" hidden="true" label="kUnsupportedMeth_ImageFilter">ImageFilter-luokka on saanut uuden nimen BitmapFilter.</warning>
-  <warning id="3479" hidden="true" label="kUnsupportedMeth_ImageSprite">ImageSprite-luokka on saanut uuden nimen Bitmap.</warning>
-  <warning id="3480" hidden="true" label="kUnsupportedMeth_ImageLoaderInfo">ImageLoaderInfo-luokka on saanut uuden nimen BitmapLoaderInfo.</warning>
-  <warning id="3481" hidden="true" label="kUnsupportedMeth_ImeEvent">ImeEvent-luokka on saanut uuden nimen IMEEvent.</warning>
-  <warning id="3482" hidden="true" label="kUnsupportedMeth_Key">Key-luokka on saanut uuden nimen Keyboard.</warning>
-  <warning id="3483" hidden="true" label="kUnsupportedMeth_LineMetrics">LineMetrics-luokka on saanut uuden nimen TextLineMetrics.</warning>
-  <warning id="3484" hidden="true" label="kUnsupportedMeth_LoadVars">Lisätietoja on URLVariables-luokassa sekä ominaisuuksissa URLRequest.urlVariables, URLRequest.postData ja URLLoader.dataFormat.</warning>
-  <warning id="3485" hidden="true" label="kUnsupportedMeth_MenuEvent">MenuEvent-luokka on saanut uuden nimen ContextMenuEvent.</warning>
-  <warning id="3486" hidden="true" label="kUnsupportedMeth_SystemCapabilities">SystemCapabilities-luokka on saanut uuden nimen Capabilities.</warning>
-  <warning id="3487" hidden="true" label="kUnsupportedMeth_TextExtents">Käytä sen sijaan ominaisuutta TextField.getLineMetrics.</warning>
-  <warning id="3488" hidden="true" label="kUnsupportedProp_Object___resolve ">Lisätietoja on Proxy-luokan ohjeessa. Tässä luokassa on vastaavia toimintoja.</warning>
-  <warning id="3489" hidden="true" label="kUnsupportedMeth_XMLUI_get">Käytä sen sijaan metodia XMLUI.getProperty.</warning>
-  <warning id="3490" hidden="true" label="kUnsupportedMeth_XMLUI_set">Käytä sen sijaan metodia XMLUI.setProperty.</warning>
-  <warning id="3491" hidden="true" label="kUnsupportedProp_DisplayObject_accProps">Käytä sen sijaan ominaisuutta DisplayObject.accessibilityProperties.</warning>
-  <warning id="3492" hidden="true" label="kUnsupportedMeth_DisplayObject_setScalingGrid">Käytä sen sijaan ominaisuutta DisplayObject.scale9Grid.</warning>
-  <warning id="3493" hidden="true" label="kUnsupportedMeth_Graphics_drawCircle">Käytä sen sijaan metodia Graphics.drawOval.</warning>
-  <warning id="3494" hidden="true" label="kUnsupportedProp_NetConnection_isConnected">Käytä sen sijaan ominaisuutta NetConnection.connected.</warning>
-  <warning id="3495" hidden="true" label="kUnsupportedProp_Socket_isConnected">Käytä sen sijaan ominaisuutta Socket.connected.</warning>
-  <warning id="3496" hidden="true" label="kUnsupportedProp_URLStream_isConnected">Käytä sen sijaan ominaisuutta URLStream.connected.</warning>
-  <warning id="3497" hidden="true" label="kUnsupportedProp_SyncEvent_list">Käytä sen sijaan ominaisuutta SyncEvent.changeList.</warning>
-  <warning id="3498" hidden="true" label="kUnsupportedProp_TextField_scroll">Käytä sen sijaan ominaisuutta TextField.scrollV.</warning>
-  <warning id="3499" hidden="true" label="kUnsupportedProp_TextField_bottomScroll">Käytä sen sijaan ominaisuutta TextField.bottomScrollV.</warning>
-  <warning id="3500" hidden="true" label="kUnsupportedProp_BitmapData_RED_CHANNEL">Käytä sen sijaan vakiota BitmapDataChannel.RED.</warning>
-  <warning id="3501" hidden="true" label="kUnsupportedProp_BitmapData_GREEN_CHANNEL">Käytä sen sijaan vakiota BitmapDataChannel.GREEN.</warning>
-  <warning id="3502" hidden="true" label="kUnsupportedProp_BitmapData_BLUE_CHANNEL">Käytä sen sijaan vakiota BitmapDataChannel.BLUE.</warning>
-  <warning id="3503" hidden="true" label="kUnsupportedProp_BitmapData_ALPHA_CHANNEL">Käytä sen sijaan vakiota BitmapDataChannel.ALPHA.</warning>
-  <warning id="3504" hidden="true" label="kUnsupportedMeth_instanceof">Käytä sen sijaan is-operaattoria.</warning>
+  <warning id="3475" hidden="true" label="kUnsupportedMeth_Button">The Button class has been renamed SimpleButton.</warning>
+  <warning id="3476" hidden="true" label="kUnsupportedMeth_Container">The Container class has been renamed DisplayObjectContainer.</warning>
+  <warning id="3477" hidden="true" label="kUnsupportedMeth_Image">The Image class has been renamed BitmapData.</warning>
+  <warning id="3478" hidden="true" label="kUnsupportedMeth_ImageFilter">The ImageFilter class has been renamed BitmapFilter.</warning>
+  <warning id="3479" hidden="true" label="kUnsupportedMeth_ImageSprite">The ImageSprite class has been renamed Bitmap.</warning>
+  <warning id="3480" hidden="true" label="kUnsupportedMeth_ImageLoaderInfo">The ImageLoaderInfo class has been renamed BitmapLoaderInfo.</warning>
+  <warning id="3481" hidden="true" label="kUnsupportedMeth_ImeEvent">The ImeEvent class has been renamed IMEEvent.</warning>
+  <warning id="3482" hidden="true" label="kUnsupportedMeth_Key">The Key class has been renamed Keyboard.</warning>
+  <warning id="3483" hidden="true" label="kUnsupportedMeth_LineMetrics">The LineMetrics class has been renamed TextLineMetrics.</warning>
+  <warning id="3484" hidden="true" label="kUnsupportedMeth_LoadVars">For more information, see the URLVariables class, the URLRequest.urlVariables and URLRequest.postData properties, and the URLLoader.dataFormat property.</warning>
+  <warning id="3485" hidden="true" label="kUnsupportedMeth_MenuEvent">The MenuEvent class has been renamed ContextMenuEvent.</warning>
+  <warning id="3486" hidden="true" label="kUnsupportedMeth_SystemCapabilities">The SystemCapabilities class has been renamed Capabilities.</warning>
+  <warning id="3487" hidden="true" label="kUnsupportedMeth_TextExtents">Use the TextField.getLineMetrics property instead.</warning>
+  <warning id="3488" hidden="true" label="kUnsupportedProp_Object___resolve ">For more information, see help for the Proxy class, which offers similar functionality.</warning>
+  <warning id="3489" hidden="true" label="kUnsupportedMeth_XMLUI_get">Use the XMLUI.getProperty method instead.</warning>
+  <warning id="3490" hidden="true" label="kUnsupportedMeth_XMLUI_set">Use the XMLUI.setProperty method instead.</warning>
+  <warning id="3491" hidden="true" label="kUnsupportedProp_DisplayObject_accProps">Use the DisplayObject.accessibilityProperties property instead.</warning>
+  <warning id="3492" hidden="true" label="kUnsupportedMeth_DisplayObject_setScalingGrid">Use the DisplayObject.scale9Grid property instead.</warning>
+  <warning id="3493" hidden="true" label="kUnsupportedMeth_Graphics_drawCircle">Use the Graphics.drawOval method instead.</warning>
+  <warning id="3494" hidden="true" label="kUnsupportedProp_NetConnection_isConnected">Use the NetConnection.connected property instead.</warning>
+  <warning id="3495" hidden="true" label="kUnsupportedProp_Socket_isConnected">Use the Socket.connected property instead.</warning>
+  <warning id="3496" hidden="true" label="kUnsupportedProp_URLStream_isConnected">Use the URLStream.connected property instead.</warning>
+  <warning id="3497" hidden="true" label="kUnsupportedProp_SyncEvent_list">Use the SyncEvent.changeList property instead.</warning>
+  <warning id="3498" hidden="true" label="kUnsupportedProp_TextField_scroll">Use the TextField.scrollV property instead.</warning>
+  <warning id="3499" hidden="true" label="kUnsupportedProp_TextField_bottomScroll">Use the TextField.bottomScrollV property instead.</warning>
+  <warning id="3500" hidden="true" label="kUnsupportedProp_BitmapData_RED_CHANNEL">Use the BitmapDataChannel.RED constant instead.</warning>
+  <warning id="3501" hidden="true" label="kUnsupportedProp_BitmapData_GREEN_CHANNEL">Use the BitmapDataChannel.GREEN constant instead.</warning>
+  <warning id="3502" hidden="true" label="kUnsupportedProp_BitmapData_BLUE_CHANNEL">Use the BitmapDataChannel.BLUE constant instead.</warning>
+  <warning id="3503" hidden="true" label="kUnsupportedProp_BitmapData_ALPHA_CHANNEL">Use the BitmapDataChannel.ALPHA constant instead.</warning>
+  <warning id="3504" hidden="true" label="kUnsupportedMeth_instanceof">Use the is operator instead.</warning>
 
-  <warning id="3505" hidden="true" label="kUnsupportedMeth_System_showSettings">Käytä sen sijaan metodia flash.system.Security.showSettings.</warning>
-  <warning id="3506" hidden="true" label="kUnsupportedProp_System_useCodepage">Käytä sen sijaan ominaisuutta System.useCodePage.</warning>
-  <warning id="3507" hidden="true" label="kUnsupportedProp_AsBroadcaster">Käytä sen sijaan luokkaa flash.events.EventDispatcher.</warning>
-  <warning id="3508" hidden="true" label="kUnsupportedProp_SimpleButton_Soundbuftime">Käytä sen sijaan staattista ominaisuutta flash.media.SoundMixer.bufferTime.</warning>
-  <warning id="3509" hidden="true" label="kUnsupportedMeth_BitmapData_loadBitmap">Luo uusi esiintymä bittikarttakirjaston symboliluokasta, esim. uusi myBitmapName().</warning>
-  <warning id="3510" hidden="true" label="kUnsupportedMeth_MovieClip_loadVariables">Lisätietoja on kohteessa Loader.load().</warning>
-  <warning id="3511" hidden="true" label="kUnsupportedProp_MovieClipLoader">MovieClipLoader-luokan on korvannut flash.display.Loader-luokka.</warning>
-  <warning id="3512" hidden="true" label="kUnsupportedMeth_MovieClipLoader">MovieClipLoader-luokan on korvannut flash.display.Loader-luokka.</warning>
+  <warning id="3505" hidden="true" label="kUnsupportedMeth_System_showSettings">Use the flash.system.Security.showSettings method instead.</warning>
+  <warning id="3506" hidden="true" label="kUnsupportedProp_System_useCodepage">Use the System.useCodePage property instead.</warning>
+  <warning id="3507" hidden="true" label="kUnsupportedProp_AsBroadcaster">Use the flash.events.EventDispatcher class instead.</warning>
+  <warning id="3508" hidden="true" label="kUnsupportedProp_SimpleButton_Soundbuftime">Use the static propery flash.media.SoundMixer.bufferTime instead.</warning>
+  <warning id="3509" hidden="true" label="kUnsupportedMeth_BitmapData_loadBitmap">Create a new instance of the bitmap library symbol class, i.e. new myBitmapName(), instead.</warning>
+  <warning id="3510" hidden="true" label="kUnsupportedMeth_MovieClip_loadVariables">For more information, see Loader.load().</warning>
+  <warning id="3511" hidden="true" label="kUnsupportedProp_MovieClipLoader">The MovieClipLoader class has been replaced by the flash.display.Loader class.</warning>
+  <warning id="3512" hidden="true" label="kUnsupportedMeth_MovieClipLoader">The MovieClipLoader class has been replaced by the flash.display.Loader class.</warning>
 
-  <warning id="3513" hidden="true" label="kUnsupportedMeth_IME_addListener">Lisätietoja on kohteessa addEventListener (eventName, kuuntelija, useCapture, prioriteetti).</warning>
-  <warning id="3514" hidden="true" label="kUnsupportedMeth_IME_removeListener">Lisätietoja on kohteessa removeEventListener (eventName, kuuntelija, useCapture).</warning>
-  <warning id="3515" hidden="true" label="kUnsupportedProp_IME_ALPHANUMERIC_FULL">Käytä sen sijaan vakiota flash.system.IMEConversionMode.ALPHANUMERIC_FULL.</warning>
-  <warning id="3516" hidden="true" label="kUnsupportedProp_IME_ALPHANUMERIC_HALF">Käytä sen sijaan vakiota flash.system.IMEConversionMode.ALPHANUMERIC_HALF.</warning>
-  <warning id="3517" hidden="true" label="kUnsupportedProp_IME_CHINESE">Käytä sen sijaan vakiota flash.system.IMEConversionMode.CHINESE.</warning>
-  <warning id="3518" hidden="true" label="kUnsupportedProp_IME_JAPANESE_HIRAGANA">Käytä sen sijaan vakiota flash.system.IMEConversionMode.JAPANESE_HIRAGANA.</warning>
-  <warning id="3519" hidden="true" label="kUnsupportedProp_IME_JAPANESE_KATAKANA_FULL">Käytä sen sijaan vakiota flash.system.IMEConversionMode.JAPANESE_KATAKANA_FULL.</warning>
-  <warning id="3520" hidden="true" label="kUnsupportedProp_IME_JAPANESE_KATAKANA_HALF">Käytä sen sijaan vakiota flash.system.IMEConversionMode.JAPANESE_KATAKANA_HALF.</warning>
-  <warning id="3521" hidden="true" label="kUnsupportedProp_IME_KOREAN">Käytä sen sijaan vakiota flash.system.IMEConversionMode.KOREAN.</warning>
-  <warning id="3522" hidden="true" label="kUnsupportedProp_IME_UNKNOWN">Käytä sen sijaan vakiota flash.system.IMEConversionMode.UNKNOWN.</warning>
-  <warning id="3523" hidden="true" label="kUnsupportedMeth_FileReferenceList_addListener">Lisätietoja on kohteessa addEventListener (eventName, kuuntelija, useCapture, prioriteetti).</warning>
-  <warning id="3524" hidden="true" label="kUnsupportedMeth_FileReferenceList_removeListener">Lisätietoja on kohteessa removeEventListener (eventName, kuuntelija, useCapture).</warning>
-  <warning id="3527" hidden="true" label="kWarning_Event_onCancel">Flash Player ei laukaise onCancel-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener (cancel, onCancel).</warning>
-  <warning id="3528" hidden="true" label="kUnsupportedProp_Keyboard__listeners">Suoraa korviketta ei ole. Metodia willTrigger() voidaan käyttää kertomaan, onko kuuntelijoita rekisteröity.</warning>
-  <warning id="3529" hidden="true" label="kWarning_Event_onIMEComposition">Flash Player ei laukaise onIMEComposition-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener (imeComposition, handlerName).</warning>
-  <warning id="3530" hidden="true" label="kUnsupportedProp_SimpleButton__url">Lisätietoja on kohteessa LoaderInfo.url sekä Loader-luokassa.</warning>
-  <warning id="3531" hidden="true" label="kUnsupportedMeth_Date_getYear">Käytä sen sijaan metodia getFullYear().</warning>
-  <warning id="3532" hidden="true" label="kUnsupportedMeth_Date_setYear">Käytä sen sijaan metodia setFullYear().</warning>
-  <warning id="3533" hidden="true" label="kUnsupportedMeth_Date_getUTCYear">Käytä sen sijaan metodia getUTCFullYear().</warning>
-  <warning id="3534" hidden="true" label="kUnsupportedMeth_Microphone_setRate">Käytä sen sijaan rate-ominaisuutta.</warning>
-  <warning id="3535" hidden="true" label="kUnsupportedProp_Selection">Selection-luokka on poistettu. Lisätietoja on sen luokan addEventListener-metodissa, jonka valintatiedot haluat nähdä.</warning>
-  <warning id="3536" hidden="true" label="kUnsupportedMeth_Selection">Selection-luokka on poistettu. Lisätietoja on sen luokan addEventListener-metodissa, jonka valintatiedot haluat nähdä.</warning>
-  <warning id="3537" hidden="true" label="kUnsupportedMeth_Microphone_setGain">Käytä sen sijaan gain-ominaisuutta.</warning>
-  <warning id="3538" hidden="true" label="kUnsupportedMeth_ColorTransform_getTransform">Väriarvot voidaan määrittää suoraan käyttämällä ColorTransform-luokan konstruktoria tai ominaisuuksia.</warning>
-  <warning id="3539" hidden="true" label="kUnsupportedMeth_ColorTransform_setTransform">Väriarvot voidaan määrittää suoraan käyttämällä ColorTransform-luokan konstruktoria tai ominaisuuksia.</warning>
-  <warning id="3540" hidden="true" label="kUnsupportedProp_MovieClip_focusEnabled">Katso ohjeesta flash.display.InteractiveObject-luokan kohdistukseen liittyvät ominaisuudet.</warning>
-  <warning id="3541" hidden="true" label="kUnsupportedMeth_MovieClip_beginBitmapFill">Katso flash.display.Graphics.beginBitmapFill-metodi ohjeesta.</warning>
-  <warning id="3542" hidden="true" label="kUnsupportedMeth_MovieClip_hitTest">Katso flash.display.DisplayObject.hitTestObject()-metodi ohjeesta.</warning>
-  <warning id="3543" hidden="true" label="kUnsupportedMeth_MovieClip_attachBitmap">Katso addChild()-metodi ohjeesta.</warning>
-  <warning id="3544" hidden="true" label="kUnsupportedMeth_Sound_loadSound">Käytä sen sijaan load()-metodia.</warning>
-  <warning id="3545" hidden="true" label="kUnsupportedMeth_Sound_getVolume">Käytä kohteita flash.media.SoundChannel.leftPeak ja flash.media.SoundChannel.rightPeak äänikanavan amplitudin valvontaan ja hallintaan.</warning>
-  <warning id="3546" hidden="true" label="kUnsupportedMeth_Sound_getTransform">Käytä sen sijaan soundTransform-ominaisuutta.</warning>
-  <warning id="3547" hidden="true" label="kUnsupportedMeth_Sound_getPan">Käytä sen sijaan ominaisuutta SoundTransform.pan.</warning>
-  <warning id="3548" hidden="true" label="kUnsupportedMeth_Sound_setPan">Käytä sen sijaan ominaisuutta SoundTransform.pan.</warning>
-  <warning id="3549" hidden="true" label="kUnsupportedMeth_Sound_getBytesLoaded">Käytä sen sijaan bytesLoaded-ominaisuutta.</warning>
-  <warning id="3550" hidden="true" label="kUnsupportedMeth_Sound_getBytesTotal">Käytä sen sijaan bytesTotal-ominaisuutta.</warning>
-  <warning id="3551" hidden="true" label="kWarning_SlowTextFieldAddition">Tehoton argumentin += käyttö TextField-kohteessa.</warning>
-  <warning id="3552" label="kWarning_SlowTextFieldAddition_specific">Tekstin lisääminen TextField-kenttään argumentilla += on monin kerroin hitaampaa kuin metodilla TextField.appendText().
+  <warning id="3513" hidden="true" label="kUnsupportedMeth_IME_addListener">For more information, see addEventListener(eventName, listener, useCapture, priority ).</warning>
+  <warning id="3514" hidden="true" label="kUnsupportedMeth_IME_removeListener">For more information, see removeEventListener(eventName, listener, useCapture).</warning>
+  <warning id="3515" hidden="true" label="kUnsupportedProp_IME_ALPHANUMERIC_FULL">Use the flash.system.IMEConversionMode.ALPHANUMERIC_FULL constant instead.</warning>
+  <warning id="3516" hidden="true" label="kUnsupportedProp_IME_ALPHANUMERIC_HALF">Use the flash.system.IMEConversionMode.ALPHANUMERIC_HALF constant instead.</warning>
+  <warning id="3517" hidden="true" label="kUnsupportedProp_IME_CHINESE">Use the flash.system.IMEConversionMode.CHINESE constant instead.</warning>
+  <warning id="3518" hidden="true" label="kUnsupportedProp_IME_JAPANESE_HIRAGANA">Use the flash.system.IMEConversionMode.JAPANESE_HIRAGANA constant instead.</warning>
+  <warning id="3519" hidden="true" label="kUnsupportedProp_IME_JAPANESE_KATAKANA_FULL">Use the flash.system.IMEConversionMode.JAPANESE_KATAKANA_FULL constant instead.</warning>
+  <warning id="3520" hidden="true" label="kUnsupportedProp_IME_JAPANESE_KATAKANA_HALF">Use the flash.system.IMEConversionMode.JAPANESE_KATAKANA_HALF constant instead.</warning>
+  <warning id="3521" hidden="true" label="kUnsupportedProp_IME_KOREAN">Use the flash.system.IMEConversionMode.KOREAN constant instead.</warning>
+  <warning id="3522" hidden="true" label="kUnsupportedProp_IME_UNKNOWN">Use the flash.system.IMEConversionMode.UNKNOWN constant instead.</warning>
+  <warning id="3523" hidden="true" label="kUnsupportedMeth_FileReferenceList_addListener">For more information, see addEventListener ( eventName, listener, useCapture, priority ).</warning>
+  <warning id="3524" hidden="true" label="kUnsupportedMeth_FileReferenceList_removeListener">For more information, see removeEventListener ( eventName, listener, useCapture).</warning>
+  <warning id="3527" hidden="true" label="kWarning_Event_onCancel">The onCancel event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( cancel, onCancel).</warning>
+  <warning id="3528" hidden="true" label="kUnsupportedProp_Keyboard__listeners">There is no direct replacement. The willTrigger() method can be used to tell if any listeners have been registered.</warning>
+  <warning id="3529" hidden="true" label="kWarning_Event_onIMEComposition">The onIMEComposition event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ( imeComposition, handlerName).</warning>
+  <warning id="3530" hidden="true" label="kUnsupportedProp_SimpleButton__url">For more information, see LoaderInfo.url and the Loader class.</warning>
+  <warning id="3531" hidden="true" label="kUnsupportedMeth_Date_getYear">Use the getFullYear() method instead.</warning>
+  <warning id="3532" hidden="true" label="kUnsupportedMeth_Date_setYear">Use the setFullYear() method instead.</warning>
+  <warning id="3533" hidden="true" label="kUnsupportedMeth_Date_getUTCYear">Use the getUTCFullYear() method instead.</warning>
+  <warning id="3534" hidden="true" label="kUnsupportedMeth_Microphone_setRate">Use the rate property instead.</warning>
+  <warning id="3535" hidden="true" label="kUnsupportedProp_Selection">The Selection class has been removed. For more information, see the addEventListener method of the class you want selection information from.</warning>
+  <warning id="3536" hidden="true" label="kUnsupportedMeth_Selection">The Selection class has been removed. For more information, see the addEventListener method of the class you want selection information from.</warning>
+  <warning id="3537" hidden="true" label="kUnsupportedMeth_Microphone_setGain">Use the gain property instead.</warning>
+  <warning id="3538" hidden="true" label="kUnsupportedMeth_ColorTransform_getTransform">Color values can be assigned directly using the ColorTransform class constructor or properties.</warning>
+  <warning id="3539" hidden="true" label="kUnsupportedMeth_ColorTransform_setTransform">Color values can be assigned directly using the ColorTransform class constructor or properties.</warning>
+  <warning id="3540" hidden="true" label="kUnsupportedProp_MovieClip_focusEnabled">See help for the focus related properties of the flash.display.InteractiveObject class.</warning>
+  <warning id="3541" hidden="true" label="kUnsupportedMeth_MovieClip_beginBitmapFill">See help for the flash.display.Graphics.beginBitmapFill method.</warning>
+  <warning id="3542" hidden="true" label="kUnsupportedMeth_MovieClip_hitTest">See help for the flash.display.DisplayObject.hitTestObject() method.</warning>
+  <warning id="3543" hidden="true" label="kUnsupportedMeth_MovieClip_attachBitmap">See help for the addChild() method.</warning>
+  <warning id="3544" hidden="true" label="kUnsupportedMeth_Sound_loadSound">Use the load() method instead.</warning>
+  <warning id="3545" hidden="true" label="kUnsupportedMeth_Sound_getVolume">Use flash.media.SoundChannel.leftPeak and flash.media.SoundChannel.rightPeak to monitor and control the amplitude of a sound channel.</warning>
+  <warning id="3546" hidden="true" label="kUnsupportedMeth_Sound_getTransform">Use the soundTransform property instead.</warning>
+  <warning id="3547" hidden="true" label="kUnsupportedMeth_Sound_getPan">Use the SoundTransform.pan property instead.</warning>
+  <warning id="3548" hidden="true" label="kUnsupportedMeth_Sound_setPan">Use the SoundTransform.pan property instead.</warning>
+  <warning id="3549" hidden="true" label="kUnsupportedMeth_Sound_getBytesLoaded">Use the bytesLoaded property instead.</warning>
+  <warning id="3550" hidden="true" label="kUnsupportedMeth_Sound_getBytesTotal">Use the bytesTotal property instead.</warning>
+  <warning id="3551" hidden="true" label="kWarning_SlowTextFieldAddition">Inefficient use of += on a TextField.</warning>
+  <warning id="3552" label="kWarning_SlowTextFieldAddition_specific">Appending text to a TextField using += is many times slower than using the TextField.appendText() method.
 	<description>
 		<![CDATA[
 		See this language reference for the <code>appendText()</code> method of the TextField class for details on this significant text optimization.
 		]]>
 	</description>
   </warning>
-  <warning id="3553" hidden="true" label="kWarning_UnlikelyFunctionValue">Sulkeita saattaa puuttua.</warning>
-  <warning id="3554" label="kWarning_UnlikelyFunctionValue_specific">Käytettiin funktio-arvoa, kun odotettiin tyyppiä %s.  Sulkeet () saattavat puuttua tämän funktion viitteen jälkeen.
+  <warning id="3553" hidden="true" label="kWarning_UnlikelyFunctionValue">Mahdollisia puuttuvia sulkeita.</warning>
+  <warning id="3554" label="kWarning_UnlikelyFunctionValue_specific">Function value used where type %s was expected.  Possibly the parentheses () are missing after this function reference.
 <description><![CDATA[
 You can use functions themselves as values in ActionScript.  The code in question is using a value of type Function where a type other than Function, Object, or * is expected.  Usually,
 this indicates a typo where the parentheses <code>()</code> were omitted after the function name.
@@ -723,25 +737,25 @@ this indicates a typo where the parentheses <code>()</code> were omitted after t
   </warning>
   
   <warning id="3555" hidden="true" label="kWarning_InstanceOfChanges">Operaattorin instanceof käyttö.</warning>
-  <warning id="3556" label="kWarning_InstanceOfChanges_specific">Instanceof-operaattori on poistettu käytöstä. Käytä sen sijaan is-operaattoria.</warning>
-  <warning id="3557" hidden="true" label="kUnsupportedProp_LocalConnection_allowDomain">AllowDomain()-tapahtumakäsittelijä on nyt vakiometodi tapahtuman takaisinkutsun sijaan. Lisätietoja on uudessa metodissa LocalConnection.allowDomain.</warning>
-  <warning id="3558" hidden="true" label="kUnsupportedProp_LocalConnection_allowInsecureDomain">AllowInsecureDomain()-tapahtumakäsittelijä on nyt vakiometodi tapahtuman takaisinkutsun sijaan. Lisätietoja on uudessa metodissa LocalConnection.allowInsecureDomain.</warning>
-  <warning id="3559" hidden="true" label="kUnsupportedMeth_call">Yleistä call()-metodia ei enää tueta.</warning>
-  <warning id="3560" hidden="true" label="kUnsupportedProp_Color">Color-luokka on poistettu. Käytä flash.geom.ColorTransform-luokkaa vastaavia toimintoja varten.</warning>
-  <warning id="3561" hidden="true" label="kUnsupportedMeth_Color">Color-luokka on poistettu. Käytä flash.geom.ColorTransform-luokkaa vastaavia toimintoja varten.</warning>
-  <warning id="3562" hidden="true" label="kUnsupportedProp_System_exactSettings">ActionScript 3.0:n SWF-tiedostot käyttävät aina tarkkoja toimialueiden vastaavuussääntöjä.</warning>
-  <warning id="3563" hidden="true" label="kUnsupportedProp_capabilities">Luokka capabilities on saanut uuden nimen Capabilities.</warning>
-  <warning id="3564" hidden="true" label="kUnsupportedMeth_capabilities">Luokka capabilities on saanut uuden nimen Capabilities.</warning>
-  <warning id="3565" hidden="true" label="kUnsupportedMeth_FileReference_addListener">Lisätietoja on kohteessa addEventListener (eventName, kuuntelija, useCapture, prioriteetti).</warning>
-  <warning id="3566" hidden="true" label="kUnsupportedMeth_FileReference_removeListener">Lisätietoja on kohteessa removeEventListener (eventName, kuuntelija, useCapture).</warning>
-  <warning id="3567" hidden="true" label="kWarning_Event_onComplete">Flash Player ei laukaise onComplete-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('complete', callback_handler).</warning>
-  <warning id="3568" hidden="true" label="kWarning_Event_onHTTPError">Flash Player ei laukaise onHTTPError-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('httpError', callback_handler).</warning>
-  <warning id="3569" hidden="true" label="kWarning_Event_onIOError">Flash Player ei laukaise onIOError-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('ioError', callback_handler).</warning>
-  <warning id="3570" hidden="true" label="kWarning_Event_onProgress">Flash Player ei laukaise onProgress-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('progress', callback_handler).</warning>
-  <warning id="3571" hidden="true" label="kWarning_Event_onSecurityError">Flash Player ei laukaise onSecurityError-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('securityError', callback_handler).</warning>
-  <warning id="3572" hidden="true" label="kWarning_Event_onOpen">Flash Player ei laukaise onOpen-tapahtumakäsittelijää automaattisesti suoritusaikana ActionScript 3.0:ssa.  Käsittelijä pitää ensin rekisteröidä tapahtumalle käyttäen kohdetta addEventListener ('open', callback_handler).</warning>
+  <warning id="3556" label="kWarning_InstanceOfChanges_specific">The instanceof operator is deprecated, use the is operator instead.</warning>
+  <warning id="3557" hidden="true" label="kUnsupportedProp_LocalConnection_allowDomain">The allowDomain() event handler is now a standard method, rather than an event callback. For more information, see the new LocalConnection.allowDomain method.</warning>
+  <warning id="3558" hidden="true" label="kUnsupportedProp_LocalConnection_allowInsecureDomain">The allowInsecureDomain() event handler is now a standard method, rather than an event callback. For more information, see the new LocalConnection.allowInsecureDomain method.</warning>
+  <warning id="3559" hidden="true" label="kUnsupportedMeth_call">The global call() method is no longer supported.</warning>
+  <warning id="3560" hidden="true" label="kUnsupportedProp_Color">The Color class has been removed. Use the flash.geom.ColorTransform class for equivalent functionality.</warning>
+  <warning id="3561" hidden="true" label="kUnsupportedMeth_Color">The Color class has been removed. Use the flash.geom.ColorTransform class for equivalent functionality.</warning>
+  <warning id="3562" hidden="true" label="kUnsupportedProp_System_exactSettings">ActionScript 3.0 SWF files always use exact domain matching rules.</warning>
+  <warning id="3563" hidden="true" label="kUnsupportedProp_capabilities">The capabilities class has been renamed Capabilities.</warning>
+  <warning id="3564" hidden="true" label="kUnsupportedMeth_capabilities">The capabilities class has been renamed Capabilities.</warning>
+  <warning id="3565" hidden="true" label="kUnsupportedMeth_FileReference_addListener">For more information, see addEventListener(eventName, listener, useCapture, priority ).</warning>
+  <warning id="3566" hidden="true" label="kUnsupportedMeth_FileReference_removeListener">For more information, see removeEventListener(eventName, listener, useCapture).</warning>
+  <warning id="3567" hidden="true" label="kWarning_Event_onComplete">The onComplete event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ('complete', callback_handler).</warning>
+  <warning id="3568" hidden="true" label="kWarning_Event_onHTTPError">The onHTTPError event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ('httpError', callback_handler).</warning>
+  <warning id="3569" hidden="true" label="kWarning_Event_onIOError">The onIOError event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ('ioError', callback_handler).</warning>
+  <warning id="3570" hidden="true" label="kWarning_Event_onProgress">The onProgress event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ('progress', callback_handler).</warning>
+  <warning id="3571" hidden="true" label="kWarning_Event_onSecurityError">The onSecurityError event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ('securityError', callback_handler).</warning>
+  <warning id="3572" hidden="true" label="kWarning_Event_onOpen">The onOpen event handler is not triggered automatically by Flash Player at run time in ActionScript 3.0.  You must first register this handler for the event using addEventListener ('open', callback_handler).</warning>
   <warning id="3573" hidden="true" label="kWarning_XML_ClassHasChanged">Mahdollinen ActionScript 2.0 -XML-luokan käyttö.</warning>
-  <warning id="3574" label="kWarning_XML_ClassHasChanged_specific">Siirto-ongelma: ActionScript 2.0:n XML-luokka on saanut uuden nimen XMLDocument.
+  <warning id="3574" label="kWarning_XML_ClassHasChanged_specific">Migration issue: The ActionScript 2.0 XML class has been renamed XMLDocument.
 	<description>
 		<![CDATA[
 		This is a code migration warning.  XML is a different class in ActionScript 3.0 than it was in ActionScript 2.0.  In ActionScript 3.0, the XMLDocument class is the equivalent of the XML class in ActionScript 2.0.
@@ -750,22 +764,22 @@ The ActionScript 3.0 XML class offers improved functionality with an easier and 
 	</description>
   </warning>
   <warning id="3575" hidden="true" label="kWarning_BadDateCast">Virheellinen Date-värivääristymäoperaatio.</warning>
-  <warning id="3576" label="kWarning_BadDateCast_specific">Date(x) toimii samoin kuin uusi Date().toString(). Arvon määrittämisessä tyypille Date käytetty arvo on "x as Date", ei Date(x).</warning>
+  <warning id="3576" label="kWarning_BadDateCast_specific">Date(x) behaves the same as new Date().toString(). To cast a value to type Date use "x as Date" instead of Date(x).</warning>
   
   <warning id="3581" hidden="true" label="kWarning_ImportHidesClass">Nykyisen luokan nimisen paketin tuominen piilottaa luokkatunnisteen tässä näkymässä.</warning>
   <warning id="3582" label="kWarning_ImportHidesClass_specific">Nykyisen luokan nimisen paketin tuominen piilottaa luokkatunnisteen tässä näkymässä.</warning>
-  <warning id="3583" hidden="true" label="kWarning_DuplicateArgumentNames">Useita samannimisiä argumentteja.</warning>
-  <warning id="3584" label="kWarning_DuplicateArgumentNames_specific">On määritetty useita argumentteja nimellä '%s'.  Viittaukset tähän argumenttiin palauttavat aina viimeisen argumentin.</warning>
-  <warning id="3585" hidden="true" label="kUnsupportedMeth_Rectangle_containsRectangle">Käytä sen sijaan metodia Rectangle.containsRect.</warning>
-  <warning id="3586" hidden="true" label="kUnsupportedMeth_eval">Tämä toiminto on poistettu.</warning>
-  <warning id="3587" hidden="true" label="kUnsupportedMeth_getVersion">Tämä toiminto on korvattu ominaisuudella flash.system.Capabilities.version.</warning>
-  <warning id="3588" hidden="true" label="kUnsupportedMeth_ifFrameLoaded">Tämä toiminto on korvattu ominaisuudella flash.display.MovieClip.framesLoaded.</warning>
-  <warning id="3589" hidden="true" label="kUnsupportedProp__global">Ominaisuus _global on poistettu.  Vastaavat toiminnot saadaan käyttämällä luokan staattista jäsentä.</warning>
-  <warning id="3590" label="kWarning_BadBoolAssignment">Käytettiin Non-Boolean-arvoa, vaikka odotettiin Boolean-arvoa.</warning>
-  <warning id="3591" label="kWarning_BadBoolAssignment_specific">Käytettiin %s-arvoa, kun odotettiin Boolean-arvoa.  Ilmauksen tyypiksi pakotetaan Boolean.</warning>
+  <warning id="3583" hidden="true" label="kWarning_DuplicateArgumentNames">More than one argument has the same name.</warning>
+  <warning id="3584" label="kWarning_DuplicateArgumentNames_specific">More than one argument named '%s' specified.  References to that argument will always resolve to the last one.</warning>
+  <warning id="3585" hidden="true" label="kUnsupportedMeth_Rectangle_containsRectangle">Use the Rectangle.containsRect method instead.</warning>
+  <warning id="3586" hidden="true" label="kUnsupportedMeth_eval">This functionality has been removed.</warning>
+  <warning id="3587" hidden="true" label="kUnsupportedMeth_getVersion">This functionality has been replaced by the flash.system.Capabilities.version property.</warning>
+  <warning id="3588" hidden="true" label="kUnsupportedMeth_ifFrameLoaded">This functionality has been replaced by the flash.display.MovieClip.framesLoaded property.</warning>
+  <warning id="3589" hidden="true" label="kUnsupportedProp__global">The _global property has been removed.  For equivalent functionality, use a static member of a class.</warning>
+  <warning id="3590" label="kWarning_BadBoolAssignment">Ei-Boolean-arvoa käytettiin, mutta Boolean-arvoa odotettiin.</warning>
+  <warning id="3591" label="kWarning_BadBoolAssignment_specific">%s used where a Boolean value was expected.  The expression will be type coerced to Boolean.</warning>
 
   <warning id="3592" hidden="true" label="kWarning_BadES3TypeProp">Tuntematon ominaisuus.</warning>
-  <warning id="3593" label="kWarning_BadES3TypeProp_specific">%s ei ole dynaamisen luokan %s tunnistettu ominaisuus.
+  <warning id="3593" label="kWarning_BadES3TypeProp_specific">%s is not a recognized property of the dynamic class %s.
 	<description>
 		<![CDATA[
 		The strict compilation mode does not check for undefined properties on instances of dynamic classes.  The types Date, RegExp, and Error are
@@ -775,8 +789,8 @@ A common problem is attempting to get or set a non-existent <code>year</code> pr
 	</description>  
   </warning>
   
-  <warning id="3594" hidden="true" label="kWarning_BadES3TypeMethod">Tuntematon metodi.</warning>
-  <warning id="3595" label="kWarning_BadES3TypeMethodProp_specific">%s ei ole dynaamisen luokan %s tunnistettu metodi.
+  <warning id="3594" hidden="true" label="kWarning_BadES3TypeMethod">Tuntematon menetelmä.</warning>
+  <warning id="3595" label="kWarning_BadES3TypeMethodProp_specific">%s is not a recognized method of the dynamic class %s.
 	<description>
 		<![CDATA[
 		The strict compilation mode does not check for undefined methods on instances of dynamic classes.  The types Date, RegExp, and Error are
@@ -786,7 +800,7 @@ dynamic for backwards compatibility with ECMAScript.  This warning finds usages 
   </warning>
 
   <warning id="3596" hidden="true" label="kWarning_DuplicateVariableDef">Toistuva muuttujamääritys.</warning>
-  <warning id="3597" label="kWarning_DuplicateVariableDef_specific">Toistuva muuttujan määritys.
+  <warning id="3597" label="kWarning_DuplicateVariableDef_specific">Duplicate variable definition.
 	<description>
 		<![CDATA[
 		The compiler has detected a duplicate definition for a variable.  This can lead to unexpected results.  ActionScript does not support block level 
@@ -805,8 +819,8 @@ function test() {
 		]]>
 	</description>
   </warning>
-  <warning id="3598" label="kWarning_DefinitionShadowedByPackageName">Määrityksen nimi on sama kuin tuodun paketin nimi.  Puutteelliset viittaukset tähän nimeen palauttavat paketin, eivät määritystä.</warning>
-  <warning id="3599" label="kWarning_DefinitionShadowedByPackageName_specific">Määrityksen nimi on sama kuin tuodun paketin nimi.  Puutteelliset viittaukset tähän nimeen palauttavat paketin, eivät määritystä.
+  <warning id="3598" label="kWarning_DefinitionShadowedByPackageName">Definition name is the same as an imported package name.  Unqualified references to that name will resolve to the package and not the definition.</warning>
+  <warning id="3599" label="kWarning_DefinitionShadowedByPackageName_specific">Definition name is the same as an imported package name.  Unqualified references to that name will resolve to the package and not the definition.
 	<description>
 		<![CDATA[
         If a definition is named the same as a package that is in scope, then any unqualified references to that name will resolve to the package instead of the definition.  This can
@@ -814,30 +828,30 @@ function test() {
         ]]>
 	</description>
   </warning>
-  <warning id="3600" label="kWarning_DeleteOfFixedProperty">Mahdollinen yritys poistaa kiinteä ominaisuus.</warning>
-  <warning id="3601" label="kWarning_DeleteOfFixedProperty_specific">Määritettyä ominaisuutta %s ei voi poistaa. Jos liittyvää muistia täytyy vapauttaa, aseta ominaisuuden arvoksi null. 
+  <warning id="3600" label="kWarning_DeleteOfFixedProperty">Possible attempt to delete a fixed property.</warning>
+  <warning id="3601" label="kWarning_DeleteOfFixedProperty_specific">The declared property %s cannot be deleted. To free associated memory, set its value to null. 
      <description>Delete removes dynamically defined properties from an object.  Declared properties of a class can not be deleted, the operation merely fails silently.  To free memory associated with this variable, set its value to null instead.</description>
   </warning>
 
   <!-- If you update any of these strings, you must change MXMLC's equivalents in flex/sdk/modules/compiler/src/flex2/compiler_en.properties -->
-      <warning id="3602" label="kWarning_Deprecated">Käytöstä poistetun määrityksen käyttö.</warning>
-      <warning id="3603" label="kWarning_Deprecated_specific">%s' on poistettu käytöstä.
+      <warning id="3602" label="kWarning_Deprecated">Use of deprecated definition.</warning>
+      <warning id="3603" label="kWarning_Deprecated_specific">'%s' has been deprecated.
          <description>This definition is deprecated and may be removed in the future.</description>
       </warning>
-      <warning id="3604" label="kWarning_DeprecatedMessage">Käytöstä poistetun määrityksen käyttö.</warning>
+      <warning id="3604" label="kWarning_DeprecatedMessage">Use of deprecated definition.</warning>
       <warning id="3605" label="kWarning_DeprecatedMessage_specific">%s
          <description></description>
       </warning>
-      <warning id="3606" label="kWarning_DeprecatedUseReplacement">Käytöstä poistetun määrityksen käyttö.</warning>
-      <warning id="3607" label="kWarning_DeprecatedUseReplacement_specific">%s' on poistettu käytöstä.  Käytä määritystä '%s'.
+      <warning id="3606" label="kWarning_DeprecatedUseReplacement">Use of deprecated definition.</warning>
+      <warning id="3607" label="kWarning_DeprecatedUseReplacement_specific">'%s' has been deprecated.  Please use '%s'.
          <description></description>
       </warning>
-      <warning id="3608" label="kWarning_DeprecatedSince">Käytöstä poistetun määrityksen käyttö.</warning>
-      <warning id="3609" label="kWarning_DeprecatedSince_specific">%s' on ollut pois käytöstä alkaen %s.  Käytä määritystä '%s'.
+      <warning id="3608" label="kWarning_DeprecatedSince">Use of deprecated definition.</warning>
+      <warning id="3609" label="kWarning_DeprecatedSince_specific">'%s' has been deprecated since %s.  Please use '%s'.
          <description></description>
       </warning>
-      <warning id="3610" label="kWarning_DeprecatedSinceNoReplacement">Käytöstä poistetun määrityksen käyttö.</warning>
-      <warning id="3611" label="kWarning_DeprecatedSinceNoReplacement_specific">%s' on ollut pois käytöstä alkaen %s.
+      <warning id="3610" label="kWarning_DeprecatedSinceNoReplacement">Use of deprecated definition.</warning>
+      <warning id="3611" label="kWarning_DeprecatedSinceNoReplacement_specific">'%s' has been deprecated since %s.
          <description></description>
      </warning>
  <!-- *** -->
