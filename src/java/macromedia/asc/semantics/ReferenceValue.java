@@ -17,8 +17,6 @@
 
 package macromedia.asc.semantics;
 
-import static java.lang.System.out;
-
 import macromedia.asc.parser.Node;
 import macromedia.asc.parser.Tokens;
 import macromedia.asc.util.BitSet;
@@ -32,8 +30,6 @@ import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_object;
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.util.BitSet.*;
 import static macromedia.asc.semantics.Slot.CALL_Method;
-
-import static java.lang.System.out;
 
 /**
  * ReferenceValue
@@ -506,9 +502,6 @@ public final class ReferenceValue extends Value implements ErrorConstants
                 int slot_id;
                 if( !obj.hasName(cx, Tokens.GET_TOKEN, name, qualifier) )
                 {
-                    //int var_id = obj.builder.Variable(cx, obj);
-                    //slot_id = obj.builder.ExplicitVar(cx,obj,name,new Namespaces(qualifier),cx.typeType(),-1,-1,var_id);
-
                     slot_id = obj.builder.ImplicitVar(cx,obj,name,qualifier,cx.typeType(),-1,-1,-1);
 
                     TypeValue cframe = null;
@@ -519,20 +512,7 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     }
                     else
                     {
-                    	//  Create a TypeValue that represents the instantiated type.
-                        ObjectValue prot_ns = cx.getNamespace(fullname.toString(), Context.NS_PROTECTED);
-                        ObjectValue static_prot_ns = cx.getNamespace(fullname.toString(), Context.NS_STATIC_PROTECTED);
-
-                        cframe = new TypeValue(cx, new ClassBuilder(fullname, prot_ns, static_prot_ns), fullname, TYPE_object);
-                        cframe.type = cx.typeType().getDefaultTypeInfo();
-                        ObjectValue iframe = new ObjectValue(cx,new InstanceBuilder(fullname),cframe);
-                        cframe.prototype = iframe;
-                        
-                        //  TODO: Allow for other parameterized types some day.
-                        TypeValue uninstantiated_generic = cx.vectorObjType();
-
-                        FlowAnalyzer.inheritClassSlotsStatic(cframe, iframe, uninstantiated_generic, cx);
-                        cframe.copyInstantiationData(uninstantiated_generic);
+                        cframe = TypeValue.instantiateParameterizedType(cx, fullname);
                     }
                     slot = obj.getSlot(cx, slot_id);
                     slot.setValue(cframe);

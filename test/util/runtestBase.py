@@ -61,7 +61,6 @@ import shutil
 import which
 
 import threadpool
-import subProcess
 
 # For Python 2.6 and above, use native subprocess.Popen
 if sys.version_info[0] >= 3 or (sys.version_info[0] == 2 and sys.version_info[1] >= 6):
@@ -88,8 +87,11 @@ class RuntestBase:
     asc = ''
     ascargs = ''
     atsDir = 'ATS_SWFS'
+    ascversion = ''
+    asc2version = ''
     avm = ''
     avmce = ''
+    avmversion = ''
     builtinabc = ''
     config = ''
     escbin = ''
@@ -127,6 +129,7 @@ class RuntestBase:
     
     apiVersioning = False
     csv = False
+    cygwin = False
     debug = False
     eval = False      # Run the source file (.as, .js) but, do not magically prepend included files
     forcerebuild = False
@@ -274,7 +277,7 @@ class RuntestBase:
     
     ### Config and Settings ###
 
-    def determineConfig(self):
+    def determineConfig(self, vm='tvm'):
         # ================================================
         # Determine the configruation if it has not been 
         # passed into the script:
@@ -355,7 +358,10 @@ class RuntestBase:
                     self.vmtype = 'debug'
                 else:
                     self.vmtype = 'release'
-                
+            
+            # get the build number and hash
+            self.avmversion = re.compile('.*build (\d+:\S+)').search(f[1]).group(1)
+            
             f = ' '.join(f)
             # determine if api versioning switch is available
             if re.search('(api)', f):
@@ -363,13 +369,21 @@ class RuntestBase:
             
         wordcode = '-wordcode' if re.search('wordcode', self.avm) else ''
         
-        self.config = cputype+'-'+self.osName+'-tvm-'+self.vmtype+wordcode+self.vmargs.replace(" ", "")
+        self.config = cputype+'-'+self.osName+'-'+vm+'-'+self.vmtype+wordcode+self.vmargs.replace(" ", "")
     
     def determineOS(self):
         _os = platform.system()
         ostype = ''
+        # When running on a windows system we can either be running with cygwin python
+        # or with a windows-native python.  Legacy code requires that ostype be kept
+        # as win for the osName, but one can check for the python type by querying
+        # the self.cygwin boolean:
+        # self.osName='win' and not self.cygwin == windows python
+        # self.cygwin = cygwin python
+        
         if re.search('(CYGWIN_NT)', _os):
             ostype='win'
+            self.cygwin = True
         if re.search('(Windows)', _os):
             ostype='win'
             self.useShell = False
@@ -729,7 +743,11 @@ class RuntestBase:
             deps = glob(join(testdir,'*'+self.sourceExt))
             deps.sort()
             for util in deps + glob(join(dir,'*Util'+self.sourceExt)):
-                cmd += ' -in %s' % string.replace(util, '$', '\$')
+                if self.osName == 'win' and not self.cygwin:
+                    # don't escape $ when running windows python
+                    cmd += ' -in %s' % util 
+                else:
+                    cmd += ' -in %s' % string.replace(util, '$', '\$')
                 
         elif as_file.endswith(self.abcasmExt):
             cmd = '%s -j "%s" ' % (self.abcasmRunner,self.java)
@@ -933,7 +951,15 @@ class RuntestBase:
             except:
                 pass  
     
-    
+    def getAscVersion(self, asc):
+        if asc.endswith('.jar'):
+            cmd = '"%s" -jar %s' % (self.java,asc)
+        else:
+            cmd = asc
+         
+        (f,err,exitcode) = self.run_pipe(cmd)
+        return re.compile('.*build (\d+|\S+)').search(f[1]).group(1)
+
     
     ### Process Management ###  
     
@@ -992,6 +1018,13 @@ class RuntestBase:
     
     def preProcessTests(self):  # don't need AVM if rebuilding tests
         self.js_print('current configuration: %s' % self.config, overrideQuiet=True)
+        if self.avmversion:
+            self.js_print('avm version: %s' % self.avmversion)
+        if self.ascversion:
+            self.js_print('asc version: %s' % self.ascversion)
+        if self.asc2version:
+            self.js_print('asc2 version: %s' % self.asc2version)
+
         self.js_print('Executing %d tests against vm: %s' % (len(self.tests), self.avm), overrideQuiet=True);
 
 

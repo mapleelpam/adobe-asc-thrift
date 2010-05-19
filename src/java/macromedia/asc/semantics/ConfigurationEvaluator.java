@@ -34,9 +34,6 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 
 	private boolean fold_expressions = false;
 
-	private ObjectValue true_ov;
-	private ObjectValue false_ov;
-
     private boolean top_level = false;
     
     private HashSet<String> config_namespaces = new HashSet<String>();
@@ -45,15 +42,11 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
 	{
 		if( b )
 		{
-			if(true_ov == null)
-				true_ov = new ObjectValue("true", cx.booleanType());
-			return true_ov;
+			return cx.booleanTrue();
 		}
 		else
 		{
-			if(false_ov == null)
-				false_ov = new ObjectValue("false", cx.booleanType());
-			return false_ov;
+			return cx.booleanFalse();
 		}
 	}
 	public boolean checkFeature(Context cx, Node node) {
@@ -1009,7 +1002,7 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
             	}
             	else
             	{
-	                ret = literalFromValue(cx, ref_val.getValue(cx));
+	                ret = literalFromValue(cx, v);
             	}
                 if( ret != null )
                 	ret.evaluate(cx, this);

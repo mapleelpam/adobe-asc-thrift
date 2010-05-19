@@ -70,6 +70,10 @@ import static macromedia.asc.semantics.Slot.*;
 
 public abstract class Builder
 {
+	/*
+	 * TODO: {pmd} I cant be sure, but I'd guess that removeBuilderNames was a temporary hack put in while shifting the names table from
+	 * here to ObjectValue, once someone verifies this, all references should be removed. It is an unclear thing to leave lying around.
+	 */
 	public static final boolean removeBuilderNames = true;
 	
 	protected Builder()

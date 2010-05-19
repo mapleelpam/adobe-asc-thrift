@@ -151,8 +151,6 @@ public class ObjectValue extends Value implements Comparable
 //    private Values values;       // Values table, null=empty
     public ObjectValue _proto_;
     public String name = EMPTY_STRING;
-    public String classname = EMPTY_STRING;
-    public String debug_name = EMPTY_STRING;
     
     ObjectList<ObjectValue> base_objs; // can be interfaces, or base class
     private ObjectValue protected_ns;
@@ -164,7 +162,6 @@ public class ObjectValue extends Value implements Comparable
     public int method_info;   // index of the method info that implements this function
     // not set until FinishMethod is called for this function
     public int var_count; // The number of variables stored in this object
-    public int method_count; // The number of methods dispatched through this object
 
     public ObjectValue activation;    // for function objects. This represents
     // the compile-time model of the
@@ -176,7 +173,6 @@ public class ObjectValue extends Value implements Comparable
         type = null;
         _proto_ = null;
         var_count = 0;
-        method_count = 0;
         activation = null;
         numberUsage = null;
         method_info = -1;
@@ -188,7 +184,6 @@ public class ObjectValue extends Value implements Comparable
         builder = null;
         _proto_ = null;
         var_count = 0;
-        method_count = 0;
         numberUsage = null;
         activation = null;
         this.type = type != null ? type.getDefaultTypeInfo() : null ;
@@ -202,7 +197,6 @@ public class ObjectValue extends Value implements Comparable
         builder = null;
         _proto_ = null;
         var_count = 0;
-        method_count = 0;
         numberUsage = null;
         activation = null;
         this.type = type != null ? type.getDefaultTypeInfo() : null ;
@@ -216,7 +210,6 @@ public class ObjectValue extends Value implements Comparable
         builder = null;
         _proto_ = null;
         var_count = 0;
-        method_count = 0;
         numberUsage = null;
         activation = null;
         this.type = type;
@@ -229,6 +222,32 @@ public class ObjectValue extends Value implements Comparable
         clearInstance(cx, builder, type, EMPTY_STRING, false);
     }
 
+    /**
+     * Only used by flex's symbol table - creates a copy of an ObjectValue
+     * This can go away once flex's symbol table doesn't require keeping temporary
+     * ObjectValue copies around anymore
+     * @param ov - the ObjectValue to copy.
+     */
+    protected ObjectValue(ObjectValue ov)
+    {
+        builder = ov.builder;
+        _proto_ = ov._proto_;
+        var_count = ov.var_count;
+        numberUsage = ov.numberUsage;
+        activation = ov.activation;
+        this.type = ov.type;
+        method_info = ov.method_info;
+
+        flags = ov.flags;
+        value = ov.value;
+        names = ov.names;
+        slots = ov.slots;
+
+        base_objs = ov.base_objs;
+        protected_ns = ov.protected_ns;
+        base_protected_ns = ov.base_protected_ns;
+
+    }
     public void clearInstance(Context cx, Builder builder, TypeValue type, String name, boolean save_slot_ids)
     {
         flags = 0;
@@ -240,8 +259,6 @@ public class ObjectValue extends Value implements Comparable
         }
         slots = null;
 //        values = null;
-        classname = EMPTY_STRING;
-        debug_name = EMPTY_STRING;
 //        baseMethodNames = null;
         deferredClassMap = null;
         base_objs = null;
@@ -252,7 +269,6 @@ public class ObjectValue extends Value implements Comparable
         this.type = type != null ? type.getDefaultTypeInfo() : null ;
         _proto_ = null;
         var_count = 0;
-        method_count = 0;
         numberUsage = null;
         activation = null;
         method_info = -1;
@@ -287,6 +303,9 @@ public class ObjectValue extends Value implements Comparable
 
     /*
      * Look for a property name in the object.
+     * {pmd} Note that this comment is incorrect and that the following function uses "put" to "remove" a name...
+     * {pmd} Also that the arguments cx and qualifier are unused.
+     * TODO: Clean this up
      */
 
     public boolean removeName(Context cx, int kind, String name, ObjectValue qualifier)
@@ -356,6 +375,11 @@ public class ObjectValue extends Value implements Comparable
 
     public Namespaces hasNames(Context cx, int kind, String name, Namespaces namespaces)
     {
+        return hasNames(cx, kind, name, namespaces, true);
+    }
+
+    public Namespaces hasNames(Context cx, int kind, String name, Namespaces namespaces, boolean search_base_objs)
+    {
     	if( init_only_view && kind != Tokens.SET_TOKEN )
     	{
     		return null;
@@ -396,7 +420,7 @@ public class ObjectValue extends Value implements Comparable
         }
         // When in init only mode, only set slots defined in this object should be visible.
         // Any slots defined in the base class should not be visible.  
-    	if( !init_only_view && base_objs != null )
+    	if( !init_only_view && base_objs != null && search_base_objs)
     	{
     		Namespaces temp = null;
     		if( !searched_protected && protected_ns != null && !matched_protected)
@@ -753,16 +777,6 @@ public class ObjectValue extends Value implements Comparable
     Add a method slot to this object
     */
 
-    public int addMethod(Context cx)
-    {
-        return method_count++;
-    }
-
-    public int getFirstSlotIndex()
-    {
-        return 0;
-    }
-
     public ObjectValue proto()
     {
         return _proto_;
@@ -1034,4 +1048,6 @@ public class ObjectValue extends Value implements Comparable
     		return slot_id;
     	}
     }
+
+
 }

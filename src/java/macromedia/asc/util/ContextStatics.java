@@ -16,10 +16,8 @@ import macromedia.asc.embedding.avmplus.ByteCodeFactory;
 import macromedia.asc.embedding.avmplus.Features;
 import macromedia.asc.parser.NodeFactory;
 import macromedia.asc.parser.MetaDataNode;
-import macromedia.asc.semantics.Emitter;
-import macromedia.asc.semantics.ObjectValue;
-import macromedia.asc.semantics.TypeValue;
-import macromedia.asc.semantics.Slot;
+import macromedia.asc.semantics.*;
+import macromedia.asc.semantics.MetaData;
 
 import java.util.*;
 
@@ -223,6 +221,9 @@ public class ContextStatics
     TypeValue _vectorType;
     TypeValue _vectorObjType;
 
+    ObjectValue _booleanTrue;
+    ObjectValue _booleanFalse;
+
 	public int errCount = 0;
 
 	// C: This is for tracking recursive include path.
@@ -257,6 +258,9 @@ public class ContextStatics
         _regExpType = null;
         _vectorType = null;
         _vectorObjType = null;
+
+        _booleanTrue = null;
+        _booleanFalse = null;
 
         if (namespaces != null)
         {
@@ -293,18 +297,6 @@ public class ContextStatics
 			validImports.clear();
 		}
 	}
-
-    /**
-     * This method allows Flex to reuse a ContextStatics instance when
-     * compiling multiple libraries and applications.  If we don't
-     * clear out the userDefined Map, definitions from one compilation
-     * could potentially spill over into others where they might not
-     * be defined or might be defined differently.
-     */
-    public void clearUserDefined()
-    {
-        userDefined.clear();
-    }
 
 	public void reuse()
 	{
@@ -380,32 +372,6 @@ public class ContextStatics
 	{
 		if (slot != null)
 		{
-            final List<MetaDataNode> list = slot.getMetadata();
-            if (list != null)
-            {
-                MetaDataNode dep = null;
-                for (int i = 0, size = list.size(); i < size; i++)
-                {
-                    if( "Deprecated".equals(list.get(i).id) )
-                    {
-                        dep = list.get(i);
-                    }
-                }
-                slot.setMetadata(null);
-                
-                // Have to keep "Deprecated" metadata so deprecated warnings work
-                if( dep != null )
-                    slot.addMetadata(dep);
-                
-                /*
-			    List<MetaDataNode> list = slot.getMetadata();
-			    for (int i = 0, size = list != null ? list.size() : 0; i < size; i++)
-			    {
-				    list.get(i).def = null;
-			    }
-                */
-            }
-            
             slot.setImplNode(null);
 		}
 	}
@@ -419,5 +385,41 @@ public class ContextStatics
     	protected_namespaces.remove(name);
     	static_protected_namespaces.remove(name);
     	namespaces.remove(name);
+    }
+
+    public ObjectValue getNamespace(String name, byte ns_kind)
+    {
+		name = Context.stripVersion(name);
+        assert name == name.intern();
+        Map<String, ObjectValue> namespace_map;
+
+        switch( ns_kind )
+        {
+            case Context.NS_INTERNAL:
+                namespace_map = internal_namespaces;
+                break;
+            case Context.NS_PRIVATE:
+                namespace_map = private_namespaces;
+                break;
+            case Context.NS_PROTECTED:
+                namespace_map = protected_namespaces;
+                break;
+            case Context.NS_STATIC_PROTECTED:
+                namespace_map = static_protected_namespaces;
+                break;
+            default:
+                namespace_map = namespaces;
+                break;
+        }
+        ObjectValue val = namespace_map.get(name);
+        if (val == null)
+        {
+            val = new NamespaceValue(ns_kind);
+            val.setValue(name);     // to indicate that this is a ct const value
+            val.name = name;
+			assert name == name.intern();
+            namespace_map.put(name,val);
+        }
+        return val;
     }
 }

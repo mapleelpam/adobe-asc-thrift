@@ -366,9 +366,16 @@ public abstract class Slot
 
     public final void addMetadata(MetaDataNode meta)
     {
+        addMetadata(meta.getMetadata());
+    }
+
+    public final void addMetadata(MetaData meta)
+    {
+        if( meta == null )
+            return;
         if( getMetadata() == null )
         {
-            setMetadata(new ArrayList<MetaDataNode>());
+            setMetadata(new ArrayList<MetaData>());
         }
         getMetadata().add(meta);
     }
@@ -482,14 +489,14 @@ public abstract class Slot
 	}
 
 	//metadata associated with this slot	
-	public final void setMetadata(ArrayList<MetaDataNode> metadata)
+	public final void setMetadata(ArrayList<MetaData> metadata)
 	{
 		setAuxData(AUX_MetaData, metadata);
 	}
 
-	public final ArrayList<MetaDataNode> getMetadata()
+	public final ArrayList<MetaData> getMetadata()
 	{
-		return (ArrayList<MetaDataNode>)getAuxData(AUX_MetaData);
+		return (ArrayList<MetaData>)getAuxData(AUX_MetaData);
 	}
 
 	//compiler host can add custom data here
@@ -580,7 +587,6 @@ public abstract class Slot
 
 	public abstract void setTypeRef(ReferenceValue typeref);
 	public abstract ReferenceValue getTypeRef();
-
 	public abstract void setDeclStyles(ByteList decl_styles);
 	public abstract ByteList getDeclStyles();
 

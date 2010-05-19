@@ -1347,15 +1347,52 @@ public final class Context implements ErrorConstants
         return statics.userDefined.get(name);
     }
 
+    /**
+     * Store a TypeValue for the given fully qualified name.  This TypeValue is
+     * used when parsing ABC's to avoid forward reference problems, and during the two
+     * pass mxml compilation (the second pass needs to rebuild the same TypeValue, rather
+     * than creating a new TypeValue).
+     * @param name  fully qualified name of the type
+     * @param value the TypeValue
+     */
     public void setUserDefined(String name, TypeValue value)
     {
         statics.userDefined.put(name, value);
     }
 
-	public final int MIN_API_MARK = 0xE000;
-	public final int MAX_API_MARK = 0xF8FF;
+    /**
+     * mxmlc uses this to remove references to types which no longer exist, so that Types
+     * defined in one project do not bleed over into other projects
+     * @param name the name of the type to remove
+     * @return the TypeValue that was removed
+     */
+    public TypeValue removeUserDefined(String name)
+    {
+        return statics.userDefined.remove(name);
+    }
 
-	int getVersion(String uri) {
+    public ObjectValue booleanTrue()
+    {
+        if( statics._booleanTrue == null )
+        {
+            statics._booleanTrue = new ObjectValue("true", this.booleanType());
+        }
+        return statics._booleanTrue;
+    }
+
+    public ObjectValue booleanFalse()
+    {
+        if( statics._booleanFalse == null )
+        {
+            statics._booleanFalse = new ObjectValue("false", this.booleanType());
+        }
+        return statics._booleanFalse;
+    }
+
+	public static final int MIN_API_MARK = 0xE000;
+	public static final int MAX_API_MARK = 0xF8FF;
+
+	static int getVersion(String uri) {
 		if (uri.length() == 0) return -1;
 		int last = uri.codePointAt(uri.length()-1);
 		if(last >= MIN_API_MARK && last <= MAX_API_MARK) {
@@ -1364,7 +1401,7 @@ public final class Context implements ErrorConstants
 		return -1;
 	}
 
-	String stripVersion(String uri) {
+	static String stripVersion(String uri) {
 		int version = getVersion(uri);
 		if(version >= 0) {
 			uri = uri.substring(0, uri.length()-1);
@@ -1380,38 +1417,7 @@ public final class Context implements ErrorConstants
 
     public ObjectValue getNamespace(String name, byte ns_kind)
     {
-		name = stripVersion(name);
-        assert name == name.intern();
-        Map<String, ObjectValue> namespace_map;
-
-        switch( ns_kind )
-        {
-            case NS_INTERNAL:
-                namespace_map = statics.internal_namespaces;
-                break;
-            case NS_PRIVATE:
-                namespace_map = statics.private_namespaces;
-                break;
-            case NS_PROTECTED:
-                namespace_map = statics.protected_namespaces;
-                break;
-            case NS_STATIC_PROTECTED:
-                namespace_map = statics.static_protected_namespaces;
-                break;
-            default:
-                namespace_map = statics.namespaces;
-                break;
-        }
-        ObjectValue val = namespace_map.get(name);
-        if (val == null)
-        {
-            val = new NamespaceValue(ns_kind);
-            val.setValue(name);     // to indicate that this is a ct const value
-            val.name = name;
-			assert name == name.intern();
-            namespace_map.put(name,val);
-        }
-        return val;
+        return statics.getNamespace(name, ns_kind);
     }
 
     public ObjectValue getOpaqueNamespace(String name)
@@ -1595,6 +1601,7 @@ public final class Context implements ErrorConstants
                 // which mxmlc stores for incremental compilations.
                 ns.cx = null;
 	            ns.node = null;
+                ns.ref = null;
             }
 
             unresolved_namespaces.clear();

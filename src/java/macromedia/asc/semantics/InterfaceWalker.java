@@ -67,7 +67,15 @@ public final class InterfaceWalker extends ObjectValueWalker
 		while (nextInterface == null && !queue.isEmpty())
 		{
 			final TypeValue type = queue.removeFirst();
-				
+
+            // skip unresolved types
+            // these can occur when referencing baseclasses
+            // that may not exist due to versioning (for instance, some classes
+            // only exist when compiling for flash 10).
+            // these errors will be picked up downstream
+            if( !type.resolved )
+                continue;
+            
 			// Queue base class
 			if (type.baseclass != null && !type.isInterface())
 			{

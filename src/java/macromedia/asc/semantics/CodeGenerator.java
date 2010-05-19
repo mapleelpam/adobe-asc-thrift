@@ -3864,6 +3864,11 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         cx.popScope();
         this.is_ctor = false;
+        // We don't need this or the activation builder anymore
+        node.fun.activation = null;
+        // don't need the FunctionBuilder anymore either
+        node.fun.builder = null;
+        
         popStackFrame();
 
         if( saved_scopes != null )

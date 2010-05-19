@@ -29,14 +29,12 @@ public class LiteralBooleanNode extends Node
 {
 	public boolean value;
 	public boolean void_result;
-    public ObjectValue objValue;
 
-	public LiteralBooleanNode(boolean value)
+    public LiteralBooleanNode(boolean value)
 	{
 		this.value = value;
 		void_result = false;
-        objValue = null;
-	}
+    }
 
 	public Value evaluate(Context cx, Evaluator evaluator)
 	{

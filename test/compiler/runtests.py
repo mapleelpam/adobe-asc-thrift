@@ -48,9 +48,11 @@ except ImportError:
     print "   (directory has been moved to test/util)."
 
 class AscRuntest(RuntestBase):
-    fullRun = False
+    diffTesting = False
     regexOutput = False
     writeResultProperties = True
+    
+    asc2 = ''
     
 
     def __init__(self):
@@ -65,16 +67,16 @@ class AscRuntest(RuntestBase):
         RuntestBase.usage(self, c)
         print '    --ext           set the testfile extension (defaults to .as)'
         print '    --threads       number of threads to run (default=# of cpu/cores), set to 1 to have tests finish sequentially'
-        print '    --full          do a full coverage pass (all switches and options exercised)'
-        # print ' -i --intermediate  create and compare intermediate code/AVM assembly/parse tree'
+        print '    --diff          create and compare intermediate code/AVM assembly/parse tree to asc2'
+        print '    --asc2          required for diff tests - specify asc.jar to compare results to'
         print ' -r --regex         output err.actual files that are regex corrected'
         
         exit(c)
     
     def setOptions(self):
         RuntestBase.setOptions(self)
-        self.options += 'r'
-        self.longOptions.extend(['ext=','full','regex','threads='])
+        self.options += 'ri'
+        self.longOptions.extend(['ext=','diff','asc2=','regex','threads='])
     
     def parseOptions(self):
         opts = RuntestBase.parseOptions(self)
@@ -85,8 +87,10 @@ class AscRuntest(RuntestBase):
                 self.threads=int(v)
             elif o in ('-r','--regex',):
                 self.regexOutput = True
-            elif o in ('--full',):
-                self.fullRun = True
+            elif o in ('--diff',):
+                self.diffTesting = True
+            elif o in ('--asc2',):
+                self.asc2 = v
 
                 
     def run(self):
@@ -97,10 +101,17 @@ class AscRuntest(RuntestBase):
         self.setTimestamp()
         self.checkPath()
         if not self.config:
-            self.determineConfig()
+            self.determineConfig('asc')
+        self.ascversion = self.getAscVersion(self.asc)
         if self.htmlOutput and not self.rebuildtests:
             self.createOutputFile()
         self.tests = self.getTestsList(self.args)
+        if self.diffTesting:    # override runTestPrep with runDiffTests
+            if not isfile(self.asc2):
+                exit('ERROR: cannot find %s, --asc2 must be set to a valid asc.jar' % self.asc2)
+            self.config += '-diff'
+            self.asc2version = self.getAscVersion(self.asc2)
+            self.runTestPrep = self.runDiffTests
         # Load the root testconfig file
         self.settings, self.includes = self.parseTestConfig('.')
         self.preProcessTests()
@@ -122,6 +133,62 @@ class AscRuntest(RuntestBase):
                 if not (line[0:3] == 'at ' and line[-1] == ')'):  #don't record error location, so we strip it out
                     output.append(line)
         return output
+    
+    def runDiffTests(self, testAndNum):
+        # When running the asc differential tests, this function overrides the runTestPrep function (see run())
+        # diff testing compares the intermediate output between two ascs (self.asc and self.asc2)
+        ast = testAndNum[0]
+        testnum = testAndNum[1]
+        outputCalls = [] #queue all output calls so that output is written in a block
+        
+        dir = split(ast)[0]
+        root,ext = splitext(ast)
+        testName = root + '.abc'
+        
+        includes = self.includes #list
+        
+        settings = self.getLocalSettings(root)
+        
+        #TODO: possibly handle includes by building test list?  This works for now...
+        if includes and not list_match(includes,root):
+            return
+    
+        config = self.config    # make a local copy so we can modify locally
+        
+        # Get the expected outputs from asc2
+        expected = {}
+        expected['i'] = self.compile_test(ast, extraArgs=['-i'], settings=settings, asc=self.asc2)
+        expected['m'] = self.compile_test(ast, extraArgs=['-m'], settings=settings, asc=self.asc2)
+        expected['f'] = self.compile_test(ast, extraArgs=['-f'], settings=settings, asc=self.asc2)
+        expected['p'] = self.compile_test(ast, extraArgs=['-p'], settings=settings, asc=self.asc2)
+        
+        # Get the actuals from asc
+        actual = {}
+        actual['i'] = self.compile_test(ast, extraArgs=['-i'], settings=settings, asc=self.asc)
+        actual['m'] = self.compile_test(ast, extraArgs=['-m'], settings=settings, asc=self.asc)
+        actual['f'] = self.compile_test(ast, extraArgs=['-f'], settings=settings, asc=self.asc)
+        actual['p'] = self.compile_test(ast, extraArgs=['-p'], settings=settings, asc=self.asc)
+        
+        for key, expected_output in expected.items():
+            # TODO: testconfig code goes here
+            if expected_output != actual[key]:
+                failmsg = "  FAILED: actual vs expected does not match:\n"
+                failmsg += "  expected:[\n"
+                for line in expected_output:
+                    failmsg += "    %s\n" % line
+                failmsg += "  ]\n  actual  :[\n"
+                for line in actual[key]:
+                    failmsg += "    %s\n" % line
+                failmsg += "  ]"
+                outputCalls.append((self.fail,(testName, failmsg, self.failmsgs)))
+                self.allfails += 1
+            else:
+                self.allpasses += 1
+        
+        # insert the testname before all other messages
+        outputCalls.insert(0,(self.js_print,('%s running %s' % (testnum, ast), '<b>', '</b><br/>')));
+        return outputCalls
+    
     
     def runTestPrep(self, testAndNum):
         
@@ -232,8 +299,10 @@ class AscRuntest(RuntestBase):
         outputCalls.insert(0,(self.js_print,('%s running %s %s %s' % (testnum, ast, extraVmArgs, abcargs), '<b>', '</b><br/>')));
         return outputCalls
     
-    def compile_test(self, as_file, extraArgs=[], settings={}):
-        asc, builtinabc, shellabc, ascargs = self.asc, self.builtinabc, self.shellabc, self.ascargs
+    def compile_test(self, as_file, extraArgs=[], settings={}, asc=''):
+        builtinabc, shellabc, ascargs = self.builtinabc, self.shellabc, self.ascargs
+        if not asc:
+            asc = self.asc
 
         if not isfile(asc):
             exit('ERROR: cannot build %s, ASC environment variable or --asc must be set to asc.jar' % as_file)
@@ -280,13 +349,6 @@ class AscRuntest(RuntestBase):
                 cmd += ' %s' % arg
             
         try:
-            if self.fullRun: # compile test w/ multiple command line options
-                ignore = self.run_pipe("%s %s %s" % (cmd,"-f" ,as_file))
-                ignore = self.run_pipe("%s %s %s" % (cmd,"-i" ,as_file))
-                ignore = self.run_pipe("%s %s %s" % (cmd,"-m" ,as_file))
-                ignore = self.run_pipe("%s %s %s" % (cmd,"-p" ,as_file))
-                ignore = self.run_pipe("%s %s %s" % (cmd,"-d" ,as_file))
-            
             (f,err,exitcode) = self.run_pipe('%s %s' % (cmd,as_file))
             output = []
             for line in err+f:

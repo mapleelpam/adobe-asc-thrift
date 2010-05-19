@@ -1656,11 +1656,11 @@ public class NodePrinter implements Evaluator
 
         indent();
         out.print("metadata:");
-        out.print(node.id!=null?node.id:"");      
+        out.print(node.getId() !=null? node.getId() :"");
         out.print(" ");
-        for (int i = 0, length = (node.values == null) ? 0 : node.values.length; i < length; i++)
+        for (int i = 0, length = (node.getValues() == null) ? 0 : node.getValues().length; i < length; i++)
         {
-            Value v = node.values[i];
+            Value v = node.getValues()[i];
             if (v instanceof MetaDataEvaluator.KeyValuePair)
             {
                 MetaDataEvaluator.KeyValuePair pair = (MetaDataEvaluator.KeyValuePair) v;

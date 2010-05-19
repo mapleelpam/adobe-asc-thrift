@@ -17,9 +17,13 @@
 
 package macromedia.asc.semantics;
 
+import macromedia.asc.embedding.avmplus.ClassBuilder;
+import macromedia.asc.embedding.avmplus.InstanceBuilder;
 import macromedia.asc.util.*;
 
 import java.util.HashMap;
+
+import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_object;
 
 /**
  * The interface for all types.
@@ -36,7 +40,17 @@ public final class TypeValue extends ObjectValue
     {
     }
 
-    public static TypeValue newTypeValue(Context cx, Builder builder, QName name, int type_id)
+    /**
+     * Create a new TypeValue, or reuse an existing TypeValue if one already exists
+     * This is neccessary so that when we recompile a type, we don't have to patch up all
+     * pointers to that type.
+     * @param cx Context we're using
+     * @param builder The builder to use while we're rebuilding the type
+     * @param name The classname we want the TypeValue for
+     * @param type_id
+     * @return a re-inited TypeValue
+     */
+    public static TypeValue defineTypeValue(Context cx, Builder builder, QName name, int type_id)
     {
         String fullname = name.toString();
  
@@ -45,9 +59,15 @@ public final class TypeValue extends ObjectValue
         {
             type = new TypeValue(cx, builder, name, type_id);
             cx.setUserDefined(fullname, type);
+            type.resolved = true;
         }
         else
         {
+            // Need to set this early, as clearInstance will call Builder.build
+            // which can call back into this TypeVal.  Setting this now avoids some
+            // infinite recursion.
+            type.resolved = true;
+
             type.clearInstance(cx, builder, null, fullname.intern(), false);
             type.type_id = type_id;
             // Don't clear the prototype, we can reuse the object value
@@ -72,6 +92,38 @@ public final class TypeValue extends ObjectValue
         return type;
     }
 
+    /**
+     * Return the TypeValue for a given name.  If the TypeValue does not exist yet, then a dummy
+     * TypeValue is created and returned.  The dummy type value serves as a place holder, and will
+     * be filled in later when that type is actually processed (from an ABC, or .as, or where ever).
+     * This is used by AbcParser, since it needs to set up references to Types that may not have been
+     * compiled yet.
+     * @param cx Context we're using
+     * @param name Name of the type we want
+     * @return the TypeValue for the name
+     */
+    public static TypeValue getTypeValue(Context cx, QName name)
+    {
+        String fullname = name.toString();
+
+        TypeValue type = cx.userDefined(fullname);
+        if (type == null)
+        {
+            type = new TypeValue(cx, name);
+            if( "Vector" == name.name && name instanceof ParameterizedName )
+            {
+                ParameterizedName pname = (ParameterizedName)name;
+                QName indexed_name = pname.type_params.at(0);
+                if( cx.isBuiltin(indexed_name.toString()) )
+                    type.indexed_type = cx.builtin(indexed_name.toString());
+                else
+                    type.indexed_type = getTypeValue(cx, pname.type_params.at(0));
+            }
+            cx.setUserDefined(fullname, type);
+        }
+        return type;
+    }
+
     public ObjectValue prototype;
     public TypeValue baseclass;
     public boolean is_parameterized;
@@ -88,6 +140,14 @@ public final class TypeValue extends ObjectValue
         this.type = null;
         this.baseclass = null;
         super.name = this.name.toString();
+        this.resolved = false;
+    }
+
+    private TypeValue(Context cx, QName name)
+    {
+        super((TypeValue)null);
+        this.name = name;
+        this.resolved = false;
     }
 
     public TypeInfo getType(Context cx)
@@ -96,6 +156,11 @@ public final class TypeValue extends ObjectValue
     }
 
     public int type_id;
+
+    // Whether this TypeValue has been compiled for real yet
+    // AbcParser needs to set up dummy, place holder TypeValues - this gets set to true
+    // once the actual type is processed (by FA, or AbcParser)
+    public boolean resolved;
 
     public int getTypeId()
     {
@@ -113,6 +178,9 @@ public final class TypeValue extends ObjectValue
         {
             return true;
         }
+
+        if( !resolved )
+            resolve(cx);
 
         if (!isInterface())
         {
@@ -217,5 +285,112 @@ public final class TypeValue extends ObjectValue
     public void copyInstantiationData(TypeValue uninstantiated_type)
     {
     	this.builder.is_final = uninstantiated_type.builder.is_final;
+    }
+
+    /**
+     * copy a typevalue
+     */
+    protected TypeValue(TypeValue type)
+    {
+        super((ObjectValue)type);
+        this.type_id = type.type_id;
+        this.prototype = new ObjectValue(type.prototype);
+        this.name = type.name;
+        this.type = type.type;
+        this.baseclass = type.baseclass;
+    }
+
+    /**
+     * Creates a new TypeValue, identical to this.
+     * Also copies prototype.
+     * This is needed by the Flex Symbol Table, but this will hopefully go away once flex's
+     * need to copy TypeValues is fixed.
+     * @return a new TypeValue, copied from this.
+     */
+    public TypeValue copyType()
+    {
+        return new TypeValue(this);
+    }
+
+    /**
+     * Resolve an "unresolved" type.  Currently this only affects parameterized types that come from AbcParser.
+     * This could be extended to a more general resolve on demand, with the data only living in an ABC, or .AS,
+     * or wherever until needed.
+     * @param cx    Context
+     * @return      whether or not the type was resolved.
+     */
+    private boolean resolve(Context cx)
+    {
+        if( resolved )
+            return true;
+
+        if( this.indexed_type != null )
+        {
+            ParameterizedName pname = name instanceof ParameterizedName ? (ParameterizedName)name : null;
+            if( pname != null )
+            {
+                instantiateParameterizedType(cx, pname);
+                assert resolved ;
+            }
+        }
+        return resolved;
+    }
+
+    /**
+     * Instantiate a parameterized type.  If the TypeValue representing pname is already resolved,
+     * then it is returned.  If it is not resolved then the parameterized type specififed by pname is
+     * initialized - new type is set up, slots copied from base type. etc.
+     * i.e. this will create a specific instantiation of Vector.
+     * @param cx    Context used to initialize the type
+     * @param pname The name of the parameterized type
+     * @return      TypeValue representing the type specified by pname
+     */
+    static TypeValue instantiateParameterizedType(Context cx, ParameterizedName pname)
+    {
+        TypeValue cframe = getTypeValue(cx, pname);
+        if( cframe.resolved )
+            return cframe;
+
+        ObjectValue prot_ns = cx.getNamespace(pname.toString(), Context.NS_PROTECTED);
+        ObjectValue static_prot_ns = cx.getNamespace(pname.toString(), Context.NS_STATIC_PROTECTED);
+
+        // This should fill in this type
+        cframe = TypeValue.defineTypeValue(cx, new ClassBuilder(pname, prot_ns, static_prot_ns), pname, TYPE_object);
+
+        cframe.type = cx.typeType().getDefaultTypeInfo();
+        ObjectValue iframe = new ObjectValue(cx,new InstanceBuilder(pname),cframe);
+        cframe.prototype = iframe;
+
+        //  TODO: Allow for other parameterized types some day.
+        TypeValue uninstantiated_generic = cx.vectorObjType();
+
+        FlowAnalyzer.inheritClassSlotsStatic(cframe, iframe, uninstantiated_generic, cx);
+        cframe.copyInstantiationData(uninstantiated_generic);
+
+        return cframe;
+    }
+
+    public boolean hasName(Context cx, int kind, String name, ObjectValue qualifier)
+    {
+        if( !resolved )
+            resolve(cx);
+        
+        return super.hasName(cx, kind, name, qualifier);
+    }
+
+    public boolean hasNameUnqualified(Context cx,  String name, int kind)
+    {
+        if( !resolved )
+            resolve(cx);
+
+        return super.hasNameUnqualified(cx, name, kind);
+    }
+    
+    public Namespaces hasNames(Context cx, int kind, String name, Namespaces namespaces, boolean search_base_objs)
+    {
+        if( !resolved )
+            resolve(cx);
+
+        return super.hasNames(cx, kind, name, namespaces, search_base_objs);
     }
 }

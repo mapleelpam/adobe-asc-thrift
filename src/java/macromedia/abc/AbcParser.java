@@ -10,130 +10,105 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 package macromedia.abc;
-import static java.lang.System.*;
 import static macromedia.asc.parser.Tokens.EMPTY_TOKEN;
 import static macromedia.asc.semantics.Slot.*;
-import macromedia.asc.util.ObjectList;
-import macromedia.asc.util.Context;
-import macromedia.asc.util.Namespaces;
-import macromedia.asc.util.IntList;
-import macromedia.asc.util.Decimal128;
-import macromedia.asc.util.APIVersions;
+
+import macromedia.asc.embedding.avmplus.*;
+import macromedia.asc.util.*;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.*;
-import macromedia.asc.embedding.avmplus.ActionBlockConstants;
-import macromedia.asc.embedding.avmplus.ClassBuilder;
-import macromedia.asc.embedding.avmplus.InstanceBuilder;
-import macromedia.asc.embedding.avmplus.FunctionBuilder;
-import macromedia.asc.embedding.avmplus.GlobalBuilder;
-import macromedia.asc.embedding.avmplus.RuntimeConstants;
-import macromedia.asc.embedding.avmplus.ActivationBuilder;
+import macromedia.asc.semantics.QName;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author Erik Tierney
  */
+@SuppressWarnings("nls") // TODO: Remove
 public final class AbcParser
 {
     private Context ctx;
-    private BytecodeBuffer buf;
+    private AbcData abcData;
     private static final boolean debug = false;
 
     public AbcParser(Context cx, String name) throws IOException
     {
         this.ctx = cx;
-        this.buf = new BytecodeBuffer(name);
-
+        this.abcData = new AbcData("");
+        this.abcData.readAbc(new BytecodeBuffer(name));
     }
 
     public AbcParser(Context cx, byte[] bytes)
     {
         this.ctx = cx;
-        this.buf = new BytecodeBuffer(bytes);
+        this.abcData = new AbcData("");
+        this.abcData.readAbc(new BytecodeBuffer(bytes));
     }
-
-
-    private int[] cPoolIntPositions;
-    private int[] cPoolUIntPositions;
-    private int[] cPoolDoublePositions;
-    private int[] cPoolDecimalPositions;
-    private String[] cPoolStrs;
-    private int[] cPoolNsPositions;
-    private int[] cPoolNsSetPositions;
-    private int[] cPoolMnPositions;
-
-    private int[] methodPositions;
-    private int[] metadataPositions;
-    private int[] instancePositions;
-    private int[] classPositions;
-    private int[] scriptPositions;
 
     private final Map<String, Integer> fun_names = new HashMap<String, Integer>();
 
-    private final Map<String, ClassDefinitionNode> class_nodes = new HashMap<String, ClassDefinitionNode>();
-
     private final ObjectList<ObjectList<ClassDefinitionNode>> clsdefs_sets = new ObjectList<ObjectList<ClassDefinitionNode>>();
     private final ObjectList<String> region_name_stack = new ObjectList<String>();
+
+    // TODO: better dependency analysis - this is used to populate FA's ce_unresolved_sets which
+    // TODO: mxml uses to find dependencies - could be done earlier for abcs
+    private ObjectList<Set<ReferenceValue>> ce_unresolved_sets = new ObjectList<Set<ReferenceValue>>();
+
+    // turn on/off building full ast's - if you suspect an mxmlc problem caused by a lack of
+    // ast from ABCs, turn this on to see if it fixes it.
+    // if this is false, only BinaryProgramNode, and toplevel definition nodes are created (mostly BinaryClassDefNode).
+    // hopefully we can get rid of those someday too.
+    static final boolean build_ast = false;
 
     public ProgramNode parseAbc()
     {
         try
         {
-            int minor_version = buf.readU16();
-            /*int major_version =*/ buf.readU16();
-
-            // Scan the bytecode for the stuff we care about
-            scanCpool(minor_version >= ActionBlockConstants.MINORwithDECIMAL);
-            scanMethods();
-            scanMetadata();
-            scanClasses();
-            scanScripts();
-
             // Create a program node that will represent the data in the abc file.
             // It won't actually be a parse tree, but it will contain the correct builder
             // objects which are usually built up by the FlowAnalyzer
+            
             BinaryProgramNode program = ctx.getNodeFactory().binaryProgram(ctx, ctx.getNodeFactory().statementList(null, (StatementListNode)null));
-            program.frame = new ObjectValue(ctx, new GlobalBuilder(), ctx.noType());
-			GlobalBuilder bui = (GlobalBuilder)(program.frame.builder);
-			bui.is_in_package = true; // cn: necessary for proper slot creation for top level functions
-
+            GlobalBuilder b = new GlobalBuilder();
+            b.is_in_package = true; // cn: necessary for proper slot creation for top level functions
+            program.frame = new ObjectValue(ctx, b, ctx.noType());
 			ctx.pushScope(program.frame);
-
             clsdefs_sets.add(new ObjectList<ClassDefinitionNode>());
+            ce_unresolved_sets.push_back(program.ce_unresolved);
             region_name_stack.push_back("");
-            for( int i = 0; i < scriptPositions.length; ++i )
+            
+            for( int i = 0; i < this.abcData.getScriptInfoSize(); ++i )
             {
                 parseScript(i, program);
             }
 
             program.clsdefs = clsdefs_sets.last();
-			// For proper const and type enforcement of top level functions and vars, we need to 
-			//  process those def nodes during CE.  These definitions need to be evaluted in the
-			//  scope of the BinaryProgramNode's frame, however, while the classes need to be
-			//  evaluated outside of that scope.  Remove the class definition nodes from the 
-			//  statementlist, they we be processed seperately by iterating over node->clsdefs.
-			for (int i = 0; i < program.statements.items.size(); i++) // A B C
-			{
-				Node def = program.statements.items.get(i);
-				if (def instanceof ClassDefinitionNode)
-				{
-					NodeFactory nf = ctx.getNodeFactory();
-					program.statements.items.set(i, nf.emptyStatement());
-				}
-			}
-			clsdefs_sets.removeLast();
+    		clsdefs_sets.removeLast();
+            ce_unresolved_sets.removeLast();
             region_name_stack.pop_back();
             ctx.popScope(); // global
-
+            
+			// For proper const and type enforcement of top level functions and vars, we need to 
+			//  process those def nodes during CE.  These definitions need to be evaluated in the
+			//  scope of the BinaryProgramNode's frame.
+            // Conversely, class definition nodes are maintained in the clsdefs list rather than ever
+            // being added to the binary program node's statement list. This is so that they get processed outside the 
+            // BinaryProgramNode's frame...
+            
+            // {pmd} following builds <ProgramNode <StatementList <BinaryProgramNode ...>>>
+            // {pmd} I wondered why? --probably to match some undefined visitor pattern behavior...
+            
             ProgramNode prog = ctx.getNodeFactory().program(ctx, ctx.getNodeFactory().statementList(null, program));
 
             // Uncomment next line to get some debugging info to print to stdout.
+            // {pmd} ??? for this to be useful it really should iterate the clsdefs list...(and print the objectvalue hierarchy too.)
             // dumpProgram(program);
+
             return prog;
         }
         catch(Exception t)
@@ -151,274 +126,48 @@ public final class AbcParser
         }
     }
 
-    void scanCpool(boolean hasDecimal)
-    {
-    	int size;
-        size = buf.readU32();
-        cPoolIntPositions = new int[size];
-        if (debug) System.out.println("ints "+size);
-        for (int i = 1; i < size; i++)
-        {
-            cPoolIntPositions[i] = buf.pos();
-            buf.readU32();
-        }
-        size = buf.readU32();
-        cPoolUIntPositions = new int[size];
-        if (debug) System.out.println("uints "+size);
-        for (int i = 1; i < size; i++)
-        {
-            cPoolUIntPositions[i] = buf.pos();
-            buf.readU32();
-        }
-        size = buf.readU32();
-        cPoolDoublePositions = new int[size];
-        if (debug) System.out.println("doubles "+size);
-        for (int i = 1; i < size; i++)
-        {
-            cPoolDoublePositions[i] = buf.pos();
-            buf.readDouble();
-        }
-        if (hasDecimal) {
-        	size = buf.readU32();
-            if (debug) System.out.println("decimals "+size);
-        	cPoolDecimalPositions = new int[size];
-        	for (int i = 1; i < size; i++) {
-        		cPoolDecimalPositions[i] = buf.pos();
-        		buf.readDouble(); // cheapest way to skip 64 bits
-        		buf.readDouble(); // decimals are 128 bits
-        	}
-        }
-        else {
-        	cPoolDecimalPositions = new int[0];
-        }
-        size = buf.readU32();
-        cPoolStrs = new String[size>0?size:1];
-        if (debug) System.out.println("strings "+size);
-        cPoolStrs[0] = "";
-        for (int i = 1; i < size; i++)
-        {
-            long length = buf.readU32();
-        	cPoolStrs[i] = buf.readString((int)length).intern();
-            buf.skip(length);
-        }
-        size = buf.readU32();
-        cPoolNsPositions = new int[size];
-        if (debug) System.out.println("ns "+size);
-        for (int i = 1; i < size; i++)
-        {
-            cPoolNsPositions[i] = buf.pos();
-            buf.readU8(); // kind byte
-            buf.readU32();
-        }
-        size = buf.readU32();
-        cPoolNsSetPositions = new int[size];
-        if (debug) System.out.println("nssets "+size);
-        for (int i = 1; i < size; i++)
-        {
-            cPoolNsSetPositions[i] = buf.pos();
-            long count = buf.readU32(); // count
-            for(long q =0; q < count; ++q)
-            {
-                buf.readU32();
-            }
-        }
-        size = buf.readU32();
-        cPoolMnPositions = new int[size];
-        if (debug) System.out.println("names "+size);
-        for (int i = 1; i < size; i++)
-        {
-            cPoolMnPositions[i] = buf.pos();
-            int kind = buf.readU8();
-            switch (kind)
-            {
-                case ActionBlockConstants.CONSTANT_Qname:
-                case ActionBlockConstants.CONSTANT_QnameA:
-                    buf.readU32();
-                    buf.readU32();
-                    break;
-                case ActionBlockConstants.CONSTANT_RTQname:
-                case ActionBlockConstants.CONSTANT_RTQnameA:
-                    buf.readU32();
-                    break;
-                case ActionBlockConstants.CONSTANT_Multiname:
-                case ActionBlockConstants.CONSTANT_MultinameA:
-                    buf.readU32();
-                    buf.readU32();
-                    break;
-                case ActionBlockConstants.CONSTANT_MultinameL:
-                case ActionBlockConstants.CONSTANT_MultinameLA:
-                    buf.readU32();
-                    break;
-                case ActionBlockConstants.CONSTANT_TypeName:
-                    buf.readU32(); // name index
-                    long count = buf.readU32(); // param count;
-                    buf.skipEntries(count);
-                    break;
-                case ActionBlockConstants.CONSTANT_RTQnameL:
-                case ActionBlockConstants.CONSTANT_RTQnameLA:
-					break;
-                default:
-					throw new RuntimeException("bad multiname type: " + kind);
-
-            }
-        }
-    }
-
-    void scanMethods()
-    {
-        long methodEntries = buf.readU32();
-
-        methodPositions = new int [(int)methodEntries];
-        for (int i = 0; i < methodEntries; i++)
-        {
-            methodPositions[i] = buf.pos();
-            long paramCount = buf.readU32();
-            buf.readU32(); //returnType
-            buf.skipEntries(paramCount);  //parameters
-            buf.readU32(); //name_index
-            int flags = buf.readU8();
-
-            long optionalCount = ((flags & ActionBlockConstants.METHOD_HasOptional) != 0) ? buf.readU32() : 0;
-            for( long q = 0; q < optionalCount; ++q )
-            {
-                buf.readU32();  // optionals
-                buf.readU8();  //kind byte
-            }
-
-            long paramNameCount = ((flags & ActionBlockConstants.METHOD_HasParamNames)!=0) ? paramCount : 0;
-            for( long q = 0; q < paramNameCount; ++q )
-            {
-                buf.readU32();  // param name
-            }
-        }
-    }
-
-    void scanMetadata()
-    {
-        long metadataEntries = buf.readU32();
-
-        metadataPositions = new int [(int)metadataEntries];
-        for (int i = 0; i < metadataEntries; i++)
-        {
-            metadataPositions[i] = buf.pos();
-            buf.readU32();
-            long value_count = buf.readU32(); //returnType
-            buf.skipEntries(value_count * 2);  //keys & values
-        }
-    }
-
-    void scanClasses()
-    {
-        long classEntries = buf.readU32();
-
-        classPositions = new int[(int)classEntries];
-        instancePositions = new int[(int)classEntries];
-        // InstanceInfos
-        for(int i = 0; i < classEntries; ++i)
-        {
-            instancePositions[i] = buf.pos();
-            buf.readU32(); //name_index
-            buf.readU32(); //super_index
-            int flags = buf.readU8();
-            if ((flags & ActionBlockConstants.CLASS_FLAG_protected) != 0)
-            {
-            	buf.readU32();
-            }
-            
-            long interfaces = buf.readU32();
-            buf.skipEntries(interfaces); // interfaces
-            buf.readU32(); //init index
-            skipTraits();
-        }
-
-        // ClassInfos
-        for(int i = 0; i < classEntries; ++i)
-        {
-            classPositions[i] = buf.pos();
-            buf.readU32(); //init index
-            skipTraits();
-        }
-
-    }
-
-    void scanScripts()
-    {
-        long scriptEntries = buf.readU32();
-        scriptPositions = new int[(int)scriptEntries];
-        for(int i = 0 ; i < scriptEntries; ++i )
-        {
-            scriptPositions[i] = buf.pos();
-            buf.readU32(); // init index
-            skipTraits();
-        }
-    }
-
-// skips traits - we don't care about what they are when scanning the bytecode
-    void skipTraits()
-    {
-        long count = buf.readU32();
-
-        for (int i = 0; i < count; i++)
-        {
-            buf.readU32();
-            int kind = buf.readU8();
-            int tag = kind & 0x0f;
-            int temp;
-
-            switch (tag)
-            {
-            case ActionBlockConstants.TRAIT_Var:
-            case ActionBlockConstants.TRAIT_Const:
-                buf.skipEntries(2);
-                temp = buf.readU32();
-                if( temp > 0 )
-                    buf.readU32(); //kind byte
-                break;
-            case ActionBlockConstants.TRAIT_Method:
-            case ActionBlockConstants.TRAIT_Getter:
-            case ActionBlockConstants.TRAIT_Setter:
-                buf.skipEntries(2);
-                break;
-            case ActionBlockConstants.TRAIT_Class:
-            case ActionBlockConstants.TRAIT_Function:
-                buf.skipEntries(2);
-                break;
-            default:
-                break;
-                //throw new DecoderException("Invalid trait kind: " + kind);
-            }
-            if( ( (kind >> 4) & ActionBlockConstants.TRAIT_FLAG_metadata) != 0 )
-            {
-                long metadata = buf.readU32();
-                buf.skipEntries(metadata);
-            }
-        }
-    }
-
     static private class DefAndSlot
     {
         public DefinitionNode def;
         public Slot slot;
     }
 
-    DefAndSlot slotTrait(int nameID, int slotID, int typeID, int valueID, int value_kind, boolean is_const)
+    /**
+     * Returns a TypeValue for the qname specified by typeID.  If that type does not exist yet
+     * a new placeholder TypeValue is created and returned.  The placeholder will be filled in later when
+     * we actually see that type.  This allows us to avoid any forward reference problems when parsing an ABC
+     * @param typeID the index of the QName we want the TypeValue for
+     * @return the TypeValue representing the type specifed by typeID.
+     */
+    private TypeValue getTypeFromQName(int typeID)
+    {
+        if( typeID == 0 )
+            return ctx.noType();
+
+        QName typename = getFullName(getBinaryMNFromCPool(typeID));
+
+        if( ctx.isBuiltin(typename.toString()) )
+            return ctx.builtin( typename.toString() );
+
+        TypeValue type = TypeValue.getTypeValue(ctx, typename);
+        if( !type.resolved )
+            ce_unresolved_sets.last().add(new ReferenceValue(ctx, null, typename.name, typename.ns));
+
+        return TypeValue.getTypeValue(ctx, typename);
+
+    }
+
+    private DefAndSlot slotTrait(String name, ObjectValue ns, int slotID, int typeID, int valueID, int value_kind, boolean is_const, boolean build_ast)
     {
         ObjectValue obj = ctx.scope();
-
         DefAndSlot ret = new DefAndSlot();
-
-        QName qName = getQNameFromCPool(nameID);
-        String simpleName = getStringFromCPool(qName.name);
-
-        ObjectValue ns = getNamespace(qName);
-        Namespaces names = new Namespaces();
-        names.push_back(ns);
-        TypeValue type = ctx.noType(); // cn: type will be set correctly during CE,
-										   //   we can't use getTypeFromQName(typeID); here because type could be farther
-										   //   along in the file.
-
+        Namespaces nss = new Namespaces();
+        nss.push_back(ns);
+                
+        TypeValue type = getTypeFromQName(typeID);
+        
         int var_id = obj.builder.Variable(ctx, obj);
-        int slot_id = obj.builder.ExplicitVar(ctx,obj,simpleName,names, type,-1,-1,var_id);
+        int slot_id = obj.builder.ExplicitVar(ctx,obj,name,nss,type,-1,-1,var_id);
 
         Slot slot = obj.getSlot(ctx,slot_id);
 		slot.setConst(is_const);
@@ -426,69 +175,66 @@ public final class AbcParser
 
         ret.slot = slot;
 
-        IdentifierNode id = identifierNode(simpleName, ns);
+        IdentifierNode id=null;
+        AttributeListNode attr=null;
 
-        AttributeListNode attr = attributeList(false, false, false, ns, obj.builder);
-
+        if( build_ast )
+        {
+            id = identifierNode(name, ns);
+            attr = attributeList(false, false, false, ns, obj.builder);
+        }
         if( value_kind == ActionBlockConstants.CONSTANT_Namespace )
         {
             ObjectValue nsValue = getNamespace(valueID);
             slot.setObjectValue(nsValue);
 			slot.setConst(true);
 
-            ret.def = ctx.getNodeFactory().namespaceDefinition(attr, id, ctx.getNodeFactory().literalString(nsValue.name));
+            if( build_ast )
+                ret.def = ctx.getNodeFactory().namespaceDefinition(attr, id, ctx.getNodeFactory().literalString(nsValue.name));
+
             return ret;
         }
-        macromedia.asc.semantics.QName typeName;
-        MemberExpressionNode typeExpr = null;
-        IdentifierNode typeIdNode = null;
-        if( typeID != 0 )
+        if( valueID != 0)
+            slot.setObjectValue(getInitValue(valueID, value_kind));
+        
+        if( build_ast )
         {
-            QName t = getQNameFromCPool(typeID);
-            typeExpr = memberExprFromName(t);
+	        MemberExpressionNode typeExpr = null;
+	        if( typeID != 0 )
+	        {
+	            AbcData.BinaryMN t = getBinaryMNFromCPool(typeID);
+	            typeExpr = memberExprFromMN(t);
+	        }
+
+	        Node init = getInitValueNode(valueID,value_kind);     // (0,0) means undefined
+	        TypedIdentifierNode ty = ctx.getNodeFactory().typedIdentifier(id, typeExpr);
+	        int tok = is_const ? Tokens.CONST_TOKEN : Tokens.VAR_TOKEN;
+	        VariableBindingNode bind = ctx.getNodeFactory().variableBinding(attr, tok, ty, init);
+
+	        bind.ref = id.ref;
+	        if( typeExpr != null )
+	        {
+	            bind.typeref = typeExpr.ref;
+	        }
+
+	        ret.def = (DefinitionNode) ctx.getNodeFactory().variableDefinition(attr, tok, ctx.getNodeFactory().list(null, bind));
         }
-        else
-        {
-            typeExpr = null;
-        }
-
-        Node init = getInitValue(valueID,value_kind);     // (0,0) means undefined
-
-        TypedIdentifierNode typedID = ctx.getNodeFactory().typedIdentifier(id, typeExpr);
-        int tok = is_const ? Tokens.CONST_TOKEN : Tokens.VAR_TOKEN;
-        VariableBindingNode bind = ctx.getNodeFactory().variableBinding(attr, tok, typedID, init);
-
-        bind.ref = id.ref;
-        if( typeExpr != null )
-        {
-            bind.typeref = typeExpr.ref;
-        }
-
-        ret.def = (DefinitionNode) ctx.getNodeFactory().variableDefinition(attr, tok, ctx.getNodeFactory().list(null, bind));
         return ret;
-                // This is always a definition node. only while parsing prototype vars could it be a statement list
     }
 
-    private MemberExpressionNode memberExprFromName(QName q)
+    private MemberExpressionNode memberExprFromMN(AbcData.BinaryMN mn)
     {
         MemberExpressionNode typeExpr = null;
-        macromedia.asc.semantics.QName typeName = getFullName(q);
+        QName typeName = getFullName(mn);
+        NodeFactory nf = ctx.getNodeFactory();
+        
         if( typeName instanceof ParameterizedName )
         {
-            ParameterizedQName pqn = (ParameterizedQName)q;
             ParameterizedName pn = (ParameterizedName)typeName;
-
-            NodeFactory nf = ctx.getNodeFactory();
-
-            Node apply;
             IdentifierNode baseIdNode = identifierNode(pn.name, pn.ns);
-
-
-            ListNode list = null;
-            MemberExpressionNode param_node = memberExprFromName(getQNameFromCPool(pqn.params.at(0)));
-            list = nf.list(list, param_node);
-
-            apply = nf.applyTypeExpr(baseIdNode, list, -1);
+            MemberExpressionNode param_node = memberExprFromMN(getBinaryMNFromCPool(mn.params[0]));
+            ListNode list = nf.list(null, param_node);
+            Node apply = nf.applyTypeExpr(baseIdNode, list, -1);
             typeExpr = nf.memberExpression(null, (SelectorNode)apply);
             typeExpr.ref = baseIdNode.ref;
             typeExpr.ref.addTypeParam(param_node.ref);
@@ -496,13 +242,19 @@ public final class AbcParser
         else
         {
             IdentifierNode typeIdNode = identifierNode(typeName.name, typeName.ns);
-            GetExpressionNode getNode = ctx.getNodeFactory().getExpression(typeIdNode);
-            typeExpr = ctx.getNodeFactory().memberExpression(null, getNode);
+            GetExpressionNode getNode = nf.getExpression(typeIdNode);
+            typeExpr = nf.memberExpression(null, getNode);
             typeExpr.ref = typeIdNode.ref;
         }
         return typeExpr;
     }
-    // Creates an identifier node, and fills in the ref with the correct reference value
+    
+    /**
+     *  Creates an identifier node, and fills in the ref with the correct reference value
+     * @param simpleName
+     * @param ns
+     * @return IdentifierNode
+     */
     private IdentifierNode identifierNode(String simpleName, ObjectValue ns)
     {
         IdentifierNode id = ctx.getNodeFactory().identifier(simpleName);
@@ -511,64 +263,50 @@ public final class AbcParser
         return id;
     }
 
-
-    DefAndSlot methodTrait(int nameID, int dispID, int methInfo, int attrs, int kind)
-    {
-        QName methQName = getQNameFromCPool(nameID);
-
-        String methName = getStringFromCPool(methQName.name);
-        ObjectValue ns = getNamespace(methQName);
-        return methodTrait(methName, ns, dispID, methInfo, attrs, kind);
-    }
-
-    DefAndSlot methodTrait(String methName, ObjectValue ns, int dispID, int methInfo, int attrs, int kind)
+    private DefAndSlot methodTrait(String methodName, ObjectValue ns, int dispID, int methInfo, int attrs, int kind, boolean build_ast)
     {
         ObjectValue obj = ctx.scope();
-
         DefAndSlot ret = new DefAndSlot();
-
-        int method_id;
-        int method_slot;
-
         boolean isFinal = (attrs & ActionBlockConstants.TRAIT_FLAG_final) != 0;
         boolean isOverride = (attrs & ActionBlockConstants.TRAIT_FLAG_override) != 0;
+        Namespaces names = new Namespaces(ns);
+        int method_id = obj.builder.Method(ctx,obj,methodName,names,false);
+        int method_slot;
+        NodeFactory nf = ctx.getNodeFactory();
 
-        Namespaces names = new Namespaces();
-        names.push_back(ns);
         // Create the right type of method based on what kind it is.  Either a setter, getter, or regular method
         switch(kind)
         {
         case ActionBlockConstants.TRAIT_Setter: //Set property
-            method_id = obj.builder.Method(ctx,obj,methName,names,false);
-            method_slot = obj.builder.ExplicitSet(ctx,obj,methName,names,ctx.noType(),isFinal,isOverride,-1,method_id,-1);
+            method_slot = obj.builder.ExplicitSet(ctx,obj,methodName,names,ctx.noType(),isFinal,isOverride,-1,method_id,-1);
             break;
-        case ActionBlockConstants.TRAIT_Getter: //get propert
-            method_id = obj.builder.Method(ctx,obj,methName,names,false);
-            method_slot = obj.builder.ExplicitGet(ctx,obj,methName,names,ctx.noType(),isFinal,isOverride,-1,method_id,-1);
+            
+        case ActionBlockConstants.TRAIT_Getter: //get property
+            method_slot = obj.builder.ExplicitGet(ctx,obj,methodName,names,ctx.noType(),isFinal,isOverride,-1,method_id,-1);
             break;
+            
         default: // regular method
-            method_id = obj.builder.Method(ctx,obj,methName,names,false);
-            method_slot = obj.builder.ExplicitCall(ctx,obj,methName,names,ctx.noType(),isFinal,isOverride,-1,method_id,-1);
+            method_slot = obj.builder.ExplicitCall(ctx,obj,methodName,names,ctx.noType(),isFinal,isOverride,-1,method_id,-1);
             break;
         }
 
-        ObjectValue funcObj = new ObjectValue(ctx,new FunctionBuilder(),ctx.functionType());
+        ObjectValue funcObj = getFunctionObject();
         Slot slot = obj.getSlot(ctx, method_slot);
-        slot.setObjectValue(funcObj);
+        slot.setValue(funcObj);
 		slot.setImported(true);
 
         // Calculate the internal name - this matter because with get/set properties you can end up with
         // multiple methods with the same name, but they must each have different internal names.
-        StringBuilder internal_name = new StringBuilder(methName.length() + 5);
-        if( !fun_names.containsKey(methName) )
+        StringBuilder internal_name = new StringBuilder(methodName.length() + 5);
+        if( !fun_names.containsKey(methodName) )
         {
-            fun_names.put(methName,0);
+            fun_names.put(methodName,0);
         }
-        internal_name.append(methName).append('$');
-        int num = fun_names.get(methName);
+        internal_name.append(methodName).append('$');
+        int num = fun_names.get(methodName);
         internal_name.append(num);
         num++;
-        fun_names.put(methName, num);
+        fun_names.put(methodName, num);
 
         int slot_id = obj.getImplicitIndex(ctx,method_slot,Tokens.EMPTY_TOKEN);
         Slot implied_slot = obj.getSlot(ctx, slot_id);
@@ -576,7 +314,6 @@ public final class AbcParser
 
 	    String n = internal_name.toString();
         implied_slot.setMethodName(n);//node->fexpr->internal_name;
-        slot.getObjectValue().name = n;
         ret.slot = implied_slot;
 
         // Make sure the FunctionBuilder gets cleaned up
@@ -595,224 +332,312 @@ public final class AbcParser
         }
 
         // Come up with the function signature
-        int original = buf.pos();
-        buf.seek(methodPositions[methInfo] );
+        AbcData.Method m_info = this.abcData.getMethod(methInfo);
 
-        int paramCount = buf.readU32();
-        int returnType = buf.readU32(); //returnType
-        int paramTypes[] = new int[paramCount];
-        for( int i = 0; i < paramCount; ++i )
-        {
-            paramTypes[i] = buf.readU32();
-        }
-
-        buf.readU32(); // skip the name
-        int flags = buf.readU8();
-        boolean needs_rest = (flags & ActionBlockConstants.METHOD_Needrest) != 0 || (flags & ActionBlockConstants.METHOD_IgnoreRest) != 0;
-        boolean has_optional = (flags & ActionBlockConstants.METHOD_HasOptional) != 0;
-        boolean has_param_names = (flags & ActionBlockConstants.METHOD_HasParamNames) != 0;
-        int optional_count = 0;
+        int returnTypeID = m_info.getReturnType();
+        int paramTypeIDs[] = m_info.getParamTypes();
+        int paramCount = paramTypeIDs.length;
         ObjectList<Node> optional_nodes = null;
-        if( has_optional )
+        int optional_count = 0;
+        if( m_info.getHasOptional()  )
         {
-            optional_nodes = parseOptionalParams();
-            optional_count = optional_nodes.size();
-        }
-        String[] param_names = new String[paramCount + optional_count];
-        if( has_param_names )
-        {
-            for( int i = 0; i < paramCount; ++i )
+            if( build_ast )
             {
-                param_names[i] = getStringFromCPool(buf.readU32());
+                optional_nodes = parseOptionalParams(m_info);
             }
+            optional_count = m_info.getOptionalParamTypes().length;
         }
-        buf.seek(original);
+        String[] param_names = m_info.getParamNames();
 
-        MemberExpressionNode retTypeNode = null;
-        if( returnType != 0 )
-        {
-            QName retQName = getQNameFromCPool(returnType);
-            //macromedia.asc.semantics.QName retName = getFullName(retQName);
+        // Set return type
+        implied_slot.setType(getTypeFromQName(returnTypeID).getDefaultTypeInfo());
 
-            retTypeNode = memberExprFromName(retQName);
-            /*IdentifierNode ident = identifierNode(retName.name, retName.ns);
-
-            GetExpressionNode getNode = ctx.getNodeFactory().getExpression(ident);
-            retTypeNode = ctx.getNodeFactory().memberExpression(null, getNode);
-
-            retTypeNode.ref = ident.ref;
-            */
-        }
         ParameterListNode paramList = null;
-        funcObj.activation = new ObjectValue(ctx, new ActivationBuilder(),ctx.noType());
+
+        ObjectList<TypeInfo> param_types = new ObjectList<TypeInfo>(paramCount);
+        ByteList decl_styles = new ByteList(1);
+
         for( int i = 0, cur_optional = 0; i < paramCount; ++i )
         {
-            macromedia.asc.semantics.QName typeName = null;
-            QName typeQName = null;
-            if( paramTypes[i] != 0 )
+            ParameterNode param = null;
+            if( build_ast )
             {
-                typeQName = getQNameFromCPool(paramTypes[i]);
-                typeName = getFullName(typeQName);
+                AbcData.BinaryMN typeMN = null;
+                if( paramTypeIDs[i] != 0 )
+                {
+                    typeMN = getBinaryMNFromCPool(paramTypeIDs[i]);
+                    // getFullName(typeMN); // for effect
+                }
+
+                String simple_param_name = i < param_names.length && param_names[i] != null ? param_names[i] : ("param" + (i+1)).intern();
+                param = parameterNode(simple_param_name, typeMN);
+
+                paramList = nf.parameterList(paramList, param);
             }
 
-            String simple_param_name = param_names[i] != null ? param_names[i] : ("param" + (i+1)).intern();
-            ParameterNode param = parameterNode(simple_param_name, typeQName);
+            param_types.push_back(getTypeFromQName(paramTypeIDs[i]).getDefaultTypeInfo());
 
-            paramList = ctx.getNodeFactory().parameterList(paramList, param);
-
-            int var_id = funcObj.activation.builder.Variable(ctx, funcObj.activation);
-            funcObj.activation.builder.ExplicitVar(ctx,funcObj.activation,simple_param_name,ctx.publicNamespace(), ctx.noType(),-1,-1,var_id);
-            if( has_optional && i >= paramCount - optional_count )
+            if( i >= paramCount - optional_count )
             {
-                param.init = optional_nodes.get(cur_optional++);
+                if( build_ast )
+                    param.init = optional_nodes.get(cur_optional++);
+                decl_styles.push_back((byte) Slot.PARAM_Optional);
+            }
+            else
+            {
+                decl_styles.push_back((byte) Slot.PARAM_Required);
             }
         }
-        if( needs_rest )
+ 
+        if( m_info.getNeedsRest() )
         {
-            ParameterNode param = parameterNode("rest", ctx.arrayType().name);
+            if( build_ast )
+            {
+                ParameterNode param = parameterNode("rest", ctx.arrayType().name);
+                RestParameterNode restNode = ctx.getNodeFactory().restParameter(param , -1);
+                restNode.ref = param.ref;
+                restNode.typeref = param.typeref;
+                paramList = nf.parameterList(paramList, restNode);
 
-            int var_id = funcObj.activation.builder.Variable(ctx, funcObj.activation);
-            funcObj.activation.builder.ExplicitVar(ctx,funcObj.activation,"rest",ctx.publicNamespace(), ctx.arrayType(),-1,-1,var_id);
+                // rsun 11.22.05 porting over a fix made to the 8ball_AS3 branch a long time
+                // ago, but only to the C++ compiler. has_rest needs to be reset here since
+                // MovieClipMaker is a special entry point that creates function nodes itself.
+                // otherwise, has_rest is unnecessarily true for all functions processed after
+                // this.
+                ctx.getNodeFactory().has_rest = false;
+            }
 
-            RestParameterNode restNode = ctx.getNodeFactory().restParameter(param , -1);
-            restNode.ref = param.ref;
-            restNode.typeref = param.typeref;
-            paramList = ctx.getNodeFactory().parameterList(paramList, restNode);
-
-	    // rsun 11.22.05 porting over a fix made to the 8ball_AS3 branch a long time
-	    // ago, but only to the C++ compiler. has_rest needs to be reset here since 
-	    // MovieClipMaker is a special entry point that creates function nodes itself. 
-	    // otherwise, has_rest is unnecessarily true for all functions processed after
-	    // this.
-	    ctx.getNodeFactory().has_rest = false;
+            param_types.push_back(ctx.arrayType().getDefaultTypeInfo());
+            decl_styles.push_back((byte) Slot.PARAM_Rest);
         }
 
-        FunctionSignatureNode fsn = ctx.getNodeFactory().functionSignature(paramList,retTypeNode);
-        if( retTypeNode != null )
+        if( param_types.size() > 0 )
         {
-	        fsn.typeref = retTypeNode.ref;
+            implied_slot.setTypes(param_types);
+            implied_slot.setDeclStyles(decl_styles);
+        }
+        else
+        {
+            param_types.push_back(ctx.voidType().getDefaultTypeInfo());
+            implied_slot.setTypes(param_types);
+            implied_slot.addDeclStyle(Slot.PARAM_Void);
         }
 
-        IdentifierNode idNode = identifierNode(methName, ns);
-        FunctionCommonNode fcn = ctx.getNodeFactory().functionCommon(ctx, idNode, fsn, null);
-        fcn.fun = funcObj;
-        fcn.kind = functionKind;
-        FunctionNameNode fn = ctx.getNodeFactory().functionName(functionKind, idNode);
+        if( build_ast )
+        {
+            MemberExpressionNode retTypeNode = null;
+            if( returnTypeID != 0 )
+            {
+                AbcData.BinaryMN retMN = getBinaryMNFromCPool(returnTypeID);
+                retTypeNode = memberExprFromMN(retMN);
+            }
+            FunctionSignatureNode fsn = nf.functionSignature(paramList,retTypeNode);
+            if( retTypeNode != null )
+            {
+                fsn.typeref = retTypeNode.ref;
+            }
 
-        AttributeListNode attr = attributeList(isFinal, isOverride, false, ns, obj.builder);
-        FunctionDefinitionNode fdn = ctx.getNodeFactory().binaryFunctionDefinition(ctx, attr, fn, fcn, -1);
+            IdentifierNode id = identifierNode(methodName,ns);
+            FunctionCommonNode fcn = nf.functionCommon(ctx, id, fsn, null);
+            fcn.kind = functionKind;
+            fcn.ref = id.ref;
 
-        fn.identifier.ref = fcn.ref = new ReferenceValue(ctx, null, idNode.name, ns);
+            FunctionNameNode fn = nf.functionName(functionKind, id);
+            AttributeListNode attr = attributeList(isFinal, isOverride, false, ns, obj.builder);
+            FunctionDefinitionNode fdn = nf.binaryFunctionDefinition(ctx, attr, fn, fcn, -1);
 
-        ret.def = fdn;
+            ret.def = fdn;
+        }
         return ret;
     }
 
-    private Node getInitValue(int value_index,int value_kind)
+    private static ObjectValue dummyFunc = null;
+
+    /**
+     * Helper so we only allocate 1 ObjectValue to represent a method, instead
+     * of 1 for each method.  This is safe because the OV is only used as the value
+     * of a MethodSlot, and we only ever check for the existance of the value, never anything else
+     * @return an ObjectValue that can be used for a function object
+     */
+    private ObjectValue getFunctionObject()
     {
-        Node current_node;
+        if( dummyFunc == null )
+            dummyFunc = new ObjectValue(ctx,new FunctionBuilder(),ctx.functionType());
+
+        return dummyFunc;
+    }
+
+    private Node getInitValueNode(int valueID,int kind)
+    {
+        Node t;
         NodeFactory nf = ctx.getNodeFactory();
-        double val;
-        switch (value_kind)
+        
+        switch (kind)
         {
             case ActionBlockConstants.CONSTANT_Void:
-                current_node = nf.unaryExpression(Tokens.VOID_TOKEN,nf.literalNumber("0",-1),-1);
+                t = nf.unaryExpression(Tokens.VOID_TOKEN,nf.literalNumber("0",-1),-1);
                 break;
+                
             case ActionBlockConstants.CONSTANT_Integer:
             case ActionBlockConstants.CONSTANT_UInteger:
             case ActionBlockConstants.CONSTANT_Double:
-                val = getNumberFromCPool(value_index, value_kind);
-                current_node = nf.literalNumber(String.valueOf(val));
+                double val = getNumberFromCPool(valueID, kind);
+                t = nf.literalNumber(String.valueOf(val));
                 break;
-            case ActionBlockConstants.CONSTANT_Decimal: {
-            	Decimal128 dval = getDecimalFromCPool(value_index);
+                
+            case ActionBlockConstants.CONSTANT_Decimal:
+            	Decimal128 dval = getDecimalFromCPool(valueID);
             	String sval = dval.toString();
             	if (ctx.statics.es4_numerics)
             		sval += "m";
-            	current_node = nf.literalNumber(sval);
+            	t = nf.literalNumber(sval);
             	break;
-            }
+            
             case ActionBlockConstants.CONSTANT_True:
-                current_node = nf.literalBoolean(true);
+                t = nf.literalBoolean(true);
                 break;
+                
             case ActionBlockConstants.CONSTANT_False:
-                current_node = nf.literalBoolean(false);
+                t = nf.literalBoolean(false);
                 break;
+                
             case ActionBlockConstants.CONSTANT_Utf8:
-                current_node = nf.literalString(getStringFromCPool(value_index));
+                t = nf.literalString(getStringFromCPool(valueID));
                 break;
+                
             case ActionBlockConstants.CONSTANT_Null:
-                current_node = nf.literalNull();
+                t = nf.literalNull();
                 break;
+                
             case ActionBlockConstants.CONSTANT_Namespace:
-                ObjectValue ns = getNamespace(value_index);
-                current_node = nf.literalString(ns.name);
+                ObjectValue ns = getNamespace(valueID);
+                t = nf.literalString(ns.name);
                 break;
+                
             default:
-                current_node = nf.literalString("");
+                t = nf.literalString("");
                 break;
         }
-        return current_node;
+        return t;
     }
 
-
-    private ObjectList<Node> parseOptionalParams()
+    private ObjectValue getInitValue(int valueID,int kind)
     {
-        int optional_count = buf.readU32();
-        ObjectList<Node> optionals = new ObjectList<Node>(optional_count);
-        for( int i = 0; i < optional_count; ++i)
+        ObjectValue ov;
+        switch (kind)
         {
-            int value_index = buf.readU32();
-            int value_kind = buf.readU8();
-            Node current_node = getInitValue(value_index,value_kind);
+            case ActionBlockConstants.CONSTANT_Void:
+                ov = ctx.voidType().prototype;
+                break;
+
+            case ActionBlockConstants.CONSTANT_Integer:
+                double intval = getNumberFromCPool(valueID, kind);
+                ov = new ObjectValue(String.valueOf(intval), ctx.intType());
+                break;
+            case ActionBlockConstants.CONSTANT_UInteger:
+                double uintval = getNumberFromCPool(valueID, kind);
+                ov = new ObjectValue(String.valueOf(uintval), ctx.uintType());
+                break;
+            case ActionBlockConstants.CONSTANT_Double:
+                double val = getNumberFromCPool(valueID, kind);
+                ov = new ObjectValue(String.valueOf(val), ctx.doubleType());
+                break;
+
+            case ActionBlockConstants.CONSTANT_Decimal:
+            	Decimal128 dval = getDecimalFromCPool(valueID);
+            	String sval = dval.toString();
+            	if (ctx.statics.es4_numerics)
+            		sval += "m";
+            	ov = new ObjectValue(sval, ctx.decimalType());
+            	break;
+
+            case ActionBlockConstants.CONSTANT_True:
+                ov = ctx.booleanTrue();
+                break;
+
+            case ActionBlockConstants.CONSTANT_False:
+                ov = ctx.booleanFalse();
+                break;
+
+            case ActionBlockConstants.CONSTANT_Utf8:
+                ov = new ObjectValue(getStringFromCPool(valueID), ctx.stringType());
+                break;
+
+            case ActionBlockConstants.CONSTANT_Null:
+                ov = ctx.nullType().prototype;
+                break;
+
+            case ActionBlockConstants.CONSTANT_Namespace:
+                ObjectValue ns = getNamespace(valueID);
+                ov = ns;
+                break;
+
+            default:
+                ov = null;
+                break;
+        }
+        return ov;
+    }
+
+    private ObjectList<Node> parseOptionalParams(AbcData.Method method_info)
+    {
+        int[] optional_values = method_info.getOptionalParamTypes();
+        int[] optional_kinds = method_info.getOptionalParamKinds();
+        
+        ObjectList<Node> optionals = new ObjectList<Node>(optional_values.length);
+        for( int i = 0; i < optional_values.length; ++i)
+        {
+            int value_index = optional_values[i];
+            int value_kind =  optional_kinds[i];
+            Node current_node = getInitValueNode(value_index,value_kind);
             optionals.push_back(current_node);
         }
         return optionals;
     }
 
-    private ParameterNode parameterNode(String simple_param_name, macromedia.asc.semantics.QName typeName)
-    {
-        IdentifierNode ident = identifierNode(simple_param_name, ctx.publicNamespace());
 
-        IdentifierNode type_ident = null;
-        MemberExpressionNode paramTypeNode = null;
+    private ParameterNode parameterNode(String simpleParamName, QName typeName)
+    {
+        IdentifierNode id = identifierNode(simpleParamName, ctx.publicNamespace());
+        IdentifierNode ty = null;
+        MemberExpressionNode paramType = null;
+        
         if( typeName != null )
         {
-            type_ident = identifierNode(typeName.name, typeName.ns);
-
-            GetExpressionNode getNode = ctx.getNodeFactory().getExpression(type_ident);
-            paramTypeNode = ctx.getNodeFactory().memberExpression(null, getNode);
+            ty = identifierNode(typeName.name, typeName.ns);
+            GetExpressionNode getNode = ctx.getNodeFactory().getExpression(ty);
+            paramType = ctx.getNodeFactory().memberExpression(null, getNode);
         }
-        ParameterNode param = ctx.getNodeFactory().parameter(Tokens.VAR_TOKEN, ident, paramTypeNode);
-        if( type_ident != null )
+        ParameterNode param = ctx.getNodeFactory().parameter(Tokens.VAR_TOKEN, id, paramType);
+        if( ty != null )
         {
-            param.typeref = type_ident.ref;
+            param.typeref = ty.ref;
         }
-        param.ref = ident.ref;
+        param.ref = id.ref;
 
         return param;
     }
 
-    private ParameterNode parameterNode(String simple_param_name, QName typeName)
+    private ParameterNode parameterNode(String simpleParamName, AbcData.BinaryMN typeMN)
     {
-        IdentifierNode ident = identifierNode(simple_param_name, ctx.publicNamespace());
+        IdentifierNode id = identifierNode(simpleParamName, ctx.publicNamespace());
 
-        MemberExpressionNode paramTypeNode = null;
-        if( typeName != null )
+        MemberExpressionNode paramType = null;
+        if( typeMN != null )
         {
-            paramTypeNode = memberExprFromName(typeName);
+            paramType = memberExprFromMN(typeMN);
         }
-        ParameterNode param = ctx.getNodeFactory().parameter(Tokens.VAR_TOKEN, ident, paramTypeNode);
-        if( paramTypeNode != null )
+        ParameterNode param = ctx.getNodeFactory().parameter(Tokens.VAR_TOKEN, id, paramType);
+        if( paramType != null )
         {
-            param.typeref = paramTypeNode.ref;
+            param.typeref = paramType.ref;
         }        
-        param.ref = ident.ref;
+        param.ref = id.ref;
 
         return param;
     }
 
-    AttributeListNode attributeList(boolean isFinal, boolean isOverride, boolean isDynamic, ObjectValue ns, Builder builder)
+    private AttributeListNode attributeList(boolean isFinal, boolean isOverride, boolean isDynamic, ObjectValue ns, Builder builder)
     {
         AttributeListNode attr = ctx.getNodeFactory().attributeList(ctx.getNodeFactory().literalString(""), null);
 
@@ -824,219 +649,207 @@ public final class AbcParser
         {
             attr.hasStatic = true;
         }
-        if( ns != null && (ns == ctx.publicNamespace() || (ns.getNamespaceKind() == Context.NS_PUBLIC && ns.isPackage()) ) )
+        if ( ns == null )
+        	return attr;
+        
+        if( ns == ctx.publicNamespace() || (ns.getNamespaceKind() == Context.NS_PUBLIC && ns.isPackage()) )
         {
             // Only package public namespaces will have been qualified with the 'public' access specifier
             // user defined namespaces may also be public namespaces in the cpool, but they will not be package namespaces
             attr.hasPublic = true;
         }
-        else if( ns != null && ns.isInternal() )
-        {
+        else if( ns.isInternal() )
             attr.hasInternal = true;
-        }
-        else if( ns != null && ns.isProtected() )
-        {
+        else if( ns.isProtected() )
             attr.hasProtected = true;
-        }
-        else if( ns != null && ns.isPrivate() )
-        {
+        else if( ns.isPrivate() )
             attr.hasPrivate = true;
-        }
-        else if( ns != null)
+        else
         {
             if( builder.classname != null && ns == builder.classname.ns)
-            {
                 attr.hasPublic = true;
-            }
             else
-            {
                 attr.namespaces.add(ns);
-            }
         }
         return attr;
     }
-// Utility to get the full name based on a qname (ns + "/" + name)
-    macromedia.asc.semantics.QName getFullName(QName q)
+    
+    // Utility to get the full name based on a qname (ns + "/" + name)
+    private QName getFullName(AbcData.BinaryMN mn)
     {
-        if( q instanceof ParameterizedQName )
+        if( mn.kind == ActionBlockConstants.CONSTANT_TypeName )
         {
-            ParameterizedQName p = (ParameterizedQName)q;
-            QName base = getQNameFromCPool(p.name);
-            macromedia.asc.semantics.QName base_qn = getFullName(base);
-            ObjectList<macromedia.asc.semantics.QName> params = new ObjectList();
-            for( int i = 0; i < p.params.size(); ++i) {
-                params.add(getFullName(getQNameFromCPool(p.params.at(i))));
+            AbcData.BinaryMN base = getBinaryMNFromCPool(mn.baseMN);
+            QName base_qn = getFullName(base);
+            ObjectList<QName> params = new ObjectList<QName>(mn.params.length);
+            
+            for( int i = 0; i < mn.params.length; ++i) {
+                params.add(getFullName(getBinaryMNFromCPool(mn.params[i])));
             }
-            ParameterizedName pn = new ParameterizedName(params, base_qn.ns, base_qn.name)    ;
+            ParameterizedName pn = new ParameterizedName(params, base_qn.ns, base_qn.name);
             return pn;
         }
         else
         {
-            String fullName = getStringFromCPool(q.name);
-            ObjectValue ns = getNamespace(q.nameSpace);
+            assert (mn.nsIsSet != true):"expected a single namespace";
+
+            String fullName = getStringFromCPool(mn.nameID);
+            ObjectValue ns = getNamespace(mn.nsID);
             return ctx.computeQualifiedName("", fullName, ns, EMPTY_TOKEN);
         }
     }
 
-    DefAndSlot classTrait(int nameID, int slotID, int classID)
+    private DefAndSlot classTrait(String className, ObjectValue ns, int slotID, int classID)
     {
-        if( classID >= classPositions.length || classID < 0 )
-        {
+        if( classID >= this.abcData.getClassInfoSize() || classID < 0 )
             return null;
-        }
+
         DefAndSlot ret = new DefAndSlot();
-
-        ObjectValue obj = ctx.scope();
-
-        // Class name
-        QName classQName = getQNameFromCPool(nameID);
-        String className = getStringFromCPool(classQName.name);
-        ObjectValue ns = getNamespace(classQName);
-
+        ObjectValue current_scope = ctx.scope();
+        
         String region_name = region_name_stack.back();
         if( region_name.length() > 0 )
         {
             region_name += "/";
             ns = ctx.getNamespace(region_name + ns.name);
         }
-        int instancePos = instancePositions[classID];
-        int classPos = classPositions[classID];
+ 
+        NodeFactory nf = ctx.getNodeFactory();
 
-        int orig = buf.pos();
+        // Instance info
+        AbcData.InstanceInfo iinfo = this.abcData.getInstanceInfo(classID);
 
-        // Instance name
-        buf.seek(instancePos);
-        long instanceNameID = buf.readU32();
-        QName instanceQName = getQNameFromCPool((int)instanceNameID);
-        macromedia.asc.semantics.QName fullName = getFullName(instanceQName);
+        AbcData.BinaryMN instanceMN = getBinaryMNFromCPool(iinfo.getInstanceNameID());
+        QName fullName = getFullName(instanceMN);
+        String fullNameString = fullName.toString();
 
-        long superID = buf.readU32();
-        boolean hasSuper = false;
-        macromedia.asc.semantics.QName superName = null;
+        int superID = iinfo.getSuperID();
+        boolean hasSuper = superID != 0;
+        QName superName = null;
         String simpleSuperName ="";
-        ObjectValue superNS = null;
-        if( superID != 0 )
+        ObjectValue superNamespace = null;
+        if( hasSuper )
         {
-            hasSuper = true;
-
-            QName superQName = getQNameFromCPool((int)superID);
-            superNS = getNamespace(superQName);
-            superName = getFullName(superQName);
-            simpleSuperName = getStringFromCPool(superQName.name);
+            AbcData.BinaryMN superMN = getBinaryMNFromCPool(superID);
+            
+            assert (superMN.nsIsSet != true):"expected a single namespace";
+            
+            superNamespace = getNamespace(superMN.nsID);
+            superName = getFullName(superMN);
+            simpleSuperName = getStringFromCPool(superMN.nameID);
         }
 
-        int flags = buf.readU8();
+        int flags = iinfo.getFlags();
 
-        if ((flags & ActionBlockConstants.CLASS_FLAG_protected) != 0)
-        {
-        	buf.readU32();
-        }
-
-        long interfaces = buf.readU32();
-
+        int[] interfaces = iinfo.getInterfaces();
         ListNode interface_nodes = null;
-		
-		if(debug&&interfaces>0) System.out.println("parsing " + interfaces);
-        for( long i = 0; i < interfaces; ++i )
+		if(debug&&interfaces.length>0) System.out.println("parsing " + interfaces);
+        for( int i = 0; i < interfaces.length; ++i )
         {
-
-//            buf.skipEntries(interfaces);
-            int int_index = buf.readU32();
-            QName intName = getQNameFromCPool(int_index);
-			String simpleIntName = getStringFromCPool(intName.name);
+            int int_index = interfaces[i];
+            AbcData.BinaryMN intMN = getBinaryMNFromCPool(int_index);
+			String simpleIntName = getStringFromCPool(intMN.nameID);
 			Namespaces intNamespaces;
-			if(intName.nsIsSet)
-				intNamespaces = getNamespaces(intName.nameSpace, new TreeSet<Integer>());
+			if(intMN.nsIsSet)
+				intNamespaces = getNamespaces(intMN.nsID);
 			else {
 				intNamespaces = new Namespaces(1); 
-				intNamespaces.add(getNamespace(intName));
+				intNamespaces.add(getNamespace(intMN.nsID));
 			}
 		
-            IdentifierNode ident = ctx.getNodeFactory().identifier(simpleIntName);
+            IdentifierNode ident = nf.identifier(simpleIntName);
 
             ident.ref = new ReferenceValue(ctx, null, simpleIntName, intNamespaces);
-            GetExpressionNode getNode = ctx.getNodeFactory().getExpression(ident);
-            MemberExpressionNode interface_node = ctx.getNodeFactory().memberExpression(null, getNode);
+            GetExpressionNode getNode = nf.getExpression(ident);
+            MemberExpressionNode interface_node = nf.memberExpression(null, getNode);
             interface_node.ref = ident.ref;
-            interface_nodes = ctx.getNodeFactory().list(interface_nodes, interface_node);
+            interface_nodes = nf.list(interface_nodes, interface_node);
             interface_nodes.values.push_back(ident.ref);
         }
-        long methID = buf.readU32();
 
         boolean isFinal = (flags & ActionBlockConstants.CLASS_FLAG_final) != 0;
         boolean isDynamic = ( flags & ActionBlockConstants.CLASS_FLAG_sealed ) == 0;
         boolean isInterface = (flags & ActionBlockConstants.CLASS_FLAG_interface) != 0;
-        TypeValue cframe;
-        ObjectValue iframe;
+ 
         ClassDefinitionNode cdn = null;
-        IdentifierNode idNode = ctx.getNodeFactory().identifier(className);
+        IdentifierNode idNode = nf.identifier(className);
         idNode.ref = new ReferenceValue(ctx, null, idNode.name, ns);
         
-        AttributeListNode attr = attributeList(isFinal, false, isDynamic, ns, obj.builder);
+        AttributeListNode attr = attributeList(isFinal, false, isDynamic, ns, current_scope.builder);
+        StatementListNode stmtList = nf.statementList(null, (StatementListNode)null);
         
         if (isInterface)
         {
-        	cdn = ctx.getNodeFactory().binaryInterfaceDefinition(ctx, attr, idNode, null, ctx.getNodeFactory().statementList(null, (StatementListNode)null));
+        	cdn = nf.binaryInterfaceDefinition(ctx, attr, idNode, null, stmtList);
         }
         else
         {
-        	cdn = ctx.getNodeFactory().binaryClassDefinition(ctx, attr, idNode, null, ctx.getNodeFactory().statementList(null, (StatementListNode)null));
+        	cdn = nf.binaryClassDefinition(ctx, attr, idNode, null, stmtList);
         }
         cdn.ref = idNode.ref;
         cdn.interfaces = interface_nodes;
-        cdn.protected_namespace = ctx.getNamespace(fullName.toString(), Context.NS_PROTECTED);
-        cdn.static_protected_namespace = ctx.getNamespace(fullName.toString(), Context.NS_STATIC_PROTECTED);
+        cdn.public_namespace = ctx.publicNamespace();
+        cdn.protected_namespace = ctx.getNamespace(fullNameString, Context.NS_PROTECTED);
+        cdn.static_protected_namespace = ctx.getNamespace(fullNameString, Context.NS_STATIC_PROTECTED);
+        cdn.private_namespace = ctx.getNamespace(fullNameString, Context.NS_PRIVATE);
+        cdn.default_namespace = ctx.getNamespace(fullName.ns.name, Context.NS_INTERNAL);
 
-        boolean is_builtin = ctx.isBuiltin(fullName.toString());
+        boolean is_builtin = ctx.isBuiltin(fullNameString);
+        TypeValue cframe;
+        ObjectValue iframe;
         if( is_builtin )
         {
-            cdn.cframe = cframe = ctx.builtin(fullName.toString());
-            cdn.iframe = iframe = cframe.prototype;
+            cframe = ctx.builtin(fullNameString);
+            iframe = cframe.prototype;
         }
         else
         {
-            cdn.cframe = cframe = TypeValue.newTypeValue(ctx,new ClassBuilder(fullName,cdn.protected_namespace,cdn.static_protected_namespace),fullName,RuntimeConstants.TYPE_object);
-            cdn.iframe = iframe = new ObjectValue(ctx,new InstanceBuilder(fullName),cframe);
+        	ClassBuilder cb = new ClassBuilder(fullName,cdn.protected_namespace,cdn.static_protected_namespace);
+            cframe = TypeValue.defineTypeValue(ctx,cb,fullName,RuntimeConstants.TYPE_object);
+            
+            InstanceBuilder ib = new InstanceBuilder(fullName);
+            ib.canEarlyBind = false;
+            iframe = new ObjectValue(ctx,ib,cframe);
             cframe.prototype = iframe;
-            ((InstanceBuilder)iframe.builder).canEarlyBind = false;
-
-            cdn.debug_name = fullName.toString();
+           
+            cdn.debug_name = fullNameString;
             // Make sure the ClassBuilder and InstanceBuilders get cleaned up
             cdn.owns_cframe = true;
         }
+        cdn.cframe = cframe;
+        cdn.iframe = iframe;
 
         if( isInterface )
         {
-            ((ClassBuilder)cdn.cframe.builder).is_interface = true;
+            ((ClassBuilder)cframe.builder).is_interface = true;
         }
-        cdn.cframe.builder.is_dynamic = cdn.iframe.builder.is_dynamic = isDynamic;
-        cdn.cframe.builder.is_final = cdn.iframe.builder.is_final = isFinal;
+        cframe.builder.is_dynamic = iframe.builder.is_dynamic = isDynamic;
+        cframe.builder.is_final = iframe.builder.is_final = isFinal;
 
-        class_nodes.put(fullName.toString(),cdn);
         clsdefs_sets.last().add(cdn);
 
         if( hasSuper )
         {
             TypeValue superType;
-            cdn.baseclass = ctx.getNodeFactory().literalString(superName.toString(), -1);
+            cdn.baseclass = nf.literalString(superName.toString(), -1);
             if( ctx.isBuiltin(superName.toString()) )
             {
                 // Set the super type, this important for int/uint which derive from Number
                 superType = ctx.builtin(superName.toString());
                 cframe.baseclass = superType;
-
                 cdn.baseref = new ReferenceValue(ctx, null, superName.toString(), ctx.publicNamespace());
             }
             else
             {
-                //cdn.baseclass = ctx.getNodeFactory().literalString(superName.toString(), -1);
-                cdn.baseref = new ReferenceValue(ctx, null, simpleSuperName, superNS);
+                //cdn.baseclass = nf.literalString(superName.toString(), -1);
+                cdn.baseref = new ReferenceValue(ctx, null, simpleSuperName, superNamespace);
                 cdn.baseref.getSlot(ctx);
+
+                cframe.baseclass = getTypeFromQName((int)superID) ;
             }
         }
         else if (cdn.cframe != ctx.objectType())
 		{
-				NodeFactory nf = ctx.getNodeFactory();
 				cdn.baseclass = nf.memberExpression(null, nf.getExpression(nf.identifier("Object")));
 				cframe.baseclass = ctx.objectType();
 		}
@@ -1045,21 +858,18 @@ public final class AbcParser
             cdn.baseclass = null;
             cframe.baseclass = null;
 		}
-        
-        cframe.builder.is_final = isFinal;
-        cframe.builder.is_dynamic = isDynamic;
 
-        int var_id  = obj.builder.Variable(ctx,obj);
-        int slot_id  = obj.builder.ExplicitVar(ctx,obj,className,ns,ctx.typeType(),-1,-1,var_id);
-        Slot slot = obj.getSlot(ctx,slot_id);
+        int var_id  = current_scope.builder.Variable(ctx,current_scope);
+        int slot_id  = current_scope.builder.ExplicitVar(ctx,current_scope,className,ns,ctx.typeType(),-1,-1,var_id);
+        Slot slot = current_scope.getSlot(ctx,slot_id);
         slot.setObjectValue(cframe);
 		slot.setImported(true);
 		slot.setConst(true);		// all class definitions are const.
 
         ret.slot = slot;
 
-        obj.builder.ImplicitCall(ctx,obj,slot_id,cframe,CALL_Method,-1,-1);
-		obj.builder.ImplicitConstruct(ctx,obj,slot_id,cframe,CALL_Method,-1,-1);
+        current_scope.builder.ImplicitCall(ctx,current_scope,slot_id,cframe,CALL_Method,-1,-1);
+		current_scope.builder.ImplicitConstruct(ctx,current_scope,slot_id,cframe,CALL_Method,-1,-1);
 
         if( isInterface )
         {
@@ -1069,30 +879,41 @@ public final class AbcParser
 
         clsdefs_sets.add(new ObjectList<ClassDefinitionNode>());
 
-        region_name_stack.push_back(fullName.toString());
+        region_name_stack.push_back(fullNameString);
+        
         ctx.pushStaticClassScopes(cdn); // class
-        ctx.pushScope(iframe); // instance
-
-        StatementListNode instance_stmts = ctx.getNodeFactory().statementList(null, (StatementListNode)null);
-        parseTraits(null, instance_stmts); // Traits for the instance
-        cdn.instanceinits = new ObjectList<Node>(instance_stmts.items.size());
-        if( instance_stmts.items.size() > 0)
         {
-            cdn.instanceinits.addAll(instance_stmts.items);
+        	ctx.pushScope(iframe); // instance
+        	{
+        		StatementListNode instance_stmts = nf.statementList(null, (StatementListNode)null);
+        		parseTraits(iinfo.getITraits(), instance_stmts, build_ast); // Traits for the instance
+        		cdn.instanceinits = new ObjectList<Node>(instance_stmts.items.size());
+        		if( instance_stmts.items.size() > 0)
+        		{
+        			cdn.instanceinits.addAll(instance_stmts.items);
+        		}
+        		// Add nodes for the constructor, which doesn't have a traits entry.
+        		DefAndSlot d = methodTrait("$construct", ctx.publicNamespace(),0,iinfo.getInitIndex(),0,0, build_ast);
+        		DefinitionNode iinit_node = d.def;
+                if( build_ast )
+        		    cdn.instanceinits.add(iinit_node);
+
+                int implied_idx = current_scope.getImplicitIndex(ctx, slot_id, Tokens.NEW_TOKEN);
+                Slot class_slot = current_scope.getSlot(ctx, implied_idx);
+                if( class_slot != null)
+                {
+                    //class_slot.setType(d.slot.getType());
+                    class_slot.setTypes(d.slot.getTypes());
+                    class_slot.setDeclStyles(d.slot.getDeclStyles());
+                }
+        	}
+        	ctx.popScope(); // instance
+
+        	AbcData.ClassInfo cinfo = this.abcData.getClassInfo(classID);
+        	parseTraits(cinfo.getCTraits(), cdn.statements, build_ast); // Traits for the class (statics)
         }
-        // Add nodes for the constructor, which doesn't have a traits entry.
-        DefinitionNode iinit_node = methodTrait("$construct", ctx.publicNamespace(),0,(int)methID,0,0).def;
-        cdn.instanceinits.add(iinit_node);
-
-        ctx.popScope(); // instance
-
-        buf.seek(classPos);
-        buf.readU32();
-
-        parseTraits(null, cdn.statements); // Traits for the class (statics)
-
         ctx.popStaticClassScopes(cdn); //class
-        buf.seek(orig);
+
         clsdefs_sets.removeLast();
         region_name_stack.pop_back();
 
@@ -1100,346 +921,191 @@ public final class AbcParser
         return ret;
     }
 
-    void parseTraits(BinaryProgramNode node, StatementListNode statements)
+    private void parseTraits(AbcData.Trait[] traits, StatementListNode statements)
     {
-        long count = buf.readU32();
+        parseTraits(traits, statements, true);
+    }
 
-        for (long i = 0; i < count; i++)
-        {
-            long nameID = buf.readU32();
-            int kind = buf.readU8();
-            int tag = kind & 0x0f;
-            int attrs;
-            long slotID, typeID, valueID, methInfo, dispID, classID;
-            int value_kind = 0;
-			boolean ignore = false;
+    private void parseTraits(AbcData.Trait[] traits, StatementListNode statements, boolean build_ast)
+    {
+        for (AbcData.Trait t: traits)
+        {   
+			AbcData.BinaryMN mn = getBinaryMNFromCPool(t.getNameIndex());
+			String name = getStringFromCPool(mn.nameID);
+            ObjectValue ns;
+            ns = getNamespaceFromMultiname(mn);
 
+            boolean ignore = false;
+			if ( mn.versions != null )
 			{
-				QName qName = getQNameFromCPool((int)nameID);
-				ObjectValue ns = getNamespace(qName);
-				String simpleName = getStringFromCPool(qName.name);
-				for (int ver : qName.versions) {
-					// if there is at least one compatible version 
-					// then don't ignore
-					if (ctx.isCompatibleVersion(ver)) {
-						ignore = false;
-						break;
-					}
-					else {
-						ignore = true;
-						continue;
-					}
-				}
+    			for (int ver : mn.versions)
+    			{
+    			     // if there is at least one compatible version 
+                    // then don't ignore
+    				if (ctx.isCompatibleVersion(ver)) {
+    					ignore = false;
+    					break;
+    				}
+    				ignore = true;
+    			}
 			}
+			
+			if ( ignore )
+			    continue;
 
             DefAndSlot d = null;
-            switch (tag) {
+            switch (t.getTag()) 
+            {
             case ActionBlockConstants.TRAIT_Var:
             case ActionBlockConstants.TRAIT_Const:
-                slotID = buf.readU32();
-                typeID = buf.readU32();
-                valueID = buf.readU32();
-                if( valueID > 0)
-                    value_kind = buf.readU8();
-				if (!ignore) {
-					d = slotTrait((int)nameID, (int)slotID, (int)typeID, (int)valueID, value_kind, (tag == ActionBlockConstants.TRAIT_Const));
-	                statements.items.add(d.def);
-
-					if (node != null)
-					{
-						QName qName = getQNameFromCPool((int)nameID);
-						String simpleName = getStringFromCPool(qName.name);
-						ObjectValue ns = getNamespace(qName);
-						node.toplevelDefinitions.add(new macromedia.asc.semantics.QName(ns, simpleName));
-					}
-				}
+			    d = slotTrait(name, ns, t.getSlotId(), t.getTypeName(), t.getValueIndex(), t.getValueKind(), t.isConstTrait(), build_ast);
+                if( build_ast )
+                    statements.items.add(d.def);
                 break;
+                
             case ActionBlockConstants.TRAIT_Method:
             case ActionBlockConstants.TRAIT_Getter:
             case ActionBlockConstants.TRAIT_Setter:
-                dispID = buf.readU32();
-                methInfo = buf.readU32();
-                attrs = (kind >> 4);
-				if (!ignore) {
-					d = methodTrait((int)nameID, (int)dispID, (int)methInfo, attrs, tag);
+				d = methodTrait(name, ns, t.getDispId(), t.getMethodId(), t.getAttrs(), t.getTag(), build_ast);
+				if( build_ast )
 					statements.items.add(d.def);
-					if (node != null)
-					{
-						QName qName = getQNameFromCPool((int)nameID);
-						String simpleName = getStringFromCPool(qName.name);
-						ObjectValue ns = getNamespace(qName);
-						node.toplevelDefinitions.add(new macromedia.asc.semantics.QName(ns, simpleName));
-					}
-				}
                 break;
+                
             case ActionBlockConstants.TRAIT_Class:
-                slotID =  buf.readU32();
-                classID = buf.readU32();
-				if (!ignore) {
-					d = classTrait((int)nameID, (int)slotID, (int)classID);
-					statements.items.add(d.def);
-					if (node != null)
-					{
-						QName qName = getQNameFromCPool((int)nameID);
-						String simpleName = getStringFromCPool(qName.name);
-						ObjectValue ns = getNamespace(qName);
-						node.toplevelDefinitions.add(new macromedia.asc.semantics.QName(ns, simpleName));
-					}
-				}
+				d = classTrait(name, ns, t.getSlotId(), t.getClassId());
                 break;
-            case ActionBlockConstants.TRAIT_Function:
-                buf.skipEntries(2);
+                
+            case ActionBlockConstants.TRAIT_Function: // currently unused
                 break;
+                
             default:
                 break;
                 //throw new DecoderException("Invalid trait kind: " + kind);
             }
-            if( ( (kind >> 4) & ActionBlockConstants.TRAIT_FLAG_metadata) != 0 )
+            
+            if( t.hasMetadata() && d!= null )
             {
-                long metadatacount = buf.readU32();
-                for( int q = 0; q < metadatacount; ++q)
-                {
-                    long metaIndex = buf.readU32();
-                    MetaDataNode metaNode = parseMetadataInfo((int)metaIndex);
-                    if( d!=null )
-                    {
-                        if( d.def != null )
-                        {
-                            metaNode.def = d.def;
-                            d.def.addMetaDataNode(metaNode);
-                            statements.items.add(metaNode);
-                        }
-                        if( d.slot != null && "Deprecated" == metaNode.id) // Should be ok since the cpool entries are interned
-                        {
-                            d.slot.addMetadata(metaNode);
-                        }
-                    }
+                int[] metadata = t.getMetadata();
+                for( int metaIndex: metadata )
+                {   
+                    MetaDataNode metaNode = parseMetadataInfo(metaIndex);
+                    	
+                	if ( d.def != null ){
+                		metaNode.def = d.def;
+                		d.def.addMetaDataNode(metaNode);
+						if( build_ast )
+                			statements.items.add(metaNode); //{pmd} now hasn't this just been hung off the def node? yup, but fails if not here too.
+                	}
+       
+                	if( d.slot != null )
+                	{
+                		String md_id = metaNode.getId();
+                		if( (MetaDataEvaluator.GO_TO_CTOR_DEFINITION_HELP != md_id) &&
+                			(MetaDataEvaluator.GO_TO_DEFINITION_HELP != md_id)  ) // Should be ok since the cpool entries are interned
+                		{
+                			// Don't add the go_to_def metadata - its never needed by the compiler (its just a hint for tools)
+                			// and it takes up a ton of memory if we add it.
+                			//??? Used to only add 'deprecated' metadata...???ask Erik whats up here?
+                			d.slot.addMetadata(metaNode);
+                		}
+                	}
                 }
             }
         }
     }
 
-    void parseScript(int scriptIndex, BinaryProgramNode program)
+    /**
+     * Extract a namespace from a multiname.
+     * @param mn - the multiname. It should only have one namespace if it's a set.
+     * @return the multiname's namespace.
+     */ 
+    private ObjectValue getNamespaceFromMultiname(AbcData.BinaryMN mn)
     {
-        if( scriptIndex < 0 || scriptIndex >= scriptPositions.length )
+        ObjectValue ns;
+        if( mn.nsIsSet )
+        {
+            Namespaces ns_set = getNamespaces(mn.nsID);
+            assert ns_set.size()==1;
+            ns = ns_set.at(0);
+        }
+        else
+        {
+            ns = getNamespace(mn.nsID);
+        }
+        return ns;
+    }
+
+    private void parseScript(int scriptIndex, BinaryProgramNode program)
+    {
+        if( scriptIndex < 0 || scriptIndex >= this.abcData.getScriptInfoSize() )
         {
             return;
         }
-        int orig = buf.pos();
-        buf.seek( scriptPositions[scriptIndex] );
-        /*long initID =*/ buf.readU32();
-
-        parseTraits(program, program.statements);
-
-        buf.seek(orig);
-
+        
+        AbcData.ScriptInfo s = this.abcData.getScriptInfo(scriptIndex);
+        parseTraits(s.getScriptTraits(), program.statements);
     }
-
-    MetaDataNode parseMetadataInfo( int index )
-    {
-        int metaPos = metadataPositions[index];
-        int orig = buf.pos();
-        buf.seek(metaPos);
-
-        long idIndex = buf.readU32();
-        long valueCount = buf.readU32();
-
+    
+    
+    private MetaDataNode parseMetadataInfo( int index )
+    { 
+        //  TODO: Cache this data more aggressively.
         MetaDataNode metaNode = ctx.getNodeFactory().metaData(null, -1);
-
-        metaNode.id = this.getStringFromCPool((int)idIndex);
-        if( valueCount > 0 )
-        {
-            IntList keys = new IntList((int)valueCount);
-            IntList values = new IntList((int)valueCount);
-            for(int i = 0; i < valueCount; ++i )
-            {
-                // read keys
-                keys.add(buf.readU32());
-            }
-            for(int j = 0; j < valueCount; ++j )
-            {
-                // read keys
-                values.add(buf.readU32());
-            }
-            metaNode.values = new Value[(int)valueCount];
-            for( int k = 0; k < valueCount; ++k )
-            {
-                int key = keys.get(k);
-                int value = values.get(k);
-                Value val = null;
-                if( key == 0 )
-                    val = new MetaDataEvaluator.KeylessValue( getStringFromCPool(value) );
-                else
-                    val = new MetaDataEvaluator.KeyValuePair( getStringFromCPool(key), getStringFromCPool(value));
-
-                metaNode.values[k] = val;
-            }
-        }
-        buf.seek(orig);
+        metaNode.setMetadata(this.abcData.getMetadata(index, metaNode));
         return metaNode;
-
     }
+
+        
     
-    String getStringFromCPool(int id)
+    private String getStringFromCPool(int id)
     {
-    	return cPoolStrs[id];
+    	return this.abcData.getString(id);
     }
 
-    Decimal128 getDecimalFromCPool(int id) {
-        int pos = cPoolDecimalPositions[id];
-        int orig = buf.pos();
-        buf.seek(pos);
-        byte rep[] = buf.readBytes(16);
-    	Decimal128 dval = new Decimal128(rep);
-        buf.seek(orig);
-    	return dval;
+    private Decimal128 getDecimalFromCPool(int id) 
+    {
+    	return this.abcData.getDecimal(id);
     }
     
-    double getNumberFromCPool(int id, int kind)
+    private double getNumberFromCPool(int id, int kind)
     {
         double ret = 0.0;
-        int[] cpool = null;
         switch(kind)
         {
             case ActionBlockConstants.CONSTANT_Integer:
-                cpool = cPoolIntPositions;
-                break;
-            case ActionBlockConstants.CONSTANT_UInteger:
-                cpool = cPoolUIntPositions;
-                break;
-            case ActionBlockConstants.CONSTANT_Double:
-                cpool = cPoolDoublePositions;
-                break;
-        }
+            	ret = this.abcData.getInt(id);
+            	return ret;
 
-        if( cpool != null )
-        {
-            int pos = cpool[id];
-            int orig = buf.pos();
-            buf.seek(pos);
-			switch (kind)
-			{
-            case ActionBlockConstants.CONSTANT_Integer:
-                ret = buf.readU32();
-                break;
             case ActionBlockConstants.CONSTANT_UInteger:
-				ret = buf.readU32() & 0xFFFFFFFFL;
-                break;
+            	ret = this.abcData.getUint(id) & 0xFFFFFFFFL;
+            	return ret;
+
             case ActionBlockConstants.CONSTANT_Double:
-                ret = buf.readDouble();
-                break;
-			}
-            buf.seek(orig);
+                ret = this.abcData.getDouble(id);
+                return ret;
         }
+        // {pmd} silent fail here...is this really a good idea?
         return ret;
     }
 
-    static class QName
-    {
-        int name = 0;
-        int nameSpace = 0;
-        boolean nsIsSet = false;
-		Set<Integer> versions;
-    };
 
-    static class ParameterizedQName extends QName
+    private AbcData.BinaryMN getBinaryMNFromCPool(int index)
     {
-        IntList params;
-
-        ParameterizedQName(int name, IntList params)
-        {
-            this.name = name;
-            this.params = params;
-        }
+        return this.abcData.getName(index);
     }
 
-    QName getQNameFromCPool(int index)
+    Namespaces getNamespaces(int namespaceSetID)
     {
-        int orig = buf.pos();
-        QName value = new QName();
-
-        buf.seek( cPoolMnPositions[index] );
-        int kind = buf.readU8();
-
-        switch(kind)
+        int[] ns_ids = this.abcData.getNamespaceSet(namespaceSetID).getNamespaceIds();
+        Namespaces val = new Namespaces(ns_ids.length);
+        for(int i = 0; i < ns_ids.length; ++i)
         {
-        case ActionBlockConstants.CONSTANT_Qname:
-        case ActionBlockConstants.CONSTANT_QnameA:
-            value.nameSpace = buf.readU32();
-            value.name = buf.readU32();
-            break;
-        case ActionBlockConstants.CONSTANT_TypeName:
-            int name = buf.readU32();
-            int count = buf.readU32();
-            IntList params = new IntList(count);
-            for( int i = 0; i < count; ++i )
-                params.add(buf.readU32());
-            value = new ParameterizedQName(name, params);
-            break;
-        case ActionBlockConstants.CONSTANT_Multiname:
-        case ActionBlockConstants.CONSTANT_MultinameA:
-                value.name = buf.readU32();
-                value.nameSpace = buf.readU32();
-                value.nsIsSet = true;
-            break;
-        default:
-        	System.err.println("Unexpected multiname type: " + kind);
-            break;
+            val.add(getNamespace(ns_ids[i]));
         }
-        buf.seek(orig);
-        return value;
-    }
-
-    Namespaces getNamespaces(int namespaceSetID, Set<Integer> versions)
-    {
-        int orig = buf.pos();
-
-        buf.seek( cPoolNsSetPositions[namespaceSetID] );
-
-        int count = buf.readU32();
-        Namespaces val = new Namespaces(count);
-        for(int i = 0; i < count; ++i)
-        {
-            val.add(getNamespace(buf.readU32(), versions));
-        }
-        buf.seek(orig);
         return val;
     }
 
-	ObjectValue getNamespace(QName name) {
-		ObjectValue ns;
-		TreeSet<Integer> versions = new TreeSet<Integer> ();
-		if(name.nsIsSet) {
-			Namespaces nss = getNamespaces(name.nameSpace, versions);
-			if (nss.size() == 0) {
-				ns = ctx.publicNamespace();
-			}
-			else {
-				ns = nss.get(0);  // just need one since they all share the 
-				                  // same base uri
-			}
-		}
-		else {
-			ns = getNamespace(name.nameSpace, versions);
-		}
-		name.versions = versions;
-		return ns;
-	}
-
-	int getVersion(String uri) {
-		if (uri.length() == 0) return ctx.getApiVersion();
-		int last = uri.codePointAt(uri.length()-1);
-		if(last >= 0xE000 && last <= 0xF000) {
-			return last-0xE000;
-		}
-		return ctx.getApiVersion();
-	}
-
-    ObjectValue getNamespace(int namespaceID) {
-		return getNamespace(namespaceID, new TreeSet<Integer>());
-	}
-
-    ObjectValue getNamespace(int namespaceID, Set<Integer> vers)
+    ObjectValue getNamespace(int namespaceID)
     {
         ObjectValue ns = null;
         if( namespaceID == 0 )
@@ -1448,44 +1114,51 @@ public final class AbcParser
         }
         else
         {
-            int orig = buf.pos();
-
-            buf.seek( cPoolNsPositions[namespaceID] );
-
-            int kind = buf.readU8();
-			String uri = getStringFromCPool(buf.readU32());
-			int ver = -1;
+            int kind = this.abcData.getNamespace(namespaceID).nsKind;
+            String uri = this.abcData.getNamespace(namespaceID).getName();
+            int ver = -1;
+            byte ns_kind;
+            
             switch(kind)
             {
             case ActionBlockConstants.CONSTANT_Namespace:
-				vers.add(getVersion(uri));
+                //vers.add(getVersion(uri));
+                ns_kind = Context.NS_PUBLIC;
                 ns = ctx.getNamespace(uri);
                 break;
             case ActionBlockConstants.CONSTANT_PackageNamespace:
-				vers.add(getVersion(uri));
+                //vers.add(getVersion(uri));
+                ns_kind = Context.NS_PUBLIC;
                 ns = ctx.getNamespace(uri);
                 ns.setPackage(true);
                 break;
             case ActionBlockConstants.CONSTANT_ProtectedNamespace:
-                ns = ctx.getNamespace(uri, Context.NS_PROTECTED);
+                ns_kind = Context.NS_PROTECTED;
+                ns = ctx.getNamespace(uri, ns_kind);
                 break;
             case ActionBlockConstants.CONSTANT_PackageInternalNs:
-                ns = ctx.getNamespace(uri, Context.NS_INTERNAL);
+                ns_kind = Context.NS_INTERNAL;
+                ns = ctx.getNamespace(uri, ns_kind);
                 break;
             case ActionBlockConstants.CONSTANT_PrivateNamespace:
-                ns = ctx.getNamespace(uri, Context.NS_PRIVATE);
+                ns_kind = Context.NS_PRIVATE;
+                ns = ctx.getNamespace(uri, ns_kind);
                 break;
             case ActionBlockConstants.CONSTANT_ExplicitNamespace:
-                ns = ctx.getNamespace(uri, Context.NS_EXPLICIT);
+                ns_kind = Context.NS_EXPLICIT;
+                ns = ctx.getNamespace(uri, ns_kind);
                 break;
             case ActionBlockConstants.CONSTANT_StaticProtectedNs:
-                ns = ctx.getNamespace(uri, Context.NS_STATIC_PROTECTED);
+                ns_kind = Context.NS_STATIC_PROTECTED;
+                ns = ctx.getNamespace(uri, ns_kind);
                 break;
+            default:
+                throw new IllegalStateException("Invalid kind:" + Integer.toString(kind));
             }
-            buf.seek(orig);
         }
         return ns;
     }
+
 
 /*
     // These dump functions below are just some debugging aids.
@@ -1643,5 +1316,51 @@ public final class AbcParser
         return value;
     }
 */
+    
+    public static void main(String[] args) throws Throwable
+     {
+         File abcFile = new File(args[0]);
+         byte[] bytes = getBytesFromFile(abcFile); 
+
+         TypeValue.init();
+         ObjectValue.init();
+         Context ctx = new Context(new ContextStatics());
+         AbcParser abcParser = new AbcParser(ctx, bytes);
+         @SuppressWarnings("unused")
+		ProgramNode programNode = abcParser.parseAbc();
+
+         //System.out.println(programNode.toString());
+     }
+
+     private static byte[] getBytesFromFile(File file) throws IOException
+     {
+         FileInputStream is = new FileInputStream(file);
+     
+         // Get the size of the file
+         long length = file.length();
+     
+         // Create the byte array to hold the data
+         byte[] bytes = new byte[(int)length];
+     
+         // Read in the bytes
+         int offset = 0;
+         int numRead = 0;
+         while (offset < bytes.length
+                && (numRead=is.read(bytes, offset, bytes.length-offset)) >= 0) 
+         {
+             offset += numRead;
+         }
+     
+         // Ensure all the bytes have been read in
+         if (offset < bytes.length)
+         {
+             throw new IOException("Could not completely read file "+file.getName());
+         }
+     
+         // Close the input stream and return bytes
+         is.close();
+         return bytes;
+     }
+     
 }
 

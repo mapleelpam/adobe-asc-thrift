@@ -41,19 +41,19 @@ public class DocCommentNode extends MetaDataNode
     private StringBuilder emitMetaDataComment(StringBuilder buf, String debugName, MetaDataNode meta, boolean isAttributeOfDefinition)
 	{
 		buf.append("\n<metadata>\n");
-		String tagname = meta.id;
+		String tagname = meta.getId();
 		buf.append("\n\t<").append(tagname).append(" ");
 		buf.append("owner='").append(debugName).append("' ");
 
 		// write out the first keyless value, if any, as the name attribute. Output all keyValuePairs
 		//  as usual.
   	    boolean has_name = false;
-        if( meta.values != null )
+        if( meta.getValues() != null )
         {
-            if( "SkinStates".equals(meta.id) )
+            if( "SkinStates".equals(meta.getId()) )
             {
                 boolean first = true;
-                for( Value v : meta.values )
+                for( Value v : meta.getValues())
                 {
                     if( v instanceof MetaDataEvaluator.KeylessValue )
                     {
@@ -75,7 +75,7 @@ public class DocCommentNode extends MetaDataNode
             }
             else
             {
-                for( Value v : meta.values )
+                for( Value v : meta.getValues())
                 {
                     if (v instanceof MetaDataEvaluator.KeylessValue && has_name == false)
                     {
@@ -93,10 +93,10 @@ public class DocCommentNode extends MetaDataNode
                 }
             }
         }
-        else if( meta.id != null )
+        else if( meta.getId() != null )
         {
             // metadata with an id, but no values
-            buf.append("name='").append(meta.id).append("' ");
+            buf.append("name='").append(meta.getId()).append("' ");
         }
 
 		buf.append(">\n");
@@ -107,9 +107,9 @@ public class DocCommentNode extends MetaDataNode
 		if ( isAttributeOfDefinition == false)
 		{
 
-			if (values != null)
+			if (getValues() != null)
 			{
-				for( Value v : values )
+				for( Value v : getValues())
 				{
 					if (v instanceof MetaDataEvaluator.KeylessValue)
 					{
@@ -126,10 +126,10 @@ public class DocCommentNode extends MetaDataNode
 					}
 				}
 			}
-            else if( id != null )
+            else if( getId() != null )
             {
                 // Id, but no values
-                buf.append(id);
+                buf.append(getId());
             }
 		}
 
@@ -419,9 +419,9 @@ public class DocCommentNode extends MetaDataNode
 			buf.append(">");
 		}
 
-        if( values != null )
+        if( getValues() != null )
         {
-            for( Value v : values )
+            for( Value v : getValues())
             {
                 if (v instanceof MetaDataEvaluator.KeylessValue)
                 {
@@ -438,10 +438,10 @@ public class DocCommentNode extends MetaDataNode
                 }
             }
         }
-        else if( id != null )
+        else if( getId() != null )
         {
             // id, but no values
-            buf.append(id);
+            buf.append(getId());
         }
 
 		// Look for metaData we care about.  Also look for comments which are associated with metaData rather than the def.
@@ -454,10 +454,10 @@ public class DocCommentNode extends MetaDataNode
                 MetaDataNode mdi = (md instanceof MetaDataNode) ? (MetaDataNode)(md) : null;
 
                 // cn: why not just dump all the metaData ???
-				if (mdi != null && mdi.id != null)
+				if (mdi != null && mdi.getId() != null)
                 {
                     // these metaData types can have their own DocComment associated with them, though they might also have no comment.
-                    if (mdi.id.equals("Style") || mdi.id.equals("Event") || mdi.id.equals("Effect") )
+                    if (mdi.getId().equals("Style") || mdi.getId().equals("Event") || mdi.getId().equals("Effect") )
                     {
                         if (x+1 < numItems)  // if it has a comment, it will be the sequentially next DocCommentNode
                         {
@@ -482,8 +482,8 @@ public class DocCommentNode extends MetaDataNode
                             emitMetaDataComment(buf, debug_name, mdi, true);
                         }
                     }
-                    else if (mdi.id.equals("Bindable") || mdi.id.equals("Deprecated") || mdi.id.equals("Exclude")
-                            || mdi.id.equals("DefaultProperty") || mdi.id.equals("SkinStates") )
+                    else if (mdi.getId().equals("Bindable") || mdi.getId().equals("Deprecated") || mdi.getId().equals("Exclude")
+                            || mdi.getId().equals("DefaultProperty") || mdi.getId().equals("SkinStates") )
                     {
                         emitMetaDataComment(buf, debug_name, mdi, true);
                     }
@@ -615,7 +615,7 @@ public class DocCommentNode extends MetaDataNode
 
 	public int count()
 	{
-	 	return values.length;
+	 	return getValues().length;
 	}
 
 	public final String toString()

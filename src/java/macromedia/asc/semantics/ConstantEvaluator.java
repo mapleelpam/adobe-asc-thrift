@@ -302,7 +302,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
                 slot.setTypes(fcn.signature.parameter.types);
                 slot.setDeclStyles(fcn.signature.parameter.decl_styles);
             }
-            else if (cx.useStaticSemantics()) // mark as requiring no arguments for proper # of arg checking
+            else // mark as requiring no arguments for proper # of arg checking
             {
                 slot.addType(cx.voidType().getDefaultTypeInfo());        // Use void to denote that no parameters are declared
                 slot.addDeclStyle(PARAM_Void);
@@ -316,6 +316,11 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
     // also handles BinaryFunctionDefinitionNode
     void PreprocessDefinitionTypeInfo(Context unused_cx, FunctionDefinitionNode node)
     {
+        // BinaryFunctionDefinitionNodes don't need any additional processing - AbcParser
+        // should have created everything.
+        if( node instanceof BinaryFunctionDefinitionNode )
+            return;
+        
         Context cx = node.cx;  // switch to original context
         FunctionCommonNode fcn = node.fexpr;
 
@@ -326,6 +331,11 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
     // also handles InterfaceDefinitionNode, BinaryInterfaceDefinitionNode, BinaryClassDefNode
     void PreprocessDefinitionTypeInfo(Context unused_cx, ClassDefinitionNode  node)
     {
+        // BinaryClassDefNode don't need any additional processing - AbcParser
+        // should have created everything.
+        if( node instanceof BinaryClassDefNode )
+            return;
+        
         Context cx = node.cx;  // switch to original context
         cx.pushStaticClassScopes(node);
         PreprocessDefinitionTypeInfo(cx,node.statements.items, true);
@@ -1053,7 +1063,7 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
     public Value evaluate(Context cx, LiteralBooleanNode node)
     {
-        return new ObjectValue(node.value ? "true" : "false", cx.booleanType());
+        return node.value ? cx.booleanTrue() : cx.booleanFalse();
     }
 
     public Value evaluate(Context cx, LiteralNumberNode node)
@@ -2648,9 +2658,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
     public Value evaluate(Context cx, BinaryFunctionDefinitionNode node)
     {
-        node.fexpr.evaluate(cx, this);  // Since this is an import, only eval the sig, we don't care about the body.
-
-        return cx.noType().prototype;
+        // Nothing to do - all type info should have been set up by AbcParser
+        return null;
     }
 
     public Value evaluate(Context unused_cx, FunctionDefinitionNode node)
@@ -4154,93 +4163,8 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 
     public Value evaluate(Context cx, BinaryClassDefNode node)
     {
-        boolean orig = doing_class;
-        doing_class = true;
-
-        Slot class_slot = null;
-        if( node.ref != null )
-        {
-            class_slot = node.ref.getSlot(cx, NEW_TOKEN);
-        }
-
-        ObjectList<TypeInfo> ctor_types = null;
-        ByteList ctor_decls = null;
-        cx.pushStaticClassScopes(node);
-
-        node.statements.evaluate(cx, this);
-
-        doing_method = false;
-
-        cx.pushScope(node.iframe);
-
-        if( node.instanceinits != null )
-        {
-            for( Node n : node.instanceinits )
-            {
-                doing_method = true;
-                if (n instanceof FunctionDefinitionNode) // FunctionCommonNode initial evaluation requires this flag, normally set within StatementListNode evaluation
-                {                                                  //  static functions (incl getter/setters) are evaluated here, however, rather than from within a StatementListNode.
-                    n.evaluate(cx, this);
-                    FunctionDefinitionNode func_def = (FunctionDefinitionNode)n;
-                    if( func_def.fexpr.ref.name.equals("$construct") )
-                    {
-                        // Copy the type info from the constructor slot into the global slot that is the reference
-                        // to the class - this is so that type checking on constructor calls can happen correctly
-                        Slot ctor_slot = func_def.fexpr.ref.getSlot(cx, func_def.fexpr.kind);
-                        if( class_slot != null && ctor_slot != null )
-                        {
-                            ctor_types = ctor_slot.getTypes();
-                            ctor_decls = ctor_slot.getDeclStyles();
-                            class_slot.setTypes(ctor_types);
-                            class_slot.setDeclStyles(ctor_decls);
-                        }
-                    }
-                }
-                else
-                {
-                    n.evaluate(cx, this);
-                }
-            }
-            doing_method = false;
-        }
-
-        cx.popScope(); //node.iframe
-        cx.popStaticClassScopes(node);
-/*        System.out.println("CE for class " + node.cframe.name.toString());
-        if(node.cframe.types != null)
-        {
-            // When type parameters are fully implemented
-            // this should do something to resolve references to the type parameters to the actual
-            // types so all the signatures are correct instead of just blindly copying the slots
-            System.out.println("Copying slots from " + node.cframe.name.toString());
-            for(int i = 0, limit = node.cframe.types.size(); i < limit; ++i )
-            {
-                Slot s = node.cframe.types.at(i);
-                TypeValue t = (TypeValue)s.getValue();
-                int id = s.implies(cx, NEW_TOKEN);
-                ObjectValue base = node.ref.getBase();
-                if( base == null )
-                {
-                    if(node.ref.getScopeIndex() >= 0 )
-                        base = cx.scope(node.ref.getScopeIndex());
-                }
-                if( base != null )
-                {
-                    s = base.getSlot(cx, id);
-                    if( s != null )
-                    {
-                        s.setTypes(ctor_types);
-                        s.setDeclStyles(ctor_decls);
-                    }
-                }
-                ObjectValue p = node.cframe.prototype;
-                if(node.cframe == cx.vectorType() )
-                    p = cx.vectorObjType().prototype;
-                FlowAnalyzer.inheritSlots(p, t.prototype, t.prototype.builder, cx);
-            }
-        }
- */       doing_class = orig;
-        return node.cframe;
+        // Nothing to do - all type info should have been set up by AbcParser
+        return null;
     }
 
     public Value evaluate(Context cx, EmptyElementNode node)

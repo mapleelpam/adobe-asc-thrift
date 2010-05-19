@@ -2485,9 +2485,9 @@ public class ActionBlockEmitter extends Emitter
 		// compute version metadata values
 
 		TreeSet<Integer> versions = new TreeSet<Integer>();
-		ArrayList<MetaDataNode> list = slot.getMetadata();
+		ArrayList<MetaData> list = slot.getMetadata();
 		if (list != null)
-		for (MetaDataNode md : list) {
+		for (MetaData md : list) {
 			if (md.id == "API") {
 				for(int i = 0; i < md.count(); ++i) {
 					boolean err = false;
@@ -2676,16 +2676,16 @@ public class ActionBlockEmitter extends Emitter
         }
         return null;
     }
-    protected IntList addMetadata(ArrayList<MetaDataNode> metadata)
+    protected IntList addMetadata(ArrayList<MetaData> metadata)
     {
         IntList metaDataIndices = null;
         if( metadata != null && metadata.size() > 0 )
         {
             metaDataIndices = new IntList(metadata.size());
-            Iterator<MetaDataNode> it = metadata.iterator();
+            Iterator<MetaData> it = metadata.iterator();
             while( it.hasNext() )
             {
-                MetaDataNode entry = it.next();
+                MetaData entry = it.next();
                 String id = entry.id;
                 Value[] values = entry.values;
                 int metaDataIndex = addMetadataInfo(id, values) ;
@@ -2780,7 +2780,7 @@ public class ActionBlockEmitter extends Emitter
             }  
             
             ObjectValue slot_value = slot != null? (slot.getValue() instanceof ObjectValue ? (ObjectValue) slot.getValue() : null) : null;
-            ArrayList<MetaDataNode> metaData = slot.getMetadata();
+            ArrayList<MetaData> metaData = slot.getMetadata();
             
             // If a name is interface-qualified, emit the trait only if the traits
             // are for an interface definition.  In a class, the VM will automatically

@@ -93,10 +93,10 @@ public final class LintEvaluator extends Emitter implements Evaluator, ErrorCons
 	{
 		if( s != null && s.getMetadata() != null )
 		{
-			ArrayList<MetaDataNode> md = s.getMetadata();
+			ArrayList<MetaData> md = s.getMetadata();
 			for( int i =0, size = md.size(); i < size; ++i )
 			{
-				MetaDataNode md_node = md.get(i);
+				MetaData md_node = md.get(i);
 				if( "Deprecated".equals(md_node.id) )
 				{
                     String since       = null;

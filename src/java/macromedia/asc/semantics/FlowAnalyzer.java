@@ -24,7 +24,6 @@ import macromedia.asc.util.*;
 import macromedia.asc.util.graph.*;
 
 import java.util.*;
-import static java.lang.System.*;
 
 import static macromedia.asc.parser.Tokens.*;
 import static macromedia.asc.semantics.Slot.*;
@@ -440,16 +439,13 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
 
         getEmitter().AddStmtToBlock(node.toString());
 
-        if( node.objValue == null )
-        {
-            node.objValue = new ObjectValue(node.value?"true":"false",cx.booleanType());
-        }
+        ObjectValue val = node.value?cx.booleanTrue():cx.booleanFalse();
 
         if (debug)
         {
             System.out.print("\n// -LiteralBoolean");
         }
-        return node.objValue;
+        return val;
     }
 
     public Value evaluate(Context cx, LiteralNullNode node)
@@ -2546,6 +2542,10 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
                 clsdefs_sets.last().add(cdn);
             }
         }
+
+        // TODO: better dependency analysis for ABC files.
+        // this is filled in during AbcParse, and then added here - we could be doing this dependency analysis earlier
+        ce_unresolved_sets.last().addAll(node.ce_unresolved);
         return null;
     }
 
@@ -2826,9 +2826,9 @@ else
             }
 
             // add dependency... add two vertices and an edge.
-            if (clsdef.cframe.baseclass != null && !"Class".equals(clsdef.cframe.baseclass.builder.classname.toString()))
+            if (clsdef.cframe.baseclass != null && !"Class".equals(clsdef.cframe.baseclass.name.toString()))
             {
-                g.addDependency(className, clsdef.cframe.baseclass.builder.classname.toString());
+                g.addDependency(className, clsdef.cframe.baseclass.name.toString());
             }
 
             // do the same things to interfaces...
@@ -3708,7 +3708,7 @@ else
                  namespaces.contains(cx.publicNamespace()))
         {
             Qualifiers q;
-        	if(Builder.removeBuilderNames)
+        	if(Builder.removeBuilderNames) // TODO: {pmd} both ways on this if look very similar, review this
         	{
         		q = interfaceMethods.get(node.ref.name, node.name.kind == SET_TOKEN ? Names.SET_NAMES : Names.GET_NAMES );
         	}
@@ -4338,12 +4338,12 @@ else
                 }
             }
 
-            boolean is_static = false;
+           // boolean is_static = false;
             boolean is_intrinsic = false;
 
             if (node.attrs != null)
             {
-                is_static = node.attrs.hasStatic;
+                // is_static = node.attrs.hasStatic;
                 is_intrinsic = node.attrs.hasIntrinsic;
                 if( node.attrs.hasNative )
                 {
@@ -4400,7 +4400,7 @@ else
                 }
                 else
                 {
-                    node.cframe = TypeValue.newTypeValue(cx,new ClassBuilder(fullname,node.protected_namespace,node.static_protected_namespace),fullname,TYPE_object); // ISSUE: what should the type tag be?
+                    node.cframe = TypeValue.defineTypeValue(cx,new ClassBuilder(fullname,node.protected_namespace,node.static_protected_namespace),fullname,TYPE_object); // ISSUE: what should the type tag be?
                     if( !node.is_default_nullable )
                     {
                         node.cframe.is_nullable = false;

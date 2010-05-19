@@ -76,7 +76,7 @@ errors-and-warnings/warning1060                          , .*               ,   
 # bug regressions
 bugs/ASC-96                                              , .*               ,    asc.args         ,    -coach -import builtin.abc
 bugs/ASC-1564                                            , .*               ,    asc.args         ,    -md -import builtin.abc
-bugs/ASC-2218                                            ,  .*              ,    asc.args         ,    -import global.abc -coach
+bugs/ASC-2218                                            , .*               ,    asc.args         ,    -import global.abc -coach
 bugs/ASC-3250                                            , .*               ,    asc.args         ,    -warnings -import builtin.abc
 bugs/ASC-3310                                            , .*               ,    asc.args         ,    -warnings -import builtin.abc -import playerglobal.abc -swf MainPocket,100,100
 bugs/ASC-3334a                                           , .*               ,    asc.args         ,    -import builtin.abc -avmtarget 1
@@ -104,8 +104,8 @@ cmdline/swf                                              , .*               ,   
 # API Versioning test - these use the ScriptCompiler
 cmdline/invalidCommandlineApi                            , .*               , asc.args            , -import builtin.abc -api 123
 cmdline/importApi                                        , .*               , asc.args            , -import builtin.abc -api 662
-#versioning/.*                                            , .*               , asc.override        , java -ea -DAS3 -DAVMPLUS -classpath asc.jar macromedia.asc.embedding.ScriptCompiler -abcfuture -import builtin.abc -builtin -apiversioning
-#versioning/invalidAPI_1                                 , .*              , expectedfailure      , pending bug
-versioning/.*                                           , .*               , skip                , skip versioning until it lands in tamarin-central
+#versioning/.*                                           , .*               , asc.override        , java -ea -DAS3 -DAVMPLUS -classpath asc.jar macromedia.asc.embedding.ScriptCompiler -abcfuture -import builtin.abc -builtin -apiversioning
+#versioning/invalidAPI_1                                 , .*               , expectedfailure     , pending bug
+versioning/.*                                            , .*               , skip                , skip versioning until it lands in tamarin-central
 
 sanity/class_ctor                   , .* , skip , test results vary between tamarin-central and tamarin-redux - skipping until tamarin-central is updated.

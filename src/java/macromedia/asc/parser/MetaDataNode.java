@@ -11,6 +11,7 @@
 
 package macromedia.asc.parser;
 
+import macromedia.asc.semantics.MetaData;
 import macromedia.asc.semantics.Value;
 import macromedia.asc.util.Context;
 
@@ -27,8 +28,8 @@ public class MetaDataNode extends Node
 		def = null;
 	}
 
-	public String id;
-	public Value[] values = null;
+    private MetaData md;
+
 	public DefinitionNode def;
 
 	public Value evaluate(Context cx, Evaluator evaluator)
@@ -43,48 +44,57 @@ public class MetaDataNode extends Node
 		}
 	}
 
+    public void setMetadata(MetaData md)
+    {
+        this.md = md;
+    }
+
 	public String getValue(String key)
 	{
-		for (int i = 0, length = count(); i < length; i++)
-		{
-			if (values[i] instanceof MetaDataEvaluator.KeyValuePair)
-			{
-				if (((MetaDataEvaluator.KeyValuePair) values[i]).key.equals(key))
-				{
-					return ((MetaDataEvaluator.KeyValuePair) values[i]).obj;
-				}
-			}
-		}
-		return null;
+        return md != null ? md.getValue(key) : null;
 	}
 
 	public String getValue(int index)
 	{
-		if (index < 0 || index >= count())
-		{
-			throw new ArrayIndexOutOfBoundsException();
-		}
-		else if (values[index] instanceof MetaDataEvaluator.KeylessValue)
-		{
-			return ((MetaDataEvaluator.KeylessValue) values[index]).obj;
-		}
-		else if (values[index] instanceof MetaDataEvaluator.KeyValuePair)
-		{
-			return ((MetaDataEvaluator.KeyValuePair) values[index]).obj;
-		}
-		else
-		{
-			return null;
-		}
+        return md != null ? md.getValue(index) : null;
 	}
 
 	public int count()
 	{
-		return values != null ? values.length : 0;
+		return getValues() != null ? getValues().length : 0;
 	}
 
 	public String toString()
 	{
 		return "MetaData";
 	}
+
+    public String getId()
+    {
+        return md != null ? md.id : null;
+    }
+
+    public void setId(String id)
+    {
+        if( this.md == null )
+            this.md = new MetaData();
+        this.md.id = id;
+    }
+
+    public Value[] getValues()
+    {
+        return md != null ? md.values : null;
+    }
+
+    public void setValues(Value[] values)
+    {
+        if( this.md == null )
+            this.md = new MetaData();
+        this.md.values = values;
+    }
+
+    public MetaData getMetadata()
+    {
+        return md;
+    }
 }

@@ -29,8 +29,10 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 {
 	public boolean doing_class;
     public boolean debugging;
+    public static final String GO_TO_CTOR_DEFINITION_HELP = "__go_to_ctor_definition_help";
+    public static final String GO_TO_DEFINITION_HELP = "__go_to_definition_help";
 
-	public MetaDataEvaluator()
+    public MetaDataEvaluator()
 	{
 		doing_class = false;
         debugging = false;
@@ -116,13 +118,13 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 					{
 						KeylessValue val = (KeylessValue) call.expr.evaluate(cx, this);
 						//node.values.add(val);
-						current.id = val.obj;
+						current.setId(val.obj);
 					}
 
 					if (call.args != null)
 					{
 						int length = call.args.size();
-						node.values = new Value[length];
+						node.setValues(new Value[length]);
 						for (int i = 0; i < length; i++)
 						{
 							Node n = call.args.items.get(i);
@@ -131,7 +133,7 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 							{
 								cx.error(n.pos(), kError_InvalidMetaData);
 							}
-							node.values[i] = value;
+							node.getValues()[i] = value;
 						}
 					}
 				}
@@ -146,10 +148,11 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 					if (getexpr != null && getexpr.expr != null)
 					{
 						KeylessValue value = (KeylessValue) getexpr.expr.evaluate(cx, this);
-						current.id = value.obj;
+						current.setId(value.obj);
 					}
 				}
 			}
+            node.data = null;
         }
         else
         {
@@ -180,11 +183,11 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
             DocCommentNode dcn = doccomments.at(size-1);
             if( dcn.def == node.def )
             {
-                if( node.is_default && ( dcn.metaData == null || !("Event".equals(dcn.metaData.id)
-                                            || "Style".equals(dcn.metaData.id)
-                                            || "Effect".equals(dcn.metaData.id)
-                                            || "SkinState".equals(dcn.metaData.id) 
-                                            || "Alternative".equals(dcn.metaData.id)) ) )
+                if( node.is_default && ( dcn.metaData == null || !("Event".equals(dcn.metaData.getId())
+                                            || "Style".equals(dcn.metaData.getId())
+                                            || "Effect".equals(dcn.metaData.getId())
+                                            || "SkinState".equals(dcn.metaData.getId())
+                                            || "Alternative".equals(dcn.metaData.getId())) ) )
                     add_node = false;
                 else
                     doccomments.remove(size-1);
@@ -697,6 +700,8 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
         {
             if( !(metadata instanceof DocCommentNode ) )
             {
+                if( metadata.getMetadata() == null )
+                    metadata.evaluate(cx, this);                        
                 // Don't add comments as metadata
                 slot.addMetadata(metadata);
                 int i = isVersionMetadata(cx, metadata);
@@ -710,9 +715,9 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
     {
         if( cx.checkVersion() )
         {
-            if( "Version".equals(metadata.id) && metadata.values != null && metadata.values.length ==1)
+            if( "Version".equals(metadata.getId()) && metadata.getValues() != null && metadata.getValues().length ==1)
             {
-                KeylessValue k = metadata.values[0] instanceof KeylessValue ? (KeylessValue)metadata.values[0] : null;
+                KeylessValue k = metadata.getValues()[0] instanceof KeylessValue ? (KeylessValue) metadata.getValues()[0] : null;
                 if( k != null )
                 {
                     int i = -1;
@@ -841,10 +846,10 @@ public class MetaDataEvaluator implements Evaluator, ErrorConstants
 	private MetaDataNode makePositionMetadata(Context cx, DefinitionNode def, boolean is_ctor)
 	{
         MetaDataNode mn = cx.getNodeFactory().metaData(null, -1);
-        mn.id = is_ctor? "__go_to_ctor_definition_help" : "__go_to_definition_help";
-        mn.values = new Value[2];
-        mn.values[0] = new KeyValuePair("file", cx.getErrorOrigin());
-        mn.values[1] = new KeyValuePair("pos", String.valueOf(def.pos()) );
+        mn.setId(is_ctor? GO_TO_CTOR_DEFINITION_HELP : GO_TO_DEFINITION_HELP);
+        mn.setValues(new Value[2]);
+        mn.getValues()[0] = new KeyValuePair("file", cx.getErrorOrigin());
+        mn.getValues()[1] = new KeyValuePair("pos", String.valueOf(def.pos()) );
         
         return mn;
 	}

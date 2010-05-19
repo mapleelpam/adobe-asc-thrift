@@ -47,6 +47,14 @@ public class VariableSlot extends Slot
 		return typeref;
 	}
 
+    public void setType(TypeInfo type)
+    {
+        // This means the typeref has now been resolved, so we can clear out
+        // the RefVal ptr so it can be GC'ed
+        this.typeref = null;
+        super.setType(type);
+    }
+
 	public void setMethodID(int method_id)
 	{
 		if (method_id != -1)

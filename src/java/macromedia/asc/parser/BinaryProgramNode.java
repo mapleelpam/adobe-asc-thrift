@@ -39,7 +39,7 @@ public class BinaryProgramNode extends ProgramNode
         super( cx, statements );
 	}
 
-	public List<QName> toplevelDefinitions = new ArrayList<QName>();
+	// public List<QName> toplevelDefinitions = new ArrayList<QName>();
 	
 	public Value evaluate(Context cx, Evaluator evaluator)
 	{
