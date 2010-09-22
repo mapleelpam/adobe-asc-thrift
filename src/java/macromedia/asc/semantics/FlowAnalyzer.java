@@ -2234,7 +2234,8 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
             boolean is_named_anon = false; 
             if( !node.isFunctionDefinition() && node.identifier != null && !"anonymous".equals(node.identifier.name) && node.isUserDefinedBody() )
             {
-            	is_named_anon = ((FunctionBuilder)node.fun.builder).is_named_anonymous = true;
+            	is_named_anon = true;
+                node.setNamedInnerFunc(true);
 
             	// Create a slot in the FunctionBuilder to represent this function so that it can recursively
             	// call itself.

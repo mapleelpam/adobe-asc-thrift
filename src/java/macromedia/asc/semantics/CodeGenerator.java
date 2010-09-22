@@ -3620,7 +3620,7 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
 
         if (doingMethod())
         {
-            boolean anon_with_identifier = node.fun != null && node.fun.builder instanceof FunctionBuilder && ((FunctionBuilder)node.fun.builder).is_named_anonymous; 
+            boolean anon_with_identifier = node.isNamedInnerFunc(); 
             if( anon_with_identifier )
             {
                 NewObject(0);
