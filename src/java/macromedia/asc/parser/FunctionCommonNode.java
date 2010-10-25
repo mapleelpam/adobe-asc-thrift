@@ -69,7 +69,6 @@ public class FunctionCommonNode extends Node
 	private static final int WITH_USED_Flag         = 4;
 	private static final int IS_NATIVE_Flag         = 8;
 	private static final int EXCEPTIONS_USED_Flag   = 16;
-    private static final int NAMED_INNER_Flag       = 32;
 	
 	public FunctionCommonNode(Context cx, StatementListNode use_stmts, String internal_name, IdentifierNode identifier, FunctionSignatureNode signature, StatementListNode body, boolean hasUserDefinedBody)
 	{
@@ -162,16 +161,7 @@ public class FunctionCommonNode extends Node
 		return (flags & WITH_USED_Flag) != 0;
 	}
 
-    public void setNamedInnerFunc(boolean isNamedInnerFunc)
-    {
-        flags = isNamedInnerFunc ? (flags|NAMED_INNER_Flag) : (flags&~NAMED_INNER_Flag);
-    }
-    public boolean isNamedInnerFunc()
-    {
-        return (flags & NAMED_INNER_Flag) != 0;
-    }
 	public void setExceptionsUsed(boolean exceptionsUsed)
-
 	{
 		flags = exceptionsUsed ? (flags|EXCEPTIONS_USED_Flag) : (flags&~EXCEPTIONS_USED_Flag);
 	}

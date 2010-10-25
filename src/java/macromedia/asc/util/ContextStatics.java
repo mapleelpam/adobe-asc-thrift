@@ -76,7 +76,7 @@ public class ContextStatics
 	ObjectValue global;
 
 	HashMap<String, TypeValue> builtins;
-	HashMap<String, TypeValue> userDefined;
+	public Map<String, TypeValue> userDefined;
     HashMap<String, ObjectValue> namespaces;
     HashMap<String, ObjectValue> internal_namespaces;
     HashMap<String, ObjectValue> protected_namespaces;
@@ -350,7 +350,7 @@ public class ContextStatics
 		}
 	}
 
-	private static void cleanSlots(HashMap<String, TypeValue> types)
+	private static void cleanSlots(Map<String, TypeValue> types)
 	{
 		for (Iterator<TypeValue> i = types.values().iterator(); i.hasNext();)
 		{

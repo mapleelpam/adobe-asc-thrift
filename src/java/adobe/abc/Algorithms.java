@@ -218,11 +218,11 @@ public abstract class Algorithms
 	
 	public static class SetMap<K,V> extends TreeMap<K, Set<V>>
 	{
-		public Set<V> get(K e)
+		public Set<V> get(Object e)
 		{
 			Set<V> s = super.get(e);
 			if (s == null)
-				put(e,s = new TreeSet<V>());
+				put((K)e,s = new TreeSet<V>());
 			return s;
 		}
 		static final long serialVersionUID=0;
@@ -230,7 +230,7 @@ public abstract class Algorithms
 	
 	public static class EdgeMap<E> extends SetMap<E,E>
 	{
-		public Set<E> get(E e)
+		public Set<E> get(Object e)
 		{
 			return super.get(e);
 		}

@@ -2062,7 +2062,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         if (!exceptions_used_stack.isEmpty())
         {
             exceptions_used_stack.removeLast();
-            exceptions_used_stack.add(1);
+            exceptions_used_stack.add(0);  // don't assume that the exceptions are non-trivial
         }
 
         // Evaluate the try {} block
@@ -2152,6 +2152,8 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
         if (node.statements != null)
         {
             node.statements.evaluate(cx, this);
+            exceptions_used_stack.removeLast();
+            exceptions_used_stack.add(1);
         }
 
         cx.popScope();
@@ -2234,8 +2236,7 @@ public final class FlowAnalyzer extends Emitter implements Evaluator, ErrorConst
             boolean is_named_anon = false; 
             if( !node.isFunctionDefinition() && node.identifier != null && !"anonymous".equals(node.identifier.name) && node.isUserDefinedBody() )
             {
-            	is_named_anon = true;
-                node.setNamedInnerFunc(true);
+            	is_named_anon = ((FunctionBuilder)node.fun.builder).is_named_anonymous = true;
 
             	// Create a slot in the FunctionBuilder to represent this function so that it can recursively
             	// call itself.

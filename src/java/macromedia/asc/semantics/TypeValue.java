@@ -22,6 +22,7 @@ import macromedia.asc.embedding.avmplus.InstanceBuilder;
 import macromedia.asc.util.*;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static macromedia.asc.embedding.avmplus.RuntimeConstants.TYPE_object;
 
@@ -107,20 +108,36 @@ public final class TypeValue extends ObjectValue
         String fullname = name.toString();
 
         TypeValue type = cx.userDefined(fullname);
+
         if (type == null)
         {
-            type = new TypeValue(cx, name);
             if( "Vector" == name.name && name instanceof ParameterizedName )
             {
-                ParameterizedName pname = (ParameterizedName)name;
-                QName indexed_name = pname.type_params.at(0);
-                if( cx.isBuiltin(indexed_name.toString()) )
-                    type.indexed_type = cx.builtin(indexed_name.toString());
-                else
-                    type.indexed_type = getTypeValue(cx, pname.type_params.at(0));
+                type = cx.vectorType().getParameterizedType(fullname);
+
+                if (type == null)
+                {
+                    type = new TypeValue(cx, name);
+                    ParameterizedName pname = (ParameterizedName)name;
+                    QName indexed_name = pname.type_params.at(0);
+                    if( cx.isBuiltin(indexed_name.toString()) )
+                        type.indexed_type = cx.builtin(indexed_name.toString());
+                    else
+                    {
+                        type.indexed_type = getTypeValue(cx, pname.type_params.at(0));
+                    }
+                    cx.vectorType().addParameterizedType(fullname, type);
+                }
             }
+
+            if (type == null)
+            {
+                type = new TypeValue(cx, name);
+            }
+            
             cx.setUserDefined(fullname, type);
         }
+
         return type;
     }
 
@@ -268,12 +285,28 @@ public final class TypeValue extends ObjectValue
         return ti;
     }
 
-    public HashMap<String, Slot> types;
-    public void addParameterizedTypeSlot(Context cx, String name, Slot s)
+    private Map<String, TypeValue> parameterizedTypes;
+
+    public void addParameterizedType(String name, TypeValue typeValue)
     {
-        if( types == null )
-            types = new HashMap<String, Slot>();
-        types.put(name, s);
+        if (parameterizedTypes == null)
+        {
+            parameterizedTypes = new HashMap<String, TypeValue>();
+        }
+
+        parameterizedTypes.put(name, typeValue);
+    }
+
+    public TypeValue getParameterizedType(String name)
+    {
+        TypeValue result = null;
+
+        if (parameterizedTypes != null)
+        {
+            result = parameterizedTypes.get(name);
+        }
+
+        return result;
     }
     
     /**

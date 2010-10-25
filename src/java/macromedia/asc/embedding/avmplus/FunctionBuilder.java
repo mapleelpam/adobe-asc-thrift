@@ -20,11 +20,14 @@ import macromedia.asc.util.Context;
  */
 public class FunctionBuilder extends Builder
 {
-
+	public boolean is_named_anonymous;
+	
 	public void build(Context cx, ObjectValue ob)
 	{
 		objectValue = ob;
 		contextId = cx.getId();
+		
+		is_named_anonymous = false;
 	}
 }
 

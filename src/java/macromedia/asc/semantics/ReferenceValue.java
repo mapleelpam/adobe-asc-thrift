@@ -504,15 +504,12 @@ public final class ReferenceValue extends Value implements ErrorConstants
                 {
                     slot_id = obj.builder.ImplicitVar(cx,obj,name,qualifier,cx.typeType(),-1,-1,-1);
 
-                    TypeValue cframe = null;
-                    if( factory.types != null && factory.types.containsKey(name) )
-                    {
-                        Slot instaniated = factory.types.get(name);
-                        cframe = (TypeValue)instaniated.getValue();
-                    }
-                    else
+                    TypeValue cframe = factory.getParameterizedType(name);
+
+                    if (cframe == null)
                     {
                         cframe = TypeValue.instantiateParameterizedType(cx, fullname);
+                        factory.addParameterizedType(name, cframe);
                     }
                     slot = obj.getSlot(cx, slot_id);
                     slot.setValue(cframe);
@@ -520,8 +517,6 @@ public final class ReferenceValue extends Value implements ErrorConstants
                     slot.declaredBy = null;
                     obj.builder.ImplicitCall(cx,obj,slot_id,cframe,CALL_Method,-1,-1);
                     obj.builder.ImplicitConstruct(cx,obj,slot_id,cframe,CALL_Method,-1,-1);
-
-                    factory.addParameterizedTypeSlot(cx, name, slot);
 
                     if( factory == cx.vectorType() )
                     {
