@@ -85,7 +85,7 @@ public class Compiler implements ErrorConstants
 		String swf_options,
 		String avmplus_exe,
 	ObjectList<CompilerPlug> plugs,
-	boolean emit_doc_info, boolean show_parsetrees, boolean show_bytes, boolean show_flow, 
+	boolean emit_doc_info, boolean show_parsetrees, boolean save_programnode, boolean show_bytes, boolean show_flow, 
     boolean lint_mode, boolean emit_metadata, boolean save_comment_nodes, boolean emit_debug_info, ObjectList<String> import_filespecs)
     {
         ProgramNode second = null;
@@ -205,6 +205,12 @@ public class Compiler implements ErrorConstants
         node.pkgdefs.clear();
         node.pkgdefs.addAll(cx.getNodeFactory().pkg_defs);
 
+        if( save_programnode && cx.errorCount() == 0 )
+        {
+            System.out.print("\n\t oh--Yes, I Got it\n");
+        	return;
+        }
+        
         if( show_parsetrees && cx.errorCount() == 0 )
         {
             printParseTrees(cx.scriptName(), node, cx, ".p");
@@ -340,6 +346,7 @@ public class Compiler implements ErrorConstants
                     boolean show_machinecode /*=false*/,
                         boolean show_linenums /*=false*/,
                             boolean show_parsetrees /*=false*/,
+                            boolean save_programnode /*=false*/,
                                 boolean show_bytes /*=false*/,
                                     boolean show_flow /*=false*/,
                                         boolean lint_mode /*=false*/,
@@ -405,7 +412,7 @@ public class Compiler implements ErrorConstants
         ObjectValue global = new ObjectValue(cx, globalBuilder, null);
 
         // Compiler something
-        compile(cx, global, in, filename, encoding, includes, swf_options, avmplus_exe, plugs, emit_doc_info, show_parsetrees, show_bytes,
+        compile(cx, global, in, filename, encoding, includes, swf_options, avmplus_exe, plugs, emit_doc_info, show_parsetrees, save_programnode, show_bytes,
                 show_flow, lint_mode, emit_metadata, save_comment_nodes, emit_debug_info, import_filespecs);
 
         int error_count = status(cx);
@@ -558,6 +565,7 @@ public class Compiler implements ErrorConstants
         boolean show_machinecode /*=false*/,
         boolean show_linenums /*=false*/,
         boolean show_parsetrees /*=false*/,
+        boolean save_programnode /*=false*/,
         boolean show_bytes /*=false*/,
         boolean show_flow /*=false*/)        throws Exception
     {
@@ -630,6 +638,7 @@ public class Compiler implements ErrorConstants
                 show_machinecode,
                 show_linenums,
                 show_parsetrees,
+                save_programnode,
                 show_bytes,
                 show_flow,
                 mainplug.lint_mode,
@@ -664,6 +673,7 @@ public class Compiler implements ErrorConstants
             mainplug.handler,
 		    mainplug.emit_doc_info, /*=false*/
             mainplug.emit_debug_info, /*=false*/
+            false /*=false*/,
             false /*=false*/,
             false /*=false*/,
             false /*=false*/,

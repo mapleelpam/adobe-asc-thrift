@@ -31,6 +31,7 @@ import static macromedia.asc.embedding.avmplus.Features.*;
  */
 public class Main
 {
+	static boolean save_programnode = false;
 	static boolean show_parsetrees = false;
 	static boolean show_instructions = false;
 	static boolean show_linenums = false;
@@ -106,6 +107,9 @@ public class Main
 						break;
 					case 'p':
 						show_parsetrees = true;
+						break;
+					case 'x':
+						save_programnode = true;
 						break;
 					case 'i':
 						if (flag.length() == 3 && flag.charAt(2) == 'n') // -in
@@ -408,6 +412,7 @@ public class Main
 			System.out.println("       (multiple -in arguments allowed)");
 			System.out.println("  -m = write the avm+ assembly code to the .il file");
 			System.out.println("  -p = write parse tree to the .p file");
+			System.out.println("  -x = write parse tree to the .pn file (Binary Format)");
 			System.out.println("  -md = emit metadata information into the bytecode");
 			System.out.println("  -warnings = warn on common actionscript mistakes");
 			System.out.println("  -strict = treat undeclared variable and method access as errors");
@@ -562,7 +567,7 @@ public class Main
 			ObjectList<CompilerPlug> plugs = new ObjectList<CompilerPlug>();
 
 			Compiler.doCompile(plug, plugs, show_instructions,
-					show_machinecode, show_linenums, show_parsetrees,
+					show_machinecode, show_linenums, show_parsetrees, save_programnode,
 					show_bytes, show_flow);
 
 			// delete all the input file streams
