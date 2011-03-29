@@ -40,6 +40,13 @@ import java.io.PrintWriter;
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
 
+// Thrift
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TFileTransport;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+
 /**
  * The main interface to the compiler.
  *
@@ -208,6 +215,7 @@ public class Compiler implements ErrorConstants
         if( save_programnode && cx.errorCount() == 0 )
         {
             System.out.print("\n\t oh--Yes, I Got it\n");
+            dumpBinaryAST( cx.scriptName(), node, cx, ".pn" );
         	return;
         }
         
@@ -880,8 +888,24 @@ public class Compiler implements ErrorConstants
 		}
 	}
 
+	static void dumpBinaryAST(String scriptname, Node node, Context cx, String ext)
+	{
+		if (status(cx) == 0)
+        {			
+			try {
+				TTransport transport = new TFileTransport( scriptname+ext, false);
+				TProtocol protocol = new  TBinaryProtocol(transport);
+			}
+			catch (IOException ex)
+            {
+            	
+            }
+			
+        }
+	}
+	
     static void printParseTrees(String scriptname, Node node, Context cx, String ext)
-    {
+    {	
         if (status(cx) == 0)
         {
             PrintWriter out;

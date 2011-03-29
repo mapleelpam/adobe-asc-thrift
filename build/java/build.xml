@@ -90,7 +90,7 @@
 		<jar file="${lib.dir}/asc.jar" basedir="${basedir}/classes" includes="macromedia/asc/**/*,macromedia/abc/**/*,adobe/abc/**/*">
             <manifest>
                 <attribute name="Main-Class" value="macromedia.asc.embedding.Main"/>
-                <attribute name="Class-Path" value=""/>
+                <attribute name="Class-Path" value="libthrift.jar"/>
                 <attribute name="Implementation-Title" value="ActionScript Compiler (asc)"/>
                 <attribute name="Implementation-Version" value="1.0 build ${build.number}"/>
             </manifest>
