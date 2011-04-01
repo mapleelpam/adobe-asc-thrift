@@ -1,53 +1,72 @@
 
-/*
- * Copyright © 2011 Kai-Feng Chou maple <mapleelpam@gmail.com> 
- *
- * This library is free software; you can redistribute it and/or
- * modify it either under the terms of the GNU Lesser General Public
- * License version 2.1 as published by the Free Software Foundation
- * (the "LGPL") or, at your option, under the terms of the Mozilla
- * Public License Version 1.1 (the "MPL"). If you do not alter this
- * notice, a recipient may use your version of this file under either
- * the MPL or the LGPL.
- *
- * You should have received a copy of the LGPL along with this library
- * in the file COPYING-LGPL-2.1; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA 02110-1335, USA
- * You should have received a copy of the MPL along with this library
- * in the file COPYING-MPL-1.1
- *
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY
- * OF ANY KIND, either express or implied. See the LGPL or the MPL for
- * the specific language governing rights and limitations.
- *
- */
+namespace java ast.dumper
+namespace cpp ast.dumper
 
-namespace java programnode
+typedef list<string> StringList
 
-enum StateType{
-    IMPORT,
-    PACAKGE,
-    CLASS,
-    FUNCTION,
-     
-    IF_ELSE,
-    VARIABLE,
+enum StmtType {
+    EnterPackage,
+    LeavePackage,
+    
+    Import,
+
+    VariableDefine,
+    FunctionDefine,    
 }
 
-struct Statement{
-    1: StateType type,
+struct Stmt {
+    1: StmtType type
 }
 
-struct ProgramNode {
-    1: list<Statement> state_list
-}
-
-service AstDummper
+struct Parameter
 {
-    bool save( 1: ProgramNode pn ) 
+    1: string name,
+    2: string type
 }
+
+struct FuncSignature
+{
+    1: string ret_type,
+    2: list<Parameter> param
+}
+
+struct Func
+{
+//    1: String name,
+//    2: FuncSignature signature,
+//    3: list<Stmt>
+}
+
+struct ProgramRoot {
+    1: list<Stmt> stmt_list
+}
+
+struct Variable {
+    1: string name,
+    2: string type
+// TODO expressions
+}
+
+struct Expression {
+    1: string type1,
+    2: string type2
+}
+
+service AstDumper
+{
+/*
+    bool startProgram(),
+    bool startPackage( 1: StringList IDs ),
+    bool addImport( 1: StringList packages ),   // Do we need this? using namespace? or what ever suck?
+
+    bool startDefineFunction( 1: string name, 2: FuncSignature signature ),
+
+    bool startStmtList(),
+       bool defineVariables( 1: list<Variable> vars ),
+       bool defineExpression( 1: list<Expression> exprs ),
+    bool closeStmtList(),
+*/
+
+    void ping()
+}
+

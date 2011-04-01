@@ -17,6 +17,22 @@
 
 package macromedia.asc.embedding;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.EnumSet;
+import java.util.Collections;
+import java.util.BitSet;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import macromedia.asc.embedding.avmplus.ActionBlockEmitter;
 import macromedia.asc.embedding.avmplus.GlobalBuilder;
 import macromedia.asc.embedding.avmplus.Features;
@@ -32,6 +48,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,9 +61,13 @@ import java.util.Iterator;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TFileTransport;
+import org.apache.thrift.transport.TIOStreamTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
+import ast.dumper.AstDummper;
+import org.apache.thrift.TException;
 /**
  * The main interface to the compiler.
  *
@@ -892,16 +913,48 @@ public class Compiler implements ErrorConstants
 	{
 		if (status(cx) == 0)
         {			
+			System.out.print("\n\t  123 \n");
 			try {
-				TTransport transport = new TFileTransport( scriptname+ext, false);
-				TProtocol protocol = new  TBinaryProtocol(transport);
+				System.out.print("\n\t  456 "+scriptname+ext+"\n");
+				
+//				TTransport transport = new TFileTransport( scriptname+ext, false );
+				OutputStream ostream = new FileOutputStream("1.pn");
+				TTransport transport = new TIOStreamTransport( ostream );
+				
+				try
+				{
+					transport.open();
+					
+					TProtocol protocol = new  TBinaryProtocol(transport);
+					
+					AstDummper.Client dumper = new AstDummper.Client( protocol );
+					
+					dumper.startProgram();
+					
+					List<String> names = new ArrayList<String>();
+					names.add("a");
+					names.add("b");
+					dumper.startPackage( names );
+					
+					transport.flush();
+					transport.close();
+				} 
+				catch( org.apache.thrift.TException e1 )
+				{
+					System.out.print("\n\t -----------> "+e1.toString());
+				}
+				
 			}
-			catch (IOException ex)
+			
+			catch (IOException e2)
             {
-            	
+				System.out.print("\n\t -----------> "+e2.toString());
             }
 			
         }
+		
+		System.out.print("\n\t  789  \n");
+		return;
 	}
 	
     static void printParseTrees(String scriptname, Node node, Context cx, String ext)
