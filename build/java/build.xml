@@ -87,7 +87,7 @@
     </target>
 	<target name="jar" depends="classes" >
 		<mkdir dir="${lib.dir}" />
-		<jar file="${lib.dir}/asc.jar" basedir="${basedir}/classes" includes="macromedia/asc/**/*,macromedia/abc/**/*,adobe/abc/**/*,ast/dumpper/*,ast/**/*">
+		<jar file="${lib.dir}/asc.jar" basedir="${basedir}/classes" includes="macromedia/asc/**/*,macromedia/abc/**/*,adobe/abc/**/*,ast/dumper/*,ast/**/*">
             <manifest>
                 <attribute name="Main-Class" value="macromedia.asc.embedding.Main"/>
                 <attribute name="Class-Path" value="libthrift.jar slf4j-api.jar slf4j-nop.jar"/>
@@ -113,7 +113,7 @@
 	
 	<target name="asc-coverage-jar" depends="classes" >
 		<mkdir dir="${lib.dir}" />
-		<jar file="${lib.dir}/asc.jar" basedir="${basedir}/classes" includes="macromedia/asc/**/*,macromedia/abc/**/*,adobe/abc/**/*">
+		<jar file="${lib.dir}/asc.jar" basedir="${basedir}/classes" includes="macromedia/asc/**/*,macromedia/abc/**/*,adobe/abc/**/*,ast/**/*,ast/dumper/*">
             <manifest>
                 <attribute name="Main-Class" value="macromedia.asc.embedding.Main"/>
                 <attribute name="Class-Path" value="${lib.dir}/clover.jar"/>

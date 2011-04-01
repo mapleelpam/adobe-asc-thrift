@@ -67,6 +67,7 @@ service AstDumper
     bool closeStmtList(),
 */
 
-    void ping()
+    void ping(),
+    void ping2( 1: i32 echo ),
 }
 

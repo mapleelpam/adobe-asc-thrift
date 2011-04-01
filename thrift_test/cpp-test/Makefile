@@ -1,8 +1,10 @@
 
 
-CFLAGS := `pkg-config --cflags thrift` -I./gen-cpp/
+THRIFT_COMPILER := /home/maple/iiii/bin/thrift
+
+CFLAGS := -I/home/maple/iiii/include/thrift/ -I./gen-cpp/
 CPPFLAGS := ${CFLAGS}
-LIBS   := `pkg-config --libs thrift`
+LIBS   := /home/maple/iiii/lib/libthrift.a
 
 
 generated-objs = gen-cpp/AstDumper.o gen-cpp/SyntaxTree_constants.o gen-cpp/SyntaxTree_types.o
@@ -20,4 +22,4 @@ clean:
 	rm -f client server *.o gen-cpp/*.o
 
 generate-thrift:
-	thrift -r --gen cpp SyntaxTree.thrift
+	${THRIFT_COMPILER} -r --gen cpp SyntaxTree.thrift

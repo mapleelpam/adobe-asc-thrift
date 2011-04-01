@@ -66,7 +66,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
-import ast.dumper.AstDummper;
+import ast.dumper.AstDumper;
 import org.apache.thrift.TException;
 /**
  * The main interface to the compiler.
@@ -927,21 +927,41 @@ public class Compiler implements ErrorConstants
 					
 					TProtocol protocol = new  TBinaryProtocol(transport);
 					
-					AstDummper.Client dumper = new AstDummper.Client( protocol );
+					AstDumper.Client dumper = new AstDumper.Client( protocol );
 					
-					dumper.startProgram();
+					System.out.print("\n\t 1");
+					try
+					{ 
+						dumper.ping();
+					} 
+					catch( org.apache.thrift.TException e0 )
+					{
+						
+					}
+					System.out.print("\n\t 2");
+					try
+					{
+						dumper.ping2( 123 );
+					}
+					catch( org.apache.thrift.TException e0 )
+					{
+						
+					}
+					System.out.print("\n\t 3");
 					
-					List<String> names = new ArrayList<String>();
-					names.add("a");
-					names.add("b");
-					dumper.startPackage( names );
-					
-					transport.flush();
-					transport.close();
+//					List<String> names = new ArrayList<String>();
+//					names.add("a");
+//					names.add("b");
+//					dumper.startPackage( names );
+						
 				} 
 				catch( org.apache.thrift.TException e1 )
 				{
 					System.out.print("\n\t -----------> "+e1.toString());
+				}
+				finally 
+				{
+					transport.close();
 				}
 				
 			}

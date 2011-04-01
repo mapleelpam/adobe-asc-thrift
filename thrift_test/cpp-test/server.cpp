@@ -33,7 +33,7 @@ class AstDumperHandler : virtual public ast::dumper::AstDumperIf
 int main(int argc, char **argv) {
 
     boost::shared_ptr<AstDumperHandler> something( new AstDumperHandler() );
-    boost::shared_ptr<TSimpleFileTransport> transport(new TSimpleFileTransport("1.pn",true,false));
+    boost::shared_ptr<TSimpleFileTransport> transport(new TSimpleFileTransport("1.pn",true,true));
     boost::shared_ptr<ast::dumper::AstDumperProcessor> processor( new ast::dumper::AstDumperProcessor( something ) );
 
 
@@ -44,6 +44,9 @@ int main(int argc, char **argv) {
         transport->open();
         boost::shared_ptr<TProtocol> io(new TBinaryProtocol(transport));
         
+        processor->process( io, io, NULL );
+        processor->process( io, io, NULL );
+        processor->process( io, io, NULL );
         processor->process( io, io, NULL );
 
         transport->close();
