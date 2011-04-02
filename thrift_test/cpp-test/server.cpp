@@ -46,8 +46,6 @@ int main(int argc, char **argv) {
         
         processor->process( io, io, NULL );
         processor->process( io, io, NULL );
-        processor->process( io, io, NULL );
-        processor->process( io, io, NULL );
 
         transport->close();
 

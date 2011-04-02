@@ -68,6 +68,8 @@ import org.apache.thrift.protocol.TProtocol;
 
 import ast.dumper.AstDumper;
 import org.apache.thrift.TException;
+
+import tw.maple.ProgramNodeEvaluator;
 /**
  * The main interface to the compiler.
  *
@@ -913,67 +915,31 @@ public class Compiler implements ErrorConstants
 	{
 		if (status(cx) == 0)
         {			
-			System.out.print("\n\t  123 \n");
 			try {
-				System.out.print("\n\t  456 "+scriptname+ext+"\n");
-				
-//				TTransport transport = new TFileTransport( scriptname+ext, false );
-				OutputStream ostream = new FileOutputStream("1.pn");
+				OutputStream ostream = new FileOutputStream(scriptname+ext);
 				TTransport transport = new TIOStreamTransport( ostream );
 				
 				try
 				{
 					transport.open();
-					
 					TProtocol protocol = new  TBinaryProtocol(transport);
-					
 					AstDumper.Client dumper = new AstDumper.Client( protocol );
 					
-					System.out.print("\n\t 1");
-					try
-					{ 
-						dumper.ping();
-					} 
-					catch( org.apache.thrift.TException e0 )
-					{
-						
-					}
-					System.out.print("\n\t 2");
-					try
-					{
-						dumper.ping2( 123 );
-					}
-					catch( org.apache.thrift.TException e0 )
-					{
-						
-					}
-					System.out.print("\n\t 3");
-					
-//					List<String> names = new ArrayList<String>();
-//					names.add("a");
-//					names.add("b");
-//					dumper.startPackage( names );
-						
-				} 
-				catch( org.apache.thrift.TException e1 )
-				{
-					System.out.print("\n\t -----------> "+e1.toString());
-				}
-				finally 
-				{
+					ProgramNodeEvaluator printer = new ProgramNodeEvaluator(dumper);
+		            node.evaluate(cx, printer);
+		            
+				} catch( org.apache.thrift.TException e1 ) {
+					System.out.print("\nERROR - "+e1.toString());
+					//TODO: exit!!
+				} finally {
 					transport.close();
 				}
-				
-			}
-			
-			catch (IOException e2)
-            {
-				System.out.print("\n\t -----------> "+e2.toString());
+			} catch (IOException e2) {
+				System.out.print("\n ERROR - "+e2.toString());
+				// TODO: exit!!
             }
 			
         }
-		
-		System.out.print("\n\t  789  \n");
 		return;
 	}
 	

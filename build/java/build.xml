@@ -87,7 +87,7 @@
     </target>
 	<target name="jar" depends="classes" >
 		<mkdir dir="${lib.dir}" />
-		<jar file="${lib.dir}/asc.jar" basedir="${basedir}/classes" includes="macromedia/asc/**/*,macromedia/abc/**/*,adobe/abc/**/*,ast/dumper/*,ast/**/*">
+		<jar file="${lib.dir}/asc.jar" basedir="${basedir}/classes" includes="macromedia/asc/**/*,macromedia/abc/**/*,adobe/abc/**/*,tw/maple/**/*">
             <manifest>
                 <attribute name="Main-Class" value="macromedia.asc.embedding.Main"/>
                 <attribute name="Class-Path" value="libthrift.jar slf4j-api.jar slf4j-nop.jar"/>

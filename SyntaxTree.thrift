@@ -1,6 +1,6 @@
 
-namespace java ast.dumper
-namespace cpp ast.dumper
+namespace java tw.maple
+namespace cpp tw.maple
 
 typedef list<string> StringList
 
@@ -67,7 +67,7 @@ service AstDumper
     bool closeStmtList(),
 */
 
-    void ping(),
-    void ping2( 1: i32 echo ),
+    oneway void ping(),
+    oneway void ping2( 1: i32 echo ),
 }
 

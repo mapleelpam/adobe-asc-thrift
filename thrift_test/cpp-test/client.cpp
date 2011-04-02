@@ -7,6 +7,8 @@
 #include <transport/TSimpleFileTransport.h>
 #include <transport/TFileTransport.h>
 #include <protocol/TBinaryProtocol.h>
+#include <protocol/TDenseProtocol.h>
+#include <protocol/TJSONProtocol.h>
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
@@ -21,11 +23,14 @@ int main(int argc, char **argv) {
   //boost::shared_ptr<TTransport> transport(new TFileTransport("1.pn",false));
 #endif
   boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+  //boost::shared_ptr<TProtocol> protocol(new TDenseProtocol(transport));
+//  boost::shared_ptr<TProtocol> protocol(new TJSONProtocol(transport));
 
     try {
         ast::dumper::AstDumperClient client( protocol);
         transport->open();
         client.ping();
+        client.ping2(123);
         transport->close();
     }
     catch (TTransportException ex )

@@ -1,16 +1,19 @@
 
 
-THRIFT_COMPILER := /home/maple/iiii/bin/thrift
+THRIFT_COMPILER := thrift
 
-CFLAGS := -I/home/maple/iiii/include/thrift/ -I./gen-cpp/
+CFLAGS := -I/usr/local/include/thrift/ -I./gen-cpp/
 CPPFLAGS := ${CFLAGS}
-LIBS   := /home/maple/iiii/lib/libthrift.a
+LIBS   := /usr/local/lib/libthrift.a
 
 
 generated-objs = gen-cpp/AstDumper.o gen-cpp/SyntaxTree_constants.o gen-cpp/SyntaxTree_types.o
 
 
-all:client server
+all:client server client-2
+
+client-2: client-2.o ${generated-objs}
+	${CXX} -o $@ $^ ${LIBS}
 
 client: client.o ${generated-objs}
 	${CXX} -o $@ $^ ${LIBS}
