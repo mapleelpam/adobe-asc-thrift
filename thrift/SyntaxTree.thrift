@@ -54,18 +54,15 @@ struct Expression {
 
 service AstDumper
 {
-/*
-    bool startProgram(),
-    bool startPackage( 1: StringList IDs ),
-    bool addImport( 1: StringList packages ),   // Do we need this? using namespace? or what ever suck?
+    oneway void startPackage( 1: StringList IDs ),
+    oneway void addImport( 1: StringList packages ),   // Do we need this? using namespace? or what ever suck?
 
-    bool startDefineFunction( 1: string name, 2: FuncSignature signature ),
+    oneway void startDefineFunction( 1: string name, 2: FuncSignature signature ),
 
-    bool startStmtList(),
-       bool defineVariables( 1: list<Variable> vars ),
-       bool defineExpression( 1: list<Expression> exprs ),
-    bool closeStmtList(),
-*/
+    oneway void startStmtList(),
+       oneway void defineVariables( 1: list<Variable> vars ),
+       oneway void defineExpression( 1: list<Expression> exprs ),
+    oneway void closeStmtList(),
 
     oneway void ping(),
     oneway void ping2( 1: i32 echo ),

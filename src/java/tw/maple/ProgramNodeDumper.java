@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.Value;
 import macromedia.asc.util.Context;
-import sun.org.mozilla.javascript.internal.EvaluatorException;
+//import sun.org.mozilla.javascript.internal.EvaluatorException;
 import tw.maple.generated.AstDumper;
 import static macromedia.asc.parser.Tokens.*;
 

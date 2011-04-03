@@ -29,9 +29,9 @@
 	<condition property="avm.name" value="avmplus.exe">
 		<os family="windows"/>
 	</condition>
+	<property name="thrift.compiler" value="${root.dir}/bin/thrift" />
 
-
-	<target name="main" depends="clean,jar">
+	<target name="main" depends="clean,thrift-gen,jar">
 	</target>
 
 	<target name="dev" depends="jar" description="runs src.depend build for development"/>
@@ -132,7 +132,7 @@
         <replace file="${java.src.dir}/macromedia/asc/util/Version.java" token='ASC_BUILD_CODE ="cyclone"' value='ASC_BUILD_CODE ="${build.number}"'/>
 	    <mkdir dir="${lib.dir}" />
         <mkdir dir="${basedir}/classes"/>
-        <javac source="${javac.src}" target="${javac.src}" encoding="UTF-8" debug="${src.debug}" destdir="${basedir}/classes" srcdir="${java.src.dir}" includes="**/*.java">
+        <javac source="${javac.src}" target="${javac.src}" encoding="UTF-8" debug="${src.debug}" destdir="${basedir}/classes" srcdir="${java.src.dir}/../" includes="**/*.java">
 			<classpath>
 				<fileset dir="${lib.dir}" includes="*.jar"/>
 			</classpath>
@@ -191,6 +191,7 @@
 			<fileset file="${root.dir}/lib/asc_authoring.jar"/>
 			<fileset file="${root.dir}/lib/global.abc"/>
             <fileset dir="${basedir}/classes" />
+			<fileset dir="${root.dir}/src/gen-java"/>
 		</delete>
 	</target>
 	<target name="with.clover">
@@ -342,5 +343,14 @@
         <xslt in="pmdReport.xml" out="pmdReport.htm" 
             style="${pmd.home}/etc/xslt/wz-pmd-report.xslt" /> 
     </target>
+
+    <target name="thrift-gen">
+        <echo message="Running thrift generator on ${thrift.file.list}"/>
+            <exec executable="${thrift.compiler}" dir="${basedir}" failonerror="true">
+                <arg line="--gen java -o ${root.dir}/src/ ${root.dir}/thrift/SyntaxTree.thrift"/>
+            </exec>
+        <depend cache="${basedir}/classes" srcdir="${root.dir}/thrift/" destdir="${root.dir}/src/"/>
+    </target>
+
 
 </project>
