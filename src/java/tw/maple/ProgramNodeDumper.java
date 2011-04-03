@@ -47,7 +47,6 @@ public final class ProgramNodeDumper implements Evaluator
         }
         else if (node.isAttr())
         {
-            
         }
         else
         {
