@@ -66,10 +66,10 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
-import ast.dumper.AstDumper;
+import tw.maple.generated.*;
 import org.apache.thrift.TException;
 
-import tw.maple.ProgramNodeEvaluator;
+import tw.maple.ProgramNodeDumper;
 /**
  * The main interface to the compiler.
  *
@@ -925,7 +925,7 @@ public class Compiler implements ErrorConstants
 					TProtocol protocol = new  TBinaryProtocol(transport);
 					AstDumper.Client dumper = new AstDumper.Client( protocol );
 					
-					ProgramNodeEvaluator printer = new ProgramNodeEvaluator(dumper);
+					ProgramNodeDumper printer = new ProgramNodeDumper(dumper);
 		            node.evaluate(cx, printer);
 		            
 				} catch( org.apache.thrift.TException e1 ) {

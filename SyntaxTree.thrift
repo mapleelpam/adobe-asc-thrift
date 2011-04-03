@@ -1,6 +1,6 @@
 
-namespace java tw.maple
-namespace cpp tw.maple
+namespace java tw.maple.generated
+namespace cpp tw.maple.generated
 
 typedef list<string> StringList
 
