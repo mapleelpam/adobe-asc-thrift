@@ -2,20 +2,22 @@ package tw.maple;
 
 
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.ArrayList;
 
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.Value;
 import macromedia.asc.util.Context;
 //import sun.org.mozilla.javascript.internal.EvaluatorException;
-import tw.maple.generated.AstDumper;
+import tw.maple.generated.*;
 import static macromedia.asc.parser.Tokens.*;
 
 public final class ProgramNodeDumper implements Evaluator 
 {
-	AstDumper.Client thirft_cli;
+	AstDumper.Client thrift_cli;
     public ProgramNodeDumper(AstDumper.Client cli)
     {
-    	thirft_cli = cli;
+    	thrift_cli = cli;
     }
     public boolean checkFeature(Context cx, Node node)
     {
@@ -36,203 +38,357 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, DeleteExpressionNode node){return null;}
+	public Value evaluate(Context cx, DeleteExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, IdentifierNode node){return null;}
+	public Value evaluate(Context cx, IdentifierNode node)
+	{
+        if(node instanceof TypeIdentifierNode)
+        {
+        }
+        else if (node.isAttr())
+        {
+            
+        }
+        else
+        {
+        	try
+        	{
+        		Identifier id = new Identifier();
+        		id.name = node.name;
+        		thrift_cli.identifierExpression( id );
+        	}
+        	catch (org.apache.thrift.TException e1) 
+    		{
+    			
+    		}
+        }
+        
+		return null;
+	}
 
-	public Value evaluate(Context cx, InvokeNode node){return null;}
+	public Value evaluate(Context cx, InvokeNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ThisExpressionNode node){return null;}
+	public Value evaluate(Context cx, ThisExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, QualifiedIdentifierNode node){return null;}
+    public Value evaluate(Context cx, QualifiedIdentifierNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, QualifiedExpressionNode node){return null;}
+    public Value evaluate(Context cx, QualifiedExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, LiteralBooleanNode node){return null;}
+    public Value evaluate(Context cx, LiteralBooleanNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LiteralNumberNode node){return null;}
+	public Value evaluate(Context cx, LiteralNumberNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LiteralStringNode node){return null;}
+	public Value evaluate(Context cx, LiteralStringNode node)
+	{
+		try 
+		{
+			tw.maple.generated.Identifier id = new tw.maple.generated.Identifier( );
+			id.name = node.value;
+			thrift_cli.identifierExpression( id );
+		}
+		catch (org.apache.thrift.TException e1) 
+		{
+			
+		}
+		
+		return null;
+	}
 
-	public Value evaluate(Context cx, LiteralNullNode node){return null;}
+	public Value evaluate(Context cx, LiteralNullNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LiteralRegExpNode node){return null;}
+	public Value evaluate(Context cx, LiteralRegExpNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LiteralXMLNode node){return null;}
+	public Value evaluate(Context cx, LiteralXMLNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, FunctionCommonNode node){return null;}
+	public Value evaluate(Context cx, FunctionCommonNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ParenExpressionNode node){return null;}
+	public Value evaluate(Context cx, ParenExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ParenListExpressionNode node){return null;}
+	public Value evaluate(Context cx, ParenListExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LiteralObjectNode node){return null;}
+	public Value evaluate(Context cx, LiteralObjectNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LiteralFieldNode node){return null;}
+	public Value evaluate(Context cx, LiteralFieldNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LiteralArrayNode node){return null;}
+	public Value evaluate(Context cx, LiteralArrayNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 	
-	public Value evaluate(Context cx, LiteralVectorNode node){return null;}
+	public Value evaluate(Context cx, LiteralVectorNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, SuperExpressionNode node){return null;}
+	public Value evaluate(Context cx, SuperExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, SuperStatementNode node){return null;}
+	public Value evaluate(Context cx, SuperStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, MemberExpressionNode node){return null;}
+	public Value evaluate(Context cx, MemberExpressionNode node)
+	{
+        if (node.base != null)
+        {
+            node.base.evaluate(cx, this);
+        }
 
-	public Value evaluate(Context cx, CallExpressionNode node){return null;}
+        if (node.selector != null)
+        {
+            node.selector.evaluate(cx, this);
+        }  
+		return null;
+	}
 
-	public Value evaluate(Context cx, GetExpressionNode node){return null;}
+	public Value evaluate(Context cx, CallExpressionNode node)
+	{
+		CallExpression call_expression;
+		
+		System.out.print(" in call expression node \n");
+		try {
+			call_expression = new CallExpression();
+			call_expression.is_new = node.is_new;
+			thrift_cli.startCallExpression(call_expression);
+			
+			if (node.expr != null) {
+				// Callee
+				node.expr.evaluate(cx, this);
+			}
 
-	public Value evaluate(Context cx, SetExpressionNode node){return null;}
+			if (node.args != null) {
+				thrift_cli.startAgumentList();
+					node.args.evaluate(cx, this);
+				thrift_cli.endAgumentList();
+			}
+			
+			thrift_cli.endCallExpression();
+		} 
+		catch (org.apache.thrift.TException e1) 
+		{
+			
+		}
 
-    public Value evaluate(Context cx, ApplyTypeExprNode node){return null;}
+		return null;
+	}
 
-	public Value evaluate(Context cx, UnaryExpressionNode node){return null;}
+	public Value evaluate(Context cx, GetExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, BinaryExpressionNode node){return null;}
+	public Value evaluate(Context cx, SetExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ConditionalExpressionNode node){return null;}
+    public Value evaluate(Context cx, ApplyTypeExprNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ArgumentListNode node){return null;}
+	public Value evaluate(Context cx, UnaryExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ListNode node){return null;}
+	public Value evaluate(Context cx, BinaryExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+
+	public Value evaluate(Context cx, ConditionalExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+
+	public Value evaluate(Context cx, ArgumentListNode node)
+	{
+        for (Node n : node.items)
+        {
+            n.evaluate(cx, this);
+        }
+		return null;
+	}
+
+	public Value evaluate(Context cx, ListNode node)
+	{
+	
+		for ( Node n : node.items )
+		{
+			n.evaluate( cx, this );
+		}
+		return null;
+	}
 
 	// Statements
 
-	public Value evaluate(Context cx, StatementListNode node){return null;}
+	public Value evaluate(Context cx, StatementListNode node)
+	{
+        for (Node n : node.items)
+        {
+            if (n != null)
+            {
+                n.evaluate(cx, this);
+            }
+        }
+        return null;
+	}
 
-	public Value evaluate(Context cx, EmptyElementNode node){return null;}
+	public Value evaluate(Context cx, EmptyElementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, EmptyStatementNode node){return null;}
+	public Value evaluate(Context cx, EmptyStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ExpressionStatementNode node){return null;}
+	public Value evaluate(Context cx, ExpressionStatementNode node)
+	{
+		try 
+		{
+			thrift_cli.startExpressionList();
+        		if (node.expr != null)
+        		{
+        			node.expr.evaluate(cx, this);
+        		}
+        	thrift_cli.endExpressionList();
+		} catch( org.apache.thrift.TException e1 ) {
+			System.out.print("\nERROR - "+e1.toString());
+			System.exit(1);		
+		}
 
-	public Value evaluate(Context cx, LabeledStatementNode node){return null;}
+		return null;
+	}
 
-	public Value evaluate(Context cx, IfStatementNode node){return null;}
+	public Value evaluate(Context cx, LabeledStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, SwitchStatementNode node){return null;}
+	public Value evaluate(Context cx, IfStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, CaseLabelNode node){return null;}
+	public Value evaluate(Context cx, SwitchStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, DoStatementNode node){return null;}
+	public Value evaluate(Context cx, CaseLabelNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, WhileStatementNode node){return null;}
+	public Value evaluate(Context cx, DoStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ForStatementNode node){return null;}
+	public Value evaluate(Context cx, WhileStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, WithStatementNode node){return null;}
+	public Value evaluate(Context cx, ForStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ContinueStatementNode node){return null;}
+	public Value evaluate(Context cx, WithStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, BreakStatementNode node){return null;}
+	public Value evaluate(Context cx, ContinueStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ReturnStatementNode node){return null;}
+	public Value evaluate(Context cx, BreakStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ThrowStatementNode node){return null;}
+	public Value evaluate(Context cx, ReturnStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, TryStatementNode node){return null;}
+	public Value evaluate(Context cx, ThrowStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, CatchClauseNode node){return null;}
+	public Value evaluate(Context cx, TryStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, FinallyClauseNode node){return null;}
+	public Value evaluate(Context cx, CatchClauseNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, UseDirectiveNode node){return null;}
+	public Value evaluate(Context cx, FinallyClauseNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, IncludeDirectiveNode node){return null;}
+	public Value evaluate(Context cx, UseDirectiveNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ImportNode node){return null;}
+	public Value evaluate(Context cx, IncludeDirectiveNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, MetaDataNode node){return null;}
+	public Value evaluate(Context cx, ImportNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+
+	public Value evaluate(Context cx, MetaDataNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 	
-	public Value evaluate(Context cx, DocCommentNode node){return null;}
+	public Value evaluate(Context cx, DocCommentNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
 	// Definitions
 
-	public Value evaluate(Context cx, ImportDirectiveNode node){return null;}
+	public Value evaluate(Context cx, ImportDirectiveNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, AttributeListNode node){return null;}
+	public Value evaluate(Context cx, AttributeListNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, VariableDefinitionNode node){return null;}
+	public Value evaluate(Context cx, VariableDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, VariableBindingNode node){return null;}
+	public Value evaluate(Context cx, VariableBindingNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, UntypedVariableBindingNode node){return null;}
+	public Value evaluate(Context cx, UntypedVariableBindingNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, TypedIdentifierNode node){return null;}
+	public Value evaluate(Context cx, TypedIdentifierNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, TypeExpressionNode node){return null;}
+    public Value evaluate(Context cx, TypeExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, FunctionDefinitionNode node){return null;}
+	public Value evaluate(Context cx, FunctionDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, BinaryFunctionDefinitionNode node){return null;}
+    public Value evaluate(Context cx, BinaryFunctionDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, FunctionNameNode node){return null;}
+	public Value evaluate(Context cx, FunctionNameNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, FunctionSignatureNode node){return null;}
+	public Value evaluate(Context cx, FunctionSignatureNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ParameterNode node){return null;}
+	public Value evaluate(Context cx, ParameterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ParameterListNode node){return null;}
+	public Value evaluate(Context cx, ParameterListNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, RestExpressionNode node){return null;}
+	public Value evaluate(Context cx, RestExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, RestParameterNode node){return null;}
+	public Value evaluate(Context cx, RestParameterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, InterfaceDefinitionNode node){return null;}
+	public Value evaluate(Context cx, InterfaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ClassDefinitionNode node){return null;}
+	public Value evaluate(Context cx, ClassDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, BinaryClassDefNode node){return null;}
+    public Value evaluate(Context cx, BinaryClassDefNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, BinaryInterfaceDefinitionNode node){return null;}
+    public Value evaluate(Context cx, BinaryInterfaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ClassNameNode node){return null;}
+	public Value evaluate(Context cx, ClassNameNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, InheritanceNode node){return null;}
+	public Value evaluate(Context cx, InheritanceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, NamespaceDefinitionNode node){return null;}
+	public Value evaluate(Context cx, NamespaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ConfigNamespaceDefinitionNode node){return null;}
+	public Value evaluate(Context cx, ConfigNamespaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, PackageDefinitionNode node){return null;}
+	public Value evaluate(Context cx, PackageDefinitionNode node)
+	{
+		try {
+			List<String> pkg_name_list = new ArrayList<String>();
+			if( node.name != null )
+			{
+		        for (IdentifierNode id : node.name.id.list)
+		        {
+		            pkg_name_list.add( id.name );
+		        }
+			}
+			
+			thrift_cli.startPackage( pkg_name_list );
+			
+		} catch( org.apache.thrift.TException e1 ) {
+			System.out.print("\nERROR - "+e1.toString());
+			System.exit(1);
+		}
+		
+		return null;
+	}
 
-	public Value evaluate(Context cx, PackageIdentifiersNode node){return null;}
+	public Value evaluate(Context cx, PackageIdentifiersNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, PackageNameNode node){return null;}
+	public Value evaluate(Context cx, PackageNameNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ProgramNode node){return null;}
+	public Value evaluate(Context cx, ProgramNode node)
+	{
+		try {
+			thrift_cli.startProgram();
+		    	if (node.statements != null)
+		    	{
+		    		node.statements.evaluate(cx, this);
+		    	}
+			thrift_cli.endProgram();
+		} catch( org.apache.thrift.TException e1 ) {
+			System.out.print("\nERROR - "+e1.toString());
+			System.exit(1);
+		}
+		return null;
+	}
 
-    public Value evaluate(Context cx, BinaryProgramNode node){return null;}
+    public Value evaluate(Context cx, BinaryProgramNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ErrorNode node){return null;}
+	public Value evaluate(Context cx, ErrorNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ToObjectNode node){return null;}
+	public Value evaluate(Context cx, ToObjectNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LoadRegisterNode node){return null;}
+	public Value evaluate(Context cx, LoadRegisterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, StoreRegisterNode node){return null;}
+	public Value evaluate(Context cx, StoreRegisterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, RegisterNode node){return null;}
+    public Value evaluate(Context cx, RegisterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, HasNextNode node){return null;}
+	public Value evaluate(Context cx, HasNextNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, BoxNode node){return null;}
+    public Value evaluate(Context cx, BoxNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, CoerceNode node){return null;}
+	public Value evaluate(Context cx, CoerceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, PragmaNode node){return null;}
+	public Value evaluate(Context cx, PragmaNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, UsePrecisionNode node){return null;}
+    public Value evaluate(Context cx, UsePrecisionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, UseNumericNode node){return null;}
+	public Value evaluate(Context cx, UseNumericNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, UseRoundingNode node){return null;} 
+	public Value evaluate(Context cx, UseRoundingNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;} 
 
-    public Value evaluate(Context cx, PragmaExpressionNode node){return null;}
+    public Value evaluate(Context cx, PragmaExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, DefaultXMLNamespaceNode node){return null;}
+    public Value evaluate(Context cx, DefaultXMLNamespaceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
 	
 }

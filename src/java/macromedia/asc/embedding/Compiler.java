@@ -64,6 +64,7 @@ import org.apache.thrift.transport.TFileTransport;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
 import tw.maple.generated.*;
@@ -237,7 +238,6 @@ public class Compiler implements ErrorConstants
 
         if( save_programnode && cx.errorCount() == 0 )
         {
-            System.out.print("\n\t oh--Yes, I Got it\n");
             dumpBinaryAST( cx.scriptName(), node, cx, ".pn" );
         	return;
         }
@@ -922,8 +922,10 @@ public class Compiler implements ErrorConstants
 				try
 				{
 					transport.open();
-					TProtocol protocol = new  TBinaryProtocol(transport);
+//					TProtocol protocol = new  TBinaryProtocol(transport);
+					TProtocol protocol = new  TJSONProtocol(transport);
 					AstDumper.Client dumper = new AstDumper.Client( protocol );
+					
 					
 					ProgramNodeDumper printer = new ProgramNodeDumper(dumper);
 		            node.evaluate(cx, printer);
