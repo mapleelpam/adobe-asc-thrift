@@ -31,7 +31,7 @@
 		<os family="windows"/>
 	</condition>
 
-	<target name="main" depends="thrift-gen,jar">
+	<target name="main" depends="thrift-update,jar">
 	</target>
 
 	<target name="dev" depends="jar" description="runs src.depend build for development"/>
@@ -344,8 +344,18 @@
             style="${pmd.home}/etc/xslt/wz-pmd-report.xslt" /> 
     </target>
 
-    <target name="thrift-gen">
-        <echo message="Running thrift generator on ${thrift.file.list}"/>
+    <target name="thrift-update-check">
+	    <property name="thrift.file.exists" value="false"/>    
+        <echo message="check thrift description file ${thrift.file} "/>
+        <condition property="thrift.file.exists" >   
+            <and>   
+                <available file="${thrift.file}" />
+            </and>   
+        </condition>
+    </target>
+
+    <target name="thrift-update" depends="thrift-update-check" if="thrift.file.exists">
+        <echo message="Running thrift generator on ${thrift.file}"/>
             <exec executable="${thrift.compiler}" dir="${basedir}" failonerror="true">
                 <arg line="--gen java -o ${root.dir}/src/ ${thrift.file}"/>
             </exec>
