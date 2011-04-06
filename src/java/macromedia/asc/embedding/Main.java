@@ -412,7 +412,6 @@ public class Main
 			System.out.println("       (multiple -in arguments allowed)");
 			System.out.println("  -m = write the avm+ assembly code to the .il file");
 			System.out.println("  -p = write parse tree to the .p file");
-			System.out.println("  -x = write parse tree to the .pn file (Binary Format)");
 			System.out.println("  -md = emit metadata information into the bytecode");
 			System.out.println("  -warnings = warn on common actionscript mistakes");
 			System.out.println("  -strict = treat undeclared variable and method access as errors");
@@ -427,6 +426,8 @@ public class Main
             System.out.println("  -avmtarget <vm version number> = emit bytecode for a specific VM version, 1 is AVM1, 2 is AVM2, etc");
             System.out.println("  -api <version> = compile program as a specfic version between " + APIVersions.min_version_num +
 							   " and " + APIVersions.max_version_num);
+            System.out.println(" ------------------------------------------------------------------------------------ ");
+            System.out.println("  -x = write parse tree to the .pn file (Binary Format)");
             System.out.println("");
 			System.exit(1);
 		}
