@@ -72,12 +72,22 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
 	{
 		System.out.print("\n ----------> QualifiedIdentifierNode \n");
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+//		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		
+		if (node.qualifier != null)
+        {
+            node.qualifier.evaluate(cx, this);
+        }
+		
 		try 
 		{
-			tw.maple.generated.LiteralString str = new tw.maple.generated.LiteralString();
-			str.value = node.name;
-			thrift_cli.literalStringExpression( str );
+//			tw.maple.generated.LiteralString str = new tw.maple.generated.LiteralString();
+//			str.value = node.name;
+//			thrift_cli.identifierExpression( str );
+			
+    		Identifier id = new Identifier();
+    		id.name = node.name;
+    		thrift_cli.identifierExpression( id );
 		}
 		catch (org.apache.thrift.TException e1) 
 		{
@@ -194,7 +204,15 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, GetExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, GetExpressionNode node)
+	{
+//		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if (node.expr != null)
+        {
+            node.expr.evaluate(cx, this);
+        }
+		return null;
+	}
 
 	public Value evaluate(Context cx, SetExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
@@ -319,7 +337,15 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, TypedIdentifierNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, TypeExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, TypeExpressionNode node)
+    {
+    	System.out.println((new Throwable()).getStackTrace()[0].toString());
+    	if (node.expr != null)
+        {
+            node.expr.evaluate(cx, this);
+        }
+    	return null;
+    }
 
 	public Value evaluate(Context cx, FunctionDefinitionNode node)
 	{
@@ -329,13 +355,12 @@ public final class ProgramNodeDumper implements Evaluator
 			if (node.attrs != null) {
 				node.attrs.evaluate(cx, this);
 			}
-			thrift_cli.startFunctionName();
+		
 
 			if (node.name != null) {
-				System.out.print("\n ----------> node.name \n");
 				node.name.evaluate(cx, this);
 			}
-			thrift_cli.endFunctionName();
+		
 			thrift_cli.startFunctionBody();
 			if (node.fexpr != null) {
 				node.fexpr.evaluate(cx, this);
@@ -354,9 +379,62 @@ public final class ProgramNodeDumper implements Evaluator
         return null;	
     }
 
-	public Value evaluate(Context cx, FunctionNameNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, FunctionNameNode node)
+	{
+//		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		try {
+			thrift_cli.startFunctionName();
+		} catch (org.apache.thrift.TException e1) {
 
-	public Value evaluate(Context cx, FunctionSignatureNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+		}
+		if (node.identifier != null) {
+			node.identifier.evaluate(cx, this);
+		}
+
+		try {
+			thrift_cli.endFunctionName();
+		} catch (org.apache.thrift.TException e1) {
+
+		}
+		return null;
+	}
+
+	public Value evaluate(Context cx, FunctionSignatureNode node) 
+	{
+//		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		try {
+			thrift_cli.startFunctionSignature();
+		} catch (org.apache.thrift.TException e1) {
+
+		}
+        if (node.result != null)
+        {
+    		try {
+    			thrift_cli.startFunctionSignatureReturnType();
+    		} catch (org.apache.thrift.TException e1) {
+    		}
+            node.result.evaluate(cx, this);
+    		try {
+    			thrift_cli.endFunctionSignatureReturnType();
+    		} catch (org.apache.thrift.TException e1) {
+    		}
+        }
+		if (node.parameter != null)
+        {
+            node.parameter.evaluate(cx, this);
+        }
+        if (node.inits != null)
+        {
+        	node.inits.evaluate(cx, this);
+        }
+		
+		try {
+			thrift_cli.endFunctionSignature();
+		} catch (org.apache.thrift.TException e1) {
+
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, ParameterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
