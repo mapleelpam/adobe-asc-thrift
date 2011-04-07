@@ -69,7 +69,23 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ThisExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, QualifiedIdentifierNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
+	{
+		System.out.print("\n ----------> QualifiedIdentifierNode \n");
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		try 
+		{
+			tw.maple.generated.LiteralString str = new tw.maple.generated.LiteralString();
+			str.value = node.name;
+			thrift_cli.literalStringExpression( str );
+		}
+		catch (org.apache.thrift.TException e1) 
+		{
+			
+		}
+//        node.qualifier.evaluate(cx, this);
+		return null;
+	}
 
     public Value evaluate(Context cx, QualifiedExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
@@ -81,9 +97,13 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		try 
 		{
-			tw.maple.generated.Identifier id = new tw.maple.generated.Identifier( );
-			id.name = node.value;
-			thrift_cli.identifierExpression( id );
+//			tw.maple.generated.Identifier id = new tw.maple.generated.Identifier( );
+//			id.name = node.value;
+//			thrift_cli.identifierExpression( id );
+			
+			tw.maple.generated.LiteralString str = new tw.maple.generated.LiteralString();
+			str.value = node.value;
+			thrift_cli.literalStringExpression( str );
 		}
 		catch (org.apache.thrift.TException e1) 
 		{
@@ -99,7 +119,19 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, LiteralXMLNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, FunctionCommonNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, FunctionCommonNode node)
+	{
+//		System.out.println((new Throwable()).getStackTrace()[0].toString());
+        if (node.signature != null)
+        {
+            node.signature.evaluate(cx, this);
+        }
+        if (node.body != null)
+        {
+            node.body.evaluate(cx, this);
+        }
+		return null;
+	}
 
 	public Value evaluate(Context cx, ParenExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
@@ -197,13 +229,17 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, StatementListNode node)
 	{
-        for (Node n : node.items)
-        {
-            if (n != null)
-            {
-                n.evaluate(cx, this);
-            }
-        }
+		try {
+			thrift_cli.startStmtList();
+			for (Node n : node.items) {
+				if (n != null) {
+					n.evaluate(cx, this);
+				}
+			}
+			thrift_cli.endStmtList();
+		} catch (org.apache.thrift.TException e1) {
+
+		}        
         return null;
 	}
 
@@ -285,9 +321,38 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, TypeExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, FunctionDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, FunctionDefinitionNode node)
+	{
+//		System.out.println((new Throwable()).getStackTrace()[0].toString());  
+		try {
+			thrift_cli.startFunctionDefinition();
+			if (node.attrs != null) {
+				node.attrs.evaluate(cx, this);
+			}
+			thrift_cli.startFunctionName();
 
-    public Value evaluate(Context cx, BinaryFunctionDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+			if (node.name != null) {
+				System.out.print("\n ----------> node.name \n");
+				node.name.evaluate(cx, this);
+			}
+			thrift_cli.endFunctionName();
+			thrift_cli.startFunctionBody();
+			if (node.fexpr != null) {
+				node.fexpr.evaluate(cx, this);
+			}
+			thrift_cli.endFunctionBody();
+			thrift_cli.endFunctionDefinition();
+		} catch (org.apache.thrift.TException e1) {
+
+		}
+		return null;
+	}
+
+    public Value evaluate(Context cx, BinaryFunctionDefinitionNode node)
+    {
+//		System.out.println((new Throwable()).getStackTrace()[0].toString());  
+        return null;	
+    }
 
 	public Value evaluate(Context cx, FunctionNameNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
