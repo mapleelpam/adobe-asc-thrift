@@ -100,7 +100,23 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, QualifiedExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-    public Value evaluate(Context cx, LiteralBooleanNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, LiteralBooleanNode node)
+    {
+    	try 
+		{
+			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
+			if( node.value == true )
+				str.value = "true";
+			else
+				str.value = "false";
+			thrift_cli.literalBooleanExpression( str );
+		}
+		catch (org.apache.thrift.TException e1) 
+		{
+			
+		}
+		return null;
+    }
 
 	public Value evaluate(Context cx, LiteralNumberNode node)
 	{
@@ -113,8 +129,7 @@ public final class ProgramNodeDumper implements Evaluator
 		catch (org.apache.thrift.TException e1) 
 		{
 			
-		}
-		
+		}	
 		return null;
 	}
 
