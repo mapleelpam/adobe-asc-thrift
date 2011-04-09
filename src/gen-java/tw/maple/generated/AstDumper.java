@@ -80,7 +80,11 @@ public class AstDumper {
 
     public void identifierExpression(Identifier id) throws org.apache.thrift.TException;
 
-    public void literalStringExpression(LiteralString str) throws org.apache.thrift.TException;
+    public void literalStringExpression(Literal str) throws org.apache.thrift.TException;
+
+    public void literalNumberExpression(Literal str) throws org.apache.thrift.TException;
+
+    public void literalBooleanExpression(Literal str) throws org.apache.thrift.TException;
 
     public void endExpressionList() throws org.apache.thrift.TException;
 
@@ -154,7 +158,11 @@ public class AstDumper {
 
     public void identifierExpression(Identifier id, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.identifierExpression_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void literalStringExpression(LiteralString str, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.literalStringExpression_call> resultHandler) throws org.apache.thrift.TException;
+    public void literalStringExpression(Literal str, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.literalStringExpression_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void literalNumberExpression(Literal str, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.literalNumberExpression_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void literalBooleanExpression(Literal str, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.literalBooleanExpression_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endExpressionList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endExpressionList_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -604,15 +612,45 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void literalStringExpression(LiteralString str) throws org.apache.thrift.TException
+    public void literalStringExpression(Literal str) throws org.apache.thrift.TException
     {
       send_literalStringExpression(str);
     }
 
-    public void send_literalStringExpression(LiteralString str) throws org.apache.thrift.TException
+    public void send_literalStringExpression(Literal str) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("literalStringExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       literalStringExpression_args args = new literalStringExpression_args();
+      args.setStr(str);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void literalNumberExpression(Literal str) throws org.apache.thrift.TException
+    {
+      send_literalNumberExpression(str);
+    }
+
+    public void send_literalNumberExpression(Literal str) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("literalNumberExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      literalNumberExpression_args args = new literalNumberExpression_args();
+      args.setStr(str);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void literalBooleanExpression(Literal str) throws org.apache.thrift.TException
+    {
+      send_literalBooleanExpression(str);
+    }
+
+    public void send_literalBooleanExpression(Literal str) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("literalBooleanExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      literalBooleanExpression_args args = new literalBooleanExpression_args();
       args.setStr(str);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -1522,7 +1560,7 @@ public class AstDumper {
       }
     }
 
-    public void literalStringExpression(LiteralString str, org.apache.thrift.async.AsyncMethodCallback<literalStringExpression_call> resultHandler) throws org.apache.thrift.TException {
+    public void literalStringExpression(Literal str, org.apache.thrift.async.AsyncMethodCallback<literalStringExpression_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       literalStringExpression_call method_call = new literalStringExpression_call(str, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
@@ -1530,8 +1568,8 @@ public class AstDumper {
     }
 
     public static class literalStringExpression_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private LiteralString str;
-      public literalStringExpression_call(LiteralString str, org.apache.thrift.async.AsyncMethodCallback<literalStringExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private Literal str;
+      public literalStringExpression_call(Literal str, org.apache.thrift.async.AsyncMethodCallback<literalStringExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
         this.str = str;
       }
@@ -1539,6 +1577,68 @@ public class AstDumper {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("literalStringExpression", org.apache.thrift.protocol.TMessageType.CALL, 0));
         literalStringExpression_args args = new literalStringExpression_args();
+        args.setStr(str);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
+    public void literalNumberExpression(Literal str, org.apache.thrift.async.AsyncMethodCallback<literalNumberExpression_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      literalNumberExpression_call method_call = new literalNumberExpression_call(str, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class literalNumberExpression_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private Literal str;
+      public literalNumberExpression_call(Literal str, org.apache.thrift.async.AsyncMethodCallback<literalNumberExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+        this.str = str;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("literalNumberExpression", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        literalNumberExpression_args args = new literalNumberExpression_args();
+        args.setStr(str);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
+    public void literalBooleanExpression(Literal str, org.apache.thrift.async.AsyncMethodCallback<literalBooleanExpression_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      literalBooleanExpression_call method_call = new literalBooleanExpression_call(str, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class literalBooleanExpression_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private Literal str;
+      public literalBooleanExpression_call(Literal str, org.apache.thrift.async.AsyncMethodCallback<literalBooleanExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+        this.str = str;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("literalBooleanExpression", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        literalBooleanExpression_args args = new literalBooleanExpression_args();
         args.setStr(str);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1763,6 +1863,8 @@ public class AstDumper {
       processMap_.put("endBinaryExpression", new endBinaryExpression());
       processMap_.put("identifierExpression", new identifierExpression());
       processMap_.put("literalStringExpression", new literalStringExpression());
+      processMap_.put("literalNumberExpression", new literalNumberExpression());
+      processMap_.put("literalBooleanExpression", new literalBooleanExpression());
       processMap_.put("endExpressionList", new endExpressionList());
       processMap_.put("addImport", new addImport());
       processMap_.put("startStmtList", new startStmtList());
@@ -2401,6 +2503,48 @@ public class AstDumper {
         }
         iprot.readMessageEnd();
         iface_.literalStringExpression(args.str);
+        return;
+      }
+    }
+
+    private class literalNumberExpression implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        literalNumberExpression_args args = new literalNumberExpression_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("literalNumberExpression", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.literalNumberExpression(args.str);
+        return;
+      }
+    }
+
+    private class literalBooleanExpression implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        literalBooleanExpression_args args = new literalBooleanExpression_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("literalBooleanExpression", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.literalBooleanExpression(args.str);
         return;
       }
     }
@@ -8736,7 +8880,7 @@ public class AstDumper {
 
     private static final org.apache.thrift.protocol.TField STR_FIELD_DESC = new org.apache.thrift.protocol.TField("str", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
-    public LiteralString str;
+    public Literal str;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -8802,7 +8946,7 @@ public class AstDumper {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.STR, new org.apache.thrift.meta_data.FieldMetaData("str", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LiteralString.class)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Literal.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(literalStringExpression_args.class, metaDataMap);
     }
@@ -8811,7 +8955,7 @@ public class AstDumper {
     }
 
     public literalStringExpression_args(
-      LiteralString str)
+      Literal str)
     {
       this();
       this.str = str;
@@ -8822,7 +8966,7 @@ public class AstDumper {
      */
     public literalStringExpression_args(literalStringExpression_args other) {
       if (other.isSetStr()) {
-        this.str = new LiteralString(other.str);
+        this.str = new Literal(other.str);
       }
     }
 
@@ -8835,11 +8979,11 @@ public class AstDumper {
       this.str = null;
     }
 
-    public LiteralString getStr() {
+    public Literal getStr() {
       return this.str;
     }
 
-    public literalStringExpression_args setStr(LiteralString str) {
+    public literalStringExpression_args setStr(Literal str) {
       this.str = str;
       return this;
     }
@@ -8865,7 +9009,7 @@ public class AstDumper {
         if (value == null) {
           unsetStr();
         } else {
-          setStr((LiteralString)value);
+          setStr((Literal)value);
         }
         break;
 
@@ -8961,7 +9105,7 @@ public class AstDumper {
         switch (field.id) {
           case 1: // STR
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-              this.str = new LiteralString();
+              this.str = new Literal();
               this.str.read(iprot);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
@@ -8994,6 +9138,602 @@ public class AstDumper {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("literalStringExpression_args(");
+      boolean first = true;
+
+      sb.append("str:");
+      if (this.str == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.str);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class literalNumberExpression_args implements org.apache.thrift.TBase<literalNumberExpression_args, literalNumberExpression_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("literalNumberExpression_args");
+
+    private static final org.apache.thrift.protocol.TField STR_FIELD_DESC = new org.apache.thrift.protocol.TField("str", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public Literal str;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      STR((short)1, "str");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // STR
+            return STR;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.STR, new org.apache.thrift.meta_data.FieldMetaData("str", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Literal.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(literalNumberExpression_args.class, metaDataMap);
+    }
+
+    public literalNumberExpression_args() {
+    }
+
+    public literalNumberExpression_args(
+      Literal str)
+    {
+      this();
+      this.str = str;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public literalNumberExpression_args(literalNumberExpression_args other) {
+      if (other.isSetStr()) {
+        this.str = new Literal(other.str);
+      }
+    }
+
+    public literalNumberExpression_args deepCopy() {
+      return new literalNumberExpression_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.str = null;
+    }
+
+    public Literal getStr() {
+      return this.str;
+    }
+
+    public literalNumberExpression_args setStr(Literal str) {
+      this.str = str;
+      return this;
+    }
+
+    public void unsetStr() {
+      this.str = null;
+    }
+
+    /** Returns true if field str is set (has been assigned a value) and false otherwise */
+    public boolean isSetStr() {
+      return this.str != null;
+    }
+
+    public void setStrIsSet(boolean value) {
+      if (!value) {
+        this.str = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case STR:
+        if (value == null) {
+          unsetStr();
+        } else {
+          setStr((Literal)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case STR:
+        return getStr();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case STR:
+        return isSetStr();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof literalNumberExpression_args)
+        return this.equals((literalNumberExpression_args)that);
+      return false;
+    }
+
+    public boolean equals(literalNumberExpression_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_str = true && this.isSetStr();
+      boolean that_present_str = true && that.isSetStr();
+      if (this_present_str || that_present_str) {
+        if (!(this_present_str && that_present_str))
+          return false;
+        if (!this.str.equals(that.str))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(literalNumberExpression_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      literalNumberExpression_args typedOther = (literalNumberExpression_args)other;
+
+      lastComparison = Boolean.valueOf(isSetStr()).compareTo(typedOther.isSetStr());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetStr()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.str, typedOther.str);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // STR
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.str = new Literal();
+              this.str.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.str != null) {
+        oprot.writeFieldBegin(STR_FIELD_DESC);
+        this.str.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("literalNumberExpression_args(");
+      boolean first = true;
+
+      sb.append("str:");
+      if (this.str == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.str);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class literalBooleanExpression_args implements org.apache.thrift.TBase<literalBooleanExpression_args, literalBooleanExpression_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("literalBooleanExpression_args");
+
+    private static final org.apache.thrift.protocol.TField STR_FIELD_DESC = new org.apache.thrift.protocol.TField("str", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public Literal str;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      STR((short)1, "str");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // STR
+            return STR;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.STR, new org.apache.thrift.meta_data.FieldMetaData("str", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Literal.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(literalBooleanExpression_args.class, metaDataMap);
+    }
+
+    public literalBooleanExpression_args() {
+    }
+
+    public literalBooleanExpression_args(
+      Literal str)
+    {
+      this();
+      this.str = str;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public literalBooleanExpression_args(literalBooleanExpression_args other) {
+      if (other.isSetStr()) {
+        this.str = new Literal(other.str);
+      }
+    }
+
+    public literalBooleanExpression_args deepCopy() {
+      return new literalBooleanExpression_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.str = null;
+    }
+
+    public Literal getStr() {
+      return this.str;
+    }
+
+    public literalBooleanExpression_args setStr(Literal str) {
+      this.str = str;
+      return this;
+    }
+
+    public void unsetStr() {
+      this.str = null;
+    }
+
+    /** Returns true if field str is set (has been assigned a value) and false otherwise */
+    public boolean isSetStr() {
+      return this.str != null;
+    }
+
+    public void setStrIsSet(boolean value) {
+      if (!value) {
+        this.str = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case STR:
+        if (value == null) {
+          unsetStr();
+        } else {
+          setStr((Literal)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case STR:
+        return getStr();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case STR:
+        return isSetStr();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof literalBooleanExpression_args)
+        return this.equals((literalBooleanExpression_args)that);
+      return false;
+    }
+
+    public boolean equals(literalBooleanExpression_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_str = true && this.isSetStr();
+      boolean that_present_str = true && that.isSetStr();
+      if (this_present_str || that_present_str) {
+        if (!(this_present_str && that_present_str))
+          return false;
+        if (!this.str.equals(that.str))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(literalBooleanExpression_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      literalBooleanExpression_args typedOther = (literalBooleanExpression_args)other;
+
+      lastComparison = Boolean.valueOf(isSetStr()).compareTo(typedOther.isSetStr());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetStr()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.str, typedOther.str);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // STR
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.str = new Literal();
+              this.str.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.str != null) {
+        oprot.writeFieldBegin(STR_FIELD_DESC);
+        this.str.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("literalBooleanExpression_args(");
       boolean first = true;
 
       sb.append("str:");

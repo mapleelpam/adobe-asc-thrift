@@ -20,8 +20,8 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LiteralString implements org.apache.thrift.TBase<LiteralString, LiteralString._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("LiteralString");
+public class Literal implements org.apache.thrift.TBase<Literal, Literal._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Literal");
 
   private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.STRING, (short)2);
 
@@ -93,13 +93,13 @@ public class LiteralString implements org.apache.thrift.TBase<LiteralString, Lit
     tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LiteralString.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Literal.class, metaDataMap);
   }
 
-  public LiteralString() {
+  public Literal() {
   }
 
-  public LiteralString(
+  public Literal(
     String value)
   {
     this();
@@ -109,14 +109,14 @@ public class LiteralString implements org.apache.thrift.TBase<LiteralString, Lit
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public LiteralString(LiteralString other) {
+  public Literal(Literal other) {
     if (other.isSetValue()) {
       this.value = other.value;
     }
   }
 
-  public LiteralString deepCopy() {
-    return new LiteralString(this);
+  public Literal deepCopy() {
+    return new Literal(this);
   }
 
   @Override
@@ -128,7 +128,7 @@ public class LiteralString implements org.apache.thrift.TBase<LiteralString, Lit
     return this.value;
   }
 
-  public LiteralString setValue(String value) {
+  public Literal setValue(String value) {
     this.value = value;
     return this;
   }
@@ -187,12 +187,12 @@ public class LiteralString implements org.apache.thrift.TBase<LiteralString, Lit
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof LiteralString)
-      return this.equals((LiteralString)that);
+    if (that instanceof Literal)
+      return this.equals((Literal)that);
     return false;
   }
 
-  public boolean equals(LiteralString that) {
+  public boolean equals(Literal that) {
     if (that == null)
       return false;
 
@@ -213,13 +213,13 @@ public class LiteralString implements org.apache.thrift.TBase<LiteralString, Lit
     return 0;
   }
 
-  public int compareTo(LiteralString other) {
+  public int compareTo(Literal other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    LiteralString typedOther = (LiteralString)other;
+    Literal typedOther = (Literal)other;
 
     lastComparison = Boolean.valueOf(isSetValue()).compareTo(typedOther.isSetValue());
     if (lastComparison != 0) {
@@ -281,7 +281,7 @@ public class LiteralString implements org.apache.thrift.TBase<LiteralString, Lit
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("LiteralString(");
+    StringBuilder sb = new StringBuilder("Literal(");
     boolean first = true;
 
     sb.append("value:");

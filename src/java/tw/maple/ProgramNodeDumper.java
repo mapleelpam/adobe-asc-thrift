@@ -102,7 +102,21 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, LiteralBooleanNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LiteralNumberNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LiteralNumberNode node)
+	{
+		try 
+		{
+			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
+			str.value = node.value;
+			thrift_cli.literalNumberExpression( str );
+		}
+		catch (org.apache.thrift.TException e1) 
+		{
+			
+		}
+		
+		return null;
+	}
 
 	public Value evaluate(Context cx, LiteralStringNode node)
 	{
@@ -112,7 +126,7 @@ public final class ProgramNodeDumper implements Evaluator
 //			id.name = node.value;
 //			thrift_cli.identifierExpression( id );
 			
-			tw.maple.generated.LiteralString str = new tw.maple.generated.LiteralString();
+			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
 			str.value = node.value;
 			thrift_cli.literalStringExpression( str );
 		}
@@ -328,6 +342,8 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, ReturnStatementNode node)
 	{
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if (node.expr == null) 
+			return null;
 		
 		try {
 			thrift_cli.startReturnStatement();
@@ -539,7 +555,11 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, InheritanceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, NamespaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, NamespaceDefinitionNode node)
+	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());  
+		return null;
+	}
 
 	public Value evaluate(Context cx, ConfigNamespaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
