@@ -367,7 +367,36 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, LabeledStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, IfStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, IfStatementNode node) 
+	{
+		try { thrift_cli.startIfStatement();
+		} catch (org.apache.thrift.TException e1) { }
+		
+		try { thrift_cli.startIfStatement_Condition();
+		} catch (org.apache.thrift.TException e1) { }
+		if (node.condition != null) {
+			node.condition.evaluate(cx, this);
+		}
+		try { thrift_cli.endIfStatement_Condition();
+		} catch (org.apache.thrift.TException e1) { }
+
+		try { thrift_cli.startIfStatement_Then();
+		} catch (org.apache.thrift.TException e1) { }
+		if (node.thenactions != null) {
+			node.thenactions.evaluate(cx, this);
+		}
+		try { thrift_cli.endIfStatement_Then();
+		} catch (org.apache.thrift.TException e1) { }
+
+		try { thrift_cli.startIfStatement_Else();
+		} catch (org.apache.thrift.TException e1) { }
+		if (node.elseactions != null) {
+			node.elseactions.evaluate(cx, this);
+		}
+		try { thrift_cli.endtIfStatement_Else();
+		} catch (org.apache.thrift.TException e1) { }
+		return null;
+	}
 
 	public Value evaluate(Context cx, SwitchStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
