@@ -38,11 +38,17 @@ public class AstDumper {
 
     public void endFunctionName() throws org.apache.thrift.TException;
 
+    public void startFunctionCommon() throws org.apache.thrift.TException;
+
     public void startFunctionSignature() throws org.apache.thrift.TException;
 
-    public void startFunctionSignatureParameter() throws org.apache.thrift.TException;
+    public void startFunctionSignatureParameters() throws org.apache.thrift.TException;
 
-    public void endFunctionSignatureParameter() throws org.apache.thrift.TException;
+    public void startFunctionSignatureParameterMember() throws org.apache.thrift.TException;
+
+    public void endFunctionSignatureParameterMember() throws org.apache.thrift.TException;
+
+    public void endFunctionSignatureParameters() throws org.apache.thrift.TException;
 
     public void startFunctionSignatureReturnType() throws org.apache.thrift.TException;
 
@@ -50,9 +56,7 @@ public class AstDumper {
 
     public void endFunctionSignature() throws org.apache.thrift.TException;
 
-    public void startFunctionBody() throws org.apache.thrift.TException;
-
-    public void endFunctionBody() throws org.apache.thrift.TException;
+    public void endFunctionCommon() throws org.apache.thrift.TException;
 
     public void endFunctionDefinition() throws org.apache.thrift.TException;
 
@@ -100,11 +104,17 @@ public class AstDumper {
 
     public void endFunctionName(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endFunctionName_call> resultHandler) throws org.apache.thrift.TException;
 
+    public void startFunctionCommon(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionCommon_call> resultHandler) throws org.apache.thrift.TException;
+
     public void startFunctionSignature(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionSignature_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void startFunctionSignatureParameter(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionSignatureParameter_call> resultHandler) throws org.apache.thrift.TException;
+    public void startFunctionSignatureParameters(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionSignatureParameters_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void endFunctionSignatureParameter(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endFunctionSignatureParameter_call> resultHandler) throws org.apache.thrift.TException;
+    public void startFunctionSignatureParameterMember(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionSignatureParameterMember_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void endFunctionSignatureParameterMember(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endFunctionSignatureParameterMember_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void endFunctionSignatureParameters(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endFunctionSignatureParameters_call> resultHandler) throws org.apache.thrift.TException;
 
     public void startFunctionSignatureReturnType(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionSignatureReturnType_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -112,9 +122,7 @@ public class AstDumper {
 
     public void endFunctionSignature(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endFunctionSignature_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void startFunctionBody(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionBody_call> resultHandler) throws org.apache.thrift.TException;
-
-    public void endFunctionBody(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endFunctionBody_call> resultHandler) throws org.apache.thrift.TException;
+    public void endFunctionCommon(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endFunctionCommon_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endFunctionDefinition(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endFunctionDefinition_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -283,6 +291,20 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
+    public void startFunctionCommon() throws org.apache.thrift.TException
+    {
+      send_startFunctionCommon();
+    }
+
+    public void send_startFunctionCommon() throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionCommon", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      startFunctionCommon_args args = new startFunctionCommon_args();
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
     public void startFunctionSignature() throws org.apache.thrift.TException
     {
       send_startFunctionSignature();
@@ -297,29 +319,57 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void startFunctionSignatureParameter() throws org.apache.thrift.TException
+    public void startFunctionSignatureParameters() throws org.apache.thrift.TException
     {
-      send_startFunctionSignatureParameter();
+      send_startFunctionSignatureParameters();
     }
 
-    public void send_startFunctionSignatureParameter() throws org.apache.thrift.TException
+    public void send_startFunctionSignatureParameters() throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameter", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      startFunctionSignatureParameter_args args = new startFunctionSignatureParameter_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameters", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      startFunctionSignatureParameters_args args = new startFunctionSignatureParameters_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
     }
 
-    public void endFunctionSignatureParameter() throws org.apache.thrift.TException
+    public void startFunctionSignatureParameterMember() throws org.apache.thrift.TException
     {
-      send_endFunctionSignatureParameter();
+      send_startFunctionSignatureParameterMember();
     }
 
-    public void send_endFunctionSignatureParameter() throws org.apache.thrift.TException
+    public void send_startFunctionSignatureParameterMember() throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionSignatureParameter", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      endFunctionSignatureParameter_args args = new endFunctionSignatureParameter_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameterMember", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      startFunctionSignatureParameterMember_args args = new startFunctionSignatureParameterMember_args();
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void endFunctionSignatureParameterMember() throws org.apache.thrift.TException
+    {
+      send_endFunctionSignatureParameterMember();
+    }
+
+    public void send_endFunctionSignatureParameterMember() throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionSignatureParameterMember", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      endFunctionSignatureParameterMember_args args = new endFunctionSignatureParameterMember_args();
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void endFunctionSignatureParameters() throws org.apache.thrift.TException
+    {
+      send_endFunctionSignatureParameters();
+    }
+
+    public void send_endFunctionSignatureParameters() throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionSignatureParameters", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      endFunctionSignatureParameters_args args = new endFunctionSignatureParameters_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -367,29 +417,15 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void startFunctionBody() throws org.apache.thrift.TException
+    public void endFunctionCommon() throws org.apache.thrift.TException
     {
-      send_startFunctionBody();
+      send_endFunctionCommon();
     }
 
-    public void send_startFunctionBody() throws org.apache.thrift.TException
+    public void send_endFunctionCommon() throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionBody", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      startFunctionBody_args args = new startFunctionBody_args();
-      args.write(oprot_);
-      oprot_.writeMessageEnd();
-      oprot_.getTransport().flush();
-    }
-
-    public void endFunctionBody() throws org.apache.thrift.TException
-    {
-      send_endFunctionBody();
-    }
-
-    public void send_endFunctionBody() throws org.apache.thrift.TException
-    {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionBody", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      endFunctionBody_args args = new endFunctionBody_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionCommon", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      endFunctionCommon_args args = new endFunctionCommon_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -816,6 +852,34 @@ public class AstDumper {
       }
     }
 
+    public void startFunctionCommon(org.apache.thrift.async.AsyncMethodCallback<startFunctionCommon_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      startFunctionCommon_call method_call = new startFunctionCommon_call(resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class startFunctionCommon_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public startFunctionCommon_call(org.apache.thrift.async.AsyncMethodCallback<startFunctionCommon_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionCommon", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        startFunctionCommon_args args = new startFunctionCommon_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
     public void startFunctionSignature(org.apache.thrift.async.AsyncMethodCallback<startFunctionSignature_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       startFunctionSignature_call method_call = new startFunctionSignature_call(resultHandler, this, protocolFactory, transport);
@@ -844,21 +908,21 @@ public class AstDumper {
       }
     }
 
-    public void startFunctionSignatureParameter(org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameter_call> resultHandler) throws org.apache.thrift.TException {
+    public void startFunctionSignatureParameters(org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameters_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startFunctionSignatureParameter_call method_call = new startFunctionSignatureParameter_call(resultHandler, this, protocolFactory, transport);
+      startFunctionSignatureParameters_call method_call = new startFunctionSignatureParameters_call(resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class startFunctionSignatureParameter_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public startFunctionSignatureParameter_call(org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameter_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class startFunctionSignatureParameters_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public startFunctionSignatureParameters_call(org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameters_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameter", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        startFunctionSignatureParameter_args args = new startFunctionSignatureParameter_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameters", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        startFunctionSignatureParameters_args args = new startFunctionSignatureParameters_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -872,21 +936,77 @@ public class AstDumper {
       }
     }
 
-    public void endFunctionSignatureParameter(org.apache.thrift.async.AsyncMethodCallback<endFunctionSignatureParameter_call> resultHandler) throws org.apache.thrift.TException {
+    public void startFunctionSignatureParameterMember(org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameterMember_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      endFunctionSignatureParameter_call method_call = new endFunctionSignatureParameter_call(resultHandler, this, protocolFactory, transport);
+      startFunctionSignatureParameterMember_call method_call = new startFunctionSignatureParameterMember_call(resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class endFunctionSignatureParameter_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public endFunctionSignatureParameter_call(org.apache.thrift.async.AsyncMethodCallback<endFunctionSignatureParameter_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class startFunctionSignatureParameterMember_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public startFunctionSignatureParameterMember_call(org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameterMember_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionSignatureParameter", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        endFunctionSignatureParameter_args args = new endFunctionSignatureParameter_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameterMember", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        startFunctionSignatureParameterMember_args args = new startFunctionSignatureParameterMember_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
+    public void endFunctionSignatureParameterMember(org.apache.thrift.async.AsyncMethodCallback<endFunctionSignatureParameterMember_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      endFunctionSignatureParameterMember_call method_call = new endFunctionSignatureParameterMember_call(resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class endFunctionSignatureParameterMember_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public endFunctionSignatureParameterMember_call(org.apache.thrift.async.AsyncMethodCallback<endFunctionSignatureParameterMember_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionSignatureParameterMember", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        endFunctionSignatureParameterMember_args args = new endFunctionSignatureParameterMember_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
+    public void endFunctionSignatureParameters(org.apache.thrift.async.AsyncMethodCallback<endFunctionSignatureParameters_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      endFunctionSignatureParameters_call method_call = new endFunctionSignatureParameters_call(resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class endFunctionSignatureParameters_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public endFunctionSignatureParameters_call(org.apache.thrift.async.AsyncMethodCallback<endFunctionSignatureParameters_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionSignatureParameters", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        endFunctionSignatureParameters_args args = new endFunctionSignatureParameters_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -984,49 +1104,21 @@ public class AstDumper {
       }
     }
 
-    public void startFunctionBody(org.apache.thrift.async.AsyncMethodCallback<startFunctionBody_call> resultHandler) throws org.apache.thrift.TException {
+    public void endFunctionCommon(org.apache.thrift.async.AsyncMethodCallback<endFunctionCommon_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startFunctionBody_call method_call = new startFunctionBody_call(resultHandler, this, protocolFactory, transport);
+      endFunctionCommon_call method_call = new endFunctionCommon_call(resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class startFunctionBody_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public startFunctionBody_call(org.apache.thrift.async.AsyncMethodCallback<startFunctionBody_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class endFunctionCommon_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public endFunctionCommon_call(org.apache.thrift.async.AsyncMethodCallback<endFunctionCommon_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionBody", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        startFunctionBody_args args = new startFunctionBody_args();
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public void getResult() throws org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-      }
-    }
-
-    public void endFunctionBody(org.apache.thrift.async.AsyncMethodCallback<endFunctionBody_call> resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      endFunctionBody_call method_call = new endFunctionBody_call(resultHandler, this, protocolFactory, transport);
-      this.currentMethod = method_call;
-      manager.call(method_call);
-    }
-
-    public static class endFunctionBody_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public endFunctionBody_call(org.apache.thrift.async.AsyncMethodCallback<endFunctionBody_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, true);
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionBody", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        endFunctionBody_args args = new endFunctionBody_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionCommon", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        endFunctionCommon_args args = new endFunctionCommon_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -1461,14 +1553,16 @@ public class AstDumper {
       processMap_.put("startFunctionDefinition", new startFunctionDefinition());
       processMap_.put("startFunctionName", new startFunctionName());
       processMap_.put("endFunctionName", new endFunctionName());
+      processMap_.put("startFunctionCommon", new startFunctionCommon());
       processMap_.put("startFunctionSignature", new startFunctionSignature());
-      processMap_.put("startFunctionSignatureParameter", new startFunctionSignatureParameter());
-      processMap_.put("endFunctionSignatureParameter", new endFunctionSignatureParameter());
+      processMap_.put("startFunctionSignatureParameters", new startFunctionSignatureParameters());
+      processMap_.put("startFunctionSignatureParameterMember", new startFunctionSignatureParameterMember());
+      processMap_.put("endFunctionSignatureParameterMember", new endFunctionSignatureParameterMember());
+      processMap_.put("endFunctionSignatureParameters", new endFunctionSignatureParameters());
       processMap_.put("startFunctionSignatureReturnType", new startFunctionSignatureReturnType());
       processMap_.put("endFunctionSignatureReturnType", new endFunctionSignatureReturnType());
       processMap_.put("endFunctionSignature", new endFunctionSignature());
-      processMap_.put("startFunctionBody", new startFunctionBody());
-      processMap_.put("endFunctionBody", new endFunctionBody());
+      processMap_.put("endFunctionCommon", new endFunctionCommon());
       processMap_.put("endFunctionDefinition", new endFunctionDefinition());
       processMap_.put("startExpressionList", new startExpressionList());
       processMap_.put("startCallExpression", new startCallExpression());
@@ -1657,6 +1751,27 @@ public class AstDumper {
       }
     }
 
+    private class startFunctionCommon implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        startFunctionCommon_args args = new startFunctionCommon_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionCommon", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.startFunctionCommon();
+        return;
+      }
+    }
+
     private class startFunctionSignature implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
@@ -1678,44 +1793,86 @@ public class AstDumper {
       }
     }
 
-    private class startFunctionSignatureParameter implements ProcessFunction {
+    private class startFunctionSignatureParameters implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        startFunctionSignatureParameter_args args = new startFunctionSignatureParameter_args();
+        startFunctionSignatureParameters_args args = new startFunctionSignatureParameters_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameter", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameters", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        iface_.startFunctionSignatureParameter();
+        iface_.startFunctionSignatureParameters();
         return;
       }
     }
 
-    private class endFunctionSignatureParameter implements ProcessFunction {
+    private class startFunctionSignatureParameterMember implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        endFunctionSignatureParameter_args args = new endFunctionSignatureParameter_args();
+        startFunctionSignatureParameterMember_args args = new startFunctionSignatureParameterMember_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionSignatureParameter", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameterMember", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        iface_.endFunctionSignatureParameter();
+        iface_.startFunctionSignatureParameterMember();
+        return;
+      }
+    }
+
+    private class endFunctionSignatureParameterMember implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        endFunctionSignatureParameterMember_args args = new endFunctionSignatureParameterMember_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionSignatureParameterMember", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.endFunctionSignatureParameterMember();
+        return;
+      }
+    }
+
+    private class endFunctionSignatureParameters implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        endFunctionSignatureParameters_args args = new endFunctionSignatureParameters_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionSignatureParameters", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.endFunctionSignatureParameters();
         return;
       }
     }
@@ -1783,44 +1940,23 @@ public class AstDumper {
       }
     }
 
-    private class startFunctionBody implements ProcessFunction {
+    private class endFunctionCommon implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        startFunctionBody_args args = new startFunctionBody_args();
+        endFunctionCommon_args args = new endFunctionCommon_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionBody", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionCommon", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        iface_.startFunctionBody();
-        return;
-      }
-    }
-
-    private class endFunctionBody implements ProcessFunction {
-      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
-      {
-        endFunctionBody_args args = new endFunctionBody_args();
-        try {
-          args.read(iprot);
-        } catch (org.apache.thrift.protocol.TProtocolException e) {
-          iprot.readMessageEnd();
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endFunctionBody", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        iprot.readMessageEnd();
-        iface_.endFunctionBody();
+        iface_.endFunctionCommon();
         return;
       }
     }
@@ -3789,6 +3925,208 @@ public class AstDumper {
 
   }
 
+  public static class startFunctionCommon_args implements org.apache.thrift.TBase<startFunctionCommon_args, startFunctionCommon_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startFunctionCommon_args");
+
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startFunctionCommon_args.class, metaDataMap);
+    }
+
+    public startFunctionCommon_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public startFunctionCommon_args(startFunctionCommon_args other) {
+    }
+
+    public startFunctionCommon_args deepCopy() {
+      return new startFunctionCommon_args(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof startFunctionCommon_args)
+        return this.equals((startFunctionCommon_args)that);
+      return false;
+    }
+
+    public boolean equals(startFunctionCommon_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(startFunctionCommon_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      startFunctionCommon_args typedOther = (startFunctionCommon_args)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("startFunctionCommon_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
   public static class startFunctionSignature_args implements org.apache.thrift.TBase<startFunctionSignature_args, startFunctionSignature_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startFunctionSignature_args");
 
@@ -3991,8 +4329,8 @@ public class AstDumper {
 
   }
 
-  public static class startFunctionSignatureParameter_args implements org.apache.thrift.TBase<startFunctionSignatureParameter_args, startFunctionSignatureParameter_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startFunctionSignatureParameter_args");
+  public static class startFunctionSignatureParameters_args implements org.apache.thrift.TBase<startFunctionSignatureParameters_args, startFunctionSignatureParameters_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startFunctionSignatureParameters_args");
 
 
 
@@ -4055,20 +4393,20 @@ public class AstDumper {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startFunctionSignatureParameter_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startFunctionSignatureParameters_args.class, metaDataMap);
     }
 
-    public startFunctionSignatureParameter_args() {
+    public startFunctionSignatureParameters_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public startFunctionSignatureParameter_args(startFunctionSignatureParameter_args other) {
+    public startFunctionSignatureParameters_args(startFunctionSignatureParameters_args other) {
     }
 
-    public startFunctionSignatureParameter_args deepCopy() {
-      return new startFunctionSignatureParameter_args(this);
+    public startFunctionSignatureParameters_args deepCopy() {
+      return new startFunctionSignatureParameters_args(this);
     }
 
     @Override
@@ -4101,12 +4439,12 @@ public class AstDumper {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof startFunctionSignatureParameter_args)
-        return this.equals((startFunctionSignatureParameter_args)that);
+      if (that instanceof startFunctionSignatureParameters_args)
+        return this.equals((startFunctionSignatureParameters_args)that);
       return false;
     }
 
-    public boolean equals(startFunctionSignatureParameter_args that) {
+    public boolean equals(startFunctionSignatureParameters_args that) {
       if (that == null)
         return false;
 
@@ -4118,13 +4456,13 @@ public class AstDumper {
       return 0;
     }
 
-    public int compareTo(startFunctionSignatureParameter_args other) {
+    public int compareTo(startFunctionSignatureParameters_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      startFunctionSignatureParameter_args typedOther = (startFunctionSignatureParameter_args)other;
+      startFunctionSignatureParameters_args typedOther = (startFunctionSignatureParameters_args)other;
 
       return 0;
     }
@@ -4164,7 +4502,7 @@ public class AstDumper {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("startFunctionSignatureParameter_args(");
+      StringBuilder sb = new StringBuilder("startFunctionSignatureParameters_args(");
       boolean first = true;
 
       sb.append(")");
@@ -4193,8 +4531,8 @@ public class AstDumper {
 
   }
 
-  public static class endFunctionSignatureParameter_args implements org.apache.thrift.TBase<endFunctionSignatureParameter_args, endFunctionSignatureParameter_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endFunctionSignatureParameter_args");
+  public static class startFunctionSignatureParameterMember_args implements org.apache.thrift.TBase<startFunctionSignatureParameterMember_args, startFunctionSignatureParameterMember_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startFunctionSignatureParameterMember_args");
 
 
 
@@ -4257,20 +4595,20 @@ public class AstDumper {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endFunctionSignatureParameter_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startFunctionSignatureParameterMember_args.class, metaDataMap);
     }
 
-    public endFunctionSignatureParameter_args() {
+    public startFunctionSignatureParameterMember_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public endFunctionSignatureParameter_args(endFunctionSignatureParameter_args other) {
+    public startFunctionSignatureParameterMember_args(startFunctionSignatureParameterMember_args other) {
     }
 
-    public endFunctionSignatureParameter_args deepCopy() {
-      return new endFunctionSignatureParameter_args(this);
+    public startFunctionSignatureParameterMember_args deepCopy() {
+      return new startFunctionSignatureParameterMember_args(this);
     }
 
     @Override
@@ -4303,12 +4641,12 @@ public class AstDumper {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof endFunctionSignatureParameter_args)
-        return this.equals((endFunctionSignatureParameter_args)that);
+      if (that instanceof startFunctionSignatureParameterMember_args)
+        return this.equals((startFunctionSignatureParameterMember_args)that);
       return false;
     }
 
-    public boolean equals(endFunctionSignatureParameter_args that) {
+    public boolean equals(startFunctionSignatureParameterMember_args that) {
       if (that == null)
         return false;
 
@@ -4320,13 +4658,13 @@ public class AstDumper {
       return 0;
     }
 
-    public int compareTo(endFunctionSignatureParameter_args other) {
+    public int compareTo(startFunctionSignatureParameterMember_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      endFunctionSignatureParameter_args typedOther = (endFunctionSignatureParameter_args)other;
+      startFunctionSignatureParameterMember_args typedOther = (startFunctionSignatureParameterMember_args)other;
 
       return 0;
     }
@@ -4366,7 +4704,411 @@ public class AstDumper {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("endFunctionSignatureParameter_args(");
+      StringBuilder sb = new StringBuilder("startFunctionSignatureParameterMember_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class endFunctionSignatureParameterMember_args implements org.apache.thrift.TBase<endFunctionSignatureParameterMember_args, endFunctionSignatureParameterMember_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endFunctionSignatureParameterMember_args");
+
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endFunctionSignatureParameterMember_args.class, metaDataMap);
+    }
+
+    public endFunctionSignatureParameterMember_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public endFunctionSignatureParameterMember_args(endFunctionSignatureParameterMember_args other) {
+    }
+
+    public endFunctionSignatureParameterMember_args deepCopy() {
+      return new endFunctionSignatureParameterMember_args(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof endFunctionSignatureParameterMember_args)
+        return this.equals((endFunctionSignatureParameterMember_args)that);
+      return false;
+    }
+
+    public boolean equals(endFunctionSignatureParameterMember_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(endFunctionSignatureParameterMember_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      endFunctionSignatureParameterMember_args typedOther = (endFunctionSignatureParameterMember_args)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("endFunctionSignatureParameterMember_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class endFunctionSignatureParameters_args implements org.apache.thrift.TBase<endFunctionSignatureParameters_args, endFunctionSignatureParameters_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endFunctionSignatureParameters_args");
+
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endFunctionSignatureParameters_args.class, metaDataMap);
+    }
+
+    public endFunctionSignatureParameters_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public endFunctionSignatureParameters_args(endFunctionSignatureParameters_args other) {
+    }
+
+    public endFunctionSignatureParameters_args deepCopy() {
+      return new endFunctionSignatureParameters_args(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof endFunctionSignatureParameters_args)
+        return this.equals((endFunctionSignatureParameters_args)that);
+      return false;
+    }
+
+    public boolean equals(endFunctionSignatureParameters_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(endFunctionSignatureParameters_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      endFunctionSignatureParameters_args typedOther = (endFunctionSignatureParameters_args)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("endFunctionSignatureParameters_args(");
       boolean first = true;
 
       sb.append(")");
@@ -5001,8 +5743,8 @@ public class AstDumper {
 
   }
 
-  public static class startFunctionBody_args implements org.apache.thrift.TBase<startFunctionBody_args, startFunctionBody_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startFunctionBody_args");
+  public static class endFunctionCommon_args implements org.apache.thrift.TBase<endFunctionCommon_args, endFunctionCommon_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endFunctionCommon_args");
 
 
 
@@ -5065,20 +5807,20 @@ public class AstDumper {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startFunctionBody_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endFunctionCommon_args.class, metaDataMap);
     }
 
-    public startFunctionBody_args() {
+    public endFunctionCommon_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public startFunctionBody_args(startFunctionBody_args other) {
+    public endFunctionCommon_args(endFunctionCommon_args other) {
     }
 
-    public startFunctionBody_args deepCopy() {
-      return new startFunctionBody_args(this);
+    public endFunctionCommon_args deepCopy() {
+      return new endFunctionCommon_args(this);
     }
 
     @Override
@@ -5111,12 +5853,12 @@ public class AstDumper {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof startFunctionBody_args)
-        return this.equals((startFunctionBody_args)that);
+      if (that instanceof endFunctionCommon_args)
+        return this.equals((endFunctionCommon_args)that);
       return false;
     }
 
-    public boolean equals(startFunctionBody_args that) {
+    public boolean equals(endFunctionCommon_args that) {
       if (that == null)
         return false;
 
@@ -5128,13 +5870,13 @@ public class AstDumper {
       return 0;
     }
 
-    public int compareTo(startFunctionBody_args other) {
+    public int compareTo(endFunctionCommon_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      startFunctionBody_args typedOther = (startFunctionBody_args)other;
+      endFunctionCommon_args typedOther = (endFunctionCommon_args)other;
 
       return 0;
     }
@@ -5174,209 +5916,7 @@ public class AstDumper {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("startFunctionBody_args(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-  }
-
-  public static class endFunctionBody_args implements org.apache.thrift.TBase<endFunctionBody_args, endFunctionBody_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endFunctionBody_args");
-
-
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endFunctionBody_args.class, metaDataMap);
-    }
-
-    public endFunctionBody_args() {
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public endFunctionBody_args(endFunctionBody_args other) {
-    }
-
-    public endFunctionBody_args deepCopy() {
-      return new endFunctionBody_args(this);
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof endFunctionBody_args)
-        return this.equals((endFunctionBody_args)that);
-      return false;
-    }
-
-    public boolean equals(endFunctionBody_args that) {
-      if (that == null)
-        return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(endFunctionBody_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      endFunctionBody_args typedOther = (endFunctionBody_args)other;
-
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      validate();
-
-      oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("endFunctionBody_args(");
+      StringBuilder sb = new StringBuilder("endFunctionCommon_args(");
       boolean first = true;
 
       sb.append(")");

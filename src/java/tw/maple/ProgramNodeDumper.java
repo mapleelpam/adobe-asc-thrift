@@ -48,6 +48,7 @@ public final class ProgramNodeDumper implements Evaluator
         else if (node.isAttr())
         {
         }
+        
         else
         {
         	try
@@ -361,11 +362,11 @@ public final class ProgramNodeDumper implements Evaluator
 				node.name.evaluate(cx, this);
 			}
 		
-			thrift_cli.startFunctionBody();
+			thrift_cli.startFunctionCommon();
 			if (node.fexpr != null) {
 				node.fexpr.evaluate(cx, this);
 			}
-			thrift_cli.endFunctionBody();
+			thrift_cli.endFunctionCommon();
 			thrift_cli.endFunctionDefinition();
 		} catch (org.apache.thrift.TException e1) {
 
@@ -436,9 +437,54 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, ParameterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ParameterNode node)
+	{
+		try{
+			thrift_cli.startFunctionSignatureParameterMember();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		
+		if (node.identifier != null)
+        {
+            node.identifier.evaluate(cx, this);
+        }
+        if (node.init != null)
+        {
+            node.init.evaluate(cx, this);
+        }
+        if (node.type != null)
+        {
+            node.type.evaluate(cx, this);
+        }
+        try{
+			thrift_cli.endFunctionSignatureParameterMember();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
-	public Value evaluate(Context cx, ParameterListNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ParameterListNode node) 
+	{
+		System.out.println(" 0000000000000000000000000 in param list " );
+		try{
+			thrift_cli.startFunctionSignatureParameters();
+		} catch (org.apache.thrift.TException e1) {
+		}
+        for (int i = 0, size = node.items.size(); i < size; i++)
+        {
+            ParameterNode param = node.items.get(i);
+
+            if (param != null)
+            {
+                param.evaluate(cx, this);
+            }
+        }
+        try{
+			thrift_cli.endFunctionSignatureParameters();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, RestExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
