@@ -105,7 +105,6 @@ public class Main
 					case 'z': {
 						output_filepath = args[i+1];
 						i++;
-						System.out.print( "  -z -> "+output_filepath);
 						break;
 					}
 					case 'b':
