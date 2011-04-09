@@ -72,9 +72,6 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
 	{
-		System.out.print("\n ----------> QualifiedIdentifierNode \n");
-//		System.out.println((new Throwable()).getStackTrace()[0].toString());
-		
 		if (node.qualifier != null)
         {
             node.qualifier.evaluate(cx, this);
@@ -248,12 +245,23 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, ApplyTypeExprNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, UnaryExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, UnaryExpressionNode node) 
+	{
+		try {
+			UnaryExpression unary_expression = new UnaryExpression();
+			unary_expression.op = Token.getTokenClassName(node.op);
+			thrift_cli.startUnaryExpression(unary_expression);
+			if (node.expr != null) {
+				node.expr.evaluate(cx, this);
+			}
+			thrift_cli.endUnaryExpression();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, BinaryExpressionNode node) 
-	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
-		
+	{	
 		try {
 			BinaryExpression binary_expression = new BinaryExpression();
 			binary_expression.op = Token.getTokenClassName(node.op);
@@ -273,7 +281,11 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, ConditionalExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ConditionalExpressionNode node) 
+	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		return null;
+	}
 
 	public Value evaluate(Context cx, ArgumentListNode node)
 	{
