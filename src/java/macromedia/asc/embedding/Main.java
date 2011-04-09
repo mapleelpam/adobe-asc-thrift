@@ -32,6 +32,8 @@ import static macromedia.asc.embedding.avmplus.Features.*;
 public class Main
 {
 	static boolean save_programnode = false;
+	static String  output_filepath = "";
+	
 	static boolean show_parsetrees = false;
 	static boolean show_instructions = false;
 	static boolean show_linenums = false;
@@ -87,6 +89,7 @@ public class Main
 			for (int i = 0; i < args.length; ++i)
 			{
 				String flag = args[i];
+				
 				if (flag.charAt(0) == '-')
 				{
                     if( flag.length() < 2 )
@@ -99,6 +102,12 @@ public class Main
 					case '!':
 						use_static_semantics = true;
 						break;
+					case 'z': {
+						output_filepath = args[i+1];
+						i++;
+						System.out.print( "  -z -> "+output_filepath);
+						break;
+					}
 					case 'b':
 						show_bytes = true;
 						break;
@@ -428,6 +437,7 @@ public class Main
 							   " and " + APIVersions.max_version_num);
             System.out.println(" ------------------------------------------------------------------------------------ ");
             System.out.println("  -x = write parse tree to the .pn file (Binary Format)");
+            System.out.println("  -z = output filename");
             System.out.println("");
 			System.exit(1);
 		}
@@ -493,6 +503,7 @@ public class Main
 			plug.in = in;
 			plug.pathspec = pathspec;
 			plug.filename = f.getPath();
+			plug.output_filename = output_filepath;
 			; // TODO errorname
 			plug.scriptname = scriptname;
 			plug.emit_debug_info = emit_debug_info;
@@ -566,6 +577,7 @@ public class Main
 			}
 
 			ObjectList<CompilerPlug> plugs = new ObjectList<CompilerPlug>();
+			plug.output_filename = output_filepath;
 
 			Compiler.doCompile(plug, plugs, show_instructions,
 					show_machinecode, show_linenums, show_parsetrees, save_programnode,

@@ -111,7 +111,7 @@ public class Compiler implements ErrorConstants
     }
 
     static void compile(Context cx, ObjectValue global,
-        InputStream in, String filename, String file_encoding,
+        InputStream in, String filename, String output_filename, String file_encoding,
         ObjectList<IncludeInfo> includes,
 		String swf_options,
 		String avmplus_exe,
@@ -238,7 +238,13 @@ public class Compiler implements ErrorConstants
 
         if( save_programnode && cx.errorCount() == 0 )
         {
-            dumpBinaryAST( cx.scriptName(), node, cx, ".pn" );
+        	if( output_filename == "" ) {
+        		dumpBinaryAST( cx.scriptName(), node, cx, cx.scriptName()+".pn" );
+        	} else {
+        		dumpBinaryAST( cx.scriptName(), node, cx, output_filename );
+        	}
+        	
+        	System.exit(0);//TODO: use others
         	return;
         }
         
@@ -361,6 +367,7 @@ public class Compiler implements ErrorConstants
         String pathspec,
         String scriptname,
         String filename,
+        String output_filename,
         String encoding,
 		String swf_options,
 		String avmplus_exe,
@@ -443,7 +450,7 @@ public class Compiler implements ErrorConstants
         ObjectValue global = new ObjectValue(cx, globalBuilder, null);
 
         // Compiler something
-        compile(cx, global, in, filename, encoding, includes, swf_options, avmplus_exe, plugs, emit_doc_info, show_parsetrees, save_programnode, show_bytes,
+        compile(cx, global, in, filename, output_filename, encoding, includes, swf_options, avmplus_exe, plugs, emit_doc_info, show_parsetrees, save_programnode, show_bytes,
                 show_flow, lint_mode, emit_metadata, save_comment_nodes, emit_debug_info, import_filespecs);
 
         int error_count = status(cx);
@@ -598,7 +605,9 @@ public class Compiler implements ErrorConstants
         boolean show_parsetrees /*=false*/,
         boolean save_programnode /*=false*/,
         boolean show_bytes /*=false*/,
-        boolean show_flow /*=false*/)        throws Exception
+        boolean show_flow /*=false*/ 
+        
+        )        throws Exception
     {
         // rsun 11.18.05 let's open InputStreams for all the plugs, then
         // send them to compile(.)
@@ -653,6 +662,7 @@ public class Compiler implements ErrorConstants
                 mainplug.pathspec,
                 mainplug.scriptname,
                 mainplug.filename,
+                mainplug.output_filename,
                 mainplug.file_encoding,
                 mainplug.swf_options,
                 mainplug.avmplus_exe,
@@ -692,6 +702,7 @@ public class Compiler implements ErrorConstants
             mainplug.pathspec,
             mainplug.scriptname,
             mainplug.filename,
+            mainplug.output_filename,
             mainplug.file_encoding,
             mainplug.swf_options,
             mainplug.avmplus_exe,
@@ -911,12 +922,13 @@ public class Compiler implements ErrorConstants
 		}
 	}
 
-	static void dumpBinaryAST(String scriptname, Node node, Context cx, String ext)
+	static void dumpBinaryAST(String scriptname, Node node, Context cx, String outfile)
 	{
 		if (status(cx) == 0)
         {			
 			try {
-				OutputStream ostream = new FileOutputStream(scriptname+ext);
+//				OutputStream ostream = new FileOutputStream(scriptname+ext);
+				OutputStream ostream = new FileOutputStream(outfile);
 				TTransport transport = new TIOStreamTransport( ostream );
 				
 				try

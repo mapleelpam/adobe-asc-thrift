@@ -27,6 +27,7 @@ public class CompilerPlug
 	public String pathspec;
 	public String scriptname;
 	public String filename;
+	public String output_filename;
     public String file_encoding;
 	public String classname;
 	public String base_classname;

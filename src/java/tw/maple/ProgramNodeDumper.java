@@ -221,7 +221,28 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, UnaryExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, BinaryExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, BinaryExpressionNode node) 
+	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		
+		try {
+			BinaryExpression binary_expression = new BinaryExpression();
+			binary_expression.op = Token.getTokenClassName(node.op);
+			thrift_cli.startBinaryExpression(binary_expression);
+			if (node.lhs != null) {
+				node.lhs.evaluate(cx, this);
+			}
+
+			if (node.rhs != null) {
+				node.rhs.evaluate(cx, this);
+			}
+			thrift_cli.endBinaryExpression();
+		} catch (org.apache.thrift.TException e1) {
+		}
+
+		
+		return null;
+	}
 
 	public Value evaluate(Context cx, ConditionalExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
@@ -304,7 +325,24 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, BreakStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ReturnStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ReturnStatementNode node)
+	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		
+		try {
+			thrift_cli.startReturnStatement();
+			if (node.expr != null) {
+				node.expr.evaluate(cx, this);
+			}
+			thrift_cli.endReturnStatement();
+		} catch (org.apache.thrift.TException e1) {
+			System.out.print("\nERROR - " + e1.toString());
+			System.exit(1);
+		}
+
+		return null;
+		
+	}
 
 	public Value evaluate(Context cx, ThrowStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
@@ -465,7 +503,6 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ParameterListNode node) 
 	{
-		System.out.println(" 0000000000000000000000000 in param list " );
 		try{
 			thrift_cli.startFunctionSignatureParameters();
 		} catch (org.apache.thrift.TException e1) {
