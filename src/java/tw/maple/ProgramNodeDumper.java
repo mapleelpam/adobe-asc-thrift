@@ -669,7 +669,45 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, InterfaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ClassDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ClassDefinitionNode node) 
+	{
+	
+		try{	thrift_cli.startClassDefine();
+		} catch( org.apache.thrift.TException e1 ) {}
+		
+		if (node.attrs != null)
+        {
+            node.attrs.evaluate(cx, this);
+        }
+		if (node.name != null)
+        {
+			try{	thrift_cli.startClassName();
+			} catch( org.apache.thrift.TException e1 ) {}
+            node.name.evaluate(cx, this);
+            try{	thrift_cli.endClassName();
+    		} catch( org.apache.thrift.TException e1 ) {}
+        }
+        
+        if (node.baseclass != null)
+        {
+            node.baseclass.evaluate(cx, this);
+        }
+        if (node.interfaces != null)
+        {
+            node.interfaces.evaluate(cx, this);
+        }
+        if (node.statements != null)
+        {
+        	try{	thrift_cli.startClassStmt();
+			} catch( org.apache.thrift.TException e1 ) {}
+			node.statements.evaluate(cx, this);
+            try{	thrift_cli.endClassStmt();
+    		} catch( org.apache.thrift.TException e1 ) {}
+        }
+    	try{	thrift_cli.endClassDefine();
+		} catch( org.apache.thrift.TException e1 ) {}
+		return null;
+	}
 
     public Value evaluate(Context cx, BinaryClassDefNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
