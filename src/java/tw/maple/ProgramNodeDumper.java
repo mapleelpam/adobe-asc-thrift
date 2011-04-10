@@ -382,18 +382,19 @@ public final class ProgramNodeDumper implements Evaluator
 
 		try { thrift_cli.startIfStatement_Then();
 		} catch (org.apache.thrift.TException e1) { }
-		if (node.thenactions != null) {
+		if (node.thenactions != null)
 			node.thenactions.evaluate(cx, this);
-		}
 		try { thrift_cli.endIfStatement_Then();
 		} catch (org.apache.thrift.TException e1) { }
 
 		try { thrift_cli.startIfStatement_Else();
 		} catch (org.apache.thrift.TException e1) { }
-		if (node.elseactions != null) {
+		if (node.elseactions != null)
 			node.elseactions.evaluate(cx, this);
-		}
 		try { thrift_cli.endtIfStatement_Else();
+		} catch (org.apache.thrift.TException e1) { }
+		
+		try { thrift_cli.endIfStatement();
 		} catch (org.apache.thrift.TException e1) { }
 		return null;
 	}
