@@ -224,7 +224,6 @@ public final class ProgramNodeDumper implements Evaluator
 		} 
 		catch (org.apache.thrift.TException e1) 
 		{
-			
 		}
 
 		return null;
@@ -582,32 +581,22 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 //		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
-			thrift_cli.startFunctionSignature();
-		} catch (org.apache.thrift.TException e1) {
 
-		}
-        if (node.result != null)
-        {
-    		try {
-    			thrift_cli.startFunctionSignatureReturnType();
-    		} catch (org.apache.thrift.TException e1) {
-    		}
-            node.result.evaluate(cx, this);
-    		try {
-    			thrift_cli.endFunctionSignatureReturnType();
-    		} catch (org.apache.thrift.TException e1) {
-    		}
-        }
-		if (node.parameter != null)
-        {
-            node.parameter.evaluate(cx, this);
-        }
-        if (node.inits != null)
-        {
-        	node.inits.evaluate(cx, this);
-        }
-		
-		try {
+			thrift_cli.startFunctionSignature();
+
+			thrift_cli.startFunctionSignatureReturnType();
+			if (node.result != null) {
+				node.result.evaluate(cx, this);
+			}
+			thrift_cli.endFunctionSignatureReturnType();
+			
+			if (node.parameter != null) {
+				node.parameter.evaluate(cx, this);
+			}
+			if (node.inits != null) {
+				node.inits.evaluate(cx, this);
+			}
+
 			thrift_cli.endFunctionSignature();
 		} catch (org.apache.thrift.TException e1) {
 
