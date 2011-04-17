@@ -94,6 +94,10 @@ public class AstDumper {
 
     public void endBinaryExpression() throws org.apache.thrift.TException;
 
+    public void startInstanceOfExpression() throws org.apache.thrift.TException;
+
+    public void endInstanceOfExpression() throws org.apache.thrift.TException;
+
     public void startUnaryExpression(UnaryExpression op) throws org.apache.thrift.TException;
 
     public void endUnaryExpression() throws org.apache.thrift.TException;
@@ -207,6 +211,10 @@ public class AstDumper {
     public void startBinaryExpression(BinaryExpression op, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startBinaryExpression_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endBinaryExpression(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endBinaryExpression_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void startInstanceOfExpression(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startInstanceOfExpression_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void endInstanceOfExpression(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endInstanceOfExpression_call> resultHandler) throws org.apache.thrift.TException;
 
     public void startUnaryExpression(UnaryExpression op, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startUnaryExpression_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -776,6 +784,34 @@ public class AstDumper {
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endBinaryExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       endBinaryExpression_args args = new endBinaryExpression_args();
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void startInstanceOfExpression() throws org.apache.thrift.TException
+    {
+      send_startInstanceOfExpression();
+    }
+
+    public void send_startInstanceOfExpression() throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startInstanceOfExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      startInstanceOfExpression_args args = new startInstanceOfExpression_args();
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void endInstanceOfExpression() throws org.apache.thrift.TException
+    {
+      send_endInstanceOfExpression();
+    }
+
+    public void send_endInstanceOfExpression() throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endInstanceOfExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      endInstanceOfExpression_args args = new endInstanceOfExpression_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -2077,6 +2113,62 @@ public class AstDumper {
       }
     }
 
+    public void startInstanceOfExpression(org.apache.thrift.async.AsyncMethodCallback<startInstanceOfExpression_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      startInstanceOfExpression_call method_call = new startInstanceOfExpression_call(resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class startInstanceOfExpression_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public startInstanceOfExpression_call(org.apache.thrift.async.AsyncMethodCallback<startInstanceOfExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startInstanceOfExpression", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        startInstanceOfExpression_args args = new startInstanceOfExpression_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
+    public void endInstanceOfExpression(org.apache.thrift.async.AsyncMethodCallback<endInstanceOfExpression_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      endInstanceOfExpression_call method_call = new endInstanceOfExpression_call(resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class endInstanceOfExpression_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public endInstanceOfExpression_call(org.apache.thrift.async.AsyncMethodCallback<endInstanceOfExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endInstanceOfExpression", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        endInstanceOfExpression_args args = new endInstanceOfExpression_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
     public void startUnaryExpression(UnaryExpression op, org.apache.thrift.async.AsyncMethodCallback<startUnaryExpression_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       startUnaryExpression_call method_call = new startUnaryExpression_call(op, resultHandler, this, protocolFactory, transport);
@@ -2697,6 +2789,8 @@ public class AstDumper {
       processMap_.put("endCallExpression", new endCallExpression());
       processMap_.put("startBinaryExpression", new startBinaryExpression());
       processMap_.put("endBinaryExpression", new endBinaryExpression());
+      processMap_.put("startInstanceOfExpression", new startInstanceOfExpression());
+      processMap_.put("endInstanceOfExpression", new endInstanceOfExpression());
       processMap_.put("startUnaryExpression", new startUnaryExpression());
       processMap_.put("endUnaryExpression", new endUnaryExpression());
       processMap_.put("startVariableDeclare", new startVariableDeclare());
@@ -3475,6 +3569,48 @@ public class AstDumper {
         }
         iprot.readMessageEnd();
         iface_.endBinaryExpression();
+        return;
+      }
+    }
+
+    private class startInstanceOfExpression implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        startInstanceOfExpression_args args = new startInstanceOfExpression_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startInstanceOfExpression", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.startInstanceOfExpression();
+        return;
+      }
+    }
+
+    private class endInstanceOfExpression implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        endInstanceOfExpression_args args = new endInstanceOfExpression_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endInstanceOfExpression", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.endInstanceOfExpression();
         return;
       }
     }
@@ -11389,6 +11525,410 @@ public class AstDumper {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("endBinaryExpression_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class startInstanceOfExpression_args implements org.apache.thrift.TBase<startInstanceOfExpression_args, startInstanceOfExpression_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startInstanceOfExpression_args");
+
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startInstanceOfExpression_args.class, metaDataMap);
+    }
+
+    public startInstanceOfExpression_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public startInstanceOfExpression_args(startInstanceOfExpression_args other) {
+    }
+
+    public startInstanceOfExpression_args deepCopy() {
+      return new startInstanceOfExpression_args(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof startInstanceOfExpression_args)
+        return this.equals((startInstanceOfExpression_args)that);
+      return false;
+    }
+
+    public boolean equals(startInstanceOfExpression_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(startInstanceOfExpression_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      startInstanceOfExpression_args typedOther = (startInstanceOfExpression_args)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("startInstanceOfExpression_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class endInstanceOfExpression_args implements org.apache.thrift.TBase<endInstanceOfExpression_args, endInstanceOfExpression_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endInstanceOfExpression_args");
+
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endInstanceOfExpression_args.class, metaDataMap);
+    }
+
+    public endInstanceOfExpression_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public endInstanceOfExpression_args(endInstanceOfExpression_args other) {
+    }
+
+    public endInstanceOfExpression_args deepCopy() {
+      return new endInstanceOfExpression_args(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof endInstanceOfExpression_args)
+        return this.equals((endInstanceOfExpression_args)that);
+      return false;
+    }
+
+    public boolean equals(endInstanceOfExpression_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(endInstanceOfExpression_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      endInstanceOfExpression_args typedOther = (endInstanceOfExpression_args)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("endInstanceOfExpression_args(");
       boolean first = true;
 
       sb.append(")");
