@@ -207,6 +207,10 @@ public final class ProgramNodeDumper implements Evaluator
 		try {
 			call_expression = new CallExpression();
 			call_expression.is_new = node.is_new;
+			call_expression.mode = (node.getMode() == LEFTBRACKET_TOKEN ? " bracket" :
+	            	node.getMode() == LEFTPAREN_TOKEN ? " filter" :
+	                node.getMode() == DOUBLEDOT_TOKEN ? " descend" :
+	                node.getMode() == EMPTY_TOKEN ? " lexical" : " dot");
 			thrift_cli.startCallExpression(call_expression);
 			
 			if (node.expr != null) {
@@ -243,18 +247,14 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		try {
 			thrift_cli.startAssignment();
-		} catch (org.apache.thrift.TException e1) {
-		}
-		if (node.expr != null)
-        {
-            node.expr.evaluate(cx, this);
-        }
-        
-        if (node.args != null)
-        {
-            node.args.evaluate(cx, this);
-        }
-        try {
+			thrift_cli.startExpressionList();
+			if (node.expr != null) 
+				node.expr.evaluate(cx, this);
+			thrift_cli.endExpressionList();
+			thrift_cli.startExpressionList();
+			if (node.args != null) 
+				node.args.evaluate(cx, this);
+			thrift_cli.endExpressionList();
 			thrift_cli.endAssignment();
 		} catch (org.apache.thrift.TException e1) {
 		}
@@ -372,12 +372,14 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		try 
 		{
+			thrift_cli.startStmtExpression();
 			thrift_cli.startExpressionList();
         		if (node.expr != null)
         		{
         			node.expr.evaluate(cx, this);
         		}
         	thrift_cli.endExpressionList();
+        	thrift_cli.endStmtExpression();
 		} catch( org.apache.thrift.TException e1 ) {
 			System.out.print("\nERROR - "+e1.toString());
 			System.exit(1);		
@@ -492,18 +494,17 @@ public final class ProgramNodeDumper implements Evaluator
 //        }
 		try {
 			thrift_cli.startVariableDeclare();
-		} catch (org.apache.thrift.TException e1) {
-		}
-        if (node.attrs != null)
-        {
-            node.attrs.evaluate(cx, this);
-        }
-        if (node.list != null)
-        {
-            node.list.evaluate(cx, this);
-        }
+		
+	        if (node.attrs != null)
+	        {
+	            node.attrs.evaluate(cx, this);
+	        }
+	        if (node.list != null)
+	        {
+	            node.list.evaluate(cx, this);
+	        }
         
-        try {
+        
 			thrift_cli.endVariableDeclare();
 		} catch (org.apache.thrift.TException e1) {
 		}
@@ -516,10 +517,18 @@ public final class ProgramNodeDumper implements Evaluator
             node.variable.evaluate(cx, this);
         }
         
-        if (node.initializer != null)
-        {
-            node.initializer.evaluate(cx, this);
-        }
+		
+		if (node.initializer != null) {
+			try {
+				thrift_cli.startExpressionList();
+
+				node.initializer.evaluate(cx, this);
+
+				thrift_cli.endExpressionList();
+			} catch (org.apache.thrift.TException e1) {
+			}
+		}
+        
 		return null;
 	}
 

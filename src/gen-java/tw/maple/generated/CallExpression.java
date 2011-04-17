@@ -24,12 +24,15 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CallExpression");
 
   private static final org.apache.thrift.protocol.TField IS_NEW_FIELD_DESC = new org.apache.thrift.protocol.TField("is_new", org.apache.thrift.protocol.TType.BOOL, (short)1);
+  private static final org.apache.thrift.protocol.TField MODE_FIELD_DESC = new org.apache.thrift.protocol.TField("mode", org.apache.thrift.protocol.TType.STRING, (short)2);
 
   public boolean is_new;
+  public String mode;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    IS_NEW((short)1, "is_new");
+    IS_NEW((short)1, "is_new"),
+    MODE((short)2, "mode");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -46,6 +49,8 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
       switch(fieldId) {
         case 1: // IS_NEW
           return IS_NEW;
+        case 2: // MODE
+          return MODE;
         default:
           return null;
       }
@@ -94,6 +99,8 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.IS_NEW, new org.apache.thrift.meta_data.FieldMetaData("is_new", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.MODE, new org.apache.thrift.meta_data.FieldMetaData("mode", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CallExpression.class, metaDataMap);
   }
@@ -104,11 +111,13 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
   }
 
   public CallExpression(
-    boolean is_new)
+    boolean is_new,
+    String mode)
   {
     this();
     this.is_new = is_new;
     setIs_newIsSet(true);
+    this.mode = mode;
   }
 
   /**
@@ -118,6 +127,9 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     this.is_new = other.is_new;
+    if (other.isSetMode()) {
+      this.mode = other.mode;
+    }
   }
 
   public CallExpression deepCopy() {
@@ -128,6 +140,7 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
   public void clear() {
     this.is_new = false;
 
+    this.mode = null;
   }
 
   public boolean isIs_new() {
@@ -153,6 +166,30 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
     __isset_bit_vector.set(__IS_NEW_ISSET_ID, value);
   }
 
+  public String getMode() {
+    return this.mode;
+  }
+
+  public CallExpression setMode(String mode) {
+    this.mode = mode;
+    return this;
+  }
+
+  public void unsetMode() {
+    this.mode = null;
+  }
+
+  /** Returns true if field mode is set (has been assigned a value) and false otherwise */
+  public boolean isSetMode() {
+    return this.mode != null;
+  }
+
+  public void setModeIsSet(boolean value) {
+    if (!value) {
+      this.mode = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case IS_NEW:
@@ -163,6 +200,14 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
       }
       break;
 
+    case MODE:
+      if (value == null) {
+        unsetMode();
+      } else {
+        setMode((String)value);
+      }
+      break;
+
     }
   }
 
@@ -170,6 +215,9 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
     switch (field) {
     case IS_NEW:
       return new Boolean(isIs_new());
+
+    case MODE:
+      return getMode();
 
     }
     throw new IllegalStateException();
@@ -184,6 +232,8 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
     switch (field) {
     case IS_NEW:
       return isSetIs_new();
+    case MODE:
+      return isSetMode();
     }
     throw new IllegalStateException();
   }
@@ -207,6 +257,15 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
       if (!(this_present_is_new && that_present_is_new))
         return false;
       if (this.is_new != that.is_new)
+        return false;
+    }
+
+    boolean this_present_mode = true && this.isSetMode();
+    boolean that_present_mode = true && that.isSetMode();
+    if (this_present_mode || that_present_mode) {
+      if (!(this_present_mode && that_present_mode))
+        return false;
+      if (!this.mode.equals(that.mode))
         return false;
     }
 
@@ -236,6 +295,16 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetMode()).compareTo(typedOther.isSetMode());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMode()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.mode, typedOther.mode);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -261,6 +330,13 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 2: // MODE
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.mode = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -279,6 +355,11 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
     oprot.writeFieldBegin(IS_NEW_FIELD_DESC);
     oprot.writeBool(this.is_new);
     oprot.writeFieldEnd();
+    if (this.mode != null) {
+      oprot.writeFieldBegin(MODE_FIELD_DESC);
+      oprot.writeString(this.mode);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -290,6 +371,14 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
 
     sb.append("is_new:");
     sb.append(this.is_new);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("mode:");
+    if (this.mode == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.mode);
+    }
     first = false;
     sb.append(")");
     return sb.toString();
