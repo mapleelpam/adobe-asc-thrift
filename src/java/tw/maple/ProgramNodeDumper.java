@@ -281,8 +281,27 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, BinaryExpressionNode node) 
 	{	
 		try {
-			if( Token.getTokenClassName(node.op) != "instanceof" )
-			{
+			if( Token.getTokenClassName(node.op) == "instanceof" ) {
+				thrift_cli.startInstanceOfExpression();
+				if (node.lhs != null) {
+					node.lhs.evaluate(cx, this);
+				}
+
+				if (node.rhs != null) {
+					node.rhs.evaluate(cx, this);
+				}
+				thrift_cli.endInstanceOfExpression();	
+			} else if( Token.getTokenClassName(node.op) == "is" ) {
+				thrift_cli.startIsOperator();
+				if (node.lhs != null) {
+					node.lhs.evaluate(cx, this);
+				}
+
+				if (node.rhs != null) {
+					node.rhs.evaluate(cx, this);
+				}
+				thrift_cli.endIsOperator();
+			} else {
 				BinaryExpression binary_expression = new BinaryExpression();
 				binary_expression.op = Token.getTokenClassName(node.op);
 				thrift_cli.startBinaryExpression(binary_expression);
@@ -293,17 +312,7 @@ public final class ProgramNodeDumper implements Evaluator
 				if (node.rhs != null) {
 					node.rhs.evaluate(cx, this);
 				}
-				thrift_cli.endBinaryExpression();
-			} else if( Token.getTokenClassName(node.op) == "instanceof" ) {
-				thrift_cli.startInstanceOfExpression();
-				if (node.lhs != null) {
-					node.lhs.evaluate(cx, this);
-				}
-
-				if (node.rhs != null) {
-					node.rhs.evaluate(cx, this);
-				}
-				thrift_cli.endInstanceOfExpression();				
+				thrift_cli.endBinaryExpression();				
 			}
 		} catch (org.apache.thrift.TException e1) {
 		}
