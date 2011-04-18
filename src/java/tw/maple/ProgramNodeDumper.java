@@ -725,6 +725,9 @@ public final class ProgramNodeDumper implements Evaluator
 				node.statements.evaluate(cx, this);
 				thrift_cli.endClassStmt();
 			}
+			
+			thrift_cli.endClassDefine( );
+
 		} catch (org.apache.thrift.TException e1) {
 		}
 		return null;
