@@ -72,10 +72,10 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
 	{
-		if (node.qualifier != null)
-        {
-            node.qualifier.evaluate(cx, this);
-        }
+//		if (node.qualifier != null)
+//        {
+//            node.qualifier.evaluate(cx, this);
+//        }
 		
 		try 
 		{
@@ -95,7 +95,10 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-    public Value evaluate(Context cx, QualifiedExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, QualifiedExpressionNode node) {
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		return null;
+	}
 
     public Value evaluate(Context cx, LiteralBooleanNode node)
     {
@@ -480,7 +483,25 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ImportDirectiveNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, AttributeListNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, AttributeListNode node) {
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		
+		try {
+			thrift_cli.startAttributeList();
+			
+	        for (Node n : node.items)
+	        {
+	            n.evaluate(cx, this);
+//	            separate();
+	        }
+
+			thrift_cli.endAttributelist();
+		} catch (org.apache.thrift.TException e1) {
+		
+		}
+		
+		return null;
+	}
 
 	public Value evaluate(Context cx, VariableDefinitionNode node) 
 	{
@@ -562,9 +583,13 @@ public final class ProgramNodeDumper implements Evaluator
 //		System.out.println((new Throwable()).getStackTrace()[0].toString());  
 		try {
 			thrift_cli.startFunctionDefinition();
+			
+			thrift_cli.startFunctionAttribute();
 			if (node.attrs != null) {
 				node.attrs.evaluate(cx, this);
 			}
+			thrift_cli.endFunctionAttribute();
+
 		
 
 			if (node.name != null) {
