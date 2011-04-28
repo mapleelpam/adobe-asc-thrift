@@ -48,6 +48,8 @@ public class PackageDefinitionNode extends DefinitionNode
 
 	public boolean package_retrieved;
     public boolean in_this_pkg;
+    
+    private boolean flip_dirty = false;
 
 	public PackageDefinitionNode(Context cx, AttributeListNode attrs, PackageNameNode name, StatementListNode statements)
 	{
@@ -66,6 +68,16 @@ public class PackageDefinitionNode extends DefinitionNode
 		publicNamespace = null;
         internalNamespace = null;
 	}
+	
+	public boolean flipDirty()
+	{
+		boolean tmp = flip_dirty;
+		
+		flip_dirty = !flip_dirty;
+		
+		return tmp;
+	}
+	
 
 	public Value evaluate(Context cx, Evaluator evaluator)
 	{

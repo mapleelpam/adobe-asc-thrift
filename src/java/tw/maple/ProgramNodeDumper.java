@@ -786,8 +786,11 @@ public final class ProgramNodeDumper implements Evaluator
 		        }
 			}
 			
-			thrift_cli.startPackage( pkg_name_list );
-			
+			if( node.flipDirty() )
+				thrift_cli.endPackage( pkg_name_list );
+			else
+				thrift_cli.startPackage( pkg_name_list );
+        
 		} catch( org.apache.thrift.TException e1 ) {
 			System.out.print("\nERROR - "+e1.toString());
 			System.exit(1);
