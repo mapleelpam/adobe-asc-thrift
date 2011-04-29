@@ -652,11 +652,10 @@ public final class ProgramNodeDumper implements Evaluator
         		{
         			StringValue qual_value = (StringValue)(str_value);
         			str_fname = qual_value.getValue();
-        		} else if( str_value instanceof QNValue)
-        		{
-        			QNValue qual_value = (QNValue)(str_value);
-        			str_fname = qual_value.getName();
-        		}
+				} else if (str_value instanceof QNValue) {
+					QNValue qual_value = (QNValue) (str_value);
+					str_fname = qual_value.getName();
+				}
 				
 				dont_throw_thrift = false;
 			}
@@ -766,9 +765,21 @@ public final class ProgramNodeDumper implements Evaluator
 				node.attrs.evaluate(cx, this);
 			}
 			if (node.name != null) {
-				thrift_cli.startClassName();
-				node.name.evaluate(cx, this);
-				thrift_cli.endClassName();
+				
+				dont_throw_thrift = true;
+					Value str_value = node.name.evaluate(cx, this);
+				dont_throw_thrift = false;
+				if (str_value instanceof StringValue) {
+					StringValue qual_value = (StringValue) (str_value);
+					thrift_cli.className( qual_value.getValue() );
+					
+
+				} else if( str_value instanceof QNValue)        		{
+        			QNValue qual_value = (QNValue)(str_value);
+        			thrift_cli.className( qual_value.getName() );
+				} else {
+					System.out.println(" hey !!! error !!1");
+				}
 			}
 
 			if (node.baseclass != null) {
