@@ -761,9 +761,9 @@ public final class ProgramNodeDumper implements Evaluator
 			
 			thrift_cli.startClassDefine( class_define );
 
-			if (node.attrs != null) {
-				node.attrs.evaluate(cx, this);
-			}
+//			if (node.attrs != null) {
+//				node.attrs.evaluate(cx, this);
+//			}
 			if (node.name != null) {
 				
 				dont_throw_thrift = true;
@@ -772,8 +772,6 @@ public final class ProgramNodeDumper implements Evaluator
 				if (str_value instanceof StringValue) {
 					StringValue qual_value = (StringValue) (str_value);
 					thrift_cli.className( qual_value.getValue() );
-					
-
 				} else if( str_value instanceof QNValue)        		{
         			QNValue qual_value = (QNValue)(str_value);
         			thrift_cli.className( qual_value.getName() );
