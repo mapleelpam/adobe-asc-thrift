@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.Value;
 import macromedia.asc.semantics.StringValue;
+import macromedia.asc.semantics.StringListValue;;
 import macromedia.asc.semantics.QNValue;
 import macromedia.asc.util.Context;
 //import sun.org.mozilla.javascript.internal.EvaluatorException;
@@ -44,13 +45,15 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, IdentifierNode node)
 	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString()+":"+node.name);
         if(node instanceof TypeIdentifierNode)
         {
+        	System.out.println( " is type identifier ");
         }
         else if (node.isAttr())
         {
+    		System.out.println( " is attr");
         }
-        
         else
         {
 			if (dont_throw_thrift) {
@@ -67,6 +70,8 @@ public final class ProgramNodeDumper implements Evaluator
 			}
         }
         
+        
+    	System.out.println( " id expression will return null ");
 		return null;
 	}
 
@@ -127,6 +132,7 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, LiteralBooleanNode node)
     {
+    	System.out.println((new Throwable()).getStackTrace()[0].toString());
     	try 
 		{
 			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
@@ -215,16 +221,48 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, MemberExpressionNode node)
 	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		StringListValue slv = new StringListValue();
         if (node.base != null)
         {
-            node.base.evaluate(cx, this);
+            Value v = node.base.evaluate(cx, this);
+            if( v != null && v instanceof StringValue )
+            {
+            	StringValue sv = (StringValue)( v );
+            	slv.values.add( sv.getValue() );
+            } 
+            else if( v != null && v instanceof StringListValue )
+            {
+				StringListValue sv = (StringListValue)( v );
+				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
+					System.out.println( " hey i add '"+sv.values.get(idx)+"' into strings" );
+					slv.values.add( sv.values.get(idx) );
+				}
+            }
+            else
+            {
+            	System.out.println("!!!-> error "+(new Throwable()).getStackTrace()[0].toString());
+            }
         }
 
         if (node.selector != null)
         {
-            node.selector.evaluate(cx, this);
+            Value v = node.selector.evaluate(cx, this);
+            if( v != null && v instanceof StringValue )
+            {
+            	StringValue sv = (StringValue)( v );
+            	slv.values.add( sv.getValue() );
+            }
+            else if( v != null && v instanceof StringListValue )
+            {
+            	System.out.println(" damn !456 \n");
+            }
+            else
+            {
+            	System.out.println("!!!-> error "+(new Throwable()).getStackTrace()[0].toString());
+            }
         }  
-		return null;
+		return slv;
 	}
 
 	public Value evaluate(Context cx, CallExpressionNode node)
@@ -262,16 +300,17 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, GetExpressionNode node)
 	{
-//		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		if (node.expr != null)
         {
-            node.expr.evaluate(cx, this);
+            return node.expr.evaluate(cx, this);
         }
 		return null;
 	}
 
 	public Value evaluate(Context cx, SetExpressionNode node) 
 	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
 			thrift_cli.startAssignment();
 			thrift_cli.startExpressionList();
@@ -292,6 +331,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, UnaryExpressionNode node) 
 	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
 			UnaryExpression unary_expression = new UnaryExpression();
 			unary_expression.op = Token.getTokenClassName(node.op);
@@ -307,6 +347,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, BinaryExpressionNode node) 
 	{	
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
 			if( Token.getTokenClassName(node.op) == "instanceof" ) {
 				thrift_cli.startInstanceOfExpression();
@@ -356,6 +397,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ArgumentListNode node)
 	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
         for (Node n : node.items)
         {
             n.evaluate(cx, this);
@@ -365,18 +407,37 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ListNode node)
 	{
-	
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		StringListValue values = new StringListValue();
 		for ( Node n : node.items )
 		{
-			n.evaluate( cx, this );
+			Value v = n.evaluate( cx, this );
+			if( v != null && v instanceof StringValue )
+			{
+				StringValue sv = (StringValue)( v );
+				values.values.add(sv.getValue());
+			} 
+			else if( v != null && v instanceof StringListValue )
+			{
+				StringListValue sv = (StringListValue)( v );
+				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
+					System.out.println( " hey i add '"+sv.values.get(idx)+"' into strings" );
+					values.values.add( sv.values.get(idx) );
+				}
+			}
+			else if ( v != null )
+			{
+				System.out.println(" !!!!!!!! hey look here!! somthing wrong !!"+v.getPrintableName());
+			}
 		}
-		return null;
+		return values;
 	}
 
 	// Statements
 
 	public Value evaluate(Context cx, StatementListNode node)
 	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
 			thrift_cli.startStmtList();
 			for (Node n : node.items) {
@@ -509,22 +570,41 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, AttributeListNode node) {
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
-		
-		try {
-			thrift_cli.startAttributeList();
-			
+		// This Function always evaluate "value" insteadof "thrift"
+
+		StringListValue attrs = new StringListValue();
+			dont_throw_thrift = true;
 	        for (Node n : node.items)
 	        {
-	            n.evaluate(cx, this);
-//	            separate();
+	        	System.out.println(" fattr 1");
+	            Value v = n.evaluate(cx, this);
+	            System.out.println(" fattr 2");
+	            if( v instanceof StringValue )
+	            {
+	            	StringValue s = (StringValue)( v );
+	            	attrs.values.add( s.getValue() );
+	            	System.out.println(" ------------> attribute item : "+s.getValue());
+	            } 
+	            else if( v != null && v instanceof StringListValue )
+	            {
+					StringListValue sv = (StringListValue)( v );
+					for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
+						System.out.println( "attrs hey i add '"+sv.values.get(idx)+"' into strings" );
+						attrs.values.add( sv.values.get(idx) );
+					}
+	            } 
+	            else 
+	            {
+		            if( v == null)
+		            	System.out.println(" ------------> v == null" ) ;
+		            else
+		            	System.out.println(" ------------>"+  v.getPrintableName() ) ;
+	            }
+	            
 	        }
 
-			thrift_cli.endAttributelist();
-		} catch (org.apache.thrift.TException e1) {
-		
-		}
-		
-		return null;
+	        System.out.println(" fattr last");
+		return attrs;
 	}
 
 	public Value evaluate(Context cx, VariableDefinitionNode node) 
@@ -604,26 +684,29 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, FunctionDefinitionNode node)
 	{
-//		System.out.println((new Throwable()).getStackTrace()[0].toString());  
+		System.out.println((new Throwable()).getStackTrace()[0].toString());  
 		try {
 			thrift_cli.startFunctionDefinition();
 			
-			thrift_cli.startFunctionAttribute();
+
+			System.out.println(" fdef 1");
 			if (node.attrs != null) {
-				node.attrs.evaluate(cx, this);
-			}
-			thrift_cli.endFunctionAttribute();
-
-		
-
+				System.out.println(" fdef 2");
+				StringListValue sv = (StringListValue)(node.attrs.evaluate(cx, this));
+				System.out.println(" fdef 3-"+sv.values.size());
+				thrift_cli.functionAttribute( sv.values );
+			} else
+				thrift_cli.functionAttribute( new ArrayList<String>() );
+			System.out.println(" fdef 3");
+			
 			if (node.name != null) {
 				node.name.evaluate(cx, this);
 			}
 		
 			thrift_cli.startFunctionCommon();
-			if (node.fexpr != null) {
-				node.fexpr.evaluate(cx, this);
-			}
+				if (node.fexpr != null) {
+					node.fexpr.evaluate(cx, this);
+				}
 			thrift_cli.endFunctionCommon();
 			thrift_cli.endFunctionDefinition();
 		} catch (org.apache.thrift.TException e1) {
