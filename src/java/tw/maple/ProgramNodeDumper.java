@@ -7,6 +7,8 @@ import java.util.ArrayList;
 
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.Value;
+import macromedia.asc.semantics.StringValue;
+import macromedia.asc.semantics.QNValue;
 import macromedia.asc.util.Context;
 //import sun.org.mozilla.javascript.internal.EvaluatorException;
 import tw.maple.generated.*;
@@ -51,16 +53,18 @@ public final class ProgramNodeDumper implements Evaluator
         
         else
         {
-        	try
-        	{
-        		Identifier id = new Identifier();
-        		id.name = node.name;
-        		thrift_cli.identifierExpression( id );
-        	}
-        	catch (org.apache.thrift.TException e1) 
-    		{
-    			
-    		}
+			if (dont_throw_thrift) {
+				return new StringValue( node.name );
+			} else {
+				try {
+					Identifier id = new Identifier();
+					id.name = node.name;
+					thrift_cli.identifierExpression(id);
+				} catch (org.apache.thrift.TException e1) {
+
+				}
+				return new StringValue( node.name );
+			}
         }
         
 		return null;
@@ -72,26 +76,47 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
 	{
-//		if (node.qualifier != null)
-//        {
-//            node.qualifier.evaluate(cx, this);
-//        }
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		
-		try 
-		{
-//			tw.maple.generated.LiteralString str = new tw.maple.generated.LiteralString();
-//			str.value = node.name;
-//			thrift_cli.identifierExpression( str );
-			
-    		Identifier id = new Identifier();
-    		id.name = node.name;
-    		thrift_cli.identifierExpression( id );
+		if (dont_throw_thrift) {
+
+			String name = node.name;
+			String qname = "";
+			if (node.qualifier != null) {
+				Value ret_value = node.qualifier.evaluate(cx, this);
+				if (ret_value instanceof StringValue) {
+					StringValue qual_value = (StringValue) (ret_value);
+					qname = qual_value.getValue();
+				}
+			}
+			return new QNValue(name,qname);
+		} else {
+			try {
+
+				Identifier id = new Identifier();
+				id.name = node.name;
+				id.qualifier = "";
+
+				if (node.qualifier != null) {
+					dont_throw_thrift = true;
+					{
+						Value ret_value = node.qualifier.evaluate(cx, this);
+						if (ret_value instanceof StringValue) {
+							StringValue qual_value = (StringValue) (ret_value);
+							System.out.println(" hey it's string value"
+									+ qual_value.getValue());
+							id.qualifier = qual_value.getValue();
+						} else
+							System.out.println(" hey it's not string value ");
+					}
+					dont_throw_thrift = false;
+				}
+				thrift_cli.identifierExpression(id);
+			} catch (org.apache.thrift.TException e1) {
+
+			}
 		}
-		catch (org.apache.thrift.TException e1) 
-		{
-			
-		}
-//        node.qualifier.evaluate(cx, this);
+
 		return null;
 	}
 
@@ -120,6 +145,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, LiteralNumberNode node)
 	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try 
 		{
 			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
@@ -135,21 +161,19 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, LiteralStringNode node)
 	{
-		try 
-		{
-//			tw.maple.generated.Identifier id = new tw.maple.generated.Identifier( );
-//			id.name = node.value;
-//			thrift_cli.identifierExpression( id );
-			
-			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
-			str.value = node.value;
-			thrift_cli.literalStringExpression( str );
+		if (dont_throw_thrift) {
+			return new StringValue(node.value);
+		} else {
+
+			try {
+				tw.maple.generated.Literal str = new tw.maple.generated.Literal();
+				str.value = node.value;
+				thrift_cli.literalStringExpression(str);
+
+				return new StringValue(node.value);
+			} catch (org.apache.thrift.TException e1) {
+			}
 		}
-		catch (org.apache.thrift.TException e1) 
-		{
-			
-		}
-		
 		return null;
 	}
 
@@ -616,17 +640,28 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, FunctionNameNode node)
 	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
-			thrift_cli.startFunctionName();
-		} catch (org.apache.thrift.TException e1) {
 
-		}
-		if (node.identifier != null) {
-			node.identifier.evaluate(cx, this);
-		}
+			String str_fname = "";
+			if (node.identifier != null) {
+				dont_throw_thrift = true;
+				
+				Value str_value = node.identifier.evaluate(cx, this);
+				if( str_value instanceof StringValue)
+        		{
+        			StringValue qual_value = (StringValue)(str_value);
+        			str_fname = qual_value.getValue();
+        		} else if( str_value instanceof QNValue)
+        		{
+        			QNValue qual_value = (QNValue)(str_value);
+        			str_fname = qual_value.getName();
+        		}
+				
+				dont_throw_thrift = false;
+			}
 
-		try {
-			thrift_cli.endFunctionName();
+			thrift_cli.functionName(str_fname);
 		} catch (org.apache.thrift.TException e1) {
 
 		}
@@ -635,6 +670,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, FunctionSignatureNode node) 
 	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 //		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
 
@@ -849,6 +885,8 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, DefaultXMLNamespaceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
+    
 	
+    private boolean dont_throw_thrift = false;
 }
 

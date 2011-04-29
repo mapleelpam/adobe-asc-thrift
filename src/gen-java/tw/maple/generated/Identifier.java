@@ -25,6 +25,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
 
   private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField QUALIFIER_FIELD_DESC = new org.apache.thrift.protocol.TField("qualifier", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   /**
    * 
@@ -32,6 +33,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
    */
   public IdentifierType type;
   public String name;
+  public String qualifier;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -40,7 +42,8 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
      * @see IdentifierType
      */
     TYPE((short)1, "type"),
-    NAME((short)2, "name");
+    NAME((short)2, "name"),
+    QUALIFIER((short)3, "qualifier");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -59,6 +62,8 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
           return TYPE;
         case 2: // NAME
           return NAME;
+        case 3: // QUALIFIER
+          return QUALIFIER;
         default:
           return null;
       }
@@ -107,6 +112,8 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, IdentifierType.class)));
     tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.QUALIFIER, new org.apache.thrift.meta_data.FieldMetaData("qualifier", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Identifier.class, metaDataMap);
   }
@@ -116,11 +123,13 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
 
   public Identifier(
     IdentifierType type,
-    String name)
+    String name,
+    String qualifier)
   {
     this();
     this.type = type;
     this.name = name;
+    this.qualifier = qualifier;
   }
 
   /**
@@ -133,6 +142,9 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
     if (other.isSetName()) {
       this.name = other.name;
     }
+    if (other.isSetQualifier()) {
+      this.qualifier = other.qualifier;
+    }
   }
 
   public Identifier deepCopy() {
@@ -143,6 +155,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
   public void clear() {
     this.type = null;
     this.name = null;
+    this.qualifier = null;
   }
 
   /**
@@ -201,6 +214,30 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
     }
   }
 
+  public String getQualifier() {
+    return this.qualifier;
+  }
+
+  public Identifier setQualifier(String qualifier) {
+    this.qualifier = qualifier;
+    return this;
+  }
+
+  public void unsetQualifier() {
+    this.qualifier = null;
+  }
+
+  /** Returns true if field qualifier is set (has been assigned a value) and false otherwise */
+  public boolean isSetQualifier() {
+    return this.qualifier != null;
+  }
+
+  public void setQualifierIsSet(boolean value) {
+    if (!value) {
+      this.qualifier = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TYPE:
@@ -219,6 +256,14 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
       }
       break;
 
+    case QUALIFIER:
+      if (value == null) {
+        unsetQualifier();
+      } else {
+        setQualifier((String)value);
+      }
+      break;
+
     }
   }
 
@@ -229,6 +274,9 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
 
     case NAME:
       return getName();
+
+    case QUALIFIER:
+      return getQualifier();
 
     }
     throw new IllegalStateException();
@@ -245,6 +293,8 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
       return isSetType();
     case NAME:
       return isSetName();
+    case QUALIFIER:
+      return isSetQualifier();
     }
     throw new IllegalStateException();
   }
@@ -277,6 +327,15 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
       if (!(this_present_name && that_present_name))
         return false;
       if (!this.name.equals(that.name))
+        return false;
+    }
+
+    boolean this_present_qualifier = true && this.isSetQualifier();
+    boolean that_present_qualifier = true && that.isSetQualifier();
+    if (this_present_qualifier || that_present_qualifier) {
+      if (!(this_present_qualifier && that_present_qualifier))
+        return false;
+      if (!this.qualifier.equals(that.qualifier))
         return false;
     }
 
@@ -316,6 +375,16 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetQualifier()).compareTo(typedOther.isSetQualifier());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetQualifier()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.qualifier, typedOther.qualifier);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -347,6 +416,13 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 3: // QUALIFIER
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.qualifier = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -372,6 +448,11 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
       oprot.writeString(this.name);
       oprot.writeFieldEnd();
     }
+    if (this.qualifier != null) {
+      oprot.writeFieldBegin(QUALIFIER_FIELD_DESC);
+      oprot.writeString(this.qualifier);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -394,6 +475,14 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
       sb.append("null");
     } else {
       sb.append(this.name);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("qualifier:");
+    if (this.qualifier == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.qualifier);
     }
     first = false;
     sb.append(")");
