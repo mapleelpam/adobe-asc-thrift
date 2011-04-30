@@ -5315,13 +5315,13 @@ public class AstDumper {
           case 1: // ID
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
-                this.id = new ArrayList<String>(_list0.size);
-                for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+                org.apache.thrift.protocol.TList _list8 = iprot.readListBegin();
+                this.id = new ArrayList<String>(_list8.size);
+                for (int _i9 = 0; _i9 < _list8.size; ++_i9)
                 {
-                  String _elem2;
-                  _elem2 = iprot.readString();
-                  this.id.add(_elem2);
+                  String _elem10;
+                  _elem10 = iprot.readString();
+                  this.id.add(_elem10);
                 }
                 iprot.readListEnd();
               }
@@ -5348,9 +5348,9 @@ public class AstDumper {
         oprot.writeFieldBegin(ID_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.id.size()));
-          for (String _iter3 : this.id)
+          for (String _iter11 : this.id)
           {
-            oprot.writeString(_iter3);
+            oprot.writeString(_iter11);
           }
           oprot.writeListEnd();
         }
@@ -5644,13 +5644,13 @@ public class AstDumper {
           case 1: // IDS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list4 = iprot.readListBegin();
-                this.IDs = new ArrayList<String>(_list4.size);
-                for (int _i5 = 0; _i5 < _list4.size; ++_i5)
+                org.apache.thrift.protocol.TList _list12 = iprot.readListBegin();
+                this.IDs = new ArrayList<String>(_list12.size);
+                for (int _i13 = 0; _i13 < _list12.size; ++_i13)
                 {
-                  String _elem6;
-                  _elem6 = iprot.readString();
-                  this.IDs.add(_elem6);
+                  String _elem14;
+                  _elem14 = iprot.readString();
+                  this.IDs.add(_elem14);
                 }
                 iprot.readListEnd();
               }
@@ -5677,9 +5677,9 @@ public class AstDumper {
         oprot.writeFieldBegin(IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.IDs.size()));
-          for (String _iter7 : this.IDs)
+          for (String _iter15 : this.IDs)
           {
-            oprot.writeString(_iter7);
+            oprot.writeString(_iter15);
           }
           oprot.writeListEnd();
         }
@@ -6175,13 +6175,13 @@ public class AstDumper {
           case 1: // ATTRS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list8 = iprot.readListBegin();
-                this.attrs = new ArrayList<String>(_list8.size);
-                for (int _i9 = 0; _i9 < _list8.size; ++_i9)
+                org.apache.thrift.protocol.TList _list16 = iprot.readListBegin();
+                this.attrs = new ArrayList<String>(_list16.size);
+                for (int _i17 = 0; _i17 < _list16.size; ++_i17)
                 {
-                  String _elem10;
-                  _elem10 = iprot.readString();
-                  this.attrs.add(_elem10);
+                  String _elem18;
+                  _elem18 = iprot.readString();
+                  this.attrs.add(_elem18);
                 }
                 iprot.readListEnd();
               }
@@ -6208,9 +6208,9 @@ public class AstDumper {
         oprot.writeFieldBegin(ATTRS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.attrs.size()));
-          for (String _iter11 : this.attrs)
+          for (String _iter19 : this.attrs)
           {
-            oprot.writeString(_iter11);
+            oprot.writeString(_iter19);
           }
           oprot.writeListEnd();
         }
@@ -16563,13 +16563,13 @@ public class AstDumper {
           case 1: // PACKAGES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list12 = iprot.readListBegin();
-                this.packages = new ArrayList<String>(_list12.size);
-                for (int _i13 = 0; _i13 < _list12.size; ++_i13)
+                org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
+                this.packages = new ArrayList<String>(_list20.size);
+                for (int _i21 = 0; _i21 < _list20.size; ++_i21)
                 {
-                  String _elem14;
-                  _elem14 = iprot.readString();
-                  this.packages.add(_elem14);
+                  String _elem22;
+                  _elem22 = iprot.readString();
+                  this.packages.add(_elem22);
                 }
                 iprot.readListEnd();
               }
@@ -16596,9 +16596,9 @@ public class AstDumper {
         oprot.writeFieldBegin(PACKAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.packages.size()));
-          for (String _iter15 : this.packages)
+          for (String _iter23 : this.packages)
           {
-            oprot.writeString(_iter15);
+            oprot.writeString(_iter23);
           }
           oprot.writeListEnd();
         }
