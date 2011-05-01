@@ -248,7 +248,39 @@ public final class StringEvaluator implements Evaluator
 
 	public Value evaluate(Context cx, ImportDirectiveNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, AttributeListNode node) {System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, AttributeListNode node) {
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		// This Function always evaluate "value" insteadof "thrift"
+
+		StringListValue attrs = new StringListValue();
+		
+        for (Node n : node.items)
+        {
+            Value v = n.evaluate(cx, this);
+            if( v instanceof StringValue )
+            {
+            	StringValue s = (StringValue)( v );
+            	attrs.values.add( s.getValue() );
+            } 
+            else if( v != null && v instanceof StringListValue )
+            {
+				StringListValue sv = (StringListValue)( v );
+				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
+					System.out.println( "attrs hey i add '"+sv.values.get(idx)+"' into strings" );
+					attrs.values.add( sv.values.get(idx) );
+				}
+            } 
+            else 
+            {
+	            if( v == null)
+	            	System.out.println(" ------------> v == null" ) ;
+	            else
+	            	System.out.println(" ------------>"+  v.getPrintableName() ) ;
+            }
+            
+        }
+		return attrs;
+	}
 
 	public Value evaluate(Context cx, VariableDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 

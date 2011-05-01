@@ -589,10 +589,27 @@ public final class ProgramNodeDumper implements Evaluator
 //        }
 		try {
 			
-		
+			String str_attrs = "";
 	        if (node.attrs != null)
 	        {
-	            node.attrs.evaluate(cx, this);
+	            Value v = node.attrs.evaluate( cx, string_evaluator );
+
+	            if( v instanceof StringValue )
+        		{
+        			StringValue sv = (StringValue)( v );
+        			str_attrs = sv.getValue();
+        		}
+        		else if( v instanceof StringListValue )
+                {
+    				StringListValue sv = (StringListValue)( v );
+    				str_attrs =  sv.values.get(0);
+    				System.out.println("--> variable attribute = "+str_attrs);
+                }
+        		else
+        		{	//ERROR!
+        			System.out.println("!!ERROR can't resolve variable declare's attribute");
+        		}
+
 	        }
 //	        if (node.list != null)
 //	        {
@@ -628,7 +645,7 @@ public final class ProgramNodeDumper implements Evaluator
 	        			System.out.println("variable type "+type_value.getPrintableName());
 	        		}
 
-	        		thrift_cli.startVariableDeclare(str_name, str_type);
+	        		thrift_cli.startVariableDeclare(str_name, str_type, str_attrs);
 	        		System.out.println("variable declare - "+str_name+":"+str_type+"'");
 	        		if(vbnode.initializer != null)
 	        			vbnode.initializer.evaluate(cx, this);
