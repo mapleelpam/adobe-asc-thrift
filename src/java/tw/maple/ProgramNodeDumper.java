@@ -759,11 +759,21 @@ public final class ProgramNodeDumper implements Evaluator
 
 			thrift_cli.startFunctionSignature();
 
-			thrift_cli.startFunctionSignatureReturnType();
+			
 			if (node.result != null) {
-				node.result.evaluate(cx, this);
-			}
-			thrift_cli.endFunctionSignatureReturnType();
+				Value v = node.result.evaluate(cx, string_evaluator);
+				if( v!=null && v instanceof StringValue )
+				{
+					StringValue sv = (StringValue)(v);
+					thrift_cli.functionSignatureReturnType(sv.getValue());
+				} else if( v!=null && v instanceof StringListValue )
+				{
+					StringListValue sv = (StringListValue)(v);
+					thrift_cli.functionSignatureReturnType(sv.values.get(0));
+				}
+			} else
+				thrift_cli.functionSignatureReturnType( "void" );
+			
 			
 			if (node.parameter != null) {
 				node.parameter.evaluate(cx, this);
