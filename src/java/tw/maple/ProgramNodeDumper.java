@@ -93,11 +93,7 @@ public final class ProgramNodeDumper implements Evaluator
 				if (node.qualifier != null) {
 					{
 						Value ret_value = node.qualifier.evaluate(cx, string_evaluator);
-						if (ret_value instanceof StringValue) {
-							StringValue qual_value = (StringValue) (ret_value);
-							id.qualifier = qual_value.getValue();
-						} else
-							System.out.println(" hey it's not string value ");
+						id.qualifier = Extract2String( ret_value );
 					}
 				}
 				thrift_cli.identifierExpression(id);
@@ -204,40 +200,13 @@ public final class ProgramNodeDumper implements Evaluator
         if (node.base != null)
         {
             Value v = node.base.evaluate(cx, this);
-            if( v != null && v instanceof StringValue )
-            {
-            	StringValue sv = (StringValue)( v );
-            	slv.values.add( sv.getValue() );
-            } 
-            else if( v != null && v instanceof StringListValue )
-            {
-				StringListValue sv = (StringListValue)( v );
-				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
-					slv.values.add( sv.values.get(idx) );
-				}
-            }
-            else
-            {
-            	System.out.println("!!!-> error "+(new Throwable()).getStackTrace()[0].toString());
-            }
+            slv.values.add( Extract2String( v ) );
         }
 
         if (node.selector != null)
         {
             Value v = node.selector.evaluate(cx, this);
-            if( v != null && v instanceof StringValue )
-            {
-            	StringValue sv = (StringValue)( v );
-            	slv.values.add( sv.getValue() );
-            }
-            else if( v != null && v instanceof StringListValue )
-            {
-            	System.out.println("!!!-> error "+(new Throwable()).getStackTrace()[0].toString());
-            }
-            else
-            {
-            	System.out.println("!!!-> error "+(new Throwable()).getStackTrace()[0].toString());
-            }
+            slv.values.add( Extract2String( v ) );
         }  
 		return slv;
 	}
@@ -389,23 +358,7 @@ public final class ProgramNodeDumper implements Evaluator
 		for ( Node n : node.items )
 		{
 			Value v = n.evaluate( cx, this );
-			if( v != null && v instanceof StringValue )
-			{
-				StringValue sv = (StringValue)( v );
-				values.values.add(sv.getValue());
-			} 
-			else if( v != null && v instanceof StringListValue )
-			{
-				StringListValue sv = (StringListValue)( v );
-				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
-					System.out.println( " hey i add '"+sv.values.get(idx)+"' into strings" );
-					values.values.add( sv.values.get(idx) );
-				}
-			}
-			else if ( v != null )
-			{
-				System.out.println(" !!!!!!!! hey look here!! somthing wrong !!"+v.getPrintableName());
-			}
+			values.values.add( Extract2String( v ) );
 		}
 		return values;
 	}
@@ -554,27 +507,7 @@ public final class ProgramNodeDumper implements Evaluator
         for (Node n : node.items)
         {
             Value v = n.evaluate(cx, string_evaluator);
-            if( v instanceof StringValue )
-            {
-            	StringValue s = (StringValue)( v );
-            	attrs.values.add( s.getValue() );
-            } 
-            else if( v != null && v instanceof StringListValue )
-            {
-				StringListValue sv = (StringListValue)( v );
-				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
-					System.out.println( "attrs hey i add '"+sv.values.get(idx)+"' into strings" );
-					attrs.values.add( sv.values.get(idx) );
-				}
-            } 
-            else 
-            {
-	            if( v == null)
-	            	System.out.println(" ------------> v == null" ) ;
-	            else
-	            	System.out.println(" ------------>"+  v.getPrintableName() ) ;
-            }
-            
+            attrs.values.add( Extract2String( v ) );
         }
        
 		return attrs;
@@ -597,22 +530,7 @@ public final class ProgramNodeDumper implements Evaluator
 	        {
 	            Value v = node.attrs.evaluate( cx, string_evaluator );
 
-	            if( v instanceof StringValue )
-        		{
-        			StringValue sv = (StringValue)( v );
-        			str_attrs = sv.getValue();
-        		}
-        		else if( v instanceof StringListValue )
-                {
-    				StringListValue sv = (StringListValue)( v );
-    				str_attrs =  sv.values.get(0);
-    				System.out.println("--> variable attribute = "+str_attrs);
-                }
-        		else
-        		{	//ERROR!
-        			System.out.println("!!ERROR can't resolve variable declare's attribute");
-        		}
-
+	            str_attrs =  Extract2String( v );
 	        }
 //	        if (node.list != null)
 //	        {
@@ -629,24 +547,7 @@ public final class ProgramNodeDumper implements Evaluator
 	        		String str_name = vbnode.variable.identifier.name;
 	        		System.out.println("variable's node type "+vbnode.variable.type.toString());
 	        		Value type_value = vbnode.variable.type.evaluate(cx, string_evaluator);
-	        		if( type_value instanceof StringValue )
-	        		{
-	        			StringValue sv = (StringValue)( type_value );
-	        			str_type = sv.getValue();
-	        		}
-	        		else if( type_value != null && type_value instanceof StringListValue )
-	                {
-	    				StringListValue sv = (StringListValue)( type_value );
-	    				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
-	    					str_type =  sv.values.get(idx);
-	    					
-	    				}
-	    				System.out.println("--> variable type size = "+sv.values.size());
-	                }
-	        		else
-	        		{
-	        			System.out.println("variable type "+type_value.getPrintableName());
-	        		}
+	        		str_type =  Extract2String( type_value );
 
 	        		thrift_cli.startVariableDeclare(str_name, str_type, str_attrs);
 	        		System.out.println("variable declare - "+str_name+":"+str_type+"'");
@@ -753,16 +654,7 @@ public final class ProgramNodeDumper implements Evaluator
 			if (node.identifier != null) {
 				
 				Value str_value = node.identifier.evaluate(cx, string_evaluator);
-				if( str_value instanceof StringValue)
-        		{
-        			StringValue qual_value = (StringValue)(str_value);
-        			str_fname = qual_value.getValue();
-				} else if (str_value instanceof QNValue) {
-					QNValue qual_value = (QNValue) (str_value);
-					str_fname = qual_value.getName();
-				} else {
-					System.out.println((new Throwable()).getStackTrace()[0].toString()+"ERROR here!!");
-				}
+				str_fname =  Extract2String( str_value );
 			}
 
 			thrift_cli.functionName(str_fname);
@@ -777,18 +669,10 @@ public final class ProgramNodeDumper implements Evaluator
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
 
-			
-
 			String str_func_type = "";
 			if (node.result != null) {
 				Value v = node.result.evaluate(cx, string_evaluator);
-				if( v!=null && v instanceof StringValue ) {
-					StringValue sv = (StringValue)(v);
-					str_func_type = sv.getValue();
-				} else if( v!=null && v instanceof StringListValue ) {
-					StringListValue sv = (StringListValue)(v);
-					str_func_type = sv.values.get(0);
-				}
+				str_func_type =  Extract2String( v );
 			} else
 				str_func_type =  "void";
 			
@@ -812,39 +696,22 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		try{
 			String para_name = "";
-			String para_type = "";
 			
 			if (node.identifier != null) {
 				Value v = node.identifier.evaluate(cx, string_evaluator);
-				if( v!=null && v instanceof StringValue )
-				{
-					StringValue sv = (StringValue)(v);
-					para_name = sv.getValue();
-				}
+				para_name =  Extract2String( v );
 			}
 			if (node.init != null)
 			{
 				node.init.evaluate(cx, string_evaluator);
 			}
+			
+			String para_type = "";
 			if (node.type != null)
 			{
 				Value v = node.type.evaluate(cx, string_evaluator);
-				if( v!=null && v instanceof StringValue )
-				{
-					StringValue sv = (StringValue)(v);
-					para_type = sv.getValue();
-				}else if( v!=null && v instanceof StringListValue ) {
-					StringListValue sv = (StringListValue)(v);
-					para_type = sv.values.get(0);
-				} else {
-					System.out.println((new Throwable()).getStackTrace()[0].toString() +" HEYhey Can't find param types ");
-					if( v != null )
-						System.out.println((new Throwable()).getStackTrace()[0].toString() +" HEYhey Can't find param types "+v.getPrintableName());
-				}
+				para_type =  Extract2String( v );
 			}
-        
-			
-			
 			
 			thrift_cli.startFunctionSignatureParameterMember( para_name, para_type );
 			thrift_cli.endFunctionSignatureParameterMember();
@@ -897,16 +764,7 @@ public final class ProgramNodeDumper implements Evaluator
 			if (node.name != null) {
 				
 				Value str_value = node.name.evaluate(cx, string_evaluator );
-				
-				if (str_value instanceof StringValue) {
-					StringValue qual_value = (StringValue) (str_value);
-					s_classname = qual_value.getValue();
-				} else if( str_value instanceof QNValue)   {
-        			QNValue qual_value = (QNValue)(str_value);
-        			s_classname = qual_value.getName();
-				} else {
-					System.out.println(" hey !!! error !!1");
-				}
+				s_classname = Extract2String( str_value );
 			}
 
 			List<String>	sl_inherits = null;
@@ -973,16 +831,8 @@ public final class ProgramNodeDumper implements Evaluator
 			if (node.name != null) {
 				
 				Value str_value = node.name.evaluate(cx, string_evaluator );
+				s_classname = Extract2String( str_value );
 				
-				if (str_value instanceof StringValue) {
-					StringValue qual_value = (StringValue) (str_value);
-					s_classname = qual_value.getValue();
-				} else if( str_value instanceof QNValue)   {
-        			QNValue qual_value = (QNValue)(str_value);
-        			s_classname = qual_value.getName();
-				} else {
-					System.out.println(" hey !!! error !!1");
-				}
 			}
 
 			List<String>	sl_inherits = null;
@@ -1119,6 +969,20 @@ public final class ProgramNodeDumper implements Evaluator
     public Value evaluate(Context cx, DefaultXMLNamespaceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
     
+    private String Extract2String( Value v )
+    {
+		if( v!=null && v instanceof StringValue ) {
+			StringValue sv = (StringValue)(v);
+			return sv.getValue();
+		} else if( v!=null && v instanceof StringListValue ) {
+			StringListValue sv = (StringListValue)(v);
+			return sv.values.get(0);
+		} else if( v instanceof QNValue)   {
+			QNValue qual_value = (QNValue)(v);
+			return qual_value.getName();
+		} else
+			return "";
+    }
 	
 //    private boolean dont_throw_thrift = false;
 }
