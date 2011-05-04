@@ -777,23 +777,22 @@ public final class ProgramNodeDumper implements Evaluator
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
 
-			thrift_cli.startFunctionSignature();
-
 			
+
+			String str_func_type = "";
 			if (node.result != null) {
 				Value v = node.result.evaluate(cx, string_evaluator);
-				if( v!=null && v instanceof StringValue )
-				{
+				if( v!=null && v instanceof StringValue ) {
 					StringValue sv = (StringValue)(v);
-					thrift_cli.functionSignatureReturnType(sv.getValue());
-				} else if( v!=null && v instanceof StringListValue )
-				{
+					str_func_type = sv.getValue();
+				} else if( v!=null && v instanceof StringListValue ) {
 					StringListValue sv = (StringListValue)(v);
-					thrift_cli.functionSignatureReturnType(sv.values.get(0));
+					str_func_type = sv.values.get(0);
 				}
 			} else
-				thrift_cli.functionSignatureReturnType( "void" );
+				str_func_type =  "void";
 			
+			thrift_cli.startFunctionSignature( str_func_type );
 			
 			if (node.parameter != null) {
 				node.parameter.evaluate(cx, this);
