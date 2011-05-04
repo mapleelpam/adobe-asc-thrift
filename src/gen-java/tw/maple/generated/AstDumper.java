@@ -32,7 +32,7 @@ public class AstDumper {
 
     public void endPackage(List<String> IDs) throws org.apache.thrift.TException;
 
-    public void startFunctionDefinition() throws org.apache.thrift.TException;
+    public void startFunctionDefinition(boolean isAbstract) throws org.apache.thrift.TException;
 
     public void functionAttribute(List<String> attrs) throws org.apache.thrift.TException;
 
@@ -156,7 +156,7 @@ public class AstDumper {
 
     public void endPackage(List<String> IDs, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endPackage_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void startFunctionDefinition(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionDefinition_call> resultHandler) throws org.apache.thrift.TException;
+    public void startFunctionDefinition(boolean isAbstract, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionDefinition_call> resultHandler) throws org.apache.thrift.TException;
 
     public void functionAttribute(List<String> attrs, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.functionAttribute_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -365,15 +365,16 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void startFunctionDefinition() throws org.apache.thrift.TException
+    public void startFunctionDefinition(boolean isAbstract) throws org.apache.thrift.TException
     {
-      send_startFunctionDefinition();
+      send_startFunctionDefinition(isAbstract);
     }
 
-    public void send_startFunctionDefinition() throws org.apache.thrift.TException
+    public void send_startFunctionDefinition(boolean isAbstract) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionDefinition", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       startFunctionDefinition_args args = new startFunctionDefinition_args();
+      args.setIsAbstract(isAbstract);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -1302,21 +1303,24 @@ public class AstDumper {
       }
     }
 
-    public void startFunctionDefinition(org.apache.thrift.async.AsyncMethodCallback<startFunctionDefinition_call> resultHandler) throws org.apache.thrift.TException {
+    public void startFunctionDefinition(boolean isAbstract, org.apache.thrift.async.AsyncMethodCallback<startFunctionDefinition_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startFunctionDefinition_call method_call = new startFunctionDefinition_call(resultHandler, this, protocolFactory, transport);
+      startFunctionDefinition_call method_call = new startFunctionDefinition_call(isAbstract, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class startFunctionDefinition_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public startFunctionDefinition_call(org.apache.thrift.async.AsyncMethodCallback<startFunctionDefinition_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private boolean isAbstract;
+      public startFunctionDefinition_call(boolean isAbstract, org.apache.thrift.async.AsyncMethodCallback<startFunctionDefinition_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
+        this.isAbstract = isAbstract;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionDefinition", org.apache.thrift.protocol.TMessageType.CALL, 0));
         startFunctionDefinition_args args = new startFunctionDefinition_args();
+        args.setIsAbstract(isAbstract);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -3115,7 +3119,7 @@ public class AstDumper {
           return;
         }
         iprot.readMessageEnd();
-        iface_.startFunctionDefinition();
+        iface_.startFunctionDefinition(args.isAbstract);
         return;
       }
     }
@@ -5342,11 +5346,13 @@ public class AstDumper {
   public static class startFunctionDefinition_args implements org.apache.thrift.TBase<startFunctionDefinition_args, startFunctionDefinition_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startFunctionDefinition_args");
 
+    private static final org.apache.thrift.protocol.TField IS_ABSTRACT_FIELD_DESC = new org.apache.thrift.protocol.TField("isAbstract", org.apache.thrift.protocol.TType.BOOL, (short)1);
 
+    public boolean isAbstract;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+      IS_ABSTRACT((short)1, "isAbstract");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5361,6 +5367,8 @@ public class AstDumper {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
+          case 1: // IS_ABSTRACT
+            return IS_ABSTRACT;
           default:
             return null;
         }
@@ -5399,9 +5407,16 @@ public class AstDumper {
         return _fieldName;
       }
     }
+
+    // isset id assignments
+    private static final int __ISABSTRACT_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.IS_ABSTRACT, new org.apache.thrift.meta_data.FieldMetaData("isAbstract", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startFunctionDefinition_args.class, metaDataMap);
     }
@@ -5409,10 +5424,21 @@ public class AstDumper {
     public startFunctionDefinition_args() {
     }
 
+    public startFunctionDefinition_args(
+      boolean isAbstract)
+    {
+      this();
+      this.isAbstract = isAbstract;
+      setIsAbstractIsSet(true);
+    }
+
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public startFunctionDefinition_args(startFunctionDefinition_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.isAbstract = other.isAbstract;
     }
 
     public startFunctionDefinition_args deepCopy() {
@@ -5421,15 +5447,51 @@ public class AstDumper {
 
     @Override
     public void clear() {
+      setIsAbstractIsSet(false);
+      this.isAbstract = false;
+    }
+
+    public boolean isIsAbstract() {
+      return this.isAbstract;
+    }
+
+    public startFunctionDefinition_args setIsAbstract(boolean isAbstract) {
+      this.isAbstract = isAbstract;
+      setIsAbstractIsSet(true);
+      return this;
+    }
+
+    public void unsetIsAbstract() {
+      __isset_bit_vector.clear(__ISABSTRACT_ISSET_ID);
+    }
+
+    /** Returns true if field isAbstract is set (has been assigned a value) and false otherwise */
+    public boolean isSetIsAbstract() {
+      return __isset_bit_vector.get(__ISABSTRACT_ISSET_ID);
+    }
+
+    public void setIsAbstractIsSet(boolean value) {
+      __isset_bit_vector.set(__ISABSTRACT_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case IS_ABSTRACT:
+        if (value == null) {
+          unsetIsAbstract();
+        } else {
+          setIsAbstract((Boolean)value);
+        }
+        break;
+
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case IS_ABSTRACT:
+        return new Boolean(isIsAbstract());
+
       }
       throw new IllegalStateException();
     }
@@ -5441,6 +5503,8 @@ public class AstDumper {
       }
 
       switch (field) {
+      case IS_ABSTRACT:
+        return isSetIsAbstract();
       }
       throw new IllegalStateException();
     }
@@ -5458,6 +5522,15 @@ public class AstDumper {
       if (that == null)
         return false;
 
+      boolean this_present_isAbstract = true;
+      boolean that_present_isAbstract = true;
+      if (this_present_isAbstract || that_present_isAbstract) {
+        if (!(this_present_isAbstract && that_present_isAbstract))
+          return false;
+        if (this.isAbstract != that.isAbstract)
+          return false;
+      }
+
       return true;
     }
 
@@ -5474,6 +5547,16 @@ public class AstDumper {
       int lastComparison = 0;
       startFunctionDefinition_args typedOther = (startFunctionDefinition_args)other;
 
+      lastComparison = Boolean.valueOf(isSetIsAbstract()).compareTo(typedOther.isSetIsAbstract());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetIsAbstract()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isAbstract, typedOther.isAbstract);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -5491,6 +5574,14 @@ public class AstDumper {
           break;
         }
         switch (field.id) {
+          case 1: // IS_ABSTRACT
+            if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+              this.isAbstract = iprot.readBool();
+              setIsAbstractIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
         }
@@ -5506,6 +5597,9 @@ public class AstDumper {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldBegin(IS_ABSTRACT_FIELD_DESC);
+      oprot.writeBool(this.isAbstract);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -5515,6 +5609,9 @@ public class AstDumper {
       StringBuilder sb = new StringBuilder("startFunctionDefinition_args(");
       boolean first = true;
 
+      sb.append("isAbstract:");
+      sb.append(this.isAbstract);
+      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -5533,6 +5630,8 @@ public class AstDumper {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);

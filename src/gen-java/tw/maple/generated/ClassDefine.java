@@ -30,6 +30,7 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
   private static final org.apache.thrift.protocol.TField HAS_STMT_FIELD_DESC = new org.apache.thrift.protocol.TField("has_stmt", org.apache.thrift.protocol.TType.BOOL, (short)5);
   private static final org.apache.thrift.protocol.TField INHERITS_FIELD_DESC = new org.apache.thrift.protocol.TField("inherits", org.apache.thrift.protocol.TType.LIST, (short)6);
   private static final org.apache.thrift.protocol.TField INTERFACES_FIELD_DESC = new org.apache.thrift.protocol.TField("interfaces", org.apache.thrift.protocol.TType.LIST, (short)7);
+  private static final org.apache.thrift.protocol.TField OBJECT_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("object_type", org.apache.thrift.protocol.TType.I32, (short)8);
 
   public String name;
   public boolean has_attr;
@@ -38,6 +39,11 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
   public boolean has_stmt;
   public List<String> inherits;
   public List<String> interfaces;
+  /**
+   * 
+   * @see ObjectType
+   */
+  public ObjectType object_type;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -47,7 +53,12 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
     HAS_INTERFACE((short)4, "has_interface"),
     HAS_STMT((short)5, "has_stmt"),
     INHERITS((short)6, "inherits"),
-    INTERFACES((short)7, "interfaces");
+    INTERFACES((short)7, "interfaces"),
+    /**
+     * 
+     * @see ObjectType
+     */
+    OBJECT_TYPE((short)8, "object_type");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -76,6 +87,8 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
           return INHERITS;
         case 7: // INTERFACES
           return INTERFACES;
+        case 8: // OBJECT_TYPE
+          return OBJECT_TYPE;
         default:
           return null;
       }
@@ -139,6 +152,8 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "StringList")));
     tmpMap.put(_Fields.INTERFACES, new org.apache.thrift.meta_data.FieldMetaData("interfaces", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "StringList")));
+    tmpMap.put(_Fields.OBJECT_TYPE, new org.apache.thrift.meta_data.FieldMetaData("object_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ObjectType.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ClassDefine.class, metaDataMap);
   }
@@ -153,7 +168,8 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
     boolean has_interface,
     boolean has_stmt,
     List<String> inherits,
-    List<String> interfaces)
+    List<String> interfaces,
+    ObjectType object_type)
   {
     this();
     this.name = name;
@@ -167,6 +183,7 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
     setHas_stmtIsSet(true);
     this.inherits = inherits;
     this.interfaces = interfaces;
+    this.object_type = object_type;
   }
 
   /**
@@ -188,6 +205,9 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
     if (other.isSetInterfaces()) {
       this.interfaces = other.interfaces;
     }
+    if (other.isSetObject_type()) {
+      this.object_type = other.object_type;
+    }
   }
 
   public ClassDefine deepCopy() {
@@ -207,6 +227,7 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
     this.has_stmt = false;
     this.inherits = null;
     this.interfaces = null;
+    this.object_type = null;
   }
 
   public String getName() {
@@ -403,6 +424,38 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
     }
   }
 
+  /**
+   * 
+   * @see ObjectType
+   */
+  public ObjectType getObject_type() {
+    return this.object_type;
+  }
+
+  /**
+   * 
+   * @see ObjectType
+   */
+  public ClassDefine setObject_type(ObjectType object_type) {
+    this.object_type = object_type;
+    return this;
+  }
+
+  public void unsetObject_type() {
+    this.object_type = null;
+  }
+
+  /** Returns true if field object_type is set (has been assigned a value) and false otherwise */
+  public boolean isSetObject_type() {
+    return this.object_type != null;
+  }
+
+  public void setObject_typeIsSet(boolean value) {
+    if (!value) {
+      this.object_type = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
@@ -461,6 +514,14 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
       }
       break;
 
+    case OBJECT_TYPE:
+      if (value == null) {
+        unsetObject_type();
+      } else {
+        setObject_type((ObjectType)value);
+      }
+      break;
+
     }
   }
 
@@ -487,6 +548,9 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
     case INTERFACES:
       return getInterfaces();
 
+    case OBJECT_TYPE:
+      return getObject_type();
+
     }
     throw new IllegalStateException();
   }
@@ -512,6 +576,8 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
       return isSetInherits();
     case INTERFACES:
       return isSetInterfaces();
+    case OBJECT_TYPE:
+      return isSetObject_type();
     }
     throw new IllegalStateException();
   }
@@ -589,6 +655,15 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
       if (!(this_present_interfaces && that_present_interfaces))
         return false;
       if (!this.interfaces.equals(that.interfaces))
+        return false;
+    }
+
+    boolean this_present_object_type = true && this.isSetObject_type();
+    boolean that_present_object_type = true && that.isSetObject_type();
+    if (this_present_object_type || that_present_object_type) {
+      if (!(this_present_object_type && that_present_object_type))
+        return false;
+      if (!this.object_type.equals(that.object_type))
         return false;
     }
 
@@ -674,6 +749,16 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
     }
     if (isSetInterfaces()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.interfaces, typedOther.interfaces);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetObject_type()).compareTo(typedOther.isSetObject_type());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetObject_type()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.object_type, typedOther.object_type);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -768,6 +853,13 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 8: // OBJECT_TYPE
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
+            this.object_type = ObjectType.findByValue(iprot.readI32());
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -824,6 +916,11 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
       }
       oprot.writeFieldEnd();
     }
+    if (this.object_type != null) {
+      oprot.writeFieldBegin(OBJECT_TYPE_FIELD_DESC);
+      oprot.writeI32(this.object_type.getValue());
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -870,6 +967,14 @@ public class ClassDefine implements org.apache.thrift.TBase<ClassDefine, ClassDe
       sb.append("null");
     } else {
       sb.append(this.interfaces);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("object_type:");
+    if (this.object_type == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.object_type);
     }
     first = false;
     sb.append(")");

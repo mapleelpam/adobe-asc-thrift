@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.Value;
 import macromedia.asc.semantics.StringValue;
-import macromedia.asc.semantics.StringListValue;;
+import macromedia.asc.semantics.StringListValue;
 import macromedia.asc.semantics.QNValue;
 import macromedia.asc.util.Context;
 //import sun.org.mozilla.javascript.internal.EvaluatorException;
 import tw.maple.generated.*;
+import tw.maple.generated.ObjectType;
 import tw.maple.StringEvaluator;
 import static macromedia.asc.parser.Tokens.*;
 
@@ -20,6 +21,8 @@ public final class ProgramNodeDumper implements Evaluator
 {
 	AstDumper.Client thrift_cli;
 	StringEvaluator	string_evaluator;
+	private boolean is_abstract_function = false;
+	
     public ProgramNodeDumper(AstDumper.Client cli)
     {
     	thrift_cli = cli;
@@ -711,7 +714,7 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		System.out.println((new Throwable()).getStackTrace()[0].toString());  
 		try {
-			thrift_cli.startFunctionDefinition();
+			thrift_cli.startFunctionDefinition( is_abstract_function );
 			
 			if (node.attrs != null) {
 				StringListValue sv = (StringListValue)(node.attrs.evaluate(cx, this));
@@ -874,7 +877,83 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, RestParameterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, InterfaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, InterfaceDefinitionNode node)
+	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		
+		try {
+			ClassDefine class_define = new ClassDefine();
+			class_define.has_attr = (node.attrs != null);
+			class_define.has_baseclass = (node.baseclass != null);
+			class_define.has_interface = (node.interfaces != null);
+			class_define.has_stmt = (node.statements != null);
+			class_define.object_type = ObjectType.TYPE_INTERFACE;
+			
+
+//			if (node.attrs != null) {
+//				node.attrs.evaluate(cx, this);
+//			}
+			
+			String s_classname = "";
+			if (node.name != null) {
+				
+				Value str_value = node.name.evaluate(cx, string_evaluator );
+				
+				if (str_value instanceof StringValue) {
+					StringValue qual_value = (StringValue) (str_value);
+					s_classname = qual_value.getValue();
+				} else if( str_value instanceof QNValue)   {
+        			QNValue qual_value = (QNValue)(str_value);
+        			s_classname = qual_value.getName();
+				} else {
+					System.out.println(" hey !!! error !!1");
+				}
+			}
+
+			List<String>	sl_inherits = null;
+			if (node.baseclass != null) {
+				Value v = node.baseclass.evaluate(cx, string_evaluator);
+				if( v instanceof StringListValue )
+				{
+					StringListValue sv = (StringListValue)( v );
+					sl_inherits = sv.values;
+				}				
+			} else {
+				sl_inherits = new ArrayList<String>();
+			}
+			
+			List<String>	sl_interfaces  = null;
+			if (node.interfaces != null) {
+				Value v = node.interfaces.evaluate(cx, string_evaluator);
+				if( v instanceof StringListValue )
+				{
+					StringListValue sv = (StringListValue)( v );
+					sl_interfaces = sv.values;
+				}				
+			} else {
+				sl_interfaces = new ArrayList<String>();
+			}
+			
+			class_define.name = s_classname;
+			class_define.inherits = sl_inherits;
+			class_define.interfaces = sl_interfaces;
+			thrift_cli.startClassDefine( class_define );
+			
+				is_abstract_function = true;
+				if (node.statements != null) {
+					thrift_cli.startClassStmt();
+					node.statements.evaluate(cx, this);
+					thrift_cli.endClassStmt();
+				}
+				is_abstract_function = false;
+			
+			thrift_cli.endClassDefine( );
+
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+
+	}
 
 	public Value evaluate(Context cx, ClassDefinitionNode node) 
 	{
@@ -885,7 +964,7 @@ public final class ProgramNodeDumper implements Evaluator
 			class_define.has_baseclass = (node.baseclass != null);
 			class_define.has_interface = (node.interfaces != null);
 			class_define.has_stmt = (node.statements != null);
-			
+			class_define.object_type = ObjectType.TYPE_CLASS;
 
 //			if (node.attrs != null) {
 //				node.attrs.evaluate(cx, this);
