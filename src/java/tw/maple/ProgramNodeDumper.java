@@ -823,9 +823,10 @@ public final class ProgramNodeDumper implements Evaluator
 			class_define.has_stmt = (node.statements != null);
 			class_define.object_type = ObjectType.TYPE_CLASS;
 
-//			if (node.attrs != null) {
-//				node.attrs.evaluate(cx, this);
-//			}
+			if (node.attrs != null) {
+				Value v = node.attrs.evaluate(cx, this);
+				class_define.attribute = Extract2String( v );
+			}
 			
 			String s_classname = "";
 			if (node.name != null) {
@@ -976,7 +977,8 @@ public final class ProgramNodeDumper implements Evaluator
 			return sv.getValue();
 		} else if( v!=null && v instanceof StringListValue ) {
 			StringListValue sv = (StringListValue)(v);
-			return sv.values.get(0);
+			return sv.values.size() > 0 ? sv.values.get(0) : "";
+//			return sv.values.get(0);
 		} else if( v instanceof QNValue)   {
 			QNValue qual_value = (QNValue)(v);
 			return qual_value.getName();
