@@ -130,13 +130,13 @@ public class AstDumper {
 
     public void endStmtList() throws org.apache.thrift.TException;
 
-    public void startClassDefine(ClassDefine class_define) throws org.apache.thrift.TException;
+    public void startClassDefinition(ClassDefinition class_define) throws org.apache.thrift.TException;
 
     public void startClassStmt() throws org.apache.thrift.TException;
 
     public void endClassStmt() throws org.apache.thrift.TException;
 
-    public void endClassDefine() throws org.apache.thrift.TException;
+    public void endClassDefinition() throws org.apache.thrift.TException;
 
     public void startAttributeList() throws org.apache.thrift.TException;
 
@@ -252,13 +252,13 @@ public class AstDumper {
 
     public void endStmtList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endStmtList_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void startClassDefine(ClassDefine class_define, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startClassDefine_call> resultHandler) throws org.apache.thrift.TException;
+    public void startClassDefinition(ClassDefinition class_define, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startClassDefinition_call> resultHandler) throws org.apache.thrift.TException;
 
     public void startClassStmt(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startClassStmt_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endClassStmt(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endClassStmt_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void endClassDefine(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endClassDefine_call> resultHandler) throws org.apache.thrift.TException;
+    public void endClassDefinition(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endClassDefinition_call> resultHandler) throws org.apache.thrift.TException;
 
     public void startAttributeList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startAttributeList_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -1064,15 +1064,15 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void startClassDefine(ClassDefine class_define) throws org.apache.thrift.TException
+    public void startClassDefinition(ClassDefinition class_define) throws org.apache.thrift.TException
     {
-      send_startClassDefine(class_define);
+      send_startClassDefinition(class_define);
     }
 
-    public void send_startClassDefine(ClassDefine class_define) throws org.apache.thrift.TException
+    public void send_startClassDefinition(ClassDefinition class_define) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startClassDefine", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      startClassDefine_args args = new startClassDefine_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startClassDefinition", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      startClassDefinition_args args = new startClassDefinition_args();
       args.setClass_define(class_define);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -1107,15 +1107,15 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void endClassDefine() throws org.apache.thrift.TException
+    public void endClassDefinition() throws org.apache.thrift.TException
     {
-      send_endClassDefine();
+      send_endClassDefinition();
     }
 
-    public void send_endClassDefine() throws org.apache.thrift.TException
+    public void send_endClassDefinition() throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endClassDefine", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      endClassDefine_args args = new endClassDefine_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endClassDefinition", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      endClassDefinition_args args = new endClassDefinition_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -2708,23 +2708,23 @@ public class AstDumper {
       }
     }
 
-    public void startClassDefine(ClassDefine class_define, org.apache.thrift.async.AsyncMethodCallback<startClassDefine_call> resultHandler) throws org.apache.thrift.TException {
+    public void startClassDefinition(ClassDefinition class_define, org.apache.thrift.async.AsyncMethodCallback<startClassDefinition_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startClassDefine_call method_call = new startClassDefine_call(class_define, resultHandler, this, protocolFactory, transport);
+      startClassDefinition_call method_call = new startClassDefinition_call(class_define, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class startClassDefine_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private ClassDefine class_define;
-      public startClassDefine_call(ClassDefine class_define, org.apache.thrift.async.AsyncMethodCallback<startClassDefine_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class startClassDefinition_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private ClassDefinition class_define;
+      public startClassDefinition_call(ClassDefinition class_define, org.apache.thrift.async.AsyncMethodCallback<startClassDefinition_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
         this.class_define = class_define;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startClassDefine", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        startClassDefine_args args = new startClassDefine_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startClassDefinition", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        startClassDefinition_args args = new startClassDefinition_args();
         args.setClass_define(class_define);
         args.write(prot);
         prot.writeMessageEnd();
@@ -2795,21 +2795,21 @@ public class AstDumper {
       }
     }
 
-    public void endClassDefine(org.apache.thrift.async.AsyncMethodCallback<endClassDefine_call> resultHandler) throws org.apache.thrift.TException {
+    public void endClassDefinition(org.apache.thrift.async.AsyncMethodCallback<endClassDefinition_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      endClassDefine_call method_call = new endClassDefine_call(resultHandler, this, protocolFactory, transport);
+      endClassDefinition_call method_call = new endClassDefinition_call(resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class endClassDefine_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public endClassDefine_call(org.apache.thrift.async.AsyncMethodCallback<endClassDefine_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class endClassDefinition_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public endClassDefinition_call(org.apache.thrift.async.AsyncMethodCallback<endClassDefinition_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endClassDefine", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        endClassDefine_args args = new endClassDefine_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endClassDefinition", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        endClassDefinition_args args = new endClassDefinition_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -2939,10 +2939,10 @@ public class AstDumper {
       processMap_.put("addImport", new addImport());
       processMap_.put("startStmtList", new startStmtList());
       processMap_.put("endStmtList", new endStmtList());
-      processMap_.put("startClassDefine", new startClassDefine());
+      processMap_.put("startClassDefinition", new startClassDefinition());
       processMap_.put("startClassStmt", new startClassStmt());
       processMap_.put("endClassStmt", new endClassStmt());
-      processMap_.put("endClassDefine", new endClassDefine());
+      processMap_.put("endClassDefinition", new endClassDefinition());
       processMap_.put("startAttributeList", new startAttributeList());
       processMap_.put("endAttributelist", new endAttributelist());
     }
@@ -4085,23 +4085,23 @@ public class AstDumper {
       }
     }
 
-    private class startClassDefine implements ProcessFunction {
+    private class startClassDefinition implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        startClassDefine_args args = new startClassDefine_args();
+        startClassDefinition_args args = new startClassDefinition_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startClassDefine", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startClassDefinition", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        iface_.startClassDefine(args.class_define);
+        iface_.startClassDefinition(args.class_define);
         return;
       }
     }
@@ -4148,23 +4148,23 @@ public class AstDumper {
       }
     }
 
-    private class endClassDefine implements ProcessFunction {
+    private class endClassDefinition implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        endClassDefine_args args = new endClassDefine_args();
+        endClassDefinition_args args = new endClassDefinition_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endClassDefine", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endClassDefinition", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        iface_.endClassDefine();
+        iface_.endClassDefinition();
         return;
       }
     }
@@ -16841,12 +16841,12 @@ public class AstDumper {
 
   }
 
-  public static class startClassDefine_args implements org.apache.thrift.TBase<startClassDefine_args, startClassDefine_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startClassDefine_args");
+  public static class startClassDefinition_args implements org.apache.thrift.TBase<startClassDefinition_args, startClassDefinition_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startClassDefinition_args");
 
     private static final org.apache.thrift.protocol.TField CLASS_DEFINE_FIELD_DESC = new org.apache.thrift.protocol.TField("class_define", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
-    public ClassDefine class_define;
+    public ClassDefinition class_define;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -16912,16 +16912,16 @@ public class AstDumper {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.CLASS_DEFINE, new org.apache.thrift.meta_data.FieldMetaData("class_define", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ClassDefine.class)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ClassDefinition.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startClassDefine_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startClassDefinition_args.class, metaDataMap);
     }
 
-    public startClassDefine_args() {
+    public startClassDefinition_args() {
     }
 
-    public startClassDefine_args(
-      ClassDefine class_define)
+    public startClassDefinition_args(
+      ClassDefinition class_define)
     {
       this();
       this.class_define = class_define;
@@ -16930,14 +16930,14 @@ public class AstDumper {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public startClassDefine_args(startClassDefine_args other) {
+    public startClassDefinition_args(startClassDefinition_args other) {
       if (other.isSetClass_define()) {
-        this.class_define = new ClassDefine(other.class_define);
+        this.class_define = new ClassDefinition(other.class_define);
       }
     }
 
-    public startClassDefine_args deepCopy() {
-      return new startClassDefine_args(this);
+    public startClassDefinition_args deepCopy() {
+      return new startClassDefinition_args(this);
     }
 
     @Override
@@ -16945,11 +16945,11 @@ public class AstDumper {
       this.class_define = null;
     }
 
-    public ClassDefine getClass_define() {
+    public ClassDefinition getClass_define() {
       return this.class_define;
     }
 
-    public startClassDefine_args setClass_define(ClassDefine class_define) {
+    public startClassDefinition_args setClass_define(ClassDefinition class_define) {
       this.class_define = class_define;
       return this;
     }
@@ -16975,7 +16975,7 @@ public class AstDumper {
         if (value == null) {
           unsetClass_define();
         } else {
-          setClass_define((ClassDefine)value);
+          setClass_define((ClassDefinition)value);
         }
         break;
 
@@ -17008,12 +17008,12 @@ public class AstDumper {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof startClassDefine_args)
-        return this.equals((startClassDefine_args)that);
+      if (that instanceof startClassDefinition_args)
+        return this.equals((startClassDefinition_args)that);
       return false;
     }
 
-    public boolean equals(startClassDefine_args that) {
+    public boolean equals(startClassDefinition_args that) {
       if (that == null)
         return false;
 
@@ -17034,13 +17034,13 @@ public class AstDumper {
       return 0;
     }
 
-    public int compareTo(startClassDefine_args other) {
+    public int compareTo(startClassDefinition_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      startClassDefine_args typedOther = (startClassDefine_args)other;
+      startClassDefinition_args typedOther = (startClassDefinition_args)other;
 
       lastComparison = Boolean.valueOf(isSetClass_define()).compareTo(typedOther.isSetClass_define());
       if (lastComparison != 0) {
@@ -17071,7 +17071,7 @@ public class AstDumper {
         switch (field.id) {
           case 1: // CLASS_DEFINE
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-              this.class_define = new ClassDefine();
+              this.class_define = new ClassDefinition();
               this.class_define.read(iprot);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
@@ -17103,7 +17103,7 @@ public class AstDumper {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("startClassDefine_args(");
+      StringBuilder sb = new StringBuilder("startClassDefinition_args(");
       boolean first = true;
 
       sb.append("class_define:");
@@ -17543,8 +17543,8 @@ public class AstDumper {
 
   }
 
-  public static class endClassDefine_args implements org.apache.thrift.TBase<endClassDefine_args, endClassDefine_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endClassDefine_args");
+  public static class endClassDefinition_args implements org.apache.thrift.TBase<endClassDefinition_args, endClassDefinition_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endClassDefinition_args");
 
 
 
@@ -17607,20 +17607,20 @@ public class AstDumper {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endClassDefine_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endClassDefinition_args.class, metaDataMap);
     }
 
-    public endClassDefine_args() {
+    public endClassDefinition_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public endClassDefine_args(endClassDefine_args other) {
+    public endClassDefinition_args(endClassDefinition_args other) {
     }
 
-    public endClassDefine_args deepCopy() {
-      return new endClassDefine_args(this);
+    public endClassDefinition_args deepCopy() {
+      return new endClassDefinition_args(this);
     }
 
     @Override
@@ -17653,12 +17653,12 @@ public class AstDumper {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof endClassDefine_args)
-        return this.equals((endClassDefine_args)that);
+      if (that instanceof endClassDefinition_args)
+        return this.equals((endClassDefinition_args)that);
       return false;
     }
 
-    public boolean equals(endClassDefine_args that) {
+    public boolean equals(endClassDefinition_args that) {
       if (that == null)
         return false;
 
@@ -17670,13 +17670,13 @@ public class AstDumper {
       return 0;
     }
 
-    public int compareTo(endClassDefine_args other) {
+    public int compareTo(endClassDefinition_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      endClassDefine_args typedOther = (endClassDefine_args)other;
+      endClassDefinition_args typedOther = (endClassDefinition_args)other;
 
       return 0;
     }
@@ -17716,7 +17716,7 @@ public class AstDumper {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("endClassDefine_args(");
+      StringBuilder sb = new StringBuilder("endClassDefinition_args(");
       boolean first = true;
 
       sb.append(")");

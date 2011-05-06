@@ -748,7 +748,7 @@ public final class ProgramNodeDumper implements Evaluator
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		
 		try {
-			ClassDefine class_define = new ClassDefine();
+			ClassDefinition class_define = new ClassDefinition();
 			class_define.has_attr = (node.attrs != null);
 			class_define.has_baseclass = (node.baseclass != null);
 			class_define.has_interface = (node.interfaces != null);
@@ -794,7 +794,7 @@ public final class ProgramNodeDumper implements Evaluator
 			class_define.name = s_classname;
 			class_define.inherits = sl_inherits;
 			class_define.interfaces = sl_interfaces;
-			thrift_cli.startClassDefine( class_define );
+			thrift_cli.startClassDefinition( class_define );
 			
 				is_abstract_function = true;
 				if (node.statements != null) {
@@ -804,7 +804,7 @@ public final class ProgramNodeDumper implements Evaluator
 				}
 				is_abstract_function = false;
 			
-			thrift_cli.endClassDefine( );
+			thrift_cli.endClassDefinition( );
 
 		} catch (org.apache.thrift.TException e1) {
 		}
@@ -816,7 +816,7 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 	
 		try {
-			ClassDefine class_define = new ClassDefine();
+			ClassDefinition class_define = new ClassDefinition();
 			class_define.has_attr = (node.attrs != null);
 			class_define.has_baseclass = (node.baseclass != null);
 			class_define.has_interface = (node.interfaces != null);
@@ -862,7 +862,7 @@ public final class ProgramNodeDumper implements Evaluator
 			class_define.name = s_classname;
 			class_define.inherits = sl_inherits;
 			class_define.interfaces = sl_interfaces;
-			thrift_cli.startClassDefine( class_define );
+			thrift_cli.startClassDefinition( class_define );
 			
 				if (node.statements != null) {
 					thrift_cli.startClassStmt();
@@ -870,7 +870,7 @@ public final class ProgramNodeDumper implements Evaluator
 					thrift_cli.endClassStmt();
 				}
 			
-			thrift_cli.endClassDefine( );
+			thrift_cli.endClassDefinition( );
 
 		} catch (org.apache.thrift.TException e1) {
 		}
