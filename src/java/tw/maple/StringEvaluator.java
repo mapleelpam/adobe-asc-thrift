@@ -53,15 +53,19 @@ public final class StringEvaluator implements Evaluator
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		
 		String name = node.name;
-		String qname = "";
 		if (node.qualifier != null) {
 			Value ret_value = node.qualifier.evaluate(cx, this);
 			if (ret_value instanceof StringValue) {
 				StringValue qual_value = (StringValue) (ret_value);
-				qname = qual_value.getValue();
+				System.out.println((new Throwable()).getStackTrace()[0].toString() + "  "+qual_value.getValue());
+				return new QNValue(name,qual_value.getValue());
+			} else if (ret_value instanceof StringListValue) {
+				StringListValue qual_value = (StringListValue) (ret_value);
+				System.out.println((new Throwable()).getStackTrace()[0].toString());
+				return new QNValue(name,qual_value.values);
 			}
 		}
-		return new QNValue(name,qname);
+		return new QNValue(name,"");
 	}
 
 	public Value evaluate(Context cx, QualifiedExpressionNode node) {
@@ -75,7 +79,8 @@ public final class StringEvaluator implements Evaluator
 
 	public Value evaluate(Context cx, LiteralStringNode node)
 	{
-			return new StringValue(node.value);
+		System.out.println((new Throwable()).getStackTrace()[0].toString() +" value = "+node.value);
+		return new StringValue(node.value);
 	}
 	public Value evaluate(Context cx, LiteralNullNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
@@ -108,39 +113,18 @@ public final class StringEvaluator implements Evaluator
         if (node.base != null)
         {
             Value v = node.base.evaluate(cx, this);
-            if( v != null && v instanceof StringValue )
-            {
-            	StringValue sv = (StringValue)( v );
-            	slv.values.add( sv.getValue() );
-            } 
-            else if( v != null && v instanceof StringListValue )
-            {
-				StringListValue sv = (StringListValue)( v );
-				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
-					slv.values.add( sv.values.get(idx) );
-				}
-            }
-            else
-            {
-            	System.out.println("!!!-> error "+(new Throwable()).getStackTrace()[0].toString());
-            }
+            List<String> stringlist = Extract2StringList( v );
+            for( int idx=0; idx < stringlist.size() ; idx ++ )
+            	slv.values.add( stringlist.get(idx) );
         }
 
         if (node.selector != null)
         {
             Value v = node.selector.evaluate(cx, this);
-            if( v != null && v instanceof StringValue )
-            {
-            	StringValue sv = (StringValue)( v );
-            	slv.values.add( sv.getValue() );
-            }
-            else if( v != null && v instanceof StringListValue )
-            {
-            	System.out.println("!!!-> error "+(new Throwable()).getStackTrace()[0].toString());
-            }
-            else
-            {
-            	System.out.println("!!!-> error "+(new Throwable()).getStackTrace()[0].toString());
+            List<String> stringlist = Extract2StringList( v );
+            for( int idx=0; idx < stringlist.size() ; idx ++ ){
+            	System.out.println(" -------> selector -> "+stringlist.get(idx));
+            	slv.values.add( stringlist.get(idx) );
             }
         }  
 		return slv;
@@ -297,6 +281,7 @@ public final class StringEvaluator implements Evaluator
         {
             return node.expr.evaluate(cx, this);
         }
+    	System.out.println((new Throwable()).getStackTrace()[0].toString());
     	return null;
     }
 
@@ -387,5 +372,48 @@ public final class StringEvaluator implements Evaluator
 
     public Value evaluate(Context cx, DefaultXMLNamespaceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
+    private String Extract2String( Value v )
+    {
+		if( v!=null && v instanceof StringValue ) {
+			StringValue sv = (StringValue)(v);
+			return sv.getValue();
+		} else if( v!=null && v instanceof StringListValue ) {
+			StringListValue sv = (StringListValue)(v);
+			return sv.values.size() > 0 ? sv.values.get(0) : "";
+//			return sv.values.get(0);
+		} else if( v instanceof QNValue)   {
+			QNValue qual_value = (QNValue)(v);
+			return qual_value.getName();
+		} else
+			return "";
+    }
+    private List<String> Extract2StringList( Value v )
+    {
+    	
+    	
+		if( v!=null && v instanceof StringValue ) {
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			StringValue sv = (StringValue)(v);
+			List<String> string_list = new ArrayList<String>();
+			string_list.add( sv.getValue() );
+			return string_list;
+		} else if( v!=null && v instanceof StringListValue ) {
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			StringListValue sv = (StringListValue)(v);
+			return sv.values;
+//			return sv.values.get(0);
+		} else if( v instanceof QNValue)   {
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			QNValue qual_value = (QNValue)(v);
+			
+			List<String> string_list = new ArrayList<String>();
+			string_list.add( qual_value.getName() );
+			for( int idx=0; idx < qual_value.getQualifier().size() ; idx ++ )
+				string_list.add( qual_value.getQualifier().get(idx) );
+			return string_list;
+		} 
+		
+		return null;	
+    }
 }
 

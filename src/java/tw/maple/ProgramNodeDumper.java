@@ -13,7 +13,6 @@ import macromedia.asc.semantics.QNValue;
 import macromedia.asc.util.Context;
 //import sun.org.mozilla.javascript.internal.EvaluatorException;
 import tw.maple.generated.*;
-import tw.maple.generated.ObjectType;
 import tw.maple.StringEvaluator;
 import static macromedia.asc.parser.Tokens.*;
 
@@ -543,14 +542,15 @@ public final class ProgramNodeDumper implements Evaluator
 
 	        		VariableBindingNode vbnode = (VariableBindingNode)(n);
 	        		
-	        		String str_type = "";
+//	        		String str_type = "";
+	        		
 	        		String str_name = vbnode.variable.identifier.name;
 	        		System.out.println("variable's node type "+vbnode.variable.type.toString());
 	        		Value type_value = vbnode.variable.type.evaluate(cx, string_evaluator);
-	        		str_type =  Extract2String( type_value );
+	        		List<String> sl_type =  Extract2StringList( type_value );
 
-	        		thrift_cli.startVariableDeclare(str_name, str_type, str_attrs);
-	        		System.out.println("variable declare - "+str_name+":"+str_type+"'");
+	        		thrift_cli.startVariableDeclare(str_name, sl_type, str_attrs);
+	        		System.out.println("variable declare - "+str_name+":"+sl_type+"'");
 	        		if(vbnode.initializer != null)
 	        			vbnode.initializer.evaluate(cx, this);
 	        		thrift_cli.endVariableDeclare();		
@@ -706,12 +706,13 @@ public final class ProgramNodeDumper implements Evaluator
 				node.init.evaluate(cx, string_evaluator);
 			}
 			
-			String para_type = "";
+			List<String> para_type = new ArrayList<String>();
 			if (node.type != null)
 			{
 				Value v = node.type.evaluate(cx, string_evaluator);
-				para_type =  Extract2String( v );
-			}
+				para_type =  Extract2StringList( v );
+			} 
+				
 			
 			thrift_cli.startFunctionSignatureParameterMember( para_name, para_type );
 			thrift_cli.endFunctionSignatureParameterMember();
@@ -831,9 +832,17 @@ public final class ProgramNodeDumper implements Evaluator
 			String s_classname = "";
 			if (node.name != null) {
 				
-				Value str_value = node.name.evaluate(cx, string_evaluator );
-				s_classname = Extract2String( str_value );
-				
+				Value v = node.name.evaluate(cx, string_evaluator );
+//				s_classname = Extract2String( str_value );
+				if( v instanceof QNValue )
+				{
+//					QNValue qnv = (QNValue)(v); 
+//					System.out.println("class--------------------: it's qn value ->"+qnv.getQualifier());
+					s_classname = Extract2String( v );
+				} else 
+				{
+					s_classname = Extract2String( v );
+				}
 			}
 
 			List<String>	sl_inherits = null;
@@ -986,6 +995,34 @@ public final class ProgramNodeDumper implements Evaluator
 			return "";
     }
 	
+    private List<String> Extract2StringList( Value v )
+    {
+    	
+    	
+		if( v!=null && v instanceof StringValue ) {
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			StringValue sv = (StringValue)(v);
+			List<String> string_list = new ArrayList<String>();
+			string_list.add( sv.getValue() );
+			return string_list;
+		} else if( v!=null && v instanceof StringListValue ) {
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			StringListValue sv = (StringListValue)(v);
+			return sv.values;
+//			return sv.values.get(0);
+		} else if( v instanceof QNValue)   {
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			QNValue qual_value = (QNValue)(v);
+			
+			List<String> string_list = new ArrayList<String>();
+			string_list.add( qual_value.getName() );
+			for( int idx=0; idx < qual_value.getQualifier().size() ; idx ++ )
+				string_list.add( qual_value.getQualifier().get(idx) );
+			return string_list;
+		} 
+		
+		return null;	
+    }
 //    private boolean dont_throw_thrift = false;
 }
 

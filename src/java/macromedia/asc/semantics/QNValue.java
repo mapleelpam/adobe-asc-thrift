@@ -58,14 +58,23 @@ import java.util.Comparator;
  * faster lookup and dispatch.
  */
 
+import java.util.List;
+import java.util.ArrayList;
+
 // add by maple for stupid reason
 
 public class QNValue extends Value
 {
-    public QNValue( String ln, String fn)
+	public QNValue( String ln, String qn)
+	{
+		this.name = ln;
+    	this.qualifier = new ArrayList<String>();
+    	this.qualifier.add( qn );
+	}
+    public QNValue( String ln, List<String> qn)
     {
     	this.name = ln;
-    	this.qualifier = fn;
+    	this.qualifier = qn;
     }
 
     public String getName()
@@ -73,11 +82,11 @@ public class QNValue extends Value
     	return this.name;
     }
 
-    public String getQualifier()
+    public List<String> getQualifier()
     {
     	return this.qualifier;
     }
     
     private String name = "";
-    private String qualifier = "";
+    private List<String> qualifier;
 }
