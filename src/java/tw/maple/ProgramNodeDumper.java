@@ -229,9 +229,9 @@ public final class ProgramNodeDumper implements Evaluator
 			}
 
 			if (node.args != null) {
-				thrift_cli.startAgumentList();
+				thrift_cli.startArgumentList();
 					node.args.evaluate(cx, this);
-				thrift_cli.endAgumentList();
+				thrift_cli.endArgumentList();
 			}
 			
 			thrift_cli.endCallExpression();

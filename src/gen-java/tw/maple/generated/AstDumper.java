@@ -84,9 +84,9 @@ public class AstDumper {
 
     public void startCallExpression(CallExpression call) throws org.apache.thrift.TException;
 
-    public void startAgumentList() throws org.apache.thrift.TException;
+    public void startArgumentList() throws org.apache.thrift.TException;
 
-    public void endAgumentList() throws org.apache.thrift.TException;
+    public void endArgumentList() throws org.apache.thrift.TException;
 
     public void endCallExpression() throws org.apache.thrift.TException;
 
@@ -206,9 +206,9 @@ public class AstDumper {
 
     public void startCallExpression(CallExpression call, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startCallExpression_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void startAgumentList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startAgumentList_call> resultHandler) throws org.apache.thrift.TException;
+    public void startArgumentList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startArgumentList_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void endAgumentList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endAgumentList_call> resultHandler) throws org.apache.thrift.TException;
+    public void endArgumentList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endArgumentList_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endCallExpression(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endCallExpression_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -732,29 +732,29 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void startAgumentList() throws org.apache.thrift.TException
+    public void startArgumentList() throws org.apache.thrift.TException
     {
-      send_startAgumentList();
+      send_startArgumentList();
     }
 
-    public void send_startAgumentList() throws org.apache.thrift.TException
+    public void send_startArgumentList() throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startAgumentList", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      startAgumentList_args args = new startAgumentList_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startArgumentList", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      startArgumentList_args args = new startArgumentList_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
     }
 
-    public void endAgumentList() throws org.apache.thrift.TException
+    public void endArgumentList() throws org.apache.thrift.TException
     {
-      send_endAgumentList();
+      send_endArgumentList();
     }
 
-    public void send_endAgumentList() throws org.apache.thrift.TException
+    public void send_endArgumentList() throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endAgumentList", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      endAgumentList_args args = new endAgumentList_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endArgumentList", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      endArgumentList_args args = new endArgumentList_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -2034,21 +2034,21 @@ public class AstDumper {
       }
     }
 
-    public void startAgumentList(org.apache.thrift.async.AsyncMethodCallback<startAgumentList_call> resultHandler) throws org.apache.thrift.TException {
+    public void startArgumentList(org.apache.thrift.async.AsyncMethodCallback<startArgumentList_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startAgumentList_call method_call = new startAgumentList_call(resultHandler, this, protocolFactory, transport);
+      startArgumentList_call method_call = new startArgumentList_call(resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class startAgumentList_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public startAgumentList_call(org.apache.thrift.async.AsyncMethodCallback<startAgumentList_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class startArgumentList_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public startArgumentList_call(org.apache.thrift.async.AsyncMethodCallback<startArgumentList_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startAgumentList", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        startAgumentList_args args = new startAgumentList_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startArgumentList", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        startArgumentList_args args = new startArgumentList_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -2062,21 +2062,21 @@ public class AstDumper {
       }
     }
 
-    public void endAgumentList(org.apache.thrift.async.AsyncMethodCallback<endAgumentList_call> resultHandler) throws org.apache.thrift.TException {
+    public void endArgumentList(org.apache.thrift.async.AsyncMethodCallback<endArgumentList_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      endAgumentList_call method_call = new endAgumentList_call(resultHandler, this, protocolFactory, transport);
+      endArgumentList_call method_call = new endArgumentList_call(resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class endAgumentList_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public endAgumentList_call(org.apache.thrift.async.AsyncMethodCallback<endAgumentList_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class endArgumentList_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public endArgumentList_call(org.apache.thrift.async.AsyncMethodCallback<endArgumentList_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endAgumentList", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        endAgumentList_args args = new endAgumentList_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endArgumentList", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        endArgumentList_args args = new endArgumentList_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -2916,8 +2916,8 @@ public class AstDumper {
       processMap_.put("endStmtExpression", new endStmtExpression());
       processMap_.put("startExpressionList", new startExpressionList());
       processMap_.put("startCallExpression", new startCallExpression());
-      processMap_.put("startAgumentList", new startAgumentList());
-      processMap_.put("endAgumentList", new endAgumentList());
+      processMap_.put("startArgumentList", new startArgumentList());
+      processMap_.put("endArgumentList", new endArgumentList());
       processMap_.put("endCallExpression", new endCallExpression());
       processMap_.put("startBinaryExpression", new startBinaryExpression());
       processMap_.put("endBinaryExpression", new endBinaryExpression());
@@ -3602,44 +3602,44 @@ public class AstDumper {
       }
     }
 
-    private class startAgumentList implements ProcessFunction {
+    private class startArgumentList implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        startAgumentList_args args = new startAgumentList_args();
+        startArgumentList_args args = new startArgumentList_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startAgumentList", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startArgumentList", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        iface_.startAgumentList();
+        iface_.startArgumentList();
         return;
       }
     }
 
-    private class endAgumentList implements ProcessFunction {
+    private class endArgumentList implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        endAgumentList_args args = new endAgumentList_args();
+        endArgumentList_args args = new endArgumentList_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endAgumentList", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endArgumentList", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        iface_.endAgumentList();
+        iface_.endArgumentList();
         return;
       }
     }
@@ -11251,8 +11251,8 @@ public class AstDumper {
 
   }
 
-  public static class startAgumentList_args implements org.apache.thrift.TBase<startAgumentList_args, startAgumentList_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startAgumentList_args");
+  public static class startArgumentList_args implements org.apache.thrift.TBase<startArgumentList_args, startArgumentList_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startArgumentList_args");
 
 
 
@@ -11315,20 +11315,20 @@ public class AstDumper {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startAgumentList_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startArgumentList_args.class, metaDataMap);
     }
 
-    public startAgumentList_args() {
+    public startArgumentList_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public startAgumentList_args(startAgumentList_args other) {
+    public startArgumentList_args(startArgumentList_args other) {
     }
 
-    public startAgumentList_args deepCopy() {
-      return new startAgumentList_args(this);
+    public startArgumentList_args deepCopy() {
+      return new startArgumentList_args(this);
     }
 
     @Override
@@ -11361,12 +11361,12 @@ public class AstDumper {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof startAgumentList_args)
-        return this.equals((startAgumentList_args)that);
+      if (that instanceof startArgumentList_args)
+        return this.equals((startArgumentList_args)that);
       return false;
     }
 
-    public boolean equals(startAgumentList_args that) {
+    public boolean equals(startArgumentList_args that) {
       if (that == null)
         return false;
 
@@ -11378,13 +11378,13 @@ public class AstDumper {
       return 0;
     }
 
-    public int compareTo(startAgumentList_args other) {
+    public int compareTo(startArgumentList_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      startAgumentList_args typedOther = (startAgumentList_args)other;
+      startArgumentList_args typedOther = (startArgumentList_args)other;
 
       return 0;
     }
@@ -11424,7 +11424,7 @@ public class AstDumper {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("startAgumentList_args(");
+      StringBuilder sb = new StringBuilder("startArgumentList_args(");
       boolean first = true;
 
       sb.append(")");
@@ -11453,8 +11453,8 @@ public class AstDumper {
 
   }
 
-  public static class endAgumentList_args implements org.apache.thrift.TBase<endAgumentList_args, endAgumentList_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endAgumentList_args");
+  public static class endArgumentList_args implements org.apache.thrift.TBase<endArgumentList_args, endArgumentList_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endArgumentList_args");
 
 
 
@@ -11517,20 +11517,20 @@ public class AstDumper {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endAgumentList_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endArgumentList_args.class, metaDataMap);
     }
 
-    public endAgumentList_args() {
+    public endArgumentList_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public endAgumentList_args(endAgumentList_args other) {
+    public endArgumentList_args(endArgumentList_args other) {
     }
 
-    public endAgumentList_args deepCopy() {
-      return new endAgumentList_args(this);
+    public endArgumentList_args deepCopy() {
+      return new endArgumentList_args(this);
     }
 
     @Override
@@ -11563,12 +11563,12 @@ public class AstDumper {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof endAgumentList_args)
-        return this.equals((endAgumentList_args)that);
+      if (that instanceof endArgumentList_args)
+        return this.equals((endArgumentList_args)that);
       return false;
     }
 
-    public boolean equals(endAgumentList_args that) {
+    public boolean equals(endArgumentList_args that) {
       if (that == null)
         return false;
 
@@ -11580,13 +11580,13 @@ public class AstDumper {
       return 0;
     }
 
-    public int compareTo(endAgumentList_args other) {
+    public int compareTo(endArgumentList_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      endAgumentList_args typedOther = (endAgumentList_args)other;
+      endArgumentList_args typedOther = (endArgumentList_args)other;
 
       return 0;
     }
@@ -11626,7 +11626,7 @@ public class AstDumper {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("endAgumentList_args(");
+      StringBuilder sb = new StringBuilder("endArgumentList_args(");
       boolean first = true;
 
       sb.append(")");
