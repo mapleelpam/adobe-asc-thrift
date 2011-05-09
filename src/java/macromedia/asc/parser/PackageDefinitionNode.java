@@ -49,7 +49,7 @@ public class PackageDefinitionNode extends DefinitionNode
 	public boolean package_retrieved;
     public boolean in_this_pkg;
     
-    private boolean flip_dirty = false;
+    public boolean pkg_inside_dirty = false;
 
 	public PackageDefinitionNode(Context cx, AttributeListNode attrs, PackageNameNode name, StatementListNode statements)
 	{
@@ -71,9 +71,9 @@ public class PackageDefinitionNode extends DefinitionNode
 	
 	public boolean flipDirty()
 	{
-		boolean tmp = flip_dirty;
+		boolean tmp = pkg_inside_dirty;
 		
-		flip_dirty = !flip_dirty;
+		pkg_inside_dirty = !pkg_inside_dirty;
 		
 		return tmp;
 	}

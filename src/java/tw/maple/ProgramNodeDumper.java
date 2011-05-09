@@ -767,7 +767,6 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, InterfaceDefinitionNode node)
 	{
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
-		
 		try {
 			ClassDefinition class_define = new ClassDefinition();
 			class_define.has_attr = (node.attrs != null);
@@ -783,9 +782,8 @@ public final class ProgramNodeDumper implements Evaluator
 			
 			String s_classname = "";
 			if (node.name != null) {
-				
-				Value str_value = node.name.evaluate(cx, string_evaluator );
-				s_classname = Extract2String( str_value );
+				Value v = node.name.evaluate(cx, string_evaluator );
+				s_classname = Extract2String( v );
 			}
 
 			List<String>	sl_inherits = null;
@@ -829,13 +827,14 @@ public final class ProgramNodeDumper implements Evaluator
 
 		} catch (org.apache.thrift.TException e1) {
 		}
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		return null;
 
 	}
 
 	public Value evaluate(Context cx, ClassDefinitionNode node) 
 	{
-	
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
 			ClassDefinition class_define = new ClassDefinition();
 			class_define.has_attr = (node.attrs != null);
@@ -850,20 +849,17 @@ public final class ProgramNodeDumper implements Evaluator
 			}
 			
 			String s_classname = "";
+			
 			if (node.name != null) {
-				
 				Value v = node.name.evaluate(cx, string_evaluator );
-//				s_classname = Extract2String( str_value );
-				if( v instanceof QNValue )
-				{
-//					QNValue qnv = (QNValue)(v); 
-//					System.out.println("class--------------------: it's qn value ->"+qnv.getQualifier());
-					s_classname = Extract2String( v );
-				} else 
-				{
-					s_classname = Extract2String( v );
-				}
+				s_classname = Extract2String( v );
 			}
+			List<String> sl_pkgname = new ArrayList<String>();
+//			if( node.pkgdef != null ) {
+//				Value v = node.pkgdef.evaluate(cx, string_evaluator );
+//				StringListValue svl = (StringListValue)(v);
+//				sl_pkgname = svl.values;
+//			}
 
 			List<String>	sl_inherits = null;
 			if (node.baseclass != null) {
@@ -892,6 +888,14 @@ public final class ProgramNodeDumper implements Evaluator
 			class_define.name = s_classname;
 			class_define.inherits = sl_inherits;
 			class_define.interfaces = sl_interfaces;
+			class_define.prefix_packages = sl_pkgname;
+			
+			boolean do_pkgdef = false;
+			if( node.pkgdef != null && node.pkgdef.pkg_inside_dirty == false) {
+				node.pkgdef.evaluate(cx, this);
+				do_pkgdef = true;
+			}
+			
 			thrift_cli.startClassDefinition( class_define );
 			
 				if (node.statements != null) {
@@ -901,6 +905,10 @@ public final class ProgramNodeDumper implements Evaluator
 				}
 			
 			thrift_cli.endClassDefinition( );
+			
+			if( node.pkgdef != null && do_pkgdef == true) {
+				node.pkgdef.evaluate(cx, this);
+			}
 
 		} catch (org.apache.thrift.TException e1) {
 		}

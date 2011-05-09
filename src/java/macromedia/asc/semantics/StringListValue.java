@@ -68,7 +68,11 @@ public class StringListValue extends Value
     public StringListValue()
     {
     	values = new ArrayList<String>();
-    }    
+    }
+    public StringListValue( List<String> vs )
+    {
+    	values = vs;
+    }
     
     public List<String>	values;
 }

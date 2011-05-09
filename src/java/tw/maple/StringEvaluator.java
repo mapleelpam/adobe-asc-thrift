@@ -9,7 +9,7 @@ import tw.maple.generated.Identifier;
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.Value;
 import macromedia.asc.semantics.StringValue;
-import macromedia.asc.semantics.StringListValue;;
+import macromedia.asc.semantics.StringListValue;
 import macromedia.asc.semantics.QNValue;
 import macromedia.asc.util.Context;
 import static macromedia.asc.parser.Tokens.*;
@@ -50,21 +50,24 @@ public final class StringEvaluator implements Evaluator
  
 	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
-		
+		System.out.println((new Throwable()).getStackTrace()[0].toString()+ " "+node.toString());
 		String name = node.name;
 		if (node.qualifier != null) {
 			Value ret_value = node.qualifier.evaluate(cx, this);
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
 			if (ret_value instanceof StringValue) {
+				System.out.println((new Throwable()).getStackTrace()[0].toString());
 				StringValue qual_value = (StringValue) (ret_value);
 				System.out.println((new Throwable()).getStackTrace()[0].toString() + "  "+qual_value.getValue());
 				return new QNValue(name,qual_value.getValue());
 			} else if (ret_value instanceof StringListValue) {
+				System.out.println((new Throwable()).getStackTrace()[0].toString());
 				StringListValue qual_value = (StringListValue) (ret_value);
 				System.out.println((new Throwable()).getStackTrace()[0].toString());
 				return new QNValue(name,qual_value.values);
 			}
 		}
+		System.out.println((new Throwable()).getStackTrace()[0].toString() + node.name);
 		return new QNValue(name,"");
 	}
 
@@ -329,8 +332,17 @@ public final class StringEvaluator implements Evaluator
 
 	public Value evaluate(Context cx, PackageDefinitionNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());  
-		return null;
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		List<String> pkg_name_list = new ArrayList<String>();
+		if( node.name != null )
+		{
+	        for (IdentifierNode id : node.name.id.list)
+	        {
+	            pkg_name_list.add( id.name );
+	        }
+		}
+		StringListValue v = new StringListValue( pkg_name_list );
+		return v;
 	}
 	public Value evaluate(Context cx, PackageIdentifiersNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
