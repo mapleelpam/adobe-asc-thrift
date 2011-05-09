@@ -64,7 +64,6 @@ public final class ProgramNodeDumper implements Evaluator
 				try {
 					Identifier id = new Identifier();
 					id.name = node.name;
-					System.out.println((new Throwable()).getStackTrace()[0].toString()+" yes i  throw");
 					thrift_cli.identifierExpression(id);
 				} catch (org.apache.thrift.TException e1) {
 
@@ -82,25 +81,22 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
 	{
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
-		
-			try {
+		try {
+			Identifier id = new Identifier();
+			id.name = node.name;
+			id.qualifier = "";
 
-				Identifier id = new Identifier();
-				id.name = node.name;
-				id.qualifier = "";
-
-				if (node.qualifier != null) {
-					{
-						Value ret_value = node.qualifier.evaluate(cx, string_evaluator);
-						id.qualifier = Extract2String( ret_value );
-					}
+			if (node.qualifier != null) {
+				{
+					Value ret_value = node.qualifier.evaluate(cx,
+							string_evaluator);
+					id.qualifier = Extract2String(ret_value);
 				}
-				thrift_cli.identifierExpression(id);
-			} catch (org.apache.thrift.TException e1) {
-
 			}
-		
+			thrift_cli.identifierExpression(id);
+		} catch (org.apache.thrift.TException e1) {
 
+		}		
 		return null;
 	}
 
@@ -194,20 +190,36 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, MemberExpressionNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
-		StringListValue slv = new StringListValue();
-        if (node.base != null)
-        {
-            Value v = node.base.evaluate(cx, this);
-            slv.values.add( Extract2String( v ) );
-        }
+		try
+		{
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			StringListValue slv = new StringListValue();
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
+	        if (node.base != null)
+	        {
+	            Value v = node.base.evaluate(cx, this);
+	            thrift_cli . startMemberExpression( Extract2StringList( v ) );
+	            List<String> sl = Extract2StringList( v );
+	            if( sl.size() > 0)
+	            	System.out.println((new Throwable()).getStackTrace()[0].toString() + "'" + sl.get(0) + "'" );
+	        }
+	        System.out.println((new Throwable()).getStackTrace()[0].toString());
+	        if (node.selector != null)
+	        {
+	            Value v = node.selector.evaluate(cx, this);
+	            slv.values.add( Extract2String( v ) );
+	        }  
+	        if (node.base != null)
+	        	thrift_cli . endMemberExpression( );
+	        
+			return slv;
 
-        if (node.selector != null)
-        {
-            Value v = node.selector.evaluate(cx, this);
-            slv.values.add( Extract2String( v ) );
-        }  
-		return slv;
+		} 
+		catch (org.apache.thrift.TException e1)
+		{
+		}
+
+		return null;
 	}
 
 	public Value evaluate(Context cx, CallExpressionNode node)
@@ -343,10 +355,16 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, ArgumentListNode node)
 	{
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
-        for (Node n : node.items)
-        {
-            n.evaluate(cx, this);
-        }
+		try {
+			for (Node n : node.items) {
+				thrift_cli.startOneArgument();
+					n.evaluate(cx, this);
+				thrift_cli.endOneArgument();
+			}
+		} catch (org.apache.thrift.TException e1) {
+
+		}
+
 		return null;
 	}
 
@@ -359,6 +377,8 @@ public final class ProgramNodeDumper implements Evaluator
 			Value v = n.evaluate( cx, this );
 			values.values.add( Extract2String( v ) );
 		}
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+
 		return values;
 	}
 
