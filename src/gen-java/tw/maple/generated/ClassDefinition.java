@@ -32,7 +32,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
   private static final org.apache.thrift.protocol.TField INTERFACES_FIELD_DESC = new org.apache.thrift.protocol.TField("interfaces", org.apache.thrift.protocol.TType.LIST, (short)7);
   private static final org.apache.thrift.protocol.TField OBJECT_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("object_type", org.apache.thrift.protocol.TType.I32, (short)8);
   private static final org.apache.thrift.protocol.TField ATTRIBUTE_FIELD_DESC = new org.apache.thrift.protocol.TField("attribute", org.apache.thrift.protocol.TType.STRING, (short)9);
-  private static final org.apache.thrift.protocol.TField PREFIX_PACKAGES_FIELD_DESC = new org.apache.thrift.protocol.TField("prefix_packages", org.apache.thrift.protocol.TType.LIST, (short)10);
 
   public String name;
   public boolean has_attr;
@@ -47,7 +46,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
    */
   public ObjectType object_type;
   public String attribute;
-  public List<String> prefix_packages;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -63,8 +61,7 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
      * @see ObjectType
      */
     OBJECT_TYPE((short)8, "object_type"),
-    ATTRIBUTE((short)9, "attribute"),
-    PREFIX_PACKAGES((short)10, "prefix_packages");
+    ATTRIBUTE((short)9, "attribute");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -97,8 +94,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
           return OBJECT_TYPE;
         case 9: // ATTRIBUTE
           return ATTRIBUTE;
-        case 10: // PREFIX_PACKAGES
-          return PREFIX_PACKAGES;
         default:
           return null;
       }
@@ -166,8 +161,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ObjectType.class)));
     tmpMap.put(_Fields.ATTRIBUTE, new org.apache.thrift.meta_data.FieldMetaData("attribute", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PREFIX_PACKAGES, new org.apache.thrift.meta_data.FieldMetaData("prefix_packages", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "StringList")));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ClassDefinition.class, metaDataMap);
   }
@@ -184,8 +177,7 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     List<String> inherits,
     List<String> interfaces,
     ObjectType object_type,
-    String attribute,
-    List<String> prefix_packages)
+    String attribute)
   {
     this();
     this.name = name;
@@ -201,7 +193,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     this.interfaces = interfaces;
     this.object_type = object_type;
     this.attribute = attribute;
-    this.prefix_packages = prefix_packages;
   }
 
   /**
@@ -229,9 +220,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     if (other.isSetAttribute()) {
       this.attribute = other.attribute;
     }
-    if (other.isSetPrefix_packages()) {
-      this.prefix_packages = other.prefix_packages;
-    }
   }
 
   public ClassDefinition deepCopy() {
@@ -253,7 +241,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     this.interfaces = null;
     this.object_type = null;
     this.attribute = null;
-    this.prefix_packages = null;
   }
 
   public String getName() {
@@ -506,45 +493,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     }
   }
 
-  public int getPrefix_packagesSize() {
-    return (this.prefix_packages == null) ? 0 : this.prefix_packages.size();
-  }
-
-  public java.util.Iterator<String> getPrefix_packagesIterator() {
-    return (this.prefix_packages == null) ? null : this.prefix_packages.iterator();
-  }
-
-  public void addToPrefix_packages(String elem) {
-    if (this.prefix_packages == null) {
-      this.prefix_packages = new ArrayList<String>();
-    }
-    this.prefix_packages.add(elem);
-  }
-
-  public List<String> getPrefix_packages() {
-    return this.prefix_packages;
-  }
-
-  public ClassDefinition setPrefix_packages(List<String> prefix_packages) {
-    this.prefix_packages = prefix_packages;
-    return this;
-  }
-
-  public void unsetPrefix_packages() {
-    this.prefix_packages = null;
-  }
-
-  /** Returns true if field prefix_packages is set (has been assigned a value) and false otherwise */
-  public boolean isSetPrefix_packages() {
-    return this.prefix_packages != null;
-  }
-
-  public void setPrefix_packagesIsSet(boolean value) {
-    if (!value) {
-      this.prefix_packages = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
@@ -619,14 +567,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       }
       break;
 
-    case PREFIX_PACKAGES:
-      if (value == null) {
-        unsetPrefix_packages();
-      } else {
-        setPrefix_packages((List<String>)value);
-      }
-      break;
-
     }
   }
 
@@ -659,9 +599,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     case ATTRIBUTE:
       return getAttribute();
 
-    case PREFIX_PACKAGES:
-      return getPrefix_packages();
-
     }
     throw new IllegalStateException();
   }
@@ -691,8 +628,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       return isSetObject_type();
     case ATTRIBUTE:
       return isSetAttribute();
-    case PREFIX_PACKAGES:
-      return isSetPrefix_packages();
     }
     throw new IllegalStateException();
   }
@@ -788,15 +723,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       if (!(this_present_attribute && that_present_attribute))
         return false;
       if (!this.attribute.equals(that.attribute))
-        return false;
-    }
-
-    boolean this_present_prefix_packages = true && this.isSetPrefix_packages();
-    boolean that_present_prefix_packages = true && that.isSetPrefix_packages();
-    if (this_present_prefix_packages || that_present_prefix_packages) {
-      if (!(this_present_prefix_packages && that_present_prefix_packages))
-        return false;
-      if (!this.prefix_packages.equals(that.prefix_packages))
         return false;
     }
 
@@ -906,16 +832,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPrefix_packages()).compareTo(typedOther.isSetPrefix_packages());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetPrefix_packages()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.prefix_packages, typedOther.prefix_packages);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -1020,23 +936,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 10: // PREFIX_PACKAGES
-          if (field.type == org.apache.thrift.protocol.TType.LIST) {
-            {
-              org.apache.thrift.protocol.TList _list6 = iprot.readListBegin();
-              this.prefix_packages = new ArrayList<String>(_list6.size);
-              for (int _i7 = 0; _i7 < _list6.size; ++_i7)
-              {
-                String _elem8;
-                _elem8 = iprot.readString();
-                this.prefix_packages.add(_elem8);
-              }
-              iprot.readListEnd();
-            }
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -1073,9 +972,9 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       oprot.writeFieldBegin(INHERITS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.inherits.size()));
-        for (String _iter9 : this.inherits)
+        for (String _iter6 : this.inherits)
         {
-          oprot.writeString(_iter9);
+          oprot.writeString(_iter6);
         }
         oprot.writeListEnd();
       }
@@ -1085,9 +984,9 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       oprot.writeFieldBegin(INTERFACES_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.interfaces.size()));
-        for (String _iter10 : this.interfaces)
+        for (String _iter7 : this.interfaces)
         {
-          oprot.writeString(_iter10);
+          oprot.writeString(_iter7);
         }
         oprot.writeListEnd();
       }
@@ -1101,18 +1000,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     if (this.attribute != null) {
       oprot.writeFieldBegin(ATTRIBUTE_FIELD_DESC);
       oprot.writeString(this.attribute);
-      oprot.writeFieldEnd();
-    }
-    if (this.prefix_packages != null) {
-      oprot.writeFieldBegin(PREFIX_PACKAGES_FIELD_DESC);
-      {
-        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.prefix_packages.size()));
-        for (String _iter11 : this.prefix_packages)
-        {
-          oprot.writeString(_iter11);
-        }
-        oprot.writeListEnd();
-      }
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -1177,14 +1064,6 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       sb.append("null");
     } else {
       sb.append(this.attribute);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("prefix_packages:");
-    if (this.prefix_packages == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.prefix_packages);
     }
     first = false;
     sb.append(")");

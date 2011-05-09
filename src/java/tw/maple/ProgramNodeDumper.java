@@ -854,12 +854,6 @@ public final class ProgramNodeDumper implements Evaluator
 				Value v = node.name.evaluate(cx, string_evaluator );
 				s_classname = Extract2String( v );
 			}
-			List<String> sl_pkgname = new ArrayList<String>();
-//			if( node.pkgdef != null ) {
-//				Value v = node.pkgdef.evaluate(cx, string_evaluator );
-//				StringListValue svl = (StringListValue)(v);
-//				sl_pkgname = svl.values;
-//			}
 
 			List<String>	sl_inherits = null;
 			if (node.baseclass != null) {
@@ -888,7 +882,6 @@ public final class ProgramNodeDumper implements Evaluator
 			class_define.name = s_classname;
 			class_define.inherits = sl_inherits;
 			class_define.interfaces = sl_interfaces;
-			class_define.prefix_packages = sl_pkgname;
 			
 			boolean do_pkgdef = false;
 			if( node.pkgdef != null && node.pkgdef.pkg_inside_dirty == false) {
