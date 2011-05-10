@@ -1029,20 +1029,40 @@ public final class ProgramNodeDumper implements Evaluator
 		} else if( v!=null && v instanceof StringListValue ) {
 			System.out.println((new Throwable()).getStackTrace()[0].toString());
 			StringListValue sv = (StringListValue)(v);
-			return sv.values;
-//			return sv.values.get(0);
+			List<String> answer = new ArrayList<String>();
+			for( int idx=0; idx < sv.values.size() ; idx ++ ) 
+			{
+				List<String> tokens = SplitQualifiedName( sv.values.get(idx) );
+				for( int tIdx = 0 ; tIdx < tokens.size() ; tIdx ++)
+					answer.add( tokens.get(tIdx) );
+			}
+			return answer;
 		} else if( v instanceof QNValue)   {
 			System.out.println((new Throwable()).getStackTrace()[0].toString());
 			QNValue qual_value = (QNValue)(v);
 			
 			List<String> string_list = new ArrayList<String>();
 			string_list.add( qual_value.getName() );
-			for( int idx=0; idx < qual_value.getQualifier().size() ; idx ++ )
-				string_list.add( qual_value.getQualifier().get(idx) );
+			for( int idx=0; idx < qual_value.getQualifier().size() ; idx ++ ) 
+			{
+				List<String> tokens = SplitQualifiedName( qual_value.getQualifier().get(idx) );
+				for( int tIdx = 0 ; tIdx < tokens.size() ; tIdx ++)
+					string_list.add( tokens.get(tIdx) );
+			}
+				
 			return string_list;
 		} 
 		
 		return null;	
+    }
+    
+    private List<String> SplitQualifiedName( String token )
+    {
+    	String[] splited =  token.split("\\.");
+    	List<String> answer = new ArrayList<String>();
+    	for( int idx = 0 ; idx < splited.length ; idx ++ )
+    		answer . add( splited[idx]) ;
+    	return answer;
     }
 //    private boolean dont_throw_thrift = false;
 }

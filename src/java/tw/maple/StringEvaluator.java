@@ -56,18 +56,14 @@ public final class StringEvaluator implements Evaluator
 			Value ret_value = node.qualifier.evaluate(cx, this);
 			System.out.println((new Throwable()).getStackTrace()[0].toString());
 			if (ret_value instanceof StringValue) {
-				System.out.println((new Throwable()).getStackTrace()[0].toString());
 				StringValue qual_value = (StringValue) (ret_value);
 				System.out.println((new Throwable()).getStackTrace()[0].toString() + "  "+qual_value.getValue());
 				return new QNValue(name,qual_value.getValue());
 			} else if (ret_value instanceof StringListValue) {
-				System.out.println((new Throwable()).getStackTrace()[0].toString());
 				StringListValue qual_value = (StringListValue) (ret_value);
-				System.out.println((new Throwable()).getStackTrace()[0].toString());
 				return new QNValue(name,qual_value.values);
 			}
 		}
-		System.out.println((new Throwable()).getStackTrace()[0].toString() + node.name);
 		return new QNValue(name,"");
 	}
 
@@ -419,9 +415,9 @@ public final class StringEvaluator implements Evaluator
 			QNValue qual_value = (QNValue)(v);
 			
 			List<String> string_list = new ArrayList<String>();
-			string_list.add( qual_value.getName() );
 			for( int idx=0; idx < qual_value.getQualifier().size() ; idx ++ )
 				string_list.add( qual_value.getQualifier().get(idx) );
+			string_list.add( qual_value.getName() );
 			return string_list;
 		} 
 		
