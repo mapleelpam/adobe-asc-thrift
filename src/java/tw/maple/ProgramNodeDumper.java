@@ -197,11 +197,8 @@ public final class ProgramNodeDumper implements Evaluator
 			System.out.println((new Throwable()).getStackTrace()[0].toString());
 	        if (node.base != null)
 	        {
+	        	thrift_cli . startMemberExpression();
 	            Value v = node.base.evaluate(cx, this);
-	            thrift_cli . startMemberExpression( Extract2StringList( v ) );
-	            List<String> sl = Extract2StringList( v );
-	            if( sl.size() > 0)
-	            	System.out.println((new Throwable()).getStackTrace()[0].toString() + "'" + sl.get(0) + "'" );
 	        }
 	        System.out.println((new Throwable()).getStackTrace()[0].toString());
 	        if (node.selector != null)
@@ -270,14 +267,15 @@ public final class ProgramNodeDumper implements Evaluator
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		try {
 			thrift_cli.startAssignment();
-			thrift_cli.startExpressionList();
-			if (node.expr != null) 
-				node.expr.evaluate(cx, this);
-			thrift_cli.endExpressionList();
-			thrift_cli.startExpressionList();
-			if (node.args != null) 
-				node.args.evaluate(cx, this);
-			thrift_cli.endExpressionList();
+				thrift_cli.startExpressionList();
+				if (node.expr != null) 
+					node.expr.evaluate(cx, this);
+				thrift_cli.endExpressionList();
+			
+				thrift_cli.startExpressionList();
+				if (node.args != null) 
+					node.args.evaluate(cx, this);
+				thrift_cli.endExpressionList();
 			thrift_cli.endAssignment();
 		} catch (org.apache.thrift.TException e1) {
 		}

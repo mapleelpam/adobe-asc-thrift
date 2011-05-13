@@ -146,7 +146,7 @@ public class AstDumper {
 
     public void endAttributelist() throws org.apache.thrift.TException;
 
-    public void startMemberExpression(List<String> bases) throws org.apache.thrift.TException;
+    public void startMemberExpression() throws org.apache.thrift.TException;
 
     public void endMemberExpression() throws org.apache.thrift.TException;
 
@@ -276,7 +276,7 @@ public class AstDumper {
 
     public void endAttributelist(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endAttributelist_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void startMemberExpression(List<String> bases, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startMemberExpression_call> resultHandler) throws org.apache.thrift.TException;
+    public void startMemberExpression(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startMemberExpression_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endMemberExpression(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endMemberExpression_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -1193,16 +1193,15 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void startMemberExpression(List<String> bases) throws org.apache.thrift.TException
+    public void startMemberExpression() throws org.apache.thrift.TException
     {
-      send_startMemberExpression(bases);
+      send_startMemberExpression();
     }
 
-    public void send_startMemberExpression(List<String> bases) throws org.apache.thrift.TException
+    public void send_startMemberExpression() throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startMemberExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       startMemberExpression_args args = new startMemberExpression_args();
-      args.setBases(bases);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -3008,24 +3007,21 @@ public class AstDumper {
       }
     }
 
-    public void startMemberExpression(List<String> bases, org.apache.thrift.async.AsyncMethodCallback<startMemberExpression_call> resultHandler) throws org.apache.thrift.TException {
+    public void startMemberExpression(org.apache.thrift.async.AsyncMethodCallback<startMemberExpression_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startMemberExpression_call method_call = new startMemberExpression_call(bases, resultHandler, this, protocolFactory, transport);
+      startMemberExpression_call method_call = new startMemberExpression_call(resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class startMemberExpression_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private List<String> bases;
-      public startMemberExpression_call(List<String> bases, org.apache.thrift.async.AsyncMethodCallback<startMemberExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public startMemberExpression_call(org.apache.thrift.async.AsyncMethodCallback<startMemberExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
-        this.bases = bases;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startMemberExpression", org.apache.thrift.protocol.TMessageType.CALL, 0));
         startMemberExpression_args args = new startMemberExpression_args();
-        args.setBases(bases);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -4461,7 +4457,7 @@ public class AstDumper {
           return;
         }
         iprot.readMessageEnd();
-        iface_.startMemberExpression(args.bases);
+        iface_.startMemberExpression();
         return;
       }
     }
@@ -18896,13 +18892,11 @@ public class AstDumper {
   public static class startMemberExpression_args implements org.apache.thrift.TBase<startMemberExpression_args, startMemberExpression_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startMemberExpression_args");
 
-    private static final org.apache.thrift.protocol.TField BASES_FIELD_DESC = new org.apache.thrift.protocol.TField("bases", org.apache.thrift.protocol.TType.LIST, (short)1);
 
-    public List<String> bases;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      BASES((short)1, "bases");
+;
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -18917,8 +18911,6 @@ public class AstDumper {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // BASES
-            return BASES;
           default:
             return null;
         }
@@ -18957,14 +18949,9 @@ public class AstDumper {
         return _fieldName;
       }
     }
-
-    // isset id assignments
-
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.BASES, new org.apache.thrift.meta_data.FieldMetaData("bases", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST          , "StringList")));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startMemberExpression_args.class, metaDataMap);
     }
@@ -18972,20 +18959,10 @@ public class AstDumper {
     public startMemberExpression_args() {
     }
 
-    public startMemberExpression_args(
-      List<String> bases)
-    {
-      this();
-      this.bases = bases;
-    }
-
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public startMemberExpression_args(startMemberExpression_args other) {
-      if (other.isSetBases()) {
-        this.bases = other.bases;
-      }
     }
 
     public startMemberExpression_args deepCopy() {
@@ -18994,66 +18971,15 @@ public class AstDumper {
 
     @Override
     public void clear() {
-      this.bases = null;
-    }
-
-    public int getBasesSize() {
-      return (this.bases == null) ? 0 : this.bases.size();
-    }
-
-    public java.util.Iterator<String> getBasesIterator() {
-      return (this.bases == null) ? null : this.bases.iterator();
-    }
-
-    public void addToBases(String elem) {
-      if (this.bases == null) {
-        this.bases = new ArrayList<String>();
-      }
-      this.bases.add(elem);
-    }
-
-    public List<String> getBases() {
-      return this.bases;
-    }
-
-    public startMemberExpression_args setBases(List<String> bases) {
-      this.bases = bases;
-      return this;
-    }
-
-    public void unsetBases() {
-      this.bases = null;
-    }
-
-    /** Returns true if field bases is set (has been assigned a value) and false otherwise */
-    public boolean isSetBases() {
-      return this.bases != null;
-    }
-
-    public void setBasesIsSet(boolean value) {
-      if (!value) {
-        this.bases = null;
-      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case BASES:
-        if (value == null) {
-          unsetBases();
-        } else {
-          setBases((List<String>)value);
-        }
-        break;
-
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case BASES:
-        return getBases();
-
       }
       throw new IllegalStateException();
     }
@@ -19065,8 +18991,6 @@ public class AstDumper {
       }
 
       switch (field) {
-      case BASES:
-        return isSetBases();
       }
       throw new IllegalStateException();
     }
@@ -19084,15 +19008,6 @@ public class AstDumper {
       if (that == null)
         return false;
 
-      boolean this_present_bases = true && this.isSetBases();
-      boolean that_present_bases = true && that.isSetBases();
-      if (this_present_bases || that_present_bases) {
-        if (!(this_present_bases && that_present_bases))
-          return false;
-        if (!this.bases.equals(that.bases))
-          return false;
-      }
-
       return true;
     }
 
@@ -19109,16 +19024,6 @@ public class AstDumper {
       int lastComparison = 0;
       startMemberExpression_args typedOther = (startMemberExpression_args)other;
 
-      lastComparison = Boolean.valueOf(isSetBases()).compareTo(typedOther.isSetBases());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetBases()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.bases, typedOther.bases);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       return 0;
     }
 
@@ -19136,23 +19041,6 @@ public class AstDumper {
           break;
         }
         switch (field.id) {
-          case 1: // BASES
-            if (field.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
-                this.bases = new ArrayList<String>(_list32.size);
-                for (int _i33 = 0; _i33 < _list32.size; ++_i33)
-                {
-                  String _elem34;
-                  _elem34 = iprot.readString();
-                  this.bases.add(_elem34);
-                }
-                iprot.readListEnd();
-              }
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
         }
@@ -19168,18 +19056,6 @@ public class AstDumper {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.bases != null) {
-        oprot.writeFieldBegin(BASES_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.bases.size()));
-          for (String _iter35 : this.bases)
-          {
-            oprot.writeString(_iter35);
-          }
-          oprot.writeListEnd();
-        }
-        oprot.writeFieldEnd();
-      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -19189,13 +19065,6 @@ public class AstDumper {
       StringBuilder sb = new StringBuilder("startMemberExpression_args(");
       boolean first = true;
 
-      sb.append("bases:");
-      if (this.bases == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.bases);
-      }
-      first = false;
       sb.append(")");
       return sb.toString();
     }
