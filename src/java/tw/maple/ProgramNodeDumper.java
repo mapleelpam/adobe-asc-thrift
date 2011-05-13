@@ -465,7 +465,36 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, WhileStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, ForStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ForStatementNode node)
+	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		try{
+			thrift_cli.startForStatement();
+		
+			thrift_cli.startForInit();
+			if (node.initialize != null)
+	            node.initialize.evaluate(cx, this);
+			thrift_cli.endForInit();
+			thrift_cli.startForCondition();
+	        if (node.test != null)
+	            node.test.evaluate(cx, this);
+	        thrift_cli.endForCondition();
+	        
+	        thrift_cli.startForStep();
+	        if (node.increment != null)
+	        	node.increment.evaluate(cx, this);
+	        thrift_cli.endForStep();
+	        thrift_cli.startForBody();
+		        if (node.statement != null)
+		        	node.statement.evaluate(cx, this);
+	        thrift_cli.endForBody();
+		
+	        thrift_cli.endForStatement();
+		} catch (org.apache.thrift.TException e1) {
+		}
+
+		return null;
+	}
 
 	public Value evaluate(Context cx, WithStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
