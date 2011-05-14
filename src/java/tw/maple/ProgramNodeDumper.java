@@ -375,7 +375,6 @@ public final class ProgramNodeDumper implements Evaluator
 			Value v = n.evaluate( cx, this );
 			values.values.add( Extract2String( v ) );
 		}
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
 
 		return values;
 	}
@@ -430,12 +429,12 @@ public final class ProgramNodeDumper implements Evaluator
 		try { thrift_cli.startIfStatement();
 		} catch (org.apache.thrift.TException e1) { }
 		
-		try { thrift_cli.startIfStatement_Condition();
+		try { thrift_cli.startExprCondition();
 		} catch (org.apache.thrift.TException e1) { }
 		if (node.condition != null) {
 			node.condition.evaluate(cx, this);
 		}
-		try { thrift_cli.endIfStatement_Condition();
+		try { thrift_cli.endExprCondition();
 		} catch (org.apache.thrift.TException e1) { }
 
 		try { thrift_cli.startIfStatement_Then();
@@ -461,9 +460,55 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, CaseLabelNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, DoStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, DoStatementNode node)
+	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		try{
+			thrift_cli.startDoStatement();
+		
+			thrift_cli.startExprCondition();
+	        if (node.expr != null)
+	        {
+	            node.expr.evaluate(cx, this);
+	        }
+	        thrift_cli.endExprCondition();
+	        
+	     
+	        thrift_cli.startStmtList();
+		        if (node.statements != null)
+		        	node.statements.evaluate(cx, this);
+	        thrift_cli.endStmtList();
+		
+	        thrift_cli.endDoStatement();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
-	public Value evaluate(Context cx, WhileStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, WhileStatementNode node)
+	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		try{
+			thrift_cli.startWhileStatement();
+		
+			thrift_cli.startExprCondition();
+	        if (node.expr != null)
+	        {
+	            node.expr.evaluate(cx, this);
+	        }
+	        thrift_cli.endExprCondition();
+	        
+	     
+	        thrift_cli.startStmtList();
+		        if (node.statement != null)
+		        	node.statement.evaluate(cx, this);
+	        thrift_cli.endStmtList();
+		
+	        thrift_cli.endWhileStatement();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, ForStatementNode node)
 	{
@@ -475,19 +520,19 @@ public final class ProgramNodeDumper implements Evaluator
 			if (node.initialize != null)
 	            node.initialize.evaluate(cx, this);
 			thrift_cli.endForInit();
-			thrift_cli.startForCondition();
+			thrift_cli.startExprCondition();
 	        if (node.test != null)
 	            node.test.evaluate(cx, this);
-	        thrift_cli.endForCondition();
+	        thrift_cli.endExprCondition();
 	        
 	        thrift_cli.startForStep();
 	        if (node.increment != null)
 	        	node.increment.evaluate(cx, this);
 	        thrift_cli.endForStep();
-	        thrift_cli.startForBody();
+	        thrift_cli.startStmtList();
 		        if (node.statement != null)
 		        	node.statement.evaluate(cx, this);
-	        thrift_cli.endForBody();
+	        thrift_cli.endStmtList();
 		
 	        thrift_cli.endForStatement();
 		} catch (org.apache.thrift.TException e1) {
