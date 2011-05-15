@@ -437,18 +437,18 @@ public final class ProgramNodeDumper implements Evaluator
 		try { thrift_cli.endExprCondition();
 		} catch (org.apache.thrift.TException e1) { }
 
-		try { thrift_cli.startIfStatement_Then();
+		try { thrift_cli.startScope();
 		} catch (org.apache.thrift.TException e1) { }
 		if (node.thenactions != null)
 			node.thenactions.evaluate(cx, this);
-		try { thrift_cli.endIfStatement_Then();
+		try { thrift_cli.endScope();
 		} catch (org.apache.thrift.TException e1) { }
 
-		try { thrift_cli.startIfStatement_Else();
+		try { thrift_cli.startScope();
 		} catch (org.apache.thrift.TException e1) { }
 		if (node.elseactions != null)
 			node.elseactions.evaluate(cx, this);
-		try { thrift_cli.endtIfStatement_Else();
+		try { thrift_cli.endScope();
 		} catch (org.apache.thrift.TException e1) { }
 		
 		try { thrift_cli.endIfStatement();
@@ -474,10 +474,10 @@ public final class ProgramNodeDumper implements Evaluator
 	        thrift_cli.endExprCondition();
 	        
 	     
-	        thrift_cli.startStmtList();
+	        thrift_cli.startScope();
 		        if (node.statements != null)
 		        	node.statements.evaluate(cx, this);
-	        thrift_cli.endStmtList();
+	        thrift_cli.endScope();
 		
 	        thrift_cli.endDoStatement();
 		} catch (org.apache.thrift.TException e1) {
@@ -499,10 +499,10 @@ public final class ProgramNodeDumper implements Evaluator
 	        thrift_cli.endExprCondition();
 	        
 	     
-	        thrift_cli.startStmtList();
+	        thrift_cli.startScope();
 		        if (node.statement != null)
 		        	node.statement.evaluate(cx, this);
-	        thrift_cli.endStmtList();
+	        thrift_cli.endScope();
 		
 	        thrift_cli.endWhileStatement();
 		} catch (org.apache.thrift.TException e1) {
@@ -529,10 +529,10 @@ public final class ProgramNodeDumper implements Evaluator
 	        if (node.increment != null)
 	        	node.increment.evaluate(cx, this);
 	        thrift_cli.endForStep();
-	        thrift_cli.startStmtList();
+	        thrift_cli.startScope();
 		        if (node.statement != null)
 		        	node.statement.evaluate(cx, this);
-	        thrift_cli.endStmtList();
+	        thrift_cli.endScope();
 		
 	        thrift_cli.endForStatement();
 		} catch (org.apache.thrift.TException e1) {
@@ -848,9 +848,8 @@ public final class ProgramNodeDumper implements Evaluator
 			class_define.object_type = ObjectType.TYPE_INTERFACE;
 			
 
-//			if (node.attrs != null) {
+//			if (node.attrs != null) 
 //				node.attrs.evaluate(cx, this);
-//			}
 			
 			String s_classname = "";
 			if (node.name != null) {
