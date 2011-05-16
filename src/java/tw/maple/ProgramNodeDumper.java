@@ -633,14 +633,16 @@ public final class ProgramNodeDumper implements Evaluator
 	        	if( n instanceof VariableBindingNode ){
 
 	        		VariableBindingNode vbnode = (VariableBindingNode)(n);
-	        		
-//	        		String str_type = "";
-	        		
-	        		String str_name = vbnode.variable.identifier.name;
-	        		Value type_value = vbnode.variable.type.evaluate(cx, string_evaluator);
-	        		List<String> sl_type =  Extract2StringList( type_value );
-
-	        		thrift_cli.startVariableDeclare(str_name, sl_type, str_attrs);
+	        			        		
+	        		VariableDeclare var_decl = new VariableDeclare();
+	        		{
+		        		var_decl.attributes = str_attrs;
+		        		Value type_value = vbnode.variable.type.evaluate(cx, string_evaluator);
+		        		var_decl.type = Extract2StringList( type_value );
+		        		var_decl.name = vbnode.variable.identifier.name;
+		        		var_decl.has_initialize = (vbnode.initializer != null);
+	        		}
+	        		thrift_cli.startVariableDeclare( var_decl );
 	        		if(vbnode.initializer != null)
 	        			vbnode.initializer.evaluate(cx, this);
 	        		thrift_cli.endVariableDeclare();		

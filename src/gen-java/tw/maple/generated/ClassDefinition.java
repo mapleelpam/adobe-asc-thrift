@@ -154,9 +154,11 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     tmpMap.put(_Fields.HAS_STMT, new org.apache.thrift.meta_data.FieldMetaData("has_stmt", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.INHERITS, new org.apache.thrift.meta_data.FieldMetaData("inherits", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "StringList")));
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.INTERFACES, new org.apache.thrift.meta_data.FieldMetaData("interfaces", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "StringList")));
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.OBJECT_TYPE, new org.apache.thrift.meta_data.FieldMetaData("object_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ObjectType.class)));
     tmpMap.put(_Fields.ATTRIBUTE, new org.apache.thrift.meta_data.FieldMetaData("attribute", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -209,10 +211,18 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     this.has_interface = other.has_interface;
     this.has_stmt = other.has_stmt;
     if (other.isSetInherits()) {
-      this.inherits = other.inherits;
+      List<String> __this__inherits = new ArrayList<String>();
+      for (String other_element : other.inherits) {
+        __this__inherits.add(other_element);
+      }
+      this.inherits = __this__inherits;
     }
     if (other.isSetInterfaces()) {
-      this.interfaces = other.interfaces;
+      List<String> __this__interfaces = new ArrayList<String>();
+      for (String other_element : other.interfaces) {
+        __this__interfaces.add(other_element);
+      }
+      this.interfaces = __this__interfaces;
     }
     if (other.isSetObject_type()) {
       this.object_type = other.object_type;
