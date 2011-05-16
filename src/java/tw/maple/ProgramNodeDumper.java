@@ -616,12 +616,12 @@ public final class ProgramNodeDumper implements Evaluator
 //        }
 		try {
 			
-			String str_attrs = "";
+			List<String> str_attrs = new ArrayList<String>();
 	        if (node.attrs != null)
 	        {
 	            Value v = node.attrs.evaluate( cx, string_evaluator );
 
-	            str_attrs =  Extract2String( v );
+	            str_attrs =  Extract2StringList( v );
 	        }
 //	        if (node.list != null)
 //	        {
@@ -637,12 +637,10 @@ public final class ProgramNodeDumper implements Evaluator
 //	        		String str_type = "";
 	        		
 	        		String str_name = vbnode.variable.identifier.name;
-	        		System.out.println("variable's node type "+vbnode.variable.type.toString());
 	        		Value type_value = vbnode.variable.type.evaluate(cx, string_evaluator);
 	        		List<String> sl_type =  Extract2StringList( type_value );
 
 	        		thrift_cli.startVariableDeclare(str_name, sl_type, str_attrs);
-	        		System.out.println("variable declare - "+str_name+":"+sl_type+"'");
 	        		if(vbnode.initializer != null)
 	        			vbnode.initializer.evaluate(cx, this);
 	        		thrift_cli.endVariableDeclare();		

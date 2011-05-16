@@ -102,7 +102,7 @@ public class AstDumper {
 
     public void endUnaryExpression() throws org.apache.thrift.TException;
 
-    public void startVariableDeclare(String name, List<String> type, String attributes) throws org.apache.thrift.TException;
+    public void startVariableDeclare(String name, List<String> type, List<String> attributes) throws org.apache.thrift.TException;
 
     public void endVariableDeclare() throws org.apache.thrift.TException;
 
@@ -248,7 +248,7 @@ public class AstDumper {
 
     public void endUnaryExpression(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endUnaryExpression_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void startVariableDeclare(String name, List<String> type, String attributes, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startVariableDeclare_call> resultHandler) throws org.apache.thrift.TException;
+    public void startVariableDeclare(String name, List<String> type, List<String> attributes, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startVariableDeclare_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endVariableDeclare(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endVariableDeclare_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -908,12 +908,12 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void startVariableDeclare(String name, List<String> type, String attributes) throws org.apache.thrift.TException
+    public void startVariableDeclare(String name, List<String> type, List<String> attributes) throws org.apache.thrift.TException
     {
       send_startVariableDeclare(name, type, attributes);
     }
 
-    public void send_startVariableDeclare(String name, List<String> type, String attributes) throws org.apache.thrift.TException
+    public void send_startVariableDeclare(String name, List<String> type, List<String> attributes) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startVariableDeclare", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       startVariableDeclare_args args = new startVariableDeclare_args();
@@ -2508,7 +2508,7 @@ public class AstDumper {
       }
     }
 
-    public void startVariableDeclare(String name, List<String> type, String attributes, org.apache.thrift.async.AsyncMethodCallback<startVariableDeclare_call> resultHandler) throws org.apache.thrift.TException {
+    public void startVariableDeclare(String name, List<String> type, List<String> attributes, org.apache.thrift.async.AsyncMethodCallback<startVariableDeclare_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       startVariableDeclare_call method_call = new startVariableDeclare_call(name, type, attributes, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
@@ -2518,8 +2518,8 @@ public class AstDumper {
     public static class startVariableDeclare_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String name;
       private List<String> type;
-      private String attributes;
-      public startVariableDeclare_call(String name, List<String> type, String attributes, org.apache.thrift.async.AsyncMethodCallback<startVariableDeclare_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private List<String> attributes;
+      public startVariableDeclare_call(String name, List<String> type, List<String> attributes, org.apache.thrift.async.AsyncMethodCallback<startVariableDeclare_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
         this.name = name;
         this.type = type;
@@ -14082,11 +14082,11 @@ public class AstDumper {
 
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.LIST, (short)2);
-    private static final org.apache.thrift.protocol.TField ATTRIBUTES_FIELD_DESC = new org.apache.thrift.protocol.TField("attributes", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField ATTRIBUTES_FIELD_DESC = new org.apache.thrift.protocol.TField("attributes", org.apache.thrift.protocol.TType.LIST, (short)3);
 
     public String name;
     public List<String> type;
-    public String attributes;
+    public List<String> attributes;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -14162,7 +14162,8 @@ public class AstDumper {
       tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST          , "StringList")));
       tmpMap.put(_Fields.ATTRIBUTES, new org.apache.thrift.meta_data.FieldMetaData("attributes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startVariableDeclare_args.class, metaDataMap);
     }
@@ -14173,7 +14174,7 @@ public class AstDumper {
     public startVariableDeclare_args(
       String name,
       List<String> type,
-      String attributes)
+      List<String> attributes)
     {
       this();
       this.name = name;
@@ -14192,7 +14193,11 @@ public class AstDumper {
         this.type = other.type;
       }
       if (other.isSetAttributes()) {
-        this.attributes = other.attributes;
+        List<String> __this__attributes = new ArrayList<String>();
+        for (String other_element : other.attributes) {
+          __this__attributes.add(other_element);
+        }
+        this.attributes = __this__attributes;
       }
     }
 
@@ -14270,11 +14275,26 @@ public class AstDumper {
       }
     }
 
-    public String getAttributes() {
+    public int getAttributesSize() {
+      return (this.attributes == null) ? 0 : this.attributes.size();
+    }
+
+    public java.util.Iterator<String> getAttributesIterator() {
+      return (this.attributes == null) ? null : this.attributes.iterator();
+    }
+
+    public void addToAttributes(String elem) {
+      if (this.attributes == null) {
+        this.attributes = new ArrayList<String>();
+      }
+      this.attributes.add(elem);
+    }
+
+    public List<String> getAttributes() {
       return this.attributes;
     }
 
-    public startVariableDeclare_args setAttributes(String attributes) {
+    public startVariableDeclare_args setAttributes(List<String> attributes) {
       this.attributes = attributes;
       return this;
     }
@@ -14316,7 +14336,7 @@ public class AstDumper {
         if (value == null) {
           unsetAttributes();
         } else {
-          setAttributes((String)value);
+          setAttributes((List<String>)value);
         }
         break;
 
@@ -14483,8 +14503,18 @@ public class AstDumper {
             }
             break;
           case 3: // ATTRIBUTES
-            if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.attributes = iprot.readString();
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list27 = iprot.readListBegin();
+                this.attributes = new ArrayList<String>(_list27.size);
+                for (int _i28 = 0; _i28 < _list27.size; ++_i28)
+                {
+                  String _elem29;
+                  _elem29 = iprot.readString();
+                  this.attributes.add(_elem29);
+                }
+                iprot.readListEnd();
+              }
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -14513,9 +14543,9 @@ public class AstDumper {
         oprot.writeFieldBegin(TYPE_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.type.size()));
-          for (String _iter27 : this.type)
+          for (String _iter30 : this.type)
           {
-            oprot.writeString(_iter27);
+            oprot.writeString(_iter30);
           }
           oprot.writeListEnd();
         }
@@ -14523,7 +14553,14 @@ public class AstDumper {
       }
       if (this.attributes != null) {
         oprot.writeFieldBegin(ATTRIBUTES_FIELD_DESC);
-        oprot.writeString(this.attributes);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.attributes.size()));
+          for (String _iter31 : this.attributes)
+          {
+            oprot.writeString(_iter31);
+          }
+          oprot.writeListEnd();
+        }
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -16830,13 +16867,13 @@ public class AstDumper {
           case 1: // PACKAGES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
-                this.packages = new ArrayList<String>(_list28.size);
-                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
+                org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
+                this.packages = new ArrayList<String>(_list32.size);
+                for (int _i33 = 0; _i33 < _list32.size; ++_i33)
                 {
-                  String _elem30;
-                  _elem30 = iprot.readString();
-                  this.packages.add(_elem30);
+                  String _elem34;
+                  _elem34 = iprot.readString();
+                  this.packages.add(_elem34);
                 }
                 iprot.readListEnd();
               }
@@ -16863,9 +16900,9 @@ public class AstDumper {
         oprot.writeFieldBegin(PACKAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.packages.size()));
-          for (String _iter31 : this.packages)
+          for (String _iter35 : this.packages)
           {
-            oprot.writeString(_iter31);
+            oprot.writeString(_iter35);
           }
           oprot.writeListEnd();
         }
