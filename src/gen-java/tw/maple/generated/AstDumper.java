@@ -24,7 +24,7 @@ public class AstDumper {
 
   public interface Iface {
 
-    public void startProgram() throws org.apache.thrift.TException;
+    public void startProgram(String version, long counter) throws org.apache.thrift.TException;
 
     public void endProgram() throws org.apache.thrift.TException;
 
@@ -166,11 +166,13 @@ public class AstDumper {
 
     public void endWhileStatement() throws org.apache.thrift.TException;
 
+    public void defineMetaData(MetaData metadata) throws org.apache.thrift.TException;
+
   }
 
   public interface AsyncIface {
 
-    public void startProgram(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startProgram_call> resultHandler) throws org.apache.thrift.TException;
+    public void startProgram(String version, long counter, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startProgram_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endProgram(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endProgram_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -312,6 +314,8 @@ public class AstDumper {
 
     public void endWhileStatement(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endWhileStatement_call> resultHandler) throws org.apache.thrift.TException;
 
+    public void defineMetaData(MetaData metadata, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.defineMetaData_call> resultHandler) throws org.apache.thrift.TException;
+
   }
 
   public static class Client implements org.apache.thrift.TServiceClient, Iface {
@@ -351,15 +355,17 @@ public class AstDumper {
       return this.oprot_;
     }
 
-    public void startProgram() throws org.apache.thrift.TException
+    public void startProgram(String version, long counter) throws org.apache.thrift.TException
     {
-      send_startProgram();
+      send_startProgram(version, counter);
     }
 
-    public void send_startProgram() throws org.apache.thrift.TException
+    public void send_startProgram(String version, long counter) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startProgram", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       startProgram_args args = new startProgram_args();
+      args.setVersion(version);
+      args.setCounter(counter);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -1363,6 +1369,21 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
+    public void defineMetaData(MetaData metadata) throws org.apache.thrift.TException
+    {
+      send_defineMetaData(metadata);
+    }
+
+    public void send_defineMetaData(MetaData metadata) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("defineMetaData", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      defineMetaData_args args = new defineMetaData_args();
+      args.setMetadata(metadata);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
   }
   public static class AsyncClient extends org.apache.thrift.async.TAsyncClient implements AsyncIface {
     public static class Factory implements org.apache.thrift.async.TAsyncClientFactory<AsyncClient> {
@@ -1381,21 +1402,27 @@ public class AstDumper {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void startProgram(org.apache.thrift.async.AsyncMethodCallback<startProgram_call> resultHandler) throws org.apache.thrift.TException {
+    public void startProgram(String version, long counter, org.apache.thrift.async.AsyncMethodCallback<startProgram_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startProgram_call method_call = new startProgram_call(resultHandler, this, protocolFactory, transport);
+      startProgram_call method_call = new startProgram_call(version, counter, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class startProgram_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public startProgram_call(org.apache.thrift.async.AsyncMethodCallback<startProgram_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String version;
+      private long counter;
+      public startProgram_call(String version, long counter, org.apache.thrift.async.AsyncMethodCallback<startProgram_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
+        this.version = version;
+        this.counter = counter;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startProgram", org.apache.thrift.protocol.TMessageType.CALL, 0));
         startProgram_args args = new startProgram_args();
+        args.setVersion(version);
+        args.setCounter(counter);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -3423,6 +3450,37 @@ public class AstDumper {
       }
     }
 
+    public void defineMetaData(MetaData metadata, org.apache.thrift.async.AsyncMethodCallback<defineMetaData_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      defineMetaData_call method_call = new defineMetaData_call(metadata, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class defineMetaData_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private MetaData metadata;
+      public defineMetaData_call(MetaData metadata, org.apache.thrift.async.AsyncMethodCallback<defineMetaData_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+        this.metadata = metadata;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("defineMetaData", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        defineMetaData_args args = new defineMetaData_args();
+        args.setMetadata(metadata);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
   }
 
   public static class Processor implements org.apache.thrift.TProcessor {
@@ -3501,6 +3559,7 @@ public class AstDumper {
       processMap_.put("endDoStatement", new endDoStatement());
       processMap_.put("startWhileStatement", new startWhileStatement());
       processMap_.put("endWhileStatement", new endWhileStatement());
+      processMap_.put("defineMetaData", new defineMetaData());
     }
 
     protected static interface ProcessFunction {
@@ -3544,7 +3603,7 @@ public class AstDumper {
           return;
         }
         iprot.readMessageEnd();
-        iface_.startProgram();
+        iface_.startProgram(args.version, args.counter);
         return;
       }
     }
@@ -5019,16 +5078,42 @@ public class AstDumper {
       }
     }
 
+    private class defineMetaData implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        defineMetaData_args args = new defineMetaData_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("defineMetaData", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.defineMetaData(args.metadata);
+        return;
+      }
+    }
+
   }
 
   public static class startProgram_args implements org.apache.thrift.TBase<startProgram_args, startProgram_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startProgram_args");
 
+    private static final org.apache.thrift.protocol.TField VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("version", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COUNTER_FIELD_DESC = new org.apache.thrift.protocol.TField("counter", org.apache.thrift.protocol.TType.I64, (short)2);
 
+    public String version;
+    public long counter;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+      VERSION((short)1, "version"),
+      COUNTER((short)2, "counter");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5043,6 +5128,10 @@ public class AstDumper {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
+          case 1: // VERSION
+            return VERSION;
+          case 2: // COUNTER
+            return COUNTER;
           default:
             return null;
         }
@@ -5081,20 +5170,49 @@ public class AstDumper {
         return _fieldName;
       }
     }
+
+    // isset id assignments
+    private static final int __COUNTER_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.VERSION, new org.apache.thrift.meta_data.FieldMetaData("version", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COUNTER, new org.apache.thrift.meta_data.FieldMetaData("counter", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startProgram_args.class, metaDataMap);
     }
 
     public startProgram_args() {
+      this.version = "0.0.1";
+
+      this.counter = 1L;
+
+    }
+
+    public startProgram_args(
+      String version,
+      long counter)
+    {
+      this();
+      this.version = version;
+      this.counter = counter;
+      setCounterIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public startProgram_args(startProgram_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      if (other.isSetVersion()) {
+        this.version = other.version;
+      }
+      this.counter = other.counter;
     }
 
     public startProgram_args deepCopy() {
@@ -5103,15 +5221,88 @@ public class AstDumper {
 
     @Override
     public void clear() {
+      this.version = "0.0.1";
+
+      this.counter = 1L;
+
+    }
+
+    public String getVersion() {
+      return this.version;
+    }
+
+    public startProgram_args setVersion(String version) {
+      this.version = version;
+      return this;
+    }
+
+    public void unsetVersion() {
+      this.version = null;
+    }
+
+    /** Returns true if field version is set (has been assigned a value) and false otherwise */
+    public boolean isSetVersion() {
+      return this.version != null;
+    }
+
+    public void setVersionIsSet(boolean value) {
+      if (!value) {
+        this.version = null;
+      }
+    }
+
+    public long getCounter() {
+      return this.counter;
+    }
+
+    public startProgram_args setCounter(long counter) {
+      this.counter = counter;
+      setCounterIsSet(true);
+      return this;
+    }
+
+    public void unsetCounter() {
+      __isset_bit_vector.clear(__COUNTER_ISSET_ID);
+    }
+
+    /** Returns true if field counter is set (has been assigned a value) and false otherwise */
+    public boolean isSetCounter() {
+      return __isset_bit_vector.get(__COUNTER_ISSET_ID);
+    }
+
+    public void setCounterIsSet(boolean value) {
+      __isset_bit_vector.set(__COUNTER_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case VERSION:
+        if (value == null) {
+          unsetVersion();
+        } else {
+          setVersion((String)value);
+        }
+        break;
+
+      case COUNTER:
+        if (value == null) {
+          unsetCounter();
+        } else {
+          setCounter((Long)value);
+        }
+        break;
+
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case VERSION:
+        return getVersion();
+
+      case COUNTER:
+        return new Long(getCounter());
+
       }
       throw new IllegalStateException();
     }
@@ -5123,6 +5314,10 @@ public class AstDumper {
       }
 
       switch (field) {
+      case VERSION:
+        return isSetVersion();
+      case COUNTER:
+        return isSetCounter();
       }
       throw new IllegalStateException();
     }
@@ -5140,6 +5335,24 @@ public class AstDumper {
       if (that == null)
         return false;
 
+      boolean this_present_version = true && this.isSetVersion();
+      boolean that_present_version = true && that.isSetVersion();
+      if (this_present_version || that_present_version) {
+        if (!(this_present_version && that_present_version))
+          return false;
+        if (!this.version.equals(that.version))
+          return false;
+      }
+
+      boolean this_present_counter = true;
+      boolean that_present_counter = true;
+      if (this_present_counter || that_present_counter) {
+        if (!(this_present_counter && that_present_counter))
+          return false;
+        if (this.counter != that.counter)
+          return false;
+      }
+
       return true;
     }
 
@@ -5156,6 +5369,26 @@ public class AstDumper {
       int lastComparison = 0;
       startProgram_args typedOther = (startProgram_args)other;
 
+      lastComparison = Boolean.valueOf(isSetVersion()).compareTo(typedOther.isSetVersion());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetVersion()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.version, typedOther.version);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetCounter()).compareTo(typedOther.isSetCounter());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetCounter()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.counter, typedOther.counter);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -5173,6 +5406,21 @@ public class AstDumper {
           break;
         }
         switch (field.id) {
+          case 1: // VERSION
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.version = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // COUNTER
+            if (field.type == org.apache.thrift.protocol.TType.I64) {
+              this.counter = iprot.readI64();
+              setCounterIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
         }
@@ -5188,6 +5436,14 @@ public class AstDumper {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (this.version != null) {
+        oprot.writeFieldBegin(VERSION_FIELD_DESC);
+        oprot.writeString(this.version);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(COUNTER_FIELD_DESC);
+      oprot.writeI64(this.counter);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -5197,6 +5453,17 @@ public class AstDumper {
       StringBuilder sb = new StringBuilder("startProgram_args(");
       boolean first = true;
 
+      sb.append("version:");
+      if (this.version == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.version);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("counter:");
+      sb.append(this.counter);
+      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -5215,6 +5482,8 @@ public class AstDumper {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -5676,13 +5945,13 @@ public class AstDumper {
           case 1: // ID
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list16 = iprot.readListBegin();
-                this.id = new ArrayList<String>(_list16.size);
-                for (int _i17 = 0; _i17 < _list16.size; ++_i17)
+                org.apache.thrift.protocol.TList _list25 = iprot.readListBegin();
+                this.id = new ArrayList<String>(_list25.size);
+                for (int _i26 = 0; _i26 < _list25.size; ++_i26)
                 {
-                  String _elem18;
-                  _elem18 = iprot.readString();
-                  this.id.add(_elem18);
+                  String _elem27;
+                  _elem27 = iprot.readString();
+                  this.id.add(_elem27);
                 }
                 iprot.readListEnd();
               }
@@ -5709,9 +5978,9 @@ public class AstDumper {
         oprot.writeFieldBegin(ID_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.id.size()));
-          for (String _iter19 : this.id)
+          for (String _iter28 : this.id)
           {
-            oprot.writeString(_iter19);
+            oprot.writeString(_iter28);
           }
           oprot.writeListEnd();
         }
@@ -6010,13 +6279,13 @@ public class AstDumper {
           case 1: // IDS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
-                this.IDs = new ArrayList<String>(_list20.size);
-                for (int _i21 = 0; _i21 < _list20.size; ++_i21)
+                org.apache.thrift.protocol.TList _list29 = iprot.readListBegin();
+                this.IDs = new ArrayList<String>(_list29.size);
+                for (int _i30 = 0; _i30 < _list29.size; ++_i30)
                 {
-                  String _elem22;
-                  _elem22 = iprot.readString();
-                  this.IDs.add(_elem22);
+                  String _elem31;
+                  _elem31 = iprot.readString();
+                  this.IDs.add(_elem31);
                 }
                 iprot.readListEnd();
               }
@@ -6043,9 +6312,9 @@ public class AstDumper {
         oprot.writeFieldBegin(IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.IDs.size()));
-          for (String _iter23 : this.IDs)
+          for (String _iter32 : this.IDs)
           {
-            oprot.writeString(_iter23);
+            oprot.writeString(_iter32);
           }
           oprot.writeListEnd();
         }
@@ -6641,13 +6910,13 @@ public class AstDumper {
           case 1: // ATTRS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-                this.attrs = new ArrayList<String>(_list24.size);
-                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+                org.apache.thrift.protocol.TList _list33 = iprot.readListBegin();
+                this.attrs = new ArrayList<String>(_list33.size);
+                for (int _i34 = 0; _i34 < _list33.size; ++_i34)
                 {
-                  String _elem26;
-                  _elem26 = iprot.readString();
-                  this.attrs.add(_elem26);
+                  String _elem35;
+                  _elem35 = iprot.readString();
+                  this.attrs.add(_elem35);
                 }
                 iprot.readListEnd();
               }
@@ -6674,9 +6943,9 @@ public class AstDumper {
         oprot.writeFieldBegin(ATTRS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.attrs.size()));
-          for (String _iter27 : this.attrs)
+          for (String _iter36 : this.attrs)
           {
-            oprot.writeString(_iter27);
+            oprot.writeString(_iter36);
           }
           oprot.writeListEnd();
         }
@@ -8049,13 +8318,13 @@ public class AstDumper {
           case 2: // TYPE
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
-                this.type = new ArrayList<String>(_list28.size);
-                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
+                org.apache.thrift.protocol.TList _list37 = iprot.readListBegin();
+                this.type = new ArrayList<String>(_list37.size);
+                for (int _i38 = 0; _i38 < _list37.size; ++_i38)
                 {
-                  String _elem30;
-                  _elem30 = iprot.readString();
-                  this.type.add(_elem30);
+                  String _elem39;
+                  _elem39 = iprot.readString();
+                  this.type.add(_elem39);
                 }
                 iprot.readListEnd();
               }
@@ -8087,9 +8356,9 @@ public class AstDumper {
         oprot.writeFieldBegin(TYPE_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.type.size()));
-          for (String _iter31 : this.type)
+          for (String _iter40 : this.type)
           {
-            oprot.writeString(_iter31);
+            oprot.writeString(_iter40);
           }
           oprot.writeListEnd();
         }
@@ -16638,13 +16907,13 @@ public class AstDumper {
           case 1: // PACKAGES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
-                this.packages = new ArrayList<String>(_list32.size);
-                for (int _i33 = 0; _i33 < _list32.size; ++_i33)
+                org.apache.thrift.protocol.TList _list41 = iprot.readListBegin();
+                this.packages = new ArrayList<String>(_list41.size);
+                for (int _i42 = 0; _i42 < _list41.size; ++_i42)
                 {
-                  String _elem34;
-                  _elem34 = iprot.readString();
-                  this.packages.add(_elem34);
+                  String _elem43;
+                  _elem43 = iprot.readString();
+                  this.packages.add(_elem43);
                 }
                 iprot.readListEnd();
               }
@@ -16671,9 +16940,9 @@ public class AstDumper {
         oprot.writeFieldBegin(PACKAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.packages.size()));
-          for (String _iter35 : this.packages)
+          for (String _iter44 : this.packages)
           {
-            oprot.writeString(_iter35);
+            oprot.writeString(_iter44);
           }
           oprot.writeListEnd();
         }
@@ -21235,6 +21504,304 @@ public class AstDumper {
       StringBuilder sb = new StringBuilder("endWhileStatement_args(");
       boolean first = true;
 
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class defineMetaData_args implements org.apache.thrift.TBase<defineMetaData_args, defineMetaData_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("defineMetaData_args");
+
+    private static final org.apache.thrift.protocol.TField METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("metadata", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public MetaData metadata;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      METADATA((short)1, "metadata");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // METADATA
+            return METADATA;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.METADATA, new org.apache.thrift.meta_data.FieldMetaData("metadata", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, MetaData.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(defineMetaData_args.class, metaDataMap);
+    }
+
+    public defineMetaData_args() {
+    }
+
+    public defineMetaData_args(
+      MetaData metadata)
+    {
+      this();
+      this.metadata = metadata;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public defineMetaData_args(defineMetaData_args other) {
+      if (other.isSetMetadata()) {
+        this.metadata = new MetaData(other.metadata);
+      }
+    }
+
+    public defineMetaData_args deepCopy() {
+      return new defineMetaData_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.metadata = null;
+    }
+
+    public MetaData getMetadata() {
+      return this.metadata;
+    }
+
+    public defineMetaData_args setMetadata(MetaData metadata) {
+      this.metadata = metadata;
+      return this;
+    }
+
+    public void unsetMetadata() {
+      this.metadata = null;
+    }
+
+    /** Returns true if field metadata is set (has been assigned a value) and false otherwise */
+    public boolean isSetMetadata() {
+      return this.metadata != null;
+    }
+
+    public void setMetadataIsSet(boolean value) {
+      if (!value) {
+        this.metadata = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case METADATA:
+        if (value == null) {
+          unsetMetadata();
+        } else {
+          setMetadata((MetaData)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case METADATA:
+        return getMetadata();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case METADATA:
+        return isSetMetadata();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof defineMetaData_args)
+        return this.equals((defineMetaData_args)that);
+      return false;
+    }
+
+    public boolean equals(defineMetaData_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_metadata = true && this.isSetMetadata();
+      boolean that_present_metadata = true && that.isSetMetadata();
+      if (this_present_metadata || that_present_metadata) {
+        if (!(this_present_metadata && that_present_metadata))
+          return false;
+        if (!this.metadata.equals(that.metadata))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(defineMetaData_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      defineMetaData_args typedOther = (defineMetaData_args)other;
+
+      lastComparison = Boolean.valueOf(isSetMetadata()).compareTo(typedOther.isSetMetadata());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMetadata()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.metadata, typedOther.metadata);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // METADATA
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.metadata = new MetaData();
+              this.metadata.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.metadata != null) {
+        oprot.writeFieldBegin(METADATA_FIELD_DESC);
+        this.metadata.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("defineMetaData_args(");
+      boolean first = true;
+
+      sb.append("metadata:");
+      if (this.metadata == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.metadata);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }

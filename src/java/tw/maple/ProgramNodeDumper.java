@@ -13,6 +13,7 @@ import macromedia.asc.semantics.QNValue;
 import macromedia.asc.util.Context;
 //import sun.org.mozilla.javascript.internal.EvaluatorException;
 import tw.maple.generated.*;
+import tw.maple.generated.Constants;
 import tw.maple.StringEvaluator;
 import static macromedia.asc.parser.Tokens.*;
 
@@ -581,7 +582,34 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ImportNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, MetaDataNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, MetaDataNode node)
+	{
+		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		MetaData metadata = new MetaData();
+		
+		metadata.id = node.getId() !=null? node.getId() :"";
+		for (int idx = 0, length = (node.getValues() == null) ? 0 : node.getValues().length; idx < length; idx++)
+        {
+            Value v = node.getValues()[idx];
+            if (v instanceof MetaDataEvaluator.KeyValuePair)
+            {
+                MetaDataEvaluator.KeyValuePair pair = (MetaDataEvaluator.KeyValuePair) v;
+                metadata.kayvalues.put(pair.key, pair.obj);
+            }
+
+            else if (v instanceof MetaDataEvaluator.KeylessValue)
+            {
+                MetaDataEvaluator.KeylessValue val = (MetaDataEvaluator.KeylessValue) v;
+                //out.print("[" + val.obj + "]");
+                metadata.values.add( val.obj );
+            }
+        }
+		try {
+			thrift_cli.defineMetaData( metadata );
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 	
 	public Value evaluate(Context cx, DocCommentNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
@@ -1027,7 +1055,7 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, ProgramNode node)
 	{
 		try {
-			thrift_cli.startProgram();
+			thrift_cli.startProgram( Constants.PROTO_VERSION, Constants.PROTO_COUNTER );
 		    	if (node.statements != null)
 		    	{
 		    		node.statements.evaluate(cx, this);
@@ -1089,8 +1117,6 @@ public final class ProgramNodeDumper implements Evaluator
 	
     private List<String> Extract2StringList( Value v )
     {
-    	
-    	
 		if( v!=null && v instanceof StringValue ) {
 			System.out.println((new Throwable()).getStackTrace()[0].toString());
 			StringValue sv = (StringValue)(v);
