@@ -24,17 +24,17 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("MetaData");
 
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField KAYVALUES_FIELD_DESC = new org.apache.thrift.protocol.TField("kayvalues", org.apache.thrift.protocol.TType.MAP, (short)2);
+  private static final org.apache.thrift.protocol.TField KEYVALUES_FIELD_DESC = new org.apache.thrift.protocol.TField("keyvalues", org.apache.thrift.protocol.TType.MAP, (short)2);
   private static final org.apache.thrift.protocol.TField VALUES_FIELD_DESC = new org.apache.thrift.protocol.TField("values", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   public String id;
-  public Map<String,String> kayvalues;
+  public Map<String,String> keyvalues;
   public List<String> values;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ID((short)1, "id"),
-    KAYVALUES((short)2, "kayvalues"),
+    KEYVALUES((short)2, "keyvalues"),
     VALUES((short)3, "values");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -52,8 +52,8 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
       switch(fieldId) {
         case 1: // ID
           return ID;
-        case 2: // KAYVALUES
-          return KAYVALUES;
+        case 2: // KEYVALUES
+          return KEYVALUES;
         case 3: // VALUES
           return VALUES;
         default:
@@ -102,7 +102,7 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.KAYVALUES, new org.apache.thrift.meta_data.FieldMetaData("kayvalues", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.KEYVALUES, new org.apache.thrift.meta_data.FieldMetaData("keyvalues", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
@@ -118,12 +118,12 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
 
   public MetaData(
     String id,
-    Map<String,String> kayvalues,
+    Map<String,String> keyvalues,
     List<String> values)
   {
     this();
     this.id = id;
-    this.kayvalues = kayvalues;
+    this.keyvalues = keyvalues;
     this.values = values;
   }
 
@@ -134,20 +134,20 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
     if (other.isSetId()) {
       this.id = other.id;
     }
-    if (other.isSetKayvalues()) {
-      Map<String,String> __this__kayvalues = new HashMap<String,String>();
-      for (Map.Entry<String, String> other_element : other.kayvalues.entrySet()) {
+    if (other.isSetKeyvalues()) {
+      Map<String,String> __this__keyvalues = new HashMap<String,String>();
+      for (Map.Entry<String, String> other_element : other.keyvalues.entrySet()) {
 
         String other_element_key = other_element.getKey();
         String other_element_value = other_element.getValue();
 
-        String __this__kayvalues_copy_key = other_element_key;
+        String __this__keyvalues_copy_key = other_element_key;
 
-        String __this__kayvalues_copy_value = other_element_value;
+        String __this__keyvalues_copy_value = other_element_value;
 
-        __this__kayvalues.put(__this__kayvalues_copy_key, __this__kayvalues_copy_value);
+        __this__keyvalues.put(__this__keyvalues_copy_key, __this__keyvalues_copy_value);
       }
-      this.kayvalues = __this__kayvalues;
+      this.keyvalues = __this__keyvalues;
     }
     if (other.isSetValues()) {
       List<String> __this__values = new ArrayList<String>();
@@ -165,7 +165,7 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
   @Override
   public void clear() {
     this.id = null;
-    this.kayvalues = null;
+    this.keyvalues = null;
     this.values = null;
   }
 
@@ -193,38 +193,38 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
     }
   }
 
-  public int getKayvaluesSize() {
-    return (this.kayvalues == null) ? 0 : this.kayvalues.size();
+  public int getKeyvaluesSize() {
+    return (this.keyvalues == null) ? 0 : this.keyvalues.size();
   }
 
-  public void putToKayvalues(String key, String val) {
-    if (this.kayvalues == null) {
-      this.kayvalues = new HashMap<String,String>();
+  public void putToKeyvalues(String key, String val) {
+    if (this.keyvalues == null) {
+      this.keyvalues = new HashMap<String,String>();
     }
-    this.kayvalues.put(key, val);
+    this.keyvalues.put(key, val);
   }
 
-  public Map<String,String> getKayvalues() {
-    return this.kayvalues;
+  public Map<String,String> getKeyvalues() {
+    return this.keyvalues;
   }
 
-  public MetaData setKayvalues(Map<String,String> kayvalues) {
-    this.kayvalues = kayvalues;
+  public MetaData setKeyvalues(Map<String,String> keyvalues) {
+    this.keyvalues = keyvalues;
     return this;
   }
 
-  public void unsetKayvalues() {
-    this.kayvalues = null;
+  public void unsetKeyvalues() {
+    this.keyvalues = null;
   }
 
-  /** Returns true if field kayvalues is set (has been assigned a value) and false otherwise */
-  public boolean isSetKayvalues() {
-    return this.kayvalues != null;
+  /** Returns true if field keyvalues is set (has been assigned a value) and false otherwise */
+  public boolean isSetKeyvalues() {
+    return this.keyvalues != null;
   }
 
-  public void setKayvaluesIsSet(boolean value) {
+  public void setKeyvaluesIsSet(boolean value) {
     if (!value) {
-      this.kayvalues = null;
+      this.keyvalues = null;
     }
   }
 
@@ -277,11 +277,11 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
       }
       break;
 
-    case KAYVALUES:
+    case KEYVALUES:
       if (value == null) {
-        unsetKayvalues();
+        unsetKeyvalues();
       } else {
-        setKayvalues((Map<String,String>)value);
+        setKeyvalues((Map<String,String>)value);
       }
       break;
 
@@ -301,8 +301,8 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
     case ID:
       return getId();
 
-    case KAYVALUES:
-      return getKayvalues();
+    case KEYVALUES:
+      return getKeyvalues();
 
     case VALUES:
       return getValues();
@@ -320,8 +320,8 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
     switch (field) {
     case ID:
       return isSetId();
-    case KAYVALUES:
-      return isSetKayvalues();
+    case KEYVALUES:
+      return isSetKeyvalues();
     case VALUES:
       return isSetValues();
     }
@@ -350,12 +350,12 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
         return false;
     }
 
-    boolean this_present_kayvalues = true && this.isSetKayvalues();
-    boolean that_present_kayvalues = true && that.isSetKayvalues();
-    if (this_present_kayvalues || that_present_kayvalues) {
-      if (!(this_present_kayvalues && that_present_kayvalues))
+    boolean this_present_keyvalues = true && this.isSetKeyvalues();
+    boolean that_present_keyvalues = true && that.isSetKeyvalues();
+    if (this_present_keyvalues || that_present_keyvalues) {
+      if (!(this_present_keyvalues && that_present_keyvalues))
         return false;
-      if (!this.kayvalues.equals(that.kayvalues))
+      if (!this.keyvalues.equals(that.keyvalues))
         return false;
     }
 
@@ -394,12 +394,12 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetKayvalues()).compareTo(typedOther.isSetKayvalues());
+    lastComparison = Boolean.valueOf(isSetKeyvalues()).compareTo(typedOther.isSetKeyvalues());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetKayvalues()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.kayvalues, typedOther.kayvalues);
+    if (isSetKeyvalues()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.keyvalues, typedOther.keyvalues);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -438,18 +438,18 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // KAYVALUES
+        case 2: // KEYVALUES
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
               org.apache.thrift.protocol.TMap _map8 = iprot.readMapBegin();
-              this.kayvalues = new HashMap<String,String>(2*_map8.size);
+              this.keyvalues = new HashMap<String,String>(2*_map8.size);
               for (int _i9 = 0; _i9 < _map8.size; ++_i9)
               {
                 String _key10;
                 String _val11;
                 _key10 = iprot.readString();
                 _val11 = iprot.readString();
-                this.kayvalues.put(_key10, _val11);
+                this.keyvalues.put(_key10, _val11);
               }
               iprot.readMapEnd();
             }
@@ -494,11 +494,11 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
       oprot.writeString(this.id);
       oprot.writeFieldEnd();
     }
-    if (this.kayvalues != null) {
-      oprot.writeFieldBegin(KAYVALUES_FIELD_DESC);
+    if (this.keyvalues != null) {
+      oprot.writeFieldBegin(KEYVALUES_FIELD_DESC);
       {
-        oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.kayvalues.size()));
-        for (Map.Entry<String, String> _iter15 : this.kayvalues.entrySet())
+        oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.keyvalues.size()));
+        for (Map.Entry<String, String> _iter15 : this.keyvalues.entrySet())
         {
           oprot.writeString(_iter15.getKey());
           oprot.writeString(_iter15.getValue());
@@ -536,11 +536,11 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("kayvalues:");
-    if (this.kayvalues == null) {
+    sb.append("keyvalues:");
+    if (this.keyvalues == null) {
       sb.append("null");
     } else {
-      sb.append(this.kayvalues);
+      sb.append(this.keyvalues);
     }
     first = false;
     if (!first) sb.append(", ");

@@ -4,6 +4,7 @@ package tw.maple;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import macromedia.asc.parser.*;
 import macromedia.asc.semantics.Value;
@@ -586,15 +587,26 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		System.out.println((new Throwable()).getStackTrace()[0].toString());
 		MetaData metadata = new MetaData();
+        metadata.keyvalues = new HashMap<String,String>();
+        metadata.values = new ArrayList<String>();
+        
+        if (node.data != null)
+        {   
+            MetaDataEvaluator mde = new MetaDataEvaluator();
+            mde.evaluate(cx, node);
+        }
+
 		
 		metadata.id = node.getId() !=null? node.getId() :"";
+        System.out.println("meta data '"+metadata.id+"'" );
 		for (int idx = 0, length = (node.getValues() == null) ? 0 : node.getValues().length; idx < length; idx++)
         {
             Value v = node.getValues()[idx];
             if (v instanceof MetaDataEvaluator.KeyValuePair)
             {
                 MetaDataEvaluator.KeyValuePair pair = (MetaDataEvaluator.KeyValuePair) v;
-                metadata.kayvalues.put(pair.key, pair.obj);
+                metadata.keyvalues.put(pair.key, pair.obj);
+                System.out.println("meta data k '"+pair.key+"' v '"+pair.obj+"'");
             }
 
             else if (v instanceof MetaDataEvaluator.KeylessValue)
@@ -602,7 +614,9 @@ public final class ProgramNodeDumper implements Evaluator
                 MetaDataEvaluator.KeylessValue val = (MetaDataEvaluator.KeylessValue) v;
                 //out.print("[" + val.obj + "]");
                 metadata.values.add( val.obj );
+		        System.out.println("meta data v"+val.obj);
             }
+
         }
 		try {
 			thrift_cli.defineMetaData( metadata );
