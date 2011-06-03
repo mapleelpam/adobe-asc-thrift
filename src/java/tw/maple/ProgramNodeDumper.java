@@ -97,7 +97,6 @@ public final class ProgramNodeDumper implements Evaluator
 			}
 			thrift_cli.identifierExpression(id);
 		} catch (org.apache.thrift.TException e1) {
-
 		}		
 		return null;
 	}
@@ -120,8 +119,7 @@ public final class ProgramNodeDumper implements Evaluator
 			thrift_cli.literalBooleanExpression( str );
 		}
 		catch (org.apache.thrift.TException e1) 
-		{
-			
+		{	
 		}
 		return null;
     }
@@ -137,7 +135,6 @@ public final class ProgramNodeDumper implements Evaluator
 		}
 		catch (org.apache.thrift.TException e1) 
 		{
-			
 		}	
 		return null;
 	}
@@ -341,8 +338,7 @@ public final class ProgramNodeDumper implements Evaluator
 			}
 		} catch (org.apache.thrift.TException e1) {
 		}
-
-		
+	
 		return null;
 	}
 
@@ -362,7 +358,6 @@ public final class ProgramNodeDumper implements Evaluator
 				thrift_cli.endOneArgument();
 			}
 		} catch (org.apache.thrift.TException e1) {
-
 		}
 
 		return null;
@@ -395,7 +390,6 @@ public final class ProgramNodeDumper implements Evaluator
 			}
 			thrift_cli.endStmtList();
 		} catch (org.apache.thrift.TException e1) {
-
 		}        
         return null;
 	}
@@ -428,33 +422,33 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, IfStatementNode node) 
 	{
-		try { thrift_cli.startIfStatement();
-		} catch (org.apache.thrift.TException e1) { }
+		try { 
+			thrift_cli.startIfStatement();
+			thrift_cli.startExprCondition();
 		
-		try { thrift_cli.startExprCondition();
-		} catch (org.apache.thrift.TException e1) { }
-		if (node.condition != null) {
-			node.condition.evaluate(cx, this);
-		}
-		try { thrift_cli.endExprCondition();
-		} catch (org.apache.thrift.TException e1) { }
+			if (node.condition != null) {
+				node.condition.evaluate(cx, this);
+			}
+		 
+			thrift_cli.endExprCondition();
+		 
 
-		try { thrift_cli.startScope();
-		} catch (org.apache.thrift.TException e1) { }
-		if (node.thenactions != null)
-			node.thenactions.evaluate(cx, this);
-		try { thrift_cli.endScope();
-		} catch (org.apache.thrift.TException e1) { }
+			thrift_cli.startScope();
 
-		try { thrift_cli.startScope();
-		} catch (org.apache.thrift.TException e1) { }
-		if (node.elseactions != null)
-			node.elseactions.evaluate(cx, this);
-		try { thrift_cli.endScope();
-		} catch (org.apache.thrift.TException e1) { }
+			if (node.thenactions != null)
+				node.thenactions.evaluate(cx, this);
+			thrift_cli.endScope();
+
+			thrift_cli.startScope();
+
+			if (node.elseactions != null)
+				node.elseactions.evaluate(cx, this);
+			thrift_cli.endScope();
+
+			thrift_cli.endIfStatement();
+		} 
+		catch (org.apache.thrift.TException e1) { }
 		
-		try { thrift_cli.endIfStatement();
-		} catch (org.apache.thrift.TException e1) { }
 		return null;
 	}
 
@@ -1055,8 +1049,6 @@ public final class ProgramNodeDumper implements Evaluator
 				thrift_cli.startPackage( pkg_name_list );
         
 		} catch( org.apache.thrift.TException e1 ) {
-			System.out.print("\nERROR - "+e1.toString());
-			System.exit(1);
 		}
 		
 		return null;
@@ -1076,8 +1068,6 @@ public final class ProgramNodeDumper implements Evaluator
 		    	}
 			thrift_cli.endProgram();
 		} catch( org.apache.thrift.TException e1 ) {
-			System.out.print("\nERROR - "+e1.toString());
-			System.exit(1);
 		}
 		return null;
 	}
@@ -1121,7 +1111,6 @@ public final class ProgramNodeDumper implements Evaluator
 		} else if( v!=null && v instanceof StringListValue ) {
 			StringListValue sv = (StringListValue)(v);
 			return sv.values.size() > 0 ? sv.values.get(0) : "";
-//			return sv.values.get(0);
 		} else if( v instanceof QNValue)   {
 			QNValue qual_value = (QNValue)(v);
 			return qual_value.getName();
