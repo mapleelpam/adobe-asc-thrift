@@ -36,7 +36,7 @@ public class AstDumper {
 
     public void functionAttribute(List<String> attrs) throws org.apache.thrift.TException;
 
-    public void functionName(String name) throws org.apache.thrift.TException;
+    public void functionName(String name, FunctionType func_type) throws org.apache.thrift.TException;
 
     public void startFunctionCommon() throws org.apache.thrift.TException;
 
@@ -184,7 +184,7 @@ public class AstDumper {
 
     public void functionAttribute(List<String> attrs, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.functionAttribute_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void functionName(String name, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.functionName_call> resultHandler) throws org.apache.thrift.TException;
+    public void functionName(String name, FunctionType func_type, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.functionName_call> resultHandler) throws org.apache.thrift.TException;
 
     public void startFunctionCommon(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionCommon_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -445,16 +445,17 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void functionName(String name) throws org.apache.thrift.TException
+    public void functionName(String name, FunctionType func_type) throws org.apache.thrift.TException
     {
-      send_functionName(name);
+      send_functionName(name, func_type);
     }
 
-    public void send_functionName(String name) throws org.apache.thrift.TException
+    public void send_functionName(String name, FunctionType func_type) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("functionName", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       functionName_args args = new functionName_args();
       args.setName(name);
+      args.setFunc_type(func_type);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -1588,24 +1589,27 @@ public class AstDumper {
       }
     }
 
-    public void functionName(String name, org.apache.thrift.async.AsyncMethodCallback<functionName_call> resultHandler) throws org.apache.thrift.TException {
+    public void functionName(String name, FunctionType func_type, org.apache.thrift.async.AsyncMethodCallback<functionName_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      functionName_call method_call = new functionName_call(name, resultHandler, this, protocolFactory, transport);
+      functionName_call method_call = new functionName_call(name, func_type, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class functionName_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String name;
-      public functionName_call(String name, org.apache.thrift.async.AsyncMethodCallback<functionName_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private FunctionType func_type;
+      public functionName_call(String name, FunctionType func_type, org.apache.thrift.async.AsyncMethodCallback<functionName_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
         this.name = name;
+        this.func_type = func_type;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("functionName", org.apache.thrift.protocol.TMessageType.CALL, 0));
         functionName_args args = new functionName_args();
         args.setName(name);
+        args.setFunc_type(func_type);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -3729,7 +3733,7 @@ public class AstDumper {
           return;
         }
         iprot.readMessageEnd();
-        iface_.functionName(args.name);
+        iface_.functionName(args.name, args.func_type);
         return;
       }
     }
@@ -6997,12 +7001,23 @@ public class AstDumper {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("functionName_args");
 
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField FUNC_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("func_type", org.apache.thrift.protocol.TType.I32, (short)2);
 
     public String name;
+    /**
+     * 
+     * @see FunctionType
+     */
+    public FunctionType func_type;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      NAME((short)1, "name");
+      NAME((short)1, "name"),
+      /**
+       * 
+       * @see FunctionType
+       */
+      FUNC_TYPE((short)2, "func_type");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -7019,6 +7034,8 @@ public class AstDumper {
         switch(fieldId) {
           case 1: // NAME
             return NAME;
+          case 2: // FUNC_TYPE
+            return FUNC_TYPE;
           default:
             return null;
         }
@@ -7065,6 +7082,8 @@ public class AstDumper {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.FUNC_TYPE, new org.apache.thrift.meta_data.FieldMetaData("func_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, FunctionType.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(functionName_args.class, metaDataMap);
     }
@@ -7073,10 +7092,12 @@ public class AstDumper {
     }
 
     public functionName_args(
-      String name)
+      String name,
+      FunctionType func_type)
     {
       this();
       this.name = name;
+      this.func_type = func_type;
     }
 
     /**
@@ -7085,6 +7106,9 @@ public class AstDumper {
     public functionName_args(functionName_args other) {
       if (other.isSetName()) {
         this.name = other.name;
+      }
+      if (other.isSetFunc_type()) {
+        this.func_type = other.func_type;
       }
     }
 
@@ -7095,6 +7119,7 @@ public class AstDumper {
     @Override
     public void clear() {
       this.name = null;
+      this.func_type = null;
     }
 
     public String getName() {
@@ -7121,6 +7146,38 @@ public class AstDumper {
       }
     }
 
+    /**
+     * 
+     * @see FunctionType
+     */
+    public FunctionType getFunc_type() {
+      return this.func_type;
+    }
+
+    /**
+     * 
+     * @see FunctionType
+     */
+    public functionName_args setFunc_type(FunctionType func_type) {
+      this.func_type = func_type;
+      return this;
+    }
+
+    public void unsetFunc_type() {
+      this.func_type = null;
+    }
+
+    /** Returns true if field func_type is set (has been assigned a value) and false otherwise */
+    public boolean isSetFunc_type() {
+      return this.func_type != null;
+    }
+
+    public void setFunc_typeIsSet(boolean value) {
+      if (!value) {
+        this.func_type = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case NAME:
@@ -7131,6 +7188,14 @@ public class AstDumper {
         }
         break;
 
+      case FUNC_TYPE:
+        if (value == null) {
+          unsetFunc_type();
+        } else {
+          setFunc_type((FunctionType)value);
+        }
+        break;
+
       }
     }
 
@@ -7138,6 +7203,9 @@ public class AstDumper {
       switch (field) {
       case NAME:
         return getName();
+
+      case FUNC_TYPE:
+        return getFunc_type();
 
       }
       throw new IllegalStateException();
@@ -7152,6 +7220,8 @@ public class AstDumper {
       switch (field) {
       case NAME:
         return isSetName();
+      case FUNC_TYPE:
+        return isSetFunc_type();
       }
       throw new IllegalStateException();
     }
@@ -7175,6 +7245,15 @@ public class AstDumper {
         if (!(this_present_name && that_present_name))
           return false;
         if (!this.name.equals(that.name))
+          return false;
+      }
+
+      boolean this_present_func_type = true && this.isSetFunc_type();
+      boolean that_present_func_type = true && that.isSetFunc_type();
+      if (this_present_func_type || that_present_func_type) {
+        if (!(this_present_func_type && that_present_func_type))
+          return false;
+        if (!this.func_type.equals(that.func_type))
           return false;
       }
 
@@ -7204,6 +7283,16 @@ public class AstDumper {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetFunc_type()).compareTo(typedOther.isSetFunc_type());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetFunc_type()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.func_type, typedOther.func_type);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -7228,6 +7317,13 @@ public class AstDumper {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
+          case 2: // FUNC_TYPE
+            if (field.type == org.apache.thrift.protocol.TType.I32) {
+              this.func_type = FunctionType.findByValue(iprot.readI32());
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
         }
@@ -7248,6 +7344,11 @@ public class AstDumper {
         oprot.writeString(this.name);
         oprot.writeFieldEnd();
       }
+      if (this.func_type != null) {
+        oprot.writeFieldBegin(FUNC_TYPE_FIELD_DESC);
+        oprot.writeI32(this.func_type.getValue());
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -7262,6 +7363,14 @@ public class AstDumper {
         sb.append("null");
       } else {
         sb.append(this.name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("func_type:");
+      if (this.func_type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.func_type);
       }
       first = false;
       sb.append(")");

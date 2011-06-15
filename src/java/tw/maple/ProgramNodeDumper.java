@@ -14,7 +14,6 @@ import macromedia.asc.semantics.QNValue;
 import macromedia.asc.util.Context;
 //import sun.org.mozilla.javascript.internal.EvaluatorException;
 import tw.maple.generated.*;
-import tw.maple.generated.Constants;
 import tw.maple.StringEvaluator;
 import static macromedia.asc.parser.Tokens.*;
 
@@ -787,11 +786,18 @@ public final class ProgramNodeDumper implements Evaluator
 			String str_fname = "_unknown_";
 			if (node.identifier != null) {
 				
+//				(node.kind == GET_TOKEN ? " get" :
+//		         node.kind == SET_TOKEN ? " set" : ""));
+//				
 				Value str_value = node.identifier.evaluate(cx, string_evaluator);
 				str_fname =  Extract2String( str_value );
 			}
 
-			thrift_cli.functionName(str_fname);
+			FunctionType func_type = 
+				(node.kind == GET_TOKEN ? FunctionType.TF_GETTER :
+		         node.kind == SET_TOKEN ? FunctionType.TF_SETTER : 
+		        	 FunctionType.TF_NORMAL );
+			thrift_cli.functionName(str_fname, func_type );
 		} catch (org.apache.thrift.TException e1) {
 
 		}
