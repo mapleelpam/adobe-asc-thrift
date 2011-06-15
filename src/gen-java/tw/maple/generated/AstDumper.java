@@ -5193,7 +5193,7 @@ public class AstDumper {
     public startProgram_args() {
       this.version = "0.0.1";
 
-      this.counter = 1L;
+      this.counter = 2L;
 
     }
 
@@ -5227,7 +5227,7 @@ public class AstDumper {
     public void clear() {
       this.version = "0.0.1";
 
-      this.counter = 1L;
+      this.counter = 2L;
 
     }
 

@@ -786,9 +786,6 @@ public final class ProgramNodeDumper implements Evaluator
 			String str_fname = "_unknown_";
 			if (node.identifier != null) {
 				
-//				(node.kind == GET_TOKEN ? " get" :
-//		         node.kind == SET_TOKEN ? " set" : ""));
-//				
 				Value str_value = node.identifier.evaluate(cx, string_evaluator);
 				str_fname =  Extract2String( str_value );
 			}
