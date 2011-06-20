@@ -31,7 +31,7 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
   private static final org.apache.thrift.protocol.TField INHERITS_FIELD_DESC = new org.apache.thrift.protocol.TField("inherits", org.apache.thrift.protocol.TType.LIST, (short)6);
   private static final org.apache.thrift.protocol.TField INTERFACES_FIELD_DESC = new org.apache.thrift.protocol.TField("interfaces", org.apache.thrift.protocol.TType.LIST, (short)7);
   private static final org.apache.thrift.protocol.TField OBJECT_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("object_type", org.apache.thrift.protocol.TType.I32, (short)8);
-  private static final org.apache.thrift.protocol.TField ATTRIBUTE_FIELD_DESC = new org.apache.thrift.protocol.TField("attribute", org.apache.thrift.protocol.TType.STRING, (short)9);
+  private static final org.apache.thrift.protocol.TField ATTRIBUTES_FIELD_DESC = new org.apache.thrift.protocol.TField("attributes", org.apache.thrift.protocol.TType.LIST, (short)9);
 
   public String name;
   public boolean has_attr;
@@ -45,7 +45,7 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
    * @see ObjectType
    */
   public ObjectType object_type;
-  public String attribute;
+  public List<String> attributes;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -61,7 +61,7 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
      * @see ObjectType
      */
     OBJECT_TYPE((short)8, "object_type"),
-    ATTRIBUTE((short)9, "attribute");
+    ATTRIBUTES((short)9, "attributes");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -92,8 +92,8 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
           return INTERFACES;
         case 8: // OBJECT_TYPE
           return OBJECT_TYPE;
-        case 9: // ATTRIBUTE
-          return ATTRIBUTE;
+        case 9: // ATTRIBUTES
+          return ATTRIBUTES;
         default:
           return null;
       }
@@ -161,8 +161,9 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.OBJECT_TYPE, new org.apache.thrift.meta_data.FieldMetaData("object_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ObjectType.class)));
-    tmpMap.put(_Fields.ATTRIBUTE, new org.apache.thrift.meta_data.FieldMetaData("attribute", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ATTRIBUTES, new org.apache.thrift.meta_data.FieldMetaData("attributes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ClassDefinition.class, metaDataMap);
   }
@@ -179,7 +180,7 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     List<String> inherits,
     List<String> interfaces,
     ObjectType object_type,
-    String attribute)
+    List<String> attributes)
   {
     this();
     this.name = name;
@@ -194,7 +195,7 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     this.inherits = inherits;
     this.interfaces = interfaces;
     this.object_type = object_type;
-    this.attribute = attribute;
+    this.attributes = attributes;
   }
 
   /**
@@ -227,8 +228,12 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     if (other.isSetObject_type()) {
       this.object_type = other.object_type;
     }
-    if (other.isSetAttribute()) {
-      this.attribute = other.attribute;
+    if (other.isSetAttributes()) {
+      List<String> __this__attributes = new ArrayList<String>();
+      for (String other_element : other.attributes) {
+        __this__attributes.add(other_element);
+      }
+      this.attributes = __this__attributes;
     }
   }
 
@@ -250,7 +255,7 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     this.inherits = null;
     this.interfaces = null;
     this.object_type = null;
-    this.attribute = null;
+    this.attributes = null;
   }
 
   public String getName() {
@@ -479,27 +484,42 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     }
   }
 
-  public String getAttribute() {
-    return this.attribute;
+  public int getAttributesSize() {
+    return (this.attributes == null) ? 0 : this.attributes.size();
   }
 
-  public ClassDefinition setAttribute(String attribute) {
-    this.attribute = attribute;
+  public java.util.Iterator<String> getAttributesIterator() {
+    return (this.attributes == null) ? null : this.attributes.iterator();
+  }
+
+  public void addToAttributes(String elem) {
+    if (this.attributes == null) {
+      this.attributes = new ArrayList<String>();
+    }
+    this.attributes.add(elem);
+  }
+
+  public List<String> getAttributes() {
+    return this.attributes;
+  }
+
+  public ClassDefinition setAttributes(List<String> attributes) {
+    this.attributes = attributes;
     return this;
   }
 
-  public void unsetAttribute() {
-    this.attribute = null;
+  public void unsetAttributes() {
+    this.attributes = null;
   }
 
-  /** Returns true if field attribute is set (has been assigned a value) and false otherwise */
-  public boolean isSetAttribute() {
-    return this.attribute != null;
+  /** Returns true if field attributes is set (has been assigned a value) and false otherwise */
+  public boolean isSetAttributes() {
+    return this.attributes != null;
   }
 
-  public void setAttributeIsSet(boolean value) {
+  public void setAttributesIsSet(boolean value) {
     if (!value) {
-      this.attribute = null;
+      this.attributes = null;
     }
   }
 
@@ -569,11 +589,11 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       }
       break;
 
-    case ATTRIBUTE:
+    case ATTRIBUTES:
       if (value == null) {
-        unsetAttribute();
+        unsetAttributes();
       } else {
-        setAttribute((String)value);
+        setAttributes((List<String>)value);
       }
       break;
 
@@ -606,8 +626,8 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     case OBJECT_TYPE:
       return getObject_type();
 
-    case ATTRIBUTE:
-      return getAttribute();
+    case ATTRIBUTES:
+      return getAttributes();
 
     }
     throw new IllegalStateException();
@@ -636,8 +656,8 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       return isSetInterfaces();
     case OBJECT_TYPE:
       return isSetObject_type();
-    case ATTRIBUTE:
-      return isSetAttribute();
+    case ATTRIBUTES:
+      return isSetAttributes();
     }
     throw new IllegalStateException();
   }
@@ -727,12 +747,12 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
         return false;
     }
 
-    boolean this_present_attribute = true && this.isSetAttribute();
-    boolean that_present_attribute = true && that.isSetAttribute();
-    if (this_present_attribute || that_present_attribute) {
-      if (!(this_present_attribute && that_present_attribute))
+    boolean this_present_attributes = true && this.isSetAttributes();
+    boolean that_present_attributes = true && that.isSetAttributes();
+    if (this_present_attributes || that_present_attributes) {
+      if (!(this_present_attributes && that_present_attributes))
         return false;
-      if (!this.attribute.equals(that.attribute))
+      if (!this.attributes.equals(that.attributes))
         return false;
     }
 
@@ -832,12 +852,12 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetAttribute()).compareTo(typedOther.isSetAttribute());
+    lastComparison = Boolean.valueOf(isSetAttributes()).compareTo(typedOther.isSetAttributes());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetAttribute()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.attribute, typedOther.attribute);
+    if (isSetAttributes()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.attributes, typedOther.attributes);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -939,9 +959,19 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 9: // ATTRIBUTE
-          if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.attribute = iprot.readString();
+        case 9: // ATTRIBUTES
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
+            {
+              org.apache.thrift.protocol.TList _list6 = iprot.readListBegin();
+              this.attributes = new ArrayList<String>(_list6.size);
+              for (int _i7 = 0; _i7 < _list6.size; ++_i7)
+              {
+                String _elem8;
+                _elem8 = iprot.readString();
+                this.attributes.add(_elem8);
+              }
+              iprot.readListEnd();
+            }
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -982,9 +1012,9 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       oprot.writeFieldBegin(INHERITS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.inherits.size()));
-        for (String _iter6 : this.inherits)
+        for (String _iter9 : this.inherits)
         {
-          oprot.writeString(_iter6);
+          oprot.writeString(_iter9);
         }
         oprot.writeListEnd();
       }
@@ -994,9 +1024,9 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       oprot.writeFieldBegin(INTERFACES_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.interfaces.size()));
-        for (String _iter7 : this.interfaces)
+        for (String _iter10 : this.interfaces)
         {
-          oprot.writeString(_iter7);
+          oprot.writeString(_iter10);
         }
         oprot.writeListEnd();
       }
@@ -1007,9 +1037,16 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       oprot.writeI32(this.object_type.getValue());
       oprot.writeFieldEnd();
     }
-    if (this.attribute != null) {
-      oprot.writeFieldBegin(ATTRIBUTE_FIELD_DESC);
-      oprot.writeString(this.attribute);
+    if (this.attributes != null) {
+      oprot.writeFieldBegin(ATTRIBUTES_FIELD_DESC);
+      {
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.attributes.size()));
+        for (String _iter11 : this.attributes)
+        {
+          oprot.writeString(_iter11);
+        }
+        oprot.writeListEnd();
+      }
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -1069,11 +1106,11 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("attribute:");
-    if (this.attribute == null) {
+    sb.append("attributes:");
+    if (this.attributes == null) {
       sb.append("null");
     } else {
-      sb.append(this.attribute);
+      sb.append(this.attributes);
     }
     first = false;
     sb.append(")");

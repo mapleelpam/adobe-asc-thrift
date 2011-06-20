@@ -955,7 +955,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 			if (node.attrs != null) {
 				Value v = node.attrs.evaluate(cx, this);
-				class_define.attribute = Extract2String( v );
+				class_define.attributes = Extract2StringList( v );
 			}
 			
 			String s_classname = "";
