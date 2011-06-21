@@ -827,6 +827,7 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		try{
 			String para_name = "";
+			String init_value = "";
 			
 			if (node.identifier != null) {
 				Value v = node.identifier.evaluate(cx, string_evaluator);
@@ -834,7 +835,9 @@ public final class ProgramNodeDumper implements Evaluator
 			}
 			if (node.init != null)
 			{
-				node.init.evaluate(cx, string_evaluator);
+				System.out.println( " node has init variable");
+				Value v = node.init.evaluate(cx, string_evaluator);
+				init_value =  Extract2String( v );
 			}
 			
 			List<String> para_type = new ArrayList<String>();
@@ -844,8 +847,10 @@ public final class ProgramNodeDumper implements Evaluator
 				para_type =  Extract2StringList( v );
 			} 
 				
-			
-			thrift_cli.startFunctionSignatureParameterMember( para_name, para_type );
+//			if( node.init == null)
+//				thrift_cli.startFunctionSignatureParameterMember( para_name, para_type );
+//			else
+				thrift_cli.startFunctionSignatureParameterMember( para_name, para_type, node.init != null, init_value );
 			thrift_cli.endFunctionSignatureParameterMember();
 		} catch (org.apache.thrift.TException e1) {
 		}

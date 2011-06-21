@@ -44,7 +44,7 @@ public class AstDumper {
 
     public void startFunctionSignatureParameters() throws org.apache.thrift.TException;
 
-    public void startFunctionSignatureParameterMember(String name, List<String> type) throws org.apache.thrift.TException;
+    public void startFunctionSignatureParameterMember(String name, List<String> type, boolean has_init, String init) throws org.apache.thrift.TException;
 
     public void endFunctionSignatureParameterMember() throws org.apache.thrift.TException;
 
@@ -188,7 +188,7 @@ public class AstDumper {
 
     public void startFunctionSignatureParameters(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionSignatureParameters_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void startFunctionSignatureParameterMember(String name, List<String> type, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionSignatureParameterMember_call> resultHandler) throws org.apache.thrift.TException;
+    public void startFunctionSignatureParameterMember(String name, List<String> type, boolean has_init, String init, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionSignatureParameterMember_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endFunctionSignatureParameterMember(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endFunctionSignatureParameterMember_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -496,17 +496,19 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void startFunctionSignatureParameterMember(String name, List<String> type) throws org.apache.thrift.TException
+    public void startFunctionSignatureParameterMember(String name, List<String> type, boolean has_init, String init) throws org.apache.thrift.TException
     {
-      send_startFunctionSignatureParameterMember(name, type);
+      send_startFunctionSignatureParameterMember(name, type, has_init, init);
     }
 
-    public void send_startFunctionSignatureParameterMember(String name, List<String> type) throws org.apache.thrift.TException
+    public void send_startFunctionSignatureParameterMember(String name, List<String> type, boolean has_init, String init) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startFunctionSignatureParameterMember", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       startFunctionSignatureParameterMember_args args = new startFunctionSignatureParameterMember_args();
       args.setName(name);
       args.setType(type);
+      args.setHas_init(has_init);
+      args.setInit(init);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -1674,9 +1676,9 @@ public class AstDumper {
       }
     }
 
-    public void startFunctionSignatureParameterMember(String name, List<String> type, org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameterMember_call> resultHandler) throws org.apache.thrift.TException {
+    public void startFunctionSignatureParameterMember(String name, List<String> type, boolean has_init, String init, org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameterMember_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startFunctionSignatureParameterMember_call method_call = new startFunctionSignatureParameterMember_call(name, type, resultHandler, this, protocolFactory, transport);
+      startFunctionSignatureParameterMember_call method_call = new startFunctionSignatureParameterMember_call(name, type, has_init, init, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
@@ -1684,10 +1686,14 @@ public class AstDumper {
     public static class startFunctionSignatureParameterMember_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String name;
       private List<String> type;
-      public startFunctionSignatureParameterMember_call(String name, List<String> type, org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameterMember_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private boolean has_init;
+      private String init;
+      public startFunctionSignatureParameterMember_call(String name, List<String> type, boolean has_init, String init, org.apache.thrift.async.AsyncMethodCallback<startFunctionSignatureParameterMember_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
         this.name = name;
         this.type = type;
+        this.has_init = has_init;
+        this.init = init;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
@@ -1695,6 +1701,8 @@ public class AstDumper {
         startFunctionSignatureParameterMember_args args = new startFunctionSignatureParameterMember_args();
         args.setName(name);
         args.setType(type);
+        args.setHas_init(has_init);
+        args.setInit(init);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -3723,7 +3731,7 @@ public class AstDumper {
           return;
         }
         iprot.readMessageEnd();
-        iface_.startFunctionSignatureParameterMember(args.name, args.type);
+        iface_.startFunctionSignatureParameterMember(args.name, args.type, args.has_init, args.init);
         return;
       }
     }
@@ -7969,14 +7977,20 @@ public class AstDumper {
 
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.LIST, (short)2);
+    private static final org.apache.thrift.protocol.TField HAS_INIT_FIELD_DESC = new org.apache.thrift.protocol.TField("has_init", org.apache.thrift.protocol.TType.BOOL, (short)3);
+    private static final org.apache.thrift.protocol.TField INIT_FIELD_DESC = new org.apache.thrift.protocol.TField("init", org.apache.thrift.protocol.TType.STRING, (short)4);
 
     public String name;
     public List<String> type;
+    public boolean has_init;
+    public String init;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       NAME((short)1, "name"),
-      TYPE((short)2, "type");
+      TYPE((short)2, "type"),
+      HAS_INIT((short)3, "has_init"),
+      INIT((short)4, "init");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -7995,6 +8009,10 @@ public class AstDumper {
             return NAME;
           case 2: // TYPE
             return TYPE;
+          case 3: // HAS_INIT
+            return HAS_INIT;
+          case 4: // INIT
+            return INIT;
           default:
             return null;
         }
@@ -8035,6 +8053,8 @@ public class AstDumper {
     }
 
     // isset id assignments
+    private static final int __HAS_INIT_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
@@ -8044,26 +8064,39 @@ public class AstDumper {
       tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+      tmpMap.put(_Fields.HAS_INIT, new org.apache.thrift.meta_data.FieldMetaData("has_init", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+      tmpMap.put(_Fields.INIT, new org.apache.thrift.meta_data.FieldMetaData("init", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startFunctionSignatureParameterMember_args.class, metaDataMap);
     }
 
     public startFunctionSignatureParameterMember_args() {
+      this.init = "";
+
     }
 
     public startFunctionSignatureParameterMember_args(
       String name,
-      List<String> type)
+      List<String> type,
+      boolean has_init,
+      String init)
     {
       this();
       this.name = name;
       this.type = type;
+      this.has_init = has_init;
+      setHas_initIsSet(true);
+      this.init = init;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public startFunctionSignatureParameterMember_args(startFunctionSignatureParameterMember_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetName()) {
         this.name = other.name;
       }
@@ -8073,6 +8106,10 @@ public class AstDumper {
           __this__type.add(other_element);
         }
         this.type = __this__type;
+      }
+      this.has_init = other.has_init;
+      if (other.isSetInit()) {
+        this.init = other.init;
       }
     }
 
@@ -8084,6 +8121,10 @@ public class AstDumper {
     public void clear() {
       this.name = null;
       this.type = null;
+      setHas_initIsSet(false);
+      this.has_init = false;
+      this.init = "";
+
     }
 
     public String getName() {
@@ -8149,6 +8190,53 @@ public class AstDumper {
       }
     }
 
+    public boolean isHas_init() {
+      return this.has_init;
+    }
+
+    public startFunctionSignatureParameterMember_args setHas_init(boolean has_init) {
+      this.has_init = has_init;
+      setHas_initIsSet(true);
+      return this;
+    }
+
+    public void unsetHas_init() {
+      __isset_bit_vector.clear(__HAS_INIT_ISSET_ID);
+    }
+
+    /** Returns true if field has_init is set (has been assigned a value) and false otherwise */
+    public boolean isSetHas_init() {
+      return __isset_bit_vector.get(__HAS_INIT_ISSET_ID);
+    }
+
+    public void setHas_initIsSet(boolean value) {
+      __isset_bit_vector.set(__HAS_INIT_ISSET_ID, value);
+    }
+
+    public String getInit() {
+      return this.init;
+    }
+
+    public startFunctionSignatureParameterMember_args setInit(String init) {
+      this.init = init;
+      return this;
+    }
+
+    public void unsetInit() {
+      this.init = null;
+    }
+
+    /** Returns true if field init is set (has been assigned a value) and false otherwise */
+    public boolean isSetInit() {
+      return this.init != null;
+    }
+
+    public void setInitIsSet(boolean value) {
+      if (!value) {
+        this.init = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case NAME:
@@ -8167,6 +8255,22 @@ public class AstDumper {
         }
         break;
 
+      case HAS_INIT:
+        if (value == null) {
+          unsetHas_init();
+        } else {
+          setHas_init((Boolean)value);
+        }
+        break;
+
+      case INIT:
+        if (value == null) {
+          unsetInit();
+        } else {
+          setInit((String)value);
+        }
+        break;
+
       }
     }
 
@@ -8177,6 +8281,12 @@ public class AstDumper {
 
       case TYPE:
         return getType();
+
+      case HAS_INIT:
+        return new Boolean(isHas_init());
+
+      case INIT:
+        return getInit();
 
       }
       throw new IllegalStateException();
@@ -8193,6 +8303,10 @@ public class AstDumper {
         return isSetName();
       case TYPE:
         return isSetType();
+      case HAS_INIT:
+        return isSetHas_init();
+      case INIT:
+        return isSetInit();
       }
       throw new IllegalStateException();
     }
@@ -8228,6 +8342,24 @@ public class AstDumper {
           return false;
       }
 
+      boolean this_present_has_init = true;
+      boolean that_present_has_init = true;
+      if (this_present_has_init || that_present_has_init) {
+        if (!(this_present_has_init && that_present_has_init))
+          return false;
+        if (this.has_init != that.has_init)
+          return false;
+      }
+
+      boolean this_present_init = true && this.isSetInit();
+      boolean that_present_init = true && that.isSetInit();
+      if (this_present_init || that_present_init) {
+        if (!(this_present_init && that_present_init))
+          return false;
+        if (!this.init.equals(that.init))
+          return false;
+      }
+
       return true;
     }
 
@@ -8260,6 +8392,26 @@ public class AstDumper {
       }
       if (isSetType()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, typedOther.type);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetHas_init()).compareTo(typedOther.isSetHas_init());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetHas_init()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.has_init, typedOther.has_init);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetInit()).compareTo(typedOther.isSetInit());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetInit()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.init, typedOther.init);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8305,6 +8457,21 @@ public class AstDumper {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
+          case 3: // HAS_INIT
+            if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+              this.has_init = iprot.readBool();
+              setHas_initIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // INIT
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.init = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
         }
@@ -8337,6 +8504,14 @@ public class AstDumper {
         }
         oprot.writeFieldEnd();
       }
+      oprot.writeFieldBegin(HAS_INIT_FIELD_DESC);
+      oprot.writeBool(this.has_init);
+      oprot.writeFieldEnd();
+      if (this.init != null) {
+        oprot.writeFieldBegin(INIT_FIELD_DESC);
+        oprot.writeString(this.init);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -8361,6 +8536,18 @@ public class AstDumper {
         sb.append(this.type);
       }
       first = false;
+      if (!first) sb.append(", ");
+      sb.append("has_init:");
+      sb.append(this.has_init);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("init:");
+      if (this.init == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.init);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -8379,6 +8566,8 @@ public class AstDumper {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);

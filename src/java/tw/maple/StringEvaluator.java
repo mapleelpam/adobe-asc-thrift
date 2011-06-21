@@ -74,7 +74,11 @@ public final class StringEvaluator implements Evaluator
 
     public Value evaluate(Context cx, LiteralBooleanNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
 
-	public Value evaluate(Context cx, LiteralNumberNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LiteralNumberNode node)
+	{
+//		System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;
+		return new StringValue(node.value);
+	}
 
 	public Value evaluate(Context cx, LiteralStringNode node)
 	{
