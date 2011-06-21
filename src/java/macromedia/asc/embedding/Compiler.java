@@ -934,8 +934,8 @@ public class Compiler implements ErrorConstants
 				try
 				{
 					transport.open();
-//					TProtocol protocol = new  TBinaryProtocol(transport);
-					TProtocol protocol = new  TJSONProtocol(transport);
+					TProtocol protocol = new  TBinaryProtocol(transport);
+//					TProtocol protocol = new  TJSONProtocol(transport);
 					AstDumper.Client dumper = new AstDumper.Client( protocol );
 					
 					
