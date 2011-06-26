@@ -32,6 +32,8 @@ public class AstDumper {
 
     public void endPackage(List<String> IDs) throws org.apache.thrift.TException;
 
+    public void executeImport(List<String> id) throws org.apache.thrift.TException;
+
     public void startFunctionDefinition(boolean isAbstract) throws org.apache.thrift.TException;
 
     public void functionAttribute(List<String> attrs) throws org.apache.thrift.TException;
@@ -175,6 +177,8 @@ public class AstDumper {
     public void startPackage(List<String> id, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startPackage_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endPackage(List<String> IDs, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endPackage_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void executeImport(List<String> id, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.executeImport_call> resultHandler) throws org.apache.thrift.TException;
 
     public void startFunctionDefinition(boolean isAbstract, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startFunctionDefinition_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -402,6 +406,21 @@ public class AstDumper {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endPackage", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       endPackage_args args = new endPackage_args();
       args.setIDs(IDs);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void executeImport(List<String> id) throws org.apache.thrift.TException
+    {
+      send_executeImport(id);
+    }
+
+    public void send_executeImport(List<String> id) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("executeImport", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      executeImport_args args = new executeImport_args();
+      args.setId(id);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -1480,6 +1499,37 @@ public class AstDumper {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endPackage", org.apache.thrift.protocol.TMessageType.CALL, 0));
         endPackage_args args = new endPackage_args();
         args.setIDs(IDs);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
+    public void executeImport(List<String> id, org.apache.thrift.async.AsyncMethodCallback<executeImport_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      executeImport_call method_call = new executeImport_call(id, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class executeImport_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private List<String> id;
+      public executeImport_call(List<String> id, org.apache.thrift.async.AsyncMethodCallback<executeImport_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+        this.id = id;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("executeImport", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        executeImport_args args = new executeImport_args();
+        args.setId(id);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -3412,6 +3462,7 @@ public class AstDumper {
       processMap_.put("endProgram", new endProgram());
       processMap_.put("startPackage", new startPackage());
       processMap_.put("endPackage", new endPackage());
+      processMap_.put("executeImport", new executeImport());
       processMap_.put("startFunctionDefinition", new startFunctionDefinition());
       processMap_.put("functionAttribute", new functionAttribute());
       processMap_.put("functionName", new functionName());
@@ -3585,6 +3636,27 @@ public class AstDumper {
         }
         iprot.readMessageEnd();
         iface_.endPackage(args.IDs);
+        return;
+      }
+    }
+
+    private class executeImport implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        executeImport_args args = new executeImport_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("executeImport", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.executeImport(args.id);
         return;
       }
     }
@@ -5065,7 +5137,7 @@ public class AstDumper {
     public startProgram_args() {
       this.version = "0.0.1";
 
-      this.counter = 3L;
+      this.counter = 4L;
 
     }
 
@@ -5099,7 +5171,7 @@ public class AstDumper {
     public void clear() {
       this.version = "0.0.1";
 
-      this.counter = 3L;
+      this.counter = 4L;
 
     }
 
@@ -6238,6 +6310,340 @@ public class AstDumper {
 
   }
 
+  public static class executeImport_args implements org.apache.thrift.TBase<executeImport_args, executeImport_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("executeImport_args");
+
+    private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.LIST, (short)1);
+
+    public List<String> id;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      ID((short)1, "id");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // ID
+            return ID;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(executeImport_args.class, metaDataMap);
+    }
+
+    public executeImport_args() {
+    }
+
+    public executeImport_args(
+      List<String> id)
+    {
+      this();
+      this.id = id;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public executeImport_args(executeImport_args other) {
+      if (other.isSetId()) {
+        List<String> __this__id = new ArrayList<String>();
+        for (String other_element : other.id) {
+          __this__id.add(other_element);
+        }
+        this.id = __this__id;
+      }
+    }
+
+    public executeImport_args deepCopy() {
+      return new executeImport_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.id = null;
+    }
+
+    public int getIdSize() {
+      return (this.id == null) ? 0 : this.id.size();
+    }
+
+    public java.util.Iterator<String> getIdIterator() {
+      return (this.id == null) ? null : this.id.iterator();
+    }
+
+    public void addToId(String elem) {
+      if (this.id == null) {
+        this.id = new ArrayList<String>();
+      }
+      this.id.add(elem);
+    }
+
+    public List<String> getId() {
+      return this.id;
+    }
+
+    public executeImport_args setId(List<String> id) {
+      this.id = id;
+      return this;
+    }
+
+    public void unsetId() {
+      this.id = null;
+    }
+
+    /** Returns true if field id is set (has been assigned a value) and false otherwise */
+    public boolean isSetId() {
+      return this.id != null;
+    }
+
+    public void setIdIsSet(boolean value) {
+      if (!value) {
+        this.id = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case ID:
+        if (value == null) {
+          unsetId();
+        } else {
+          setId((List<String>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case ID:
+        return getId();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case ID:
+        return isSetId();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof executeImport_args)
+        return this.equals((executeImport_args)that);
+      return false;
+    }
+
+    public boolean equals(executeImport_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_id = true && this.isSetId();
+      boolean that_present_id = true && that.isSetId();
+      if (this_present_id || that_present_id) {
+        if (!(this_present_id && that_present_id))
+          return false;
+        if (!this.id.equals(that.id))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(executeImport_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      executeImport_args typedOther = (executeImport_args)other;
+
+      lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, typedOther.id);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // ID
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list37 = iprot.readListBegin();
+                this.id = new ArrayList<String>(_list37.size);
+                for (int _i38 = 0; _i38 < _list37.size; ++_i38)
+                {
+                  String _elem39;
+                  _elem39 = iprot.readString();
+                  this.id.add(_elem39);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.id != null) {
+        oprot.writeFieldBegin(ID_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.id.size()));
+          for (String _iter40 : this.id)
+          {
+            oprot.writeString(_iter40);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("executeImport_args(");
+      boolean first = true;
+
+      sb.append("id:");
+      if (this.id == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.id);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
   public static class startFunctionDefinition_args implements org.apache.thrift.TBase<startFunctionDefinition_args, startFunctionDefinition_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startFunctionDefinition_args");
 
@@ -6786,13 +7192,13 @@ public class AstDumper {
           case 1: // ATTRS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list37 = iprot.readListBegin();
-                this.attrs = new ArrayList<String>(_list37.size);
-                for (int _i38 = 0; _i38 < _list37.size; ++_i38)
+                org.apache.thrift.protocol.TList _list41 = iprot.readListBegin();
+                this.attrs = new ArrayList<String>(_list41.size);
+                for (int _i42 = 0; _i42 < _list41.size; ++_i42)
                 {
-                  String _elem39;
-                  _elem39 = iprot.readString();
-                  this.attrs.add(_elem39);
+                  String _elem43;
+                  _elem43 = iprot.readString();
+                  this.attrs.add(_elem43);
                 }
                 iprot.readListEnd();
               }
@@ -6819,9 +7225,9 @@ public class AstDumper {
         oprot.writeFieldBegin(ATTRS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.attrs.size()));
-          for (String _iter40 : this.attrs)
+          for (String _iter44 : this.attrs)
           {
-            oprot.writeString(_iter40);
+            oprot.writeString(_iter44);
           }
           oprot.writeListEnd();
         }
@@ -8443,13 +8849,13 @@ public class AstDumper {
           case 2: // TYPE
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list41 = iprot.readListBegin();
-                this.type = new ArrayList<String>(_list41.size);
-                for (int _i42 = 0; _i42 < _list41.size; ++_i42)
+                org.apache.thrift.protocol.TList _list45 = iprot.readListBegin();
+                this.type = new ArrayList<String>(_list45.size);
+                for (int _i46 = 0; _i46 < _list45.size; ++_i46)
                 {
-                  String _elem43;
-                  _elem43 = iprot.readString();
-                  this.type.add(_elem43);
+                  String _elem47;
+                  _elem47 = iprot.readString();
+                  this.type.add(_elem47);
                 }
                 iprot.readListEnd();
               }
@@ -8496,9 +8902,9 @@ public class AstDumper {
         oprot.writeFieldBegin(TYPE_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.type.size()));
-          for (String _iter44 : this.type)
+          for (String _iter48 : this.type)
           {
-            oprot.writeString(_iter44);
+            oprot.writeString(_iter48);
           }
           oprot.writeListEnd();
         }
@@ -17069,13 +17475,13 @@ public class AstDumper {
           case 1: // PACKAGES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list45 = iprot.readListBegin();
-                this.packages = new ArrayList<String>(_list45.size);
-                for (int _i46 = 0; _i46 < _list45.size; ++_i46)
+                org.apache.thrift.protocol.TList _list49 = iprot.readListBegin();
+                this.packages = new ArrayList<String>(_list49.size);
+                for (int _i50 = 0; _i50 < _list49.size; ++_i50)
                 {
-                  String _elem47;
-                  _elem47 = iprot.readString();
-                  this.packages.add(_elem47);
+                  String _elem51;
+                  _elem51 = iprot.readString();
+                  this.packages.add(_elem51);
                 }
                 iprot.readListEnd();
               }
@@ -17102,9 +17508,9 @@ public class AstDumper {
         oprot.writeFieldBegin(PACKAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.packages.size()));
-          for (String _iter48 : this.packages)
+          for (String _iter52 : this.packages)
           {
-            oprot.writeString(_iter48);
+            oprot.writeString(_iter52);
           }
           oprot.writeListEnd();
         }

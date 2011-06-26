@@ -22,6 +22,7 @@ public final class ProgramNodeDumper implements Evaluator
 	AstDumper.Client thrift_cli;
 	StringEvaluator	string_evaluator;
 	private boolean is_abstract_function = false;
+	private boolean DEBUG = false;
 	
     public ProgramNodeDumper(AstDumper.Client cli)
     {
@@ -47,7 +48,7 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, DeleteExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, DeleteExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, IdentifierNode node)
 	{
@@ -75,13 +76,13 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, InvokeNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, InvokeNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, ThisExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ThisExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 			Identifier id = new Identifier();
 			id.name = node.name;
@@ -101,13 +102,13 @@ public final class ProgramNodeDumper implements Evaluator
 	}
 
 	public Value evaluate(Context cx, QualifiedExpressionNode node) {
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		return null;
 	}
 
     public Value evaluate(Context cx, LiteralBooleanNode node)
     {
-    	System.out.println((new Throwable()).getStackTrace()[0].toString());
+    	if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
     	try 
 		{
 			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
@@ -125,7 +126,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, LiteralNumberNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try 
 		{
 			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
@@ -150,15 +151,15 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, LiteralNullNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LiteralNullNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, LiteralRegExpNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LiteralRegExpNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, LiteralXMLNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LiteralXMLNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, FunctionCommonNode node)
 	{
-//		System.out.println((new Throwable()).getStackTrace()[0].toString());
+//		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
         if (node.signature != null)
         {
             node.signature.evaluate(cx, this);
@@ -170,35 +171,35 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, ParenExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ParenExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, ParenListExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ParenListExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, LiteralObjectNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LiteralObjectNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, LiteralFieldNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LiteralFieldNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, LiteralArrayNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LiteralArrayNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 	
-	public Value evaluate(Context cx, LiteralVectorNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LiteralVectorNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, SuperExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, SuperExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, SuperStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, SuperStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, MemberExpressionNode node)
 	{
 		try
 		{
-			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 			StringListValue slv = new StringListValue();
-			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 	        if (node.base != null)
 	        {
 	        	thrift_cli . startMemberExpression();
 	            Value v = node.base.evaluate(cx, this);
 	        }
-	        System.out.println((new Throwable()).getStackTrace()[0].toString());
+	        if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 	        if (node.selector != null)
 	        {
 	            Value v = node.selector.evaluate(cx, this);
@@ -252,7 +253,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, GetExpressionNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		if (node.expr != null)
         {
             return node.expr.evaluate(cx, this);
@@ -262,7 +263,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, SetExpressionNode node) 
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 			thrift_cli.startAssignment();
 				thrift_cli.startExpressionList();
@@ -280,11 +281,11 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-    public Value evaluate(Context cx, ApplyTypeExprNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, ApplyTypeExprNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, UnaryExpressionNode node) 
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 			UnaryExpression unary_expression = new UnaryExpression();
 			unary_expression.op = Token.getTokenClassName(node.op);
@@ -300,7 +301,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, BinaryExpressionNode node) 
 	{	
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 			if( Token.getTokenClassName(node.op) == "instanceof" ) {
 				thrift_cli.startInstanceOfExpression();
@@ -343,13 +344,13 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ConditionalExpressionNode node) 
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		return null;
 	}
 
 	public Value evaluate(Context cx, ArgumentListNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 			for (Node n : node.items) {
 				thrift_cli.startOneArgument();
@@ -364,7 +365,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ListNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		StringListValue values = new StringListValue();
 		for ( Node n : node.items )
 		{
@@ -379,7 +380,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, StatementListNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 			thrift_cli.startStmtList();
 			for (Node n : node.items) {
@@ -393,9 +394,9 @@ public final class ProgramNodeDumper implements Evaluator
         return null;
 	}
 
-	public Value evaluate(Context cx, EmptyElementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, EmptyElementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, EmptyStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, EmptyStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, ExpressionStatementNode node)
 	{
@@ -417,7 +418,7 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, LabeledStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LabeledStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, IfStatementNode node) 
 	{
@@ -451,13 +452,13 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, SwitchStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, SwitchStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, CaseLabelNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, CaseLabelNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, DoStatementNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try{
 			thrift_cli.startDoStatement();
 		
@@ -482,7 +483,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, WhileStatementNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try{
 			thrift_cli.startWhileStatement();
 		
@@ -507,7 +508,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ForStatementNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try{
 			thrift_cli.startForStatement();
 		
@@ -536,11 +537,11 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, WithStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, WithStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, ContinueStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ContinueStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, BreakStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, BreakStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, ReturnStatementNode node)
 	{
@@ -562,23 +563,23 @@ public final class ProgramNodeDumper implements Evaluator
 		
 	}
 
-	public Value evaluate(Context cx, ThrowStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ThrowStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, TryStatementNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, TryStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, CatchClauseNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, CatchClauseNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, FinallyClauseNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, FinallyClauseNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, UseDirectiveNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, UseDirectiveNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, IncludeDirectiveNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, IncludeDirectiveNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, ImportNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ImportNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, MetaDataNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		MetaData metadata = new MetaData();
         metadata.keyvalues = new HashMap<String,String>();
         metadata.values = new ArrayList<String>();
@@ -618,14 +619,31 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 	
-	public Value evaluate(Context cx, DocCommentNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, DocCommentNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	// Definitions
 
-	public Value evaluate(Context cx, ImportDirectiveNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ImportDirectiveNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+	
+		try{
+			List<String> pkg_name_list = new ArrayList<String>();
+			if (node.name != null) {
+				for (IdentifierNode id : node.name.id.list) {
+					pkg_name_list.add(id.name);
+				}
+			}
+
+			thrift_cli.executeImport(pkg_name_list);
+
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, AttributeListNode node) {
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		// This Function always evaluate "value" insteadof "thrift"
 
 		StringListValue attrs = new StringListValue();
@@ -712,7 +730,7 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, UntypedVariableBindingNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, UntypedVariableBindingNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, TypedIdentifierNode node) 
 	{
@@ -730,7 +748,7 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, TypeExpressionNode node)
     {
-    	System.out.println((new Throwable()).getStackTrace()[0].toString());
+    	if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
     	if (node.expr != null)
         {
             return node.expr.evaluate(cx, this);
@@ -740,7 +758,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, FunctionDefinitionNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());  
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
 		try {
 			thrift_cli.startFunctionDefinition( is_abstract_function );
 			
@@ -768,13 +786,13 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, BinaryFunctionDefinitionNode node)
     {
-		System.out.println((new Throwable()).getStackTrace()[0].toString());  
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
         return null;	
     }
 
 	public Value evaluate(Context cx, FunctionNameNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 
 			String str_fname = "_unknown_";
@@ -797,7 +815,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, FunctionSignatureNode node) 
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 
 			String str_func_type = "";
@@ -836,8 +854,12 @@ public final class ProgramNodeDumper implements Evaluator
 			if (node.init != null)
 			{
 				System.out.println( " node has init variable");
+				
 				Value v = node.init.evaluate(cx, string_evaluator);
-				init_value =  Extract2String( v );
+				if( node.init instanceof LiteralStringNode)
+					init_value =  "\""+ Extract2String( v ) + "\"";
+				else
+					init_value =  Extract2String( v );
 			}
 			
 			List<String> para_type = new ArrayList<String>();
@@ -876,13 +898,13 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, RestExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, RestExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, RestParameterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, RestParameterNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, InterfaceDefinitionNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 			ClassDefinition class_define = new ClassDefinition();
 			class_define.has_attr = (node.attrs != null);
@@ -942,14 +964,14 @@ public final class ProgramNodeDumper implements Evaluator
 
 		} catch (org.apache.thrift.TException e1) {
 		}
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		return null;
 
 	}
 
 	public Value evaluate(Context cx, ClassDefinitionNode node) 
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
 			ClassDefinition class_define = new ClassDefinition();
 			class_define.has_attr = (node.attrs != null);
@@ -1023,21 +1045,21 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-    public Value evaluate(Context cx, BinaryClassDefNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, BinaryClassDefNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-    public Value evaluate(Context cx, BinaryInterfaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, BinaryInterfaceDefinitionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, ClassNameNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ClassNameNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, InheritanceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, InheritanceNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, NamespaceDefinitionNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString());  
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
 		return null;
 	}
 
-	public Value evaluate(Context cx, ConfigNamespaceDefinitionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ConfigNamespaceDefinitionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, PackageDefinitionNode node)
 	{
@@ -1062,9 +1084,9 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, PackageIdentifiersNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, PackageIdentifiersNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, PackageNameNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, PackageNameNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
 	public Value evaluate(Context cx, ProgramNode node)
 	{
@@ -1080,35 +1102,35 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-    public Value evaluate(Context cx, BinaryProgramNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, BinaryProgramNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, ErrorNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ErrorNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, ToObjectNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, ToObjectNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, LoadRegisterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, LoadRegisterNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, StoreRegisterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, StoreRegisterNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-    public Value evaluate(Context cx, RegisterNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, RegisterNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, HasNextNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, HasNextNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-    public Value evaluate(Context cx, BoxNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, BoxNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, CoerceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, CoerceNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, PragmaNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, PragmaNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-    public Value evaluate(Context cx, UsePrecisionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, UsePrecisionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, UseNumericNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+	public Value evaluate(Context cx, UseNumericNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, UseRoundingNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;} 
+	public Value evaluate(Context cx, UseRoundingNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;} 
 
-    public Value evaluate(Context cx, PragmaExpressionNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, PragmaExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-    public Value evaluate(Context cx, DefaultXMLNamespaceNode node){System.out.println((new Throwable()).getStackTrace()[0].toString());  return null;}
+    public Value evaluate(Context cx, DefaultXMLNamespaceNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
     
     private String Extract2String( Value v )
@@ -1129,13 +1151,13 @@ public final class ProgramNodeDumper implements Evaluator
     private List<String> Extract2StringList( Value v )
     {
 		if( v!=null && v instanceof StringValue ) {
-			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 			StringValue sv = (StringValue)(v);
 			List<String> string_list = new ArrayList<String>();
 			string_list.add( sv.getValue() );
 			return string_list;
 		} else if( v!=null && v instanceof StringListValue ) {
-			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 			StringListValue sv = (StringListValue)(v);
 			List<String> answer = new ArrayList<String>();
 			for( int idx=0; idx < sv.values.size() ; idx ++ ) 
@@ -1146,7 +1168,7 @@ public final class ProgramNodeDumper implements Evaluator
 			}
 			return answer;
 		} else if( v instanceof QNValue)   {
-			System.out.println((new Throwable()).getStackTrace()[0].toString());
+			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 			QNValue qual_value = (QNValue)(v);
 			
 			List<String> string_list = new ArrayList<String>();
