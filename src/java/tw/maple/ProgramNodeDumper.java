@@ -151,7 +151,17 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, LiteralNullNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, LiteralNullNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		
+		try {
+			thrift_cli.literalNull();
+		} catch (org.apache.thrift.TException e1) {
+		}
+	
+		return null;
+	}
 
 	public Value evaluate(Context cx, LiteralRegExpNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
