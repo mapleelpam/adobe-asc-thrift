@@ -921,13 +921,13 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
         case 6: // INHERITS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
-              this.inherits = new ArrayList<String>(_list0.size);
-              for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+              org.apache.thrift.protocol.TList _list4 = iprot.readListBegin();
+              this.inherits = new ArrayList<String>(_list4.size);
+              for (int _i5 = 0; _i5 < _list4.size; ++_i5)
               {
-                String _elem2;
-                _elem2 = iprot.readString();
-                this.inherits.add(_elem2);
+                String _elem6;
+                _elem6 = iprot.readString();
+                this.inherits.add(_elem6);
               }
               iprot.readListEnd();
             }
@@ -938,13 +938,13 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
         case 7: // INTERFACES
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list3 = iprot.readListBegin();
-              this.interfaces = new ArrayList<String>(_list3.size);
-              for (int _i4 = 0; _i4 < _list3.size; ++_i4)
+              org.apache.thrift.protocol.TList _list7 = iprot.readListBegin();
+              this.interfaces = new ArrayList<String>(_list7.size);
+              for (int _i8 = 0; _i8 < _list7.size; ++_i8)
               {
-                String _elem5;
-                _elem5 = iprot.readString();
-                this.interfaces.add(_elem5);
+                String _elem9;
+                _elem9 = iprot.readString();
+                this.interfaces.add(_elem9);
               }
               iprot.readListEnd();
             }
@@ -962,13 +962,13 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
         case 9: // ATTRIBUTES
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list6 = iprot.readListBegin();
-              this.attributes = new ArrayList<String>(_list6.size);
-              for (int _i7 = 0; _i7 < _list6.size; ++_i7)
+              org.apache.thrift.protocol.TList _list10 = iprot.readListBegin();
+              this.attributes = new ArrayList<String>(_list10.size);
+              for (int _i11 = 0; _i11 < _list10.size; ++_i11)
               {
-                String _elem8;
-                _elem8 = iprot.readString();
-                this.attributes.add(_elem8);
+                String _elem12;
+                _elem12 = iprot.readString();
+                this.attributes.add(_elem12);
               }
               iprot.readListEnd();
             }
@@ -1012,9 +1012,9 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       oprot.writeFieldBegin(INHERITS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.inherits.size()));
-        for (String _iter9 : this.inherits)
+        for (String _iter13 : this.inherits)
         {
-          oprot.writeString(_iter9);
+          oprot.writeString(_iter13);
         }
         oprot.writeListEnd();
       }
@@ -1024,9 +1024,9 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       oprot.writeFieldBegin(INTERFACES_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.interfaces.size()));
-        for (String _iter10 : this.interfaces)
+        for (String _iter14 : this.interfaces)
         {
-          oprot.writeString(_iter10);
+          oprot.writeString(_iter14);
         }
         oprot.writeListEnd();
       }
@@ -1041,9 +1041,9 @@ public class ClassDefinition implements org.apache.thrift.TBase<ClassDefinition,
       oprot.writeFieldBegin(ATTRIBUTES_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.attributes.size()));
-        for (String _iter11 : this.attributes)
+        for (String _iter15 : this.attributes)
         {
-          oprot.writeString(_iter11);
+          oprot.writeString(_iter15);
         }
         oprot.writeListEnd();
       }

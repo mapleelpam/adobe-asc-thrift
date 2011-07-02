@@ -441,15 +441,15 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
         case 2: // KEYVALUES
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map12 = iprot.readMapBegin();
-              this.keyvalues = new HashMap<String,String>(2*_map12.size);
-              for (int _i13 = 0; _i13 < _map12.size; ++_i13)
+              org.apache.thrift.protocol.TMap _map16 = iprot.readMapBegin();
+              this.keyvalues = new HashMap<String,String>(2*_map16.size);
+              for (int _i17 = 0; _i17 < _map16.size; ++_i17)
               {
-                String _key14;
-                String _val15;
-                _key14 = iprot.readString();
-                _val15 = iprot.readString();
-                this.keyvalues.put(_key14, _val15);
+                String _key18;
+                String _val19;
+                _key18 = iprot.readString();
+                _val19 = iprot.readString();
+                this.keyvalues.put(_key18, _val19);
               }
               iprot.readMapEnd();
             }
@@ -460,13 +460,13 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
         case 3: // VALUES
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list16 = iprot.readListBegin();
-              this.values = new ArrayList<String>(_list16.size);
-              for (int _i17 = 0; _i17 < _list16.size; ++_i17)
+              org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
+              this.values = new ArrayList<String>(_list20.size);
+              for (int _i21 = 0; _i21 < _list20.size; ++_i21)
               {
-                String _elem18;
-                _elem18 = iprot.readString();
-                this.values.add(_elem18);
+                String _elem22;
+                _elem22 = iprot.readString();
+                this.values.add(_elem22);
               }
               iprot.readListEnd();
             }
@@ -498,10 +498,10 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
       oprot.writeFieldBegin(KEYVALUES_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.keyvalues.size()));
-        for (Map.Entry<String, String> _iter19 : this.keyvalues.entrySet())
+        for (Map.Entry<String, String> _iter23 : this.keyvalues.entrySet())
         {
-          oprot.writeString(_iter19.getKey());
-          oprot.writeString(_iter19.getValue());
+          oprot.writeString(_iter23.getKey());
+          oprot.writeString(_iter23.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -511,9 +511,9 @@ public class MetaData implements org.apache.thrift.TBase<MetaData, MetaData._Fie
       oprot.writeFieldBegin(VALUES_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.values.size()));
-        for (String _iter20 : this.values)
+        for (String _iter24 : this.values)
         {
-          oprot.writeString(_iter20);
+          oprot.writeString(_iter24);
         }
         oprot.writeListEnd();
       }

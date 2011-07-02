@@ -239,12 +239,20 @@ public final class ProgramNodeDumper implements Evaluator
 	            	node.getMode() == LEFTPAREN_TOKEN ? " filter" :
 	                node.getMode() == DOUBLEDOT_TOKEN ? " descend" :
 	                node.getMode() == EMPTY_TOKEN ? " lexical" : " dot");
-			thrift_cli.startCallExpression(call_expression);
 			
 			if (node.expr != null) {
 				// Callee
-				node.expr.evaluate(cx, this);
+//				node.expr.evaluate(cx, this);
+				
+				Value ret_value = node.expr.evaluate(cx,
+						string_evaluator);
+				call_expression.callee = Extract2StringList(ret_value);
+				
+				for( int idx = 0 ; idx < call_expression.callee.size() ; idx ++ )
+					System.out.println(" callee["+idx+"/"+call_expression.callee.size()+"]  "+ call_expression.callee.get(idx)  );
 			}
+			
+			thrift_cli.startCallExpression(call_expression);
 
 			if (node.args != null) {
 				thrift_cli.startArgumentList();
@@ -1182,14 +1190,15 @@ public final class ProgramNodeDumper implements Evaluator
 			QNValue qual_value = (QNValue)(v);
 			
 			List<String> string_list = new ArrayList<String>();
-			string_list.add( qual_value.getName() );
 			for( int idx=0; idx < qual_value.getQualifier().size() ; idx ++ ) 
 			{
 				List<String> tokens = SplitQualifiedName( qual_value.getQualifier().get(idx) );
 				for( int tIdx = 0 ; tIdx < tokens.size() ; tIdx ++)
 					string_list.add( tokens.get(tIdx) );
 			}
-				
+			string_list.add( qual_value.getName() );
+
+			
 			return string_list;
 		} 
 		

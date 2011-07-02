@@ -25,14 +25,17 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
 
   private static final org.apache.thrift.protocol.TField IS_NEW_FIELD_DESC = new org.apache.thrift.protocol.TField("is_new", org.apache.thrift.protocol.TType.BOOL, (short)1);
   private static final org.apache.thrift.protocol.TField MODE_FIELD_DESC = new org.apache.thrift.protocol.TField("mode", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField CALLEE_FIELD_DESC = new org.apache.thrift.protocol.TField("callee", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   public boolean is_new;
   public String mode;
+  public List<String> callee;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     IS_NEW((short)1, "is_new"),
-    MODE((short)2, "mode");
+    MODE((short)2, "mode"),
+    CALLEE((short)3, "callee");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -51,6 +54,8 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
           return IS_NEW;
         case 2: // MODE
           return MODE;
+        case 3: // CALLEE
+          return CALLEE;
         default:
           return null;
       }
@@ -101,6 +106,9 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.MODE, new org.apache.thrift.meta_data.FieldMetaData("mode", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CALLEE, new org.apache.thrift.meta_data.FieldMetaData("callee", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CallExpression.class, metaDataMap);
   }
@@ -112,12 +120,14 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
 
   public CallExpression(
     boolean is_new,
-    String mode)
+    String mode,
+    List<String> callee)
   {
     this();
     this.is_new = is_new;
     setIs_newIsSet(true);
     this.mode = mode;
+    this.callee = callee;
   }
 
   /**
@@ -130,6 +140,13 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
     if (other.isSetMode()) {
       this.mode = other.mode;
     }
+    if (other.isSetCallee()) {
+      List<String> __this__callee = new ArrayList<String>();
+      for (String other_element : other.callee) {
+        __this__callee.add(other_element);
+      }
+      this.callee = __this__callee;
+    }
   }
 
   public CallExpression deepCopy() {
@@ -141,6 +158,7 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
     this.is_new = false;
 
     this.mode = null;
+    this.callee = null;
   }
 
   public boolean isIs_new() {
@@ -190,6 +208,45 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
     }
   }
 
+  public int getCalleeSize() {
+    return (this.callee == null) ? 0 : this.callee.size();
+  }
+
+  public java.util.Iterator<String> getCalleeIterator() {
+    return (this.callee == null) ? null : this.callee.iterator();
+  }
+
+  public void addToCallee(String elem) {
+    if (this.callee == null) {
+      this.callee = new ArrayList<String>();
+    }
+    this.callee.add(elem);
+  }
+
+  public List<String> getCallee() {
+    return this.callee;
+  }
+
+  public CallExpression setCallee(List<String> callee) {
+    this.callee = callee;
+    return this;
+  }
+
+  public void unsetCallee() {
+    this.callee = null;
+  }
+
+  /** Returns true if field callee is set (has been assigned a value) and false otherwise */
+  public boolean isSetCallee() {
+    return this.callee != null;
+  }
+
+  public void setCalleeIsSet(boolean value) {
+    if (!value) {
+      this.callee = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case IS_NEW:
@@ -208,6 +265,14 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
       }
       break;
 
+    case CALLEE:
+      if (value == null) {
+        unsetCallee();
+      } else {
+        setCallee((List<String>)value);
+      }
+      break;
+
     }
   }
 
@@ -218,6 +283,9 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
 
     case MODE:
       return getMode();
+
+    case CALLEE:
+      return getCallee();
 
     }
     throw new IllegalStateException();
@@ -234,6 +302,8 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
       return isSetIs_new();
     case MODE:
       return isSetMode();
+    case CALLEE:
+      return isSetCallee();
     }
     throw new IllegalStateException();
   }
@@ -266,6 +336,15 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
       if (!(this_present_mode && that_present_mode))
         return false;
       if (!this.mode.equals(that.mode))
+        return false;
+    }
+
+    boolean this_present_callee = true && this.isSetCallee();
+    boolean that_present_callee = true && that.isSetCallee();
+    if (this_present_callee || that_present_callee) {
+      if (!(this_present_callee && that_present_callee))
+        return false;
+      if (!this.callee.equals(that.callee))
         return false;
     }
 
@@ -305,6 +384,16 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetCallee()).compareTo(typedOther.isSetCallee());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCallee()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.callee, typedOther.callee);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -337,6 +426,23 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 3: // CALLEE
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
+            {
+              org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
+              this.callee = new ArrayList<String>(_list0.size);
+              for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+              {
+                String _elem2;
+                _elem2 = iprot.readString();
+                this.callee.add(_elem2);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -360,6 +466,18 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
       oprot.writeString(this.mode);
       oprot.writeFieldEnd();
     }
+    if (this.callee != null) {
+      oprot.writeFieldBegin(CALLEE_FIELD_DESC);
+      {
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.callee.size()));
+        for (String _iter3 : this.callee)
+        {
+          oprot.writeString(_iter3);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -378,6 +496,14 @@ public class CallExpression implements org.apache.thrift.TBase<CallExpression, C
       sb.append("null");
     } else {
       sb.append(this.mode);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("callee:");
+    if (this.callee == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.callee);
     }
     first = false;
     sb.append(")");

@@ -508,13 +508,13 @@ public class VariableDeclare implements org.apache.thrift.TBase<VariableDeclare,
         case 2: // TYPE
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list21 = iprot.readListBegin();
-              this.type = new ArrayList<String>(_list21.size);
-              for (int _i22 = 0; _i22 < _list21.size; ++_i22)
+              org.apache.thrift.protocol.TList _list25 = iprot.readListBegin();
+              this.type = new ArrayList<String>(_list25.size);
+              for (int _i26 = 0; _i26 < _list25.size; ++_i26)
               {
-                String _elem23;
-                _elem23 = iprot.readString();
-                this.type.add(_elem23);
+                String _elem27;
+                _elem27 = iprot.readString();
+                this.type.add(_elem27);
               }
               iprot.readListEnd();
             }
@@ -525,13 +525,13 @@ public class VariableDeclare implements org.apache.thrift.TBase<VariableDeclare,
         case 3: // ATTRIBUTES
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-              this.attributes = new ArrayList<String>(_list24.size);
-              for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+              org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
+              this.attributes = new ArrayList<String>(_list28.size);
+              for (int _i29 = 0; _i29 < _list28.size; ++_i29)
               {
-                String _elem26;
-                _elem26 = iprot.readString();
-                this.attributes.add(_elem26);
+                String _elem30;
+                _elem30 = iprot.readString();
+                this.attributes.add(_elem30);
               }
               iprot.readListEnd();
             }
@@ -571,9 +571,9 @@ public class VariableDeclare implements org.apache.thrift.TBase<VariableDeclare,
       oprot.writeFieldBegin(TYPE_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.type.size()));
-        for (String _iter27 : this.type)
+        for (String _iter31 : this.type)
         {
-          oprot.writeString(_iter27);
+          oprot.writeString(_iter31);
         }
         oprot.writeListEnd();
       }
@@ -583,9 +583,9 @@ public class VariableDeclare implements org.apache.thrift.TBase<VariableDeclare,
       oprot.writeFieldBegin(ATTRIBUTES_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.attributes.size()));
-        for (String _iter28 : this.attributes)
+        for (String _iter32 : this.attributes)
         {
-          oprot.writeString(_iter28);
+          oprot.writeString(_iter32);
         }
         oprot.writeListEnd();
       }

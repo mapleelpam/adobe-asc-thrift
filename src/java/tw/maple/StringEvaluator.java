@@ -16,7 +16,7 @@ import static macromedia.asc.parser.Tokens.*;
 
 public final class StringEvaluator implements Evaluator 
 {
-	private boolean DEBUG = false;
+	private boolean DEBUG = true;
     public StringEvaluator()
     {
     }
@@ -175,7 +175,7 @@ public final class StringEvaluator implements Evaluator
 			{
 				StringListValue sv = (StringListValue)( v );
 				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
-					System.out.println( " hey i add '"+sv.values.get(idx)+"' into strings" );
+//					System.out.println( " hey i add '"+sv.values.get(idx)+"' into strings" );
 					values.values.add( sv.values.get(idx) );
 				}
 			}
