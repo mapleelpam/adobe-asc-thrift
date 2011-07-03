@@ -78,7 +78,17 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, InvokeNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, ThisExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, ThisExpressionNode node)
+	{
+//		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
+		
+//		return null;
+		try {
+			thrift_cli.thisExpression();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
 	{
