@@ -73,7 +73,15 @@ public final class StringEvaluator implements Evaluator
 		return null;
 	}
 
-    public Value evaluate(Context cx, LiteralBooleanNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+    public Value evaluate(Context cx, LiteralBooleanNode node)
+    {
+    	if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+    	
+		if( node.value == true )
+			return new StringValue("true");
+		else
+			return new StringValue("false");
+    }
 
 	public Value evaluate(Context cx, LiteralNumberNode node)
 	{
