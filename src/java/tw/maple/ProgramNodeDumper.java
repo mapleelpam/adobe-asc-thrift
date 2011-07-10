@@ -351,6 +351,16 @@ public final class ProgramNodeDumper implements Evaluator
 					node.rhs.evaluate(cx, this);
 				}
 				thrift_cli.endIsOperator();
+			} else if( Token.getTokenClassName(node.op) == "as" ) {
+				thrift_cli.startAsOperator();
+				if (node.lhs != null) {
+					node.lhs.evaluate(cx, this);
+				}
+
+				if (node.rhs != null) {
+					node.rhs.evaluate(cx, this);
+				}
+				thrift_cli.endAsOperator();
 			} else {
 				BinaryExpression binary_expression = new BinaryExpression();
 				binary_expression.op = Token.getTokenClassName(node.op);
@@ -851,7 +861,7 @@ public final class ProgramNodeDumper implements Evaluator
 				Value v = node.result.evaluate(cx, string_evaluator);
 				str_func_type =  Extract2String( v );
 			} else
-				str_func_type =  "void";
+				str_func_type =  "Void";
 			
 			thrift_cli.startFunctionSignature( str_func_type );
 			
