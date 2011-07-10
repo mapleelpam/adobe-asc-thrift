@@ -45,6 +45,18 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, IncrementNode node)
 	{
+		try {
+//			Identifier id = new Identifier();
+//			id.name = node.name;
+			thrift_cli.startIncrementExpression( 
+					node.isPostfix ?IncrementType.TYPE_POSTFIX:IncrementType.TYPE_PREFIX
+					, Token.getTokenClassName(node.op)
+					);
+			node.expr.evaluate(cx, this);
+			thrift_cli.endIncrementExpression( );
+		} catch (org.apache.thrift.TException e1) {
+
+		}			
 		return null;
 	}
 
