@@ -395,6 +395,29 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, ConditionalExpressionNode node) 
 	{
 		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		
+		try {
+			
+			thrift_cli.startConditionExpression();
+			
+	        if (node.condition != null)	        
+	            node.condition.evaluate(cx, this);
+	        else
+	        	thrift_cli.empty();
+
+	        if (node.thenexpr != null)
+	            node.thenexpr.evaluate(cx, this);
+	        else
+	        	thrift_cli.empty();
+	        	
+	        if (node.elseexpr != null)
+	            node.elseexpr.evaluate(cx, this);
+	        else
+	        	thrift_cli.empty();
+					
+			thrift_cli.endConditionExpression();
+		} catch (org.apache.thrift.TException e1) {
+		}
 		return null;
 	}
 
@@ -474,13 +497,11 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		try { 
 			thrift_cli.startIfStatement();
-			thrift_cli.startExprCondition();
-		
-			if (node.condition != null) {
+			
+			if (node.condition != null) 
 				node.condition.evaluate(cx, this);
-			}
-		 
-			thrift_cli.endExprCondition();
+			else
+				thrift_cli.empty();
 		 
 
 			thrift_cli.startScope();
@@ -512,12 +533,12 @@ public final class ProgramNodeDumper implements Evaluator
 		try{
 			thrift_cli.startDoStatement();
 		
-			thrift_cli.startExprCondition();
 	        if (node.expr != null)
 	        {
 	            node.expr.evaluate(cx, this);
 	        }
-	        thrift_cli.endExprCondition();
+	        else
+	        	thrift_cli.empty();
 	        
 	     
 	        thrift_cli.startScope();
@@ -537,12 +558,12 @@ public final class ProgramNodeDumper implements Evaluator
 		try{
 			thrift_cli.startWhileStatement();
 		
-			thrift_cli.startExprCondition();
 	        if (node.expr != null)
 	        {
 	            node.expr.evaluate(cx, this);
 	        }
-	        thrift_cli.endExprCondition();
+	        else
+	        	thrift_cli.empty();
 	        
 	     
 	        thrift_cli.startScope();
@@ -566,10 +587,11 @@ public final class ProgramNodeDumper implements Evaluator
 			if (node.initialize != null)
 	            node.initialize.evaluate(cx, this);
 			thrift_cli.endForInit();
-			thrift_cli.startExprCondition();
+			
 	        if (node.test != null)
 	            node.test.evaluate(cx, this);
-	        thrift_cli.endExprCondition();
+	        else
+	        	thrift_cli.empty();
 	        
 	        thrift_cli.startForStep();
 	        if (node.increment != null)
