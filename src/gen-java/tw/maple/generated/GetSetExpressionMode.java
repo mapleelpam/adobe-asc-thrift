@@ -10,13 +10,15 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum ExpressionType implements org.apache.thrift.TEnum {
-  IDENTIFIER(0),
-  CALL(1);
+public enum GetSetExpressionMode implements org.apache.thrift.TEnum {
+  Normal(0),
+  Dot(1),
+  Lexical(2),
+  Bracket(3);
 
   private final int value;
 
-  private ExpressionType(int value) {
+  private GetSetExpressionMode(int value) {
     this.value = value;
   }
 
@@ -31,12 +33,16 @@ public enum ExpressionType implements org.apache.thrift.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static ExpressionType findByValue(int value) { 
+  public static GetSetExpressionMode findByValue(int value) { 
     switch (value) {
       case 0:
-        return IDENTIFIER;
+        return Normal;
       case 1:
-        return CALL;
+        return Dot;
+      case 2:
+        return Lexical;
+      case 3:
+        return Bracket;
       default:
         return null;
     }

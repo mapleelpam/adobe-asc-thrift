@@ -22,7 +22,7 @@ public final class ProgramNodeDumper implements Evaluator
 	AstDumper.Client thrift_cli;
 	StringEvaluator	string_evaluator;
 	private boolean is_abstract_function = false;
-	private boolean DEBUG = false;
+	private boolean DEBUG = true;
 	
     public ProgramNodeDumper(AstDumper.Client cli)
     {
@@ -222,25 +222,22 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, MemberExpressionNode node)
 	{
 		try
-		{
-			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
-			StringListValue slv = new StringListValue();
-			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		{		
+			thrift_cli . startMemberExpression();
+			
 	        if (node.base != null)
-	        {
-	        	thrift_cli . startMemberExpression();
-	            Value v = node.base.evaluate(cx, this);
-	        }
-	        if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
-	        if (node.selector != null)
-	        {
-	            Value v = node.selector.evaluate(cx, this);
-	            slv.values.add( Extract2String( v ) );
-	        }  
-	        if (node.base != null)
-	        	thrift_cli . endMemberExpression( );
+	        	node.base.evaluate(cx, this);
+	        else
+	        	thrift_cli . empty();
 	        
-			return slv;
+	        if (node.selector != null)
+	            node.selector.evaluate(cx, this);
+	        else
+	        	thrift_cli . empty();
+	        
+	       	thrift_cli . endMemberExpression( );
+	        
+			return null;
 
 		} 
 		catch (org.apache.thrift.TException e1)
@@ -257,10 +254,10 @@ public final class ProgramNodeDumper implements Evaluator
 		try {
 			call_expression = new CallExpression();
 			call_expression.is_new = node.is_new;
-			call_expression.mode = (node.getMode() == LEFTBRACKET_TOKEN ? " bracket" :
-	            	node.getMode() == LEFTPAREN_TOKEN ? " filter" :
-	                node.getMode() == DOUBLEDOT_TOKEN ? " descend" :
-	                node.getMode() == EMPTY_TOKEN ? " lexical" : " dot");
+			call_expression.mode = (node.getMode() == LEFTBRACKET_TOKEN ? "bracket" :
+	            	node.getMode() == LEFTPAREN_TOKEN ? "filter" :
+	                node.getMode() == DOUBLEDOT_TOKEN ? "descend" :
+	                node.getMode() == EMPTY_TOKEN ? "lexical" : "dot");
 			
 			if (node.expr != null) {
 				// Callee
@@ -294,10 +291,25 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, GetExpressionNode node)
 	{
 		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
-		if (node.expr != null)
-        {
-            return node.expr.evaluate(cx, this);
-        }
+	
+//		if( node.getMode() == EMPTY_TOKEN )
+//			return node.expr.evaluate(cx, this);
+			
+		try{
+			thrift_cli.startGetExpression(
+					(node.getMode() == LEFTBRACKET_TOKEN ? "bracket" :
+			            node.getMode() == LEFTPAREN_TOKEN ? "filter" :
+			            node.getMode() == DOUBLEDOT_TOKEN ? "descend" :
+			            node.getMode() == EMPTY_TOKEN ? "lexical" : "dot")
+				);
+			if (node.expr != null)
+				return node.expr.evaluate(cx, this);
+//			else
+//				thrift_cli.empty();
+        	
+			thrift_cli.endGetExpression();
+		} catch (org.apache.thrift.TException e1) {
+		}
 		return null;
 	}
 
@@ -305,17 +317,25 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try {
-			thrift_cli.startAssignment();
-				thrift_cli.startExpressionList();
-				if (node.expr != null) 
-					node.expr.evaluate(cx, this);
-				thrift_cli.endExpressionList();
+
+			thrift_cli.startSetExpression(
+					(node.getMode() == LEFTBRACKET_TOKEN ? "bracket" :
+			            node.getMode() == LEFTPAREN_TOKEN ? "filter" :
+			            node.getMode() == DOUBLEDOT_TOKEN ? "descend" :
+			            node.getMode() == EMPTY_TOKEN ? "lexical" : "dot")
+			      );
 			
-				thrift_cli.startExpressionList();
-				if (node.args != null) 
-					node.args.evaluate(cx, this);
-				thrift_cli.endExpressionList();
-			thrift_cli.endAssignment();
+			if (node.expr != null) 
+				node.expr.evaluate(cx, this);
+			else
+				thrift_cli.empty();
+				
+			if (node.args != null) 
+				node.args.evaluate(cx, this);
+			else
+				thrift_cli.empty();
+			
+			thrift_cli.endSetExpression();
 		} catch (org.apache.thrift.TException e1) {
 		}
 		return null;
@@ -821,10 +841,21 @@ public final class ProgramNodeDumper implements Evaluator
     public Value evaluate(Context cx, TypeExpressionNode node)
     {
     	if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
-    	if (node.expr != null)
-        {
-            return node.expr.evaluate(cx, this);
-        }
+    	try{
+    		
+    		thrift_cli.startTypeExpression();
+    		
+    		if (node.expr != null)
+    		{
+    			return node.expr.evaluate(cx, this);
+    		}
+    		else
+    			thrift_cli.empty();
+    	
+    		thrift_cli.endTypeExpression();
+    	} catch (org.apache.thrift.TException e1) {
+    	}
+    	
     	return null;
     }
 
