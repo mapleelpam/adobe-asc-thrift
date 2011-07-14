@@ -22,7 +22,7 @@ public final class ProgramNodeDumper implements Evaluator
 	AstDumper.Client thrift_cli;
 	StringEvaluator	string_evaluator;
 	private boolean is_abstract_function = false;
-	private boolean DEBUG = true;
+	private boolean DEBUG = false;
 	
     public ProgramNodeDumper(AstDumper.Client cli)
     {
@@ -80,7 +80,7 @@ public final class ProgramNodeDumper implements Evaluator
 					id.name = node.name;
 					thrift_cli.identifierExpression(id);
 				} catch (org.apache.thrift.TException e1) {
-
+					if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 				}			
         }
         
@@ -88,7 +88,12 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, InvokeNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, InvokeNode node)
+	{
+		if(DEBUG)
+		{System.out.println((new Throwable()).getStackTrace()[0].toString());}  
+		return null;
+	}
 
 	public Value evaluate(Context cx, ThisExpressionNode node)
 	{
@@ -296,6 +301,7 @@ public final class ProgramNodeDumper implements Evaluator
 //			return node.expr.evaluate(cx, this);
 			
 		try{
+			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 			thrift_cli.startGetExpression(
 					(node.getMode() == LEFTBRACKET_TOKEN ? "bracket" :
 			            node.getMode() == LEFTPAREN_TOKEN ? "filter" :
@@ -303,13 +309,16 @@ public final class ProgramNodeDumper implements Evaluator
 			            node.getMode() == EMPTY_TOKEN ? "lexical" : "dot")
 				);
 			if (node.expr != null)
-				return node.expr.evaluate(cx, this);
-//			else
-//				thrift_cli.empty();
-        	
+				node.expr.evaluate(cx, this);
+			else
+				thrift_cli.empty();
+			
+			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 			thrift_cli.endGetExpression();
 		} catch (org.apache.thrift.TException e1) {
+			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		}
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		return null;
 	}
 
