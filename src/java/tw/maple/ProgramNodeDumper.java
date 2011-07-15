@@ -297,11 +297,8 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 	
-//		if( node.getMode() == EMPTY_TOKEN )
-//			return node.expr.evaluate(cx, this);
 			
 		try{
-			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 			thrift_cli.startGetExpression(
 					(node.getMode() == LEFTBRACKET_TOKEN ? "bracket" :
 			            node.getMode() == LEFTPAREN_TOKEN ? "filter" :
@@ -313,10 +310,8 @@ public final class ProgramNodeDumper implements Evaluator
 			else
 				thrift_cli.empty();
 			
-			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 			thrift_cli.endGetExpression();
 		} catch (org.apache.thrift.TException e1) {
-			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		}
 		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		return null;
