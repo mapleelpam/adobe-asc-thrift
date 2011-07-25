@@ -22,7 +22,7 @@ public final class ProgramNodeDumper implements Evaluator
 	AstDumper.Client thrift_cli;
 	StringEvaluator	string_evaluator;
 	private boolean is_abstract_function = false;
-	private boolean DEBUG = false;
+	private boolean DEBUG = true;
 	
     public ProgramNodeDumper(AstDumper.Client cli)
     {
@@ -225,7 +225,13 @@ public final class ProgramNodeDumper implements Evaluator
 		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
 		try
 		{		
-	       	thrift_cli . superExpression( );
+//			if (node.expr != null)
+//			{
+//				node.expr.evaluate(cx, this);
+//				//TODO: not sure this statement?
+//			}
+//			else
+				thrift_cli . superExpression( );
 			return null;
 
 		} 
@@ -235,7 +241,23 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, SuperStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, SuperStatementNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		
+		try{
+			thrift_cli . startSuperInit( );
+		
+			if (node.call.args != null)
+				node.call.args.evaluate(cx, this);
+			
+			thrift_cli . endSuperInit( );
+		} 
+		catch (org.apache.thrift.TException e1)
+		{
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, MemberExpressionNode node)
 	{
@@ -988,12 +1010,8 @@ public final class ProgramNodeDumper implements Evaluator
 				Value v = node.type.evaluate(cx, string_evaluator);
 				para_type =  Extract2StringList( v );
 			} 
-				
-//			if( node.init == null)
-//				thrift_cli.startFunctionSignatureParameterMember( para_name, para_type );
-//			else
-				thrift_cli.startFunctionSignatureParameterMember( para_name, para_type, node.init != null, init_value );
-			thrift_cli.endFunctionSignatureParameterMember();
+
+			thrift_cli.functionParameter( para_name, para_type, node.init != null, init_value );
 		} catch (org.apache.thrift.TException e1) {
 		}
 		return null;
@@ -1020,7 +1038,21 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, RestExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, RestParameterNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, RestParameterNode node)
+	{
+		if(DEBUG)
+		{
+			System.out.println((new Throwable()).getStackTrace()[0].toString());
+		}
+		try{
+			ParameterNode param_node = ( ParameterNode)node.parameter;
+			Value v = param_node.evaluate(cx, string_evaluator);
+			String para_name =  Extract2String( v );
+			thrift_cli.functionParameterRest( para_name );
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, InterfaceDefinitionNode node)
 	{
