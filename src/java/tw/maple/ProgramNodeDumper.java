@@ -22,7 +22,7 @@ public final class ProgramNodeDumper implements Evaluator
 	AstDumper.Client thrift_cli;
 	StringEvaluator	string_evaluator;
 	private boolean is_abstract_function = false;
-	private boolean DEBUG = true;
+	private boolean DEBUG = false;
 	
     public ProgramNodeDumper(AstDumper.Client cli)
     {
@@ -64,7 +64,7 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, IdentifierNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString()+":"+node.name);
+		//System.out.println((new Throwable()).getStackTrace()[0].toString()+":"+node.name);
         if(node instanceof TypeIdentifierNode)
         {
         	System.out.println( " is type identifier ");
@@ -306,9 +306,9 @@ public final class ProgramNodeDumper implements Evaluator
 				Value ret_value = node.expr.evaluate(cx,
 						string_evaluator);
 				call_expression.callee = Extract2StringList(ret_value);
-				
-				for( int idx = 0 ; idx < call_expression.callee.size() ; idx ++ )
-					System.out.println(" callee["+idx+"/"+call_expression.callee.size()+"]  "+ call_expression.callee.get(idx)  );
+			//	
+			//	for( int idx = 0 ; idx < call_expression.callee.size() ; idx ++ )
+			//		System.out.println(" callee["+idx+"/"+call_expression.callee.size()+"]  "+ call_expression.callee.get(idx)  );
 			}
 			
 			thrift_cli.startCallExpression(call_expression);

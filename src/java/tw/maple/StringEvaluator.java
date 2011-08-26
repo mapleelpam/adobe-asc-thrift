@@ -16,7 +16,7 @@ import static macromedia.asc.parser.Tokens.*;
 
 public final class StringEvaluator implements Evaluator 
 {
-	private boolean DEBUG = true;
+	private boolean DEBUG = false;
     public StringEvaluator()
     {
     }
@@ -51,14 +51,14 @@ public final class StringEvaluator implements Evaluator
  
 	public Value evaluate(Context cx, QualifiedIdentifierNode node) 
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString()+ " "+node.toString());
+	//	System.out.println((new Throwable()).getStackTrace()[0].toString()+ " "+node.toString());
 		String name = node.name;
 		if (node.qualifier != null) {
 			Value ret_value = node.qualifier.evaluate(cx, this);
-			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		//	if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 			if (ret_value instanceof StringValue) {
 				StringValue qual_value = (StringValue) (ret_value);
-				System.out.println((new Throwable()).getStackTrace()[0].toString() + "  "+qual_value.getValue());
+	//			System.out.println((new Throwable()).getStackTrace()[0].toString() + "  "+qual_value.getValue());
 				return new QNValue(name,qual_value.getValue());
 			} else if (ret_value instanceof StringListValue) {
 				StringListValue qual_value = (StringListValue) (ret_value);
@@ -91,7 +91,7 @@ public final class StringEvaluator implements Evaluator
 
 	public Value evaluate(Context cx, LiteralStringNode node)
 	{
-		System.out.println((new Throwable()).getStackTrace()[0].toString() +" value = "+node.value);
+//		System.out.println((new Throwable()).getStackTrace()[0].toString() +" value = "+node.value);
 		return new StringValue(node.value);
 	}
 	public Value evaluate(Context cx, LiteralNullNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
@@ -136,7 +136,7 @@ public final class StringEvaluator implements Evaluator
             List<String> stringlist = Extract2StringList( v );
             if( stringlist != null )
             for( int idx=0; idx < stringlist.size() ; idx ++ ){
-            	System.out.println(" -------> selector -> "+stringlist.get(idx));
+        //    	System.out.println(" -------> selector -> "+stringlist.get(idx));
             	slv.values.add( stringlist.get(idx) );
             }
         }  
@@ -263,7 +263,7 @@ public final class StringEvaluator implements Evaluator
             {
 				StringListValue sv = (StringListValue)( v );
 				for( int idx = 0 ; idx < sv.values.size() ; idx ++) {
-					System.out.println( "attrs hey i add '"+sv.values.get(idx)+"' into strings" );
+					//System.out.println( "attrs hey i add '"+sv.values.get(idx)+"' into strings" );
 					attrs.values.add( sv.values.get(idx) );
 				}
             } 
