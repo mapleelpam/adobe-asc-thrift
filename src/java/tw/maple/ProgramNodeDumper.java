@@ -263,6 +263,11 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		try
 		{		
+			if( node.base == null && node.selector != null )
+			{
+				return node.selector.evaluate(cx, this);
+			}
+			
 			thrift_cli . startMemberExpression();
 			
 	        if (node.base != null)
@@ -696,11 +701,84 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ThrowStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, TryStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, TryStatementNode node)
+	{
+		
+		try {
+			thrift_cli.startTryStatement();
+	        if (node.tryblock != null)
+	        {
+	            node.tryblock.evaluate(cx, this);
+	        }else
+	        	thrift_cli.empty();
 
-	public Value evaluate(Context cx, CatchClauseNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	        if (node.catchlist != null)
+	        {
+	            node.catchlist.evaluate(cx, this);
+	        }
+	        else
+	        	thrift_cli.empty();
+	        
+	        if (node.finallyblock != null)
+	        {
+	            node.finallyblock.evaluate(cx, this);
+	        }
+	        	thrift_cli.empty();
+	        	
+			thrift_cli.endTryStatement();
+		} catch (org.apache.thrift.TException e1) {
+			System.out.print("\nERROR - " + e1.toString());
+			System.exit(1);
+		}
+		return null;
+	}
 
-	public Value evaluate(Context cx, FinallyClauseNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, CatchClauseNode node)
+	{
+		
+		try {
+			thrift_cli.startCatchClauseStatement();
+			
+	        if (node.parameter != null)
+	        {
+	            node.parameter.evaluate(cx, this);
+	        }else
+	        	thrift_cli.empty();
+
+	        if (node.statements != null)
+	        {
+	            node.statements.evaluate(cx, this);
+	        }else
+	        	thrift_cli.empty();
+	        	
+			thrift_cli.endCatchClauseStatement();
+		} catch (org.apache.thrift.TException e1) {
+			System.out.print("\nERROR - " + e1.toString());
+			System.exit(1);
+		}		  
+		
+		return null;
+	}
+
+	public Value evaluate(Context cx, FinallyClauseNode node)
+	{
+		  
+		try {
+			thrift_cli.startFinallyClauseStatement();
+			
+			if (node.statements != null)
+	        {
+	            node.statements.evaluate(cx, this);
+	        }else
+	        	thrift_cli.empty();
+
+			thrift_cli.endFinallyClauseStatement();
+		} catch (org.apache.thrift.TException e1) {
+			System.out.print("\nERROR - " + e1.toString());
+			System.exit(1);
+		}	
+		return null;
+	}
 
 	public Value evaluate(Context cx, UseDirectiveNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
