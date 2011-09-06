@@ -737,6 +737,12 @@ public final class ProgramNodeDumper implements Evaluator
 	{
 		
 		try {
+			if(node.parameter == null && node.statements == null )
+			{
+				thrift_cli.empty();
+				return null;
+			}
+				
 			thrift_cli.startCatchClauseStatement();
 			
 	        if (node.parameter != null)
