@@ -699,7 +699,25 @@ public final class ProgramNodeDumper implements Evaluator
 		
 	}
 
-	public Value evaluate(Context cx, ThrowStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, ThrowStatementNode node)
+	{
+		try {
+			thrift_cli.startThrowStatement();
+	        if (node.expr != null)
+	        {
+	            node.expr.evaluate(cx, this);
+	        }else
+	        	thrift_cli.empty();
+
+	        	
+			thrift_cli.endThrowStatement();
+		} catch (org.apache.thrift.TException e1) {
+			System.out.print("\nERROR - " + e1.toString());
+			System.exit(1);
+		}
+	
+		return null;
+	}
 
 	public Value evaluate(Context cx, TryStatementNode node)
 	{
