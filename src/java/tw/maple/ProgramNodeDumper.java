@@ -72,16 +72,23 @@ public final class ProgramNodeDumper implements Evaluator
         else if (node.isAttr())
         {
     		System.out.println( " is attr");
+			try {
+				Identifier id = new Identifier();
+				id.name = node.name;
+				thrift_cli.attributeIdentifierExpression(id);
+			} catch (org.apache.thrift.TException e1) {
+				if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+			}
         }
         else
         {
-				try {
-					Identifier id = new Identifier();
-					id.name = node.name;
-					thrift_cli.identifierExpression(id);
-				} catch (org.apache.thrift.TException e1) {
-					if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
-				}			
+			try {
+				Identifier id = new Identifier();
+				id.name = node.name;
+				thrift_cli.identifierExpression(id);
+			} catch (org.apache.thrift.TException e1) {
+				if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+			}			
         }
         
         

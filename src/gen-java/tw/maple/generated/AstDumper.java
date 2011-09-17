@@ -132,6 +132,8 @@ public class AstDumper {
 
     public void identifierExpression(Identifier id) throws org.apache.thrift.TException;
 
+    public void attributeIdentifierExpression(Identifier id) throws org.apache.thrift.TException;
+
     public void literalStringExpression(Literal str) throws org.apache.thrift.TException;
 
     public void literalNumberExpression(Literal str) throws org.apache.thrift.TException;
@@ -321,6 +323,8 @@ public class AstDumper {
     public void endSuperInit(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endSuperInit_call> resultHandler) throws org.apache.thrift.TException;
 
     public void identifierExpression(Identifier id, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.identifierExpression_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void attributeIdentifierExpression(Identifier id, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.attributeIdentifierExpression_call> resultHandler) throws org.apache.thrift.TException;
 
     public void literalStringExpression(Literal str, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.literalStringExpression_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -1213,6 +1217,21 @@ public class AstDumper {
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("identifierExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       identifierExpression_args args = new identifierExpression_args();
+      args.setId(id);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void attributeIdentifierExpression(Identifier id) throws org.apache.thrift.TException
+    {
+      send_attributeIdentifierExpression(id);
+    }
+
+    public void send_attributeIdentifierExpression(Identifier id) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("attributeIdentifierExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      attributeIdentifierExpression_args args = new attributeIdentifierExpression_args();
       args.setId(id);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -3373,6 +3392,37 @@ public class AstDumper {
       }
     }
 
+    public void attributeIdentifierExpression(Identifier id, org.apache.thrift.async.AsyncMethodCallback<attributeIdentifierExpression_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      attributeIdentifierExpression_call method_call = new attributeIdentifierExpression_call(id, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class attributeIdentifierExpression_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private Identifier id;
+      public attributeIdentifierExpression_call(Identifier id, org.apache.thrift.async.AsyncMethodCallback<attributeIdentifierExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+        this.id = id;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("attributeIdentifierExpression", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        attributeIdentifierExpression_args args = new attributeIdentifierExpression_args();
+        args.setId(id);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
     public void literalStringExpression(Literal str, org.apache.thrift.async.AsyncMethodCallback<literalStringExpression_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       literalStringExpression_call method_call = new literalStringExpression_call(str, resultHandler, this, protocolFactory, transport);
@@ -4544,6 +4594,7 @@ public class AstDumper {
       processMap_.put("startSuperInit", new startSuperInit());
       processMap_.put("endSuperInit", new endSuperInit());
       processMap_.put("identifierExpression", new identifierExpression());
+      processMap_.put("attributeIdentifierExpression", new attributeIdentifierExpression());
       processMap_.put("literalStringExpression", new literalStringExpression());
       processMap_.put("literalNumberExpression", new literalNumberExpression());
       processMap_.put("literalBooleanExpression", new literalBooleanExpression());
@@ -5744,6 +5795,27 @@ public class AstDumper {
       }
     }
 
+    private class attributeIdentifierExpression implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        attributeIdentifierExpression_args args = new attributeIdentifierExpression_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("attributeIdentifierExpression", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        iface_.attributeIdentifierExpression(args.id);
+        return;
+      }
+    }
+
     private class literalStringExpression implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
@@ -6653,7 +6725,7 @@ public class AstDumper {
     public startProgram_args() {
       this.version = "0.0.1";
 
-      this.counter = 17L;
+      this.counter = 18L;
 
     }
 
@@ -6687,7 +6759,7 @@ public class AstDumper {
     public void clear() {
       this.version = "0.0.1";
 
-      this.counter = 17L;
+      this.counter = 18L;
 
     }
 
@@ -19912,6 +19984,304 @@ public class AstDumper {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("identifierExpression_args(");
+      boolean first = true;
+
+      sb.append("id:");
+      if (this.id == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.id);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class attributeIdentifierExpression_args implements org.apache.thrift.TBase<attributeIdentifierExpression_args, attributeIdentifierExpression_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("attributeIdentifierExpression_args");
+
+    private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public Identifier id;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      ID((short)1, "id");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // ID
+            return ID;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Identifier.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(attributeIdentifierExpression_args.class, metaDataMap);
+    }
+
+    public attributeIdentifierExpression_args() {
+    }
+
+    public attributeIdentifierExpression_args(
+      Identifier id)
+    {
+      this();
+      this.id = id;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public attributeIdentifierExpression_args(attributeIdentifierExpression_args other) {
+      if (other.isSetId()) {
+        this.id = new Identifier(other.id);
+      }
+    }
+
+    public attributeIdentifierExpression_args deepCopy() {
+      return new attributeIdentifierExpression_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.id = null;
+    }
+
+    public Identifier getId() {
+      return this.id;
+    }
+
+    public attributeIdentifierExpression_args setId(Identifier id) {
+      this.id = id;
+      return this;
+    }
+
+    public void unsetId() {
+      this.id = null;
+    }
+
+    /** Returns true if field id is set (has been assigned a value) and false otherwise */
+    public boolean isSetId() {
+      return this.id != null;
+    }
+
+    public void setIdIsSet(boolean value) {
+      if (!value) {
+        this.id = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case ID:
+        if (value == null) {
+          unsetId();
+        } else {
+          setId((Identifier)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case ID:
+        return getId();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case ID:
+        return isSetId();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof attributeIdentifierExpression_args)
+        return this.equals((attributeIdentifierExpression_args)that);
+      return false;
+    }
+
+    public boolean equals(attributeIdentifierExpression_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_id = true && this.isSetId();
+      boolean that_present_id = true && that.isSetId();
+      if (this_present_id || that_present_id) {
+        if (!(this_present_id && that_present_id))
+          return false;
+        if (!this.id.equals(that.id))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(attributeIdentifierExpression_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      attributeIdentifierExpression_args typedOther = (attributeIdentifierExpression_args)other;
+
+      lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, typedOther.id);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // ID
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.id = new Identifier();
+              this.id.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.id != null) {
+        oprot.writeFieldBegin(ID_FIELD_DESC);
+        this.id.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("attributeIdentifierExpression_args(");
       boolean first = true;
 
       sb.append("id:");
