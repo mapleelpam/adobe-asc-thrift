@@ -594,9 +594,49 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, SwitchStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, SwitchStatementNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		try{
+			thrift_cli.startSwitchStatement();
+		
+	        if (node.expr != null)
+	        {
+	            node.expr.evaluate(cx, this);
+	        }
+	        else
+	        	thrift_cli.empty();
+	        
+	     
+	        thrift_cli.startScope();
+		        if (node.statements != null)
+		        	node.statements.evaluate(cx, this);
+	        thrift_cli.endScope();
+		
+	        thrift_cli.endSwitchStatement();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
-	public Value evaluate(Context cx, CaseLabelNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, CaseLabelNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		try{
+			
+		
+	        if (node.label != null)
+	        {
+	        	thrift_cli.startCaseLabel();
+	            node.label.evaluate(cx, this);
+	            thrift_cli.endCaseLabel();
+	        }
+	        else
+	        	thrift_cli.defaultCaseLabel();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, DoStatementNode node)
 	{
@@ -682,9 +722,37 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, WithStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, ContinueStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, ContinueStatementNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 
-	public Value evaluate(Context cx, BreakStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+		try {
+			thrift_cli.continueStatement();
+//			if (node.id != null) {
+//				node.id.evaluate(cx, this);
+//			}
+		} catch (org.apache.thrift.TException e1) {
+			System.out.print("\nERROR - " + e1.toString());
+			System.exit(1);
+		}
+		return null;
+	}
+
+	public Value evaluate(Context cx, BreakStatementNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+
+		try {
+			thrift_cli.breakStatement();
+//			if (node.id != null) {
+//				node.id.evaluate(cx, this);
+//			}
+		} catch (org.apache.thrift.TException e1) {
+			System.out.print("\nERROR - " + e1.toString());
+			System.exit(1);
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, ReturnStatementNode node)
 	{
