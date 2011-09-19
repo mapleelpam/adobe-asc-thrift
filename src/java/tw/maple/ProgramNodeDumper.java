@@ -60,7 +60,29 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, DeleteExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, DeleteExpressionNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		
+		try {
+			
+			String mode = (node.getMode() == LEFTBRACKET_TOKEN ? " bracket" :
+	            node.getMode() == LEFTPAREN_TOKEN ? " filter" :
+	                node.getMode() == DOUBLEDOT_TOKEN ? " descend" :
+	                node.getMode() == EMPTY_TOKEN ? " lexical" : " dot");
+			
+			thrift_cli.beginDeleteStatement(mode);
+	        if (node.expr != null)
+	        {
+	            node.expr.evaluate(cx, this);
+	        }
+	        thrift_cli.endDeleteStatement();
+		} catch (org.apache.thrift.TException e1) {
+			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		}
+		
+		return null;
+	}
 
 	public Value evaluate(Context cx, IdentifierNode node)
 	{
