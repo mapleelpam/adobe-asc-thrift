@@ -167,12 +167,13 @@ public final class ProgramNodeDumper implements Evaluator
     	if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
     	try 
 		{
-			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
+//			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
+    		String str_value = "";
 			if( node.value == true )
-				str.value = "true";
+				str_value = "true";
 			else
-				str.value = "false";
-			thrift_cli.literalBooleanExpression( str );
+				str_value = "false";
+			thrift_cli.literalBooleanExpression( str_value );
 		}
 		catch (org.apache.thrift.TException e1) 
 		{	
@@ -185,9 +186,9 @@ public final class ProgramNodeDumper implements Evaluator
 		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		try 
 		{
-			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
-			str.value = node.value;
-			thrift_cli.literalNumberExpression( str );
+//			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
+//			str.value = node.value;
+			thrift_cli.literalNumberExpression( node.value );
 		}
 		catch (org.apache.thrift.TException e1) 
 		{
@@ -198,9 +199,9 @@ public final class ProgramNodeDumper implements Evaluator
 	public Value evaluate(Context cx, LiteralStringNode node)
 	{
 		try {
-			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
-			str.value = node.value;
-			thrift_cli.literalStringExpression(str);
+//			tw.maple.generated.Literal str = new tw.maple.generated.Literal();
+//			str.value = node.value;
+			thrift_cli.literalStringExpression( node.value );
 		} catch (org.apache.thrift.TException e1) {
 		}
 		
@@ -221,7 +222,23 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, LiteralRegExpNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, LiteralXMLNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, LiteralXMLNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		
+		String xml_string = "";
+        if (node.list != null)
+        {
+        	Value ret_value = node.list.evaluate( cx, string_evaluator );
+    		xml_string = Extract2String( ret_value );
+        }
+		try {
+			thrift_cli.literalXMLExpression( xml_string );
+		} catch (org.apache.thrift.TException e1) {
+		}
+        
+		return null;
+	}
 
 	public Value evaluate(Context cx, FunctionCommonNode node)
 	{
