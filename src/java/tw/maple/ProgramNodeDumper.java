@@ -262,7 +262,26 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, LiteralFieldNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, LiteralArrayNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, LiteralArrayNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
+        
+		try{
+			thrift_cli . literalArrayBegin( );
+		
+			thrift_cli.startArgumentList();
+	        	if (node.elementlist != null)
+	        		node.elementlist.evaluate(cx, this);
+	        thrift_cli.endArgumentList();
+	        
+			thrift_cli . literalArrayEnd( );
+		} 
+		catch (org.apache.thrift.TException e1)
+		{
+		}
+        
+		return null;
+	}
 	
 	public Value evaluate(Context cx, LiteralVectorNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
