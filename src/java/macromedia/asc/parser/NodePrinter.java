@@ -1520,6 +1520,7 @@ public class NodePrinter implements Evaluator
 
         push_in();
         out.print(node.index);
+        pop_out();
         return null;
     }
 

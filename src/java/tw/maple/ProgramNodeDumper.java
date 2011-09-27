@@ -1056,8 +1056,18 @@ public final class ProgramNodeDumper implements Evaluator
 	        		VariableDeclare var_decl = new VariableDeclare();
 	        		{
 		        		var_decl.attributes = str_attrs;
-		        		Value type_value = vbnode.variable.type.evaluate(cx, string_evaluator);
-		        		var_decl.type = Extract2StringList( type_value );
+		        		Value type_value;
+		        		if( vbnode.variable.type != null )
+		        		{
+		        			type_value = vbnode.variable.type.evaluate(cx, string_evaluator);
+		        			var_decl.type = Extract2StringList( type_value );
+		        		}
+		        		else
+		        		{
+		        			var_decl.type = new ArrayList<String>();
+		        			var_decl.type.add("Object");
+		        		}
+		        		
 		        		var_decl.name = vbnode.variable.identifier.name;
 		        		var_decl.has_initialize = (vbnode.initializer != null);
 	        		}
