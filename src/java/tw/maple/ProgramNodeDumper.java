@@ -71,12 +71,12 @@ public final class ProgramNodeDumper implements Evaluator
 	                node.getMode() == DOUBLEDOT_TOKEN ? " descend" :
 	                node.getMode() == EMPTY_TOKEN ? " lexical" : " dot");
 			
-			thrift_cli.beginDeleteStatement(mode);
+			thrift_cli.beginDeleteExpression(mode);
 	        if (node.expr != null)
 	        {
 	            node.expr.evaluate(cx, this);
 	        }
-	        thrift_cli.endDeleteStatement();
+	        thrift_cli.endDeleteExpression();
 		} catch (org.apache.thrift.TException e1) {
 			if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
 		}

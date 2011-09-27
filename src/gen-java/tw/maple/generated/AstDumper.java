@@ -230,9 +230,9 @@ public class AstDumper {
 
     public void continueStatement() throws org.apache.thrift.TException;
 
-    public void beginDeleteStatement(String mode) throws org.apache.thrift.TException;
+    public void beginDeleteExpression(String mode) throws org.apache.thrift.TException;
 
-    public void endDeleteStatement() throws org.apache.thrift.TException;
+    public void endDeleteExpression() throws org.apache.thrift.TException;
 
     public void empty() throws org.apache.thrift.TException;
 
@@ -460,9 +460,9 @@ public class AstDumper {
 
     public void continueStatement(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.continueStatement_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void beginDeleteStatement(String mode, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.beginDeleteStatement_call> resultHandler) throws org.apache.thrift.TException;
+    public void beginDeleteExpression(String mode, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.beginDeleteExpression_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void endDeleteStatement(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endDeleteStatement_call> resultHandler) throws org.apache.thrift.TException;
+    public void endDeleteExpression(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endDeleteExpression_call> resultHandler) throws org.apache.thrift.TException;
 
     public void empty(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.empty_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -1993,30 +1993,30 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void beginDeleteStatement(String mode) throws org.apache.thrift.TException
+    public void beginDeleteExpression(String mode) throws org.apache.thrift.TException
     {
-      send_beginDeleteStatement(mode);
+      send_beginDeleteExpression(mode);
     }
 
-    public void send_beginDeleteStatement(String mode) throws org.apache.thrift.TException
+    public void send_beginDeleteExpression(String mode) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("beginDeleteStatement", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      beginDeleteStatement_args args = new beginDeleteStatement_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("beginDeleteExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      beginDeleteExpression_args args = new beginDeleteExpression_args();
       args.setMode(mode);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
     }
 
-    public void endDeleteStatement() throws org.apache.thrift.TException
+    public void endDeleteExpression() throws org.apache.thrift.TException
     {
-      send_endDeleteStatement();
+      send_endDeleteExpression();
     }
 
-    public void send_endDeleteStatement() throws org.apache.thrift.TException
+    public void send_endDeleteExpression() throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endDeleteStatement", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      endDeleteStatement_args args = new endDeleteStatement_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endDeleteExpression", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      endDeleteExpression_args args = new endDeleteExpression_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -5133,23 +5133,23 @@ public class AstDumper {
       }
     }
 
-    public void beginDeleteStatement(String mode, org.apache.thrift.async.AsyncMethodCallback<beginDeleteStatement_call> resultHandler) throws org.apache.thrift.TException {
+    public void beginDeleteExpression(String mode, org.apache.thrift.async.AsyncMethodCallback<beginDeleteExpression_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      beginDeleteStatement_call method_call = new beginDeleteStatement_call(mode, resultHandler, this, protocolFactory, transport);
+      beginDeleteExpression_call method_call = new beginDeleteExpression_call(mode, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class beginDeleteStatement_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class beginDeleteExpression_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String mode;
-      public beginDeleteStatement_call(String mode, org.apache.thrift.async.AsyncMethodCallback<beginDeleteStatement_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public beginDeleteExpression_call(String mode, org.apache.thrift.async.AsyncMethodCallback<beginDeleteExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
         this.mode = mode;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("beginDeleteStatement", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        beginDeleteStatement_args args = new beginDeleteStatement_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("beginDeleteExpression", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        beginDeleteExpression_args args = new beginDeleteExpression_args();
         args.setMode(mode);
         args.write(prot);
         prot.writeMessageEnd();
@@ -5164,21 +5164,21 @@ public class AstDumper {
       }
     }
 
-    public void endDeleteStatement(org.apache.thrift.async.AsyncMethodCallback<endDeleteStatement_call> resultHandler) throws org.apache.thrift.TException {
+    public void endDeleteExpression(org.apache.thrift.async.AsyncMethodCallback<endDeleteExpression_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      endDeleteStatement_call method_call = new endDeleteStatement_call(resultHandler, this, protocolFactory, transport);
+      endDeleteExpression_call method_call = new endDeleteExpression_call(resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class endDeleteStatement_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public endDeleteStatement_call(org.apache.thrift.async.AsyncMethodCallback<endDeleteStatement_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class endDeleteExpression_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public endDeleteExpression_call(org.apache.thrift.async.AsyncMethodCallback<endDeleteExpression_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endDeleteStatement", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        endDeleteStatement_args args = new endDeleteStatement_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endDeleteExpression", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        endDeleteExpression_args args = new endDeleteExpression_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -5529,8 +5529,8 @@ public class AstDumper {
       processMap_.put("defaultCaseLabel", new defaultCaseLabel());
       processMap_.put("breakStatement", new breakStatement());
       processMap_.put("continueStatement", new continueStatement());
-      processMap_.put("beginDeleteStatement", new beginDeleteStatement());
-      processMap_.put("endDeleteStatement", new endDeleteStatement());
+      processMap_.put("beginDeleteExpression", new beginDeleteExpression());
+      processMap_.put("endDeleteExpression", new endDeleteExpression());
       processMap_.put("empty", new empty());
       processMap_.put("startStoreRegister", new startStoreRegister());
       processMap_.put("endStoreRegister", new endStoreRegister());
@@ -7729,44 +7729,44 @@ public class AstDumper {
       }
     }
 
-    private class beginDeleteStatement implements ProcessFunction {
+    private class beginDeleteExpression implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        beginDeleteStatement_args args = new beginDeleteStatement_args();
+        beginDeleteExpression_args args = new beginDeleteExpression_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("beginDeleteStatement", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("beginDeleteExpression", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        iface_.beginDeleteStatement(args.mode);
+        iface_.beginDeleteExpression(args.mode);
         return;
       }
     }
 
-    private class endDeleteStatement implements ProcessFunction {
+    private class endDeleteExpression implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        endDeleteStatement_args args = new endDeleteStatement_args();
+        endDeleteExpression_args args = new endDeleteExpression_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endDeleteStatement", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("endDeleteExpression", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        iface_.endDeleteStatement();
+        iface_.endDeleteExpression();
         return;
       }
     }
@@ -8029,7 +8029,7 @@ public class AstDumper {
     public startProgram_args() {
       this.version = "0.0.1";
 
-      this.counter = 24L;
+      this.counter = 25L;
 
     }
 
@@ -8063,7 +8063,7 @@ public class AstDumper {
     public void clear() {
       this.version = "0.0.1";
 
-      this.counter = 24L;
+      this.counter = 25L;
 
     }
 
@@ -32021,8 +32021,8 @@ public class AstDumper {
 
   }
 
-  public static class beginDeleteStatement_args implements org.apache.thrift.TBase<beginDeleteStatement_args, beginDeleteStatement_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("beginDeleteStatement_args");
+  public static class beginDeleteExpression_args implements org.apache.thrift.TBase<beginDeleteExpression_args, beginDeleteExpression_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("beginDeleteExpression_args");
 
     private static final org.apache.thrift.protocol.TField MODE_FIELD_DESC = new org.apache.thrift.protocol.TField("mode", org.apache.thrift.protocol.TType.STRING, (short)1);
 
@@ -32094,13 +32094,13 @@ public class AstDumper {
       tmpMap.put(_Fields.MODE, new org.apache.thrift.meta_data.FieldMetaData("mode", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(beginDeleteStatement_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(beginDeleteExpression_args.class, metaDataMap);
     }
 
-    public beginDeleteStatement_args() {
+    public beginDeleteExpression_args() {
     }
 
-    public beginDeleteStatement_args(
+    public beginDeleteExpression_args(
       String mode)
     {
       this();
@@ -32110,14 +32110,14 @@ public class AstDumper {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public beginDeleteStatement_args(beginDeleteStatement_args other) {
+    public beginDeleteExpression_args(beginDeleteExpression_args other) {
       if (other.isSetMode()) {
         this.mode = other.mode;
       }
     }
 
-    public beginDeleteStatement_args deepCopy() {
-      return new beginDeleteStatement_args(this);
+    public beginDeleteExpression_args deepCopy() {
+      return new beginDeleteExpression_args(this);
     }
 
     @Override
@@ -32129,7 +32129,7 @@ public class AstDumper {
       return this.mode;
     }
 
-    public beginDeleteStatement_args setMode(String mode) {
+    public beginDeleteExpression_args setMode(String mode) {
       this.mode = mode;
       return this;
     }
@@ -32188,12 +32188,12 @@ public class AstDumper {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof beginDeleteStatement_args)
-        return this.equals((beginDeleteStatement_args)that);
+      if (that instanceof beginDeleteExpression_args)
+        return this.equals((beginDeleteExpression_args)that);
       return false;
     }
 
-    public boolean equals(beginDeleteStatement_args that) {
+    public boolean equals(beginDeleteExpression_args that) {
       if (that == null)
         return false;
 
@@ -32214,13 +32214,13 @@ public class AstDumper {
       return 0;
     }
 
-    public int compareTo(beginDeleteStatement_args other) {
+    public int compareTo(beginDeleteExpression_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      beginDeleteStatement_args typedOther = (beginDeleteStatement_args)other;
+      beginDeleteExpression_args typedOther = (beginDeleteExpression_args)other;
 
       lastComparison = Boolean.valueOf(isSetMode()).compareTo(typedOther.isSetMode());
       if (lastComparison != 0) {
@@ -32282,7 +32282,7 @@ public class AstDumper {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("beginDeleteStatement_args(");
+      StringBuilder sb = new StringBuilder("beginDeleteExpression_args(");
       boolean first = true;
 
       sb.append("mode:");
@@ -32318,8 +32318,8 @@ public class AstDumper {
 
   }
 
-  public static class endDeleteStatement_args implements org.apache.thrift.TBase<endDeleteStatement_args, endDeleteStatement_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endDeleteStatement_args");
+  public static class endDeleteExpression_args implements org.apache.thrift.TBase<endDeleteExpression_args, endDeleteExpression_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("endDeleteExpression_args");
 
 
 
@@ -32382,20 +32382,20 @@ public class AstDumper {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endDeleteStatement_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(endDeleteExpression_args.class, metaDataMap);
     }
 
-    public endDeleteStatement_args() {
+    public endDeleteExpression_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public endDeleteStatement_args(endDeleteStatement_args other) {
+    public endDeleteExpression_args(endDeleteExpression_args other) {
     }
 
-    public endDeleteStatement_args deepCopy() {
-      return new endDeleteStatement_args(this);
+    public endDeleteExpression_args deepCopy() {
+      return new endDeleteExpression_args(this);
     }
 
     @Override
@@ -32428,12 +32428,12 @@ public class AstDumper {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof endDeleteStatement_args)
-        return this.equals((endDeleteStatement_args)that);
+      if (that instanceof endDeleteExpression_args)
+        return this.equals((endDeleteExpression_args)that);
       return false;
     }
 
-    public boolean equals(endDeleteStatement_args that) {
+    public boolean equals(endDeleteExpression_args that) {
       if (that == null)
         return false;
 
@@ -32445,13 +32445,13 @@ public class AstDumper {
       return 0;
     }
 
-    public int compareTo(endDeleteStatement_args other) {
+    public int compareTo(endDeleteExpression_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      endDeleteStatement_args typedOther = (endDeleteStatement_args)other;
+      endDeleteExpression_args typedOther = (endDeleteExpression_args)other;
 
       return 0;
     }
@@ -32491,7 +32491,7 @@ public class AstDumper {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("endDeleteStatement_args(");
+      StringBuilder sb = new StringBuilder("endDeleteExpression_args(");
       boolean first = true;
 
       sb.append(")");
