@@ -119,8 +119,39 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, InvokeNode node)
 	{
-		if(DEBUG)
-		{System.out.println((new Throwable()).getStackTrace()[0].toString());}  
+		CallExpression call_expression;
+		
+		try {
+			call_expression = new CallExpression();
+			call_expression.is_new = false;
+			call_expression.mode = (node.getMode() == LEFTBRACKET_TOKEN ? "bracket" :
+	            	node.getMode() == LEFTPAREN_TOKEN ? "filter" :
+	                node.getMode() == DOUBLEDOT_TOKEN ? "descend" :
+	                node.getMode() == EMPTY_TOKEN ? "lexical" : "dot");
+			
+//			if (node.expr != null) {
+//				Value ret_value = node.expr.evaluate(cx,
+//						string_evaluator);
+//				call_expression.callee = Extract2StringList(ret_value);
+//			}
+			
+			call_expression.callee = new ArrayList<String>();
+			call_expression.callee.add( node.name );
+			
+			thrift_cli.startCallExpression(call_expression);
+
+			if (node.args != null) {
+				thrift_cli.startArgumentList();
+					node.args.evaluate(cx, this);
+				thrift_cli.endArgumentList();
+			}
+			
+			thrift_cli.endCallExpression();
+		} 
+		catch (org.apache.thrift.TException e1) 
+		{
+		}
+
 		return null;
 	}
 
@@ -1505,13 +1536,80 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, ToObjectNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, LoadRegisterNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, LoadRegisterNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
+		try {
+			thrift_cli.startLoadRegister();
+	        if (node.reg != null)
+	        {
+	            node.reg.evaluate(cx, this);
+	        }
+	        else
+	        	thrift_cli.empty();
+	        thrift_cli.endLoadRegister();
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
-	public Value evaluate(Context cx, StoreRegisterNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, StoreRegisterNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		
+		try {
+			thrift_cli.startStoreRegister( );
 
-    public Value evaluate(Context cx, RegisterNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	        if (node.reg != null)
+	            node.reg.evaluate(cx, this);
+	        else
+	        	thrift_cli.empty();
+	        
+	        if (node.expr != null)
+	            node.expr.evaluate(cx, this);
+	        else
+	        	thrift_cli.empty();	
+			
+			thrift_cli.endStoreRegister( );
 
-	public Value evaluate(Context cx, HasNextNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+		} catch( org.apache.thrift.TException e1 ) {
+		}
+		return null;
+	}
+
+    public Value evaluate(Context cx, RegisterNode node)
+    {
+    	if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		try {
+			thrift_cli.registerNode(node.index);
+		} catch (org.apache.thrift.TException e1) {
+		}
+    	return null;
+    }
+
+	public Value evaluate(Context cx, HasNextNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
+		try {
+
+			thrift_cli.startHasNext();
+
+			if (node.objectRegister != null)
+				node.objectRegister.evaluate(cx, this);
+			else
+				thrift_cli.empty();
+
+			if (node.indexRegister != null)
+				node.indexRegister.evaluate(cx, this);
+			else
+				thrift_cli.empty();
+
+			thrift_cli.endHasNext();
+
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+	}
 
     public Value evaluate(Context cx, BoxNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
