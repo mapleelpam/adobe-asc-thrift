@@ -425,12 +425,15 @@ public class NodePrinter implements Evaluator
             node.getMode() == DOUBLEDOT_TOKEN ? " descend" :
             node.getMode() == EMPTY_TOKEN ? " lexical" : " dot"));
         push_in();
+        out.print(" dman 1 ");
         out.print(node.name);
+        out.print(" dman 2 ");
         separate();
         if (node.args != null)
         {
             node.args.evaluate(cx, this);
         }
+        out.print(" dman 3 ");
         pop_out();
         return null;
     }
@@ -1665,13 +1668,13 @@ public class NodePrinter implements Evaluator
             if (v instanceof MetaDataEvaluator.KeyValuePair)
             {
                 MetaDataEvaluator.KeyValuePair pair = (MetaDataEvaluator.KeyValuePair) v;
-                out.print("[" + pair.key + "," + pair.obj + "]");
+//                out.print("[" + pair.key + "," + pair.obj + "]");
             }
 
             if (v instanceof MetaDataEvaluator.KeylessValue)
             {
                 MetaDataEvaluator.KeylessValue val = (MetaDataEvaluator.KeylessValue) v;
-                out.print("[" + val.obj + "]");
+//                out.print("[" + val.obj + "]");
             }
         }
         return null;

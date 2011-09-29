@@ -66,10 +66,10 @@ public final class ProgramNodeDumper implements Evaluator
 		
 		try {
 			
-			String mode = (node.getMode() == LEFTBRACKET_TOKEN ? " bracket" :
-	            node.getMode() == LEFTPAREN_TOKEN ? " filter" :
-	                node.getMode() == DOUBLEDOT_TOKEN ? " descend" :
-	                node.getMode() == EMPTY_TOKEN ? " lexical" : " dot");
+			String mode = (node.getMode() == LEFTBRACKET_TOKEN ? "bracket" :
+	            node.getMode() == LEFTPAREN_TOKEN ? "filter" :
+	                node.getMode() == DOUBLEDOT_TOKEN ? "descend" :
+	                node.getMode() == EMPTY_TOKEN ? "lexical" : "dot");
 			
 			thrift_cli.beginDeleteExpression(mode);
 	        if (node.expr != null)
@@ -1613,7 +1613,20 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, BoxNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
-	public Value evaluate(Context cx, CoerceNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, CoerceNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
+		try {
+			thrift_cli.startCoerce( );
+	        if (node.expr != null)
+	            node.expr.evaluate(cx, this);
+	        else
+	        	thrift_cli.empty();	
+			thrift_cli.endCoerce( );
+		} catch( org.apache.thrift.TException e1 ) {
+		}
+		return null;
+	}
 
 	public Value evaluate(Context cx, PragmaNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
