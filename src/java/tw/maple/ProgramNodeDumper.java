@@ -138,7 +138,7 @@ public final class ProgramNodeDumper implements Evaluator
 			call_expression.callee = new ArrayList<String>();
 			call_expression.callee.add( node.name );
 			
-			thrift_cli.startCallExpression(call_expression);
+			thrift_cli.startInvokeExpression(call_expression);
 
 			if (node.args != null) {
 				thrift_cli.startArgumentList();
@@ -146,7 +146,7 @@ public final class ProgramNodeDumper implements Evaluator
 				thrift_cli.endArgumentList();
 			}
 			
-			thrift_cli.endCallExpression();
+			thrift_cli.endInvokeExpression();
 		} 
 		catch (org.apache.thrift.TException e1) 
 		{
