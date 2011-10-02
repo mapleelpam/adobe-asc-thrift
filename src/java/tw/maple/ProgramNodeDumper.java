@@ -1237,7 +1237,7 @@ public final class ProgramNodeDumper implements Evaluator
 				Value v = node.result.evaluate(cx, string_evaluator);
 				str_func_type =  Extract2String( v );
 			} else
-				str_func_type =  "Void";
+				str_func_type =  "Object";
 			
 			thrift_cli.startFunctionSignature( str_func_type );
 			
