@@ -1056,27 +1056,23 @@ public final class ProgramNodeDumper implements Evaluator
 
 	public Value evaluate(Context cx, VariableDefinitionNode node) 
 	{
-//        if (node.kind == CONST_TOKEN)
-//        {
-//            out.print("const");
-//        }
-//        else
-//        {
-//            out.print("var");
-//        }
+		
+		boolean is_const = false;
+        if (node.kind == CONST_TOKEN)
+        {
+            is_const = true;
+        }
+        
 		try {
 			
 			List<String> str_attrs = new ArrayList<String>();
 	        if (node.attrs != null)
 	        {
 	            Value v = node.attrs.evaluate( cx, string_evaluator );
-
 	            str_attrs =  Extract2StringList( v );
 	        }
-//	        if (node.list != null)
-//	        {
-//	            node.list.evaluate(cx, this);
-//	        }
+	        if( is_const )
+	        	str_attrs.add( new String("const") );
         
 	        for (Node n : node.list.items)
 			{
