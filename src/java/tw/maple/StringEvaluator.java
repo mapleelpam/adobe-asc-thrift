@@ -94,7 +94,11 @@ public final class StringEvaluator implements Evaluator
 //		System.out.println((new Throwable()).getStackTrace()[0].toString() +" value = "+node.value);
 		return new StringValue(node.value);
 	}
-	public Value evaluate(Context cx, LiteralNullNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, LiteralNullNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
+		return new StringValue("NULL");
+	}
 
 	public Value evaluate(Context cx, LiteralRegExpNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
