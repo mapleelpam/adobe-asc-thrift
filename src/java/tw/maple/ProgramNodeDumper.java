@@ -1269,9 +1269,12 @@ public final class ProgramNodeDumper implements Evaluator
 			{
 				System.out.println( " node has init variable");
 				
+				init_value = "shit";
 				Value v = node.init.evaluate(cx, string_evaluator);
 				if( node.init instanceof LiteralStringNode)
 					init_value =  "\""+ Extract2String( v ) + "\"";
+				else if( node.init instanceof LiteralNullNode)
+					init_value =  "NULL";
 				else
 					init_value =  Extract2String( v );
 			}
