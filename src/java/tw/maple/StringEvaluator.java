@@ -125,13 +125,19 @@ public final class StringEvaluator implements Evaluator
 	public Value evaluate(Context cx, MemberExpressionNode node)
 	{
 		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+		
 		StringListValue slv = new StringListValue();
+//		System.out.println(" member begin ");
+		
         if (node.base != null)
         {
             Value v = node.base.evaluate(cx, this);
             List<String> stringlist = Extract2StringList( v );
             for( int idx=0; idx < stringlist.size() ; idx ++ )
+            {
+//            	System.out.println(" -------> base -> "+stringlist.get(idx));
             	slv.values.add( stringlist.get(idx) );
+            }
         }
 
         if (node.selector != null)
@@ -140,10 +146,12 @@ public final class StringEvaluator implements Evaluator
             List<String> stringlist = Extract2StringList( v );
             if( stringlist != null )
             for( int idx=0; idx < stringlist.size() ; idx ++ ){
-        //    	System.out.println(" -------> selector -> "+stringlist.get(idx));
+//            	System.out.println(" -------> selector -> "+stringlist.get(idx));
             	slv.values.add( stringlist.get(idx) );
             }
         }  
+//    	System.out.println(" member end ");
+
 		return slv;
 	}
 	public Value evaluate(Context cx, CallExpressionNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}

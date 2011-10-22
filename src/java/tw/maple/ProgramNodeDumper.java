@@ -524,7 +524,14 @@ public final class ProgramNodeDumper implements Evaluator
 				}
 				thrift_cli.endIsOperator();
 			} else if( Token.getTokenClassName(node.op) == "as" ) {
-				thrift_cli.startAsOperator();
+				String type_name = "Object";
+				if (node.rhs != null) {
+					node.rhs.evaluate(cx, string_evaluator);
+					Value v = node.rhs.evaluate(cx, string_evaluator);
+		            type_name =  Extract2String( v );
+				}
+				
+				thrift_cli.startAsOperator( type_name );
 				if (node.lhs != null) {
 					node.lhs.evaluate(cx, this);
 				}
@@ -1643,16 +1650,22 @@ public final class ProgramNodeDumper implements Evaluator
     private String Extract2String( Value v )
     {
 		if( v!=null && v instanceof StringValue ) {
+			System.out.println(" string ");
 			StringValue sv = (StringValue)(v);
 			return sv.getValue();
 		} else if( v!=null && v instanceof StringListValue ) {
 			StringListValue sv = (StringListValue)(v);
-			return sv.values.size() > 0 ? sv.values.get(0) : "";
+			return sv.values.size() > 0 ? sv.values.get(0) : "none";
 		} else if( v instanceof QNValue)   {
+			System.out.println(" qn ");
+			
 			QNValue qual_value = (QNValue)(v);
 			return qual_value.getName();
-		} else
+		} 
+		else
+		{	
 			return "";
+		}
     }
 	
     private List<String> Extract2StringList( Value v )

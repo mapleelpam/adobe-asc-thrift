@@ -108,7 +108,7 @@ public class AstDumper {
 
     public void endIsOperator() throws org.apache.thrift.TException;
 
-    public void startAsOperator() throws org.apache.thrift.TException;
+    public void startAsOperator(String type_name) throws org.apache.thrift.TException;
 
     public void endAsOperator() throws org.apache.thrift.TException;
 
@@ -346,7 +346,7 @@ public class AstDumper {
 
     public void endIsOperator(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endIsOperator_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void startAsOperator(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startAsOperator_call> resultHandler) throws org.apache.thrift.TException;
+    public void startAsOperator(String type_name, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startAsOperator_call> resultHandler) throws org.apache.thrift.TException;
 
     public void endAsOperator(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.endAsOperator_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -1143,15 +1143,16 @@ public class AstDumper {
       oprot_.getTransport().flush();
     }
 
-    public void startAsOperator() throws org.apache.thrift.TException
+    public void startAsOperator(String type_name) throws org.apache.thrift.TException
     {
-      send_startAsOperator();
+      send_startAsOperator(type_name);
     }
 
-    public void send_startAsOperator() throws org.apache.thrift.TException
+    public void send_startAsOperator(String type_name) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startAsOperator", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       startAsOperator_args args = new startAsOperator_args();
+      args.setType_name(type_name);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -3462,21 +3463,24 @@ public class AstDumper {
       }
     }
 
-    public void startAsOperator(org.apache.thrift.async.AsyncMethodCallback<startAsOperator_call> resultHandler) throws org.apache.thrift.TException {
+    public void startAsOperator(String type_name, org.apache.thrift.async.AsyncMethodCallback<startAsOperator_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startAsOperator_call method_call = new startAsOperator_call(resultHandler, this, protocolFactory, transport);
+      startAsOperator_call method_call = new startAsOperator_call(type_name, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class startAsOperator_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public startAsOperator_call(org.apache.thrift.async.AsyncMethodCallback<startAsOperator_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String type_name;
+      public startAsOperator_call(String type_name, org.apache.thrift.async.AsyncMethodCallback<startAsOperator_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
+        this.type_name = type_name;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startAsOperator", org.apache.thrift.protocol.TMessageType.CALL, 0));
         startAsOperator_args args = new startAsOperator_args();
+        args.setType_name(type_name);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -6656,7 +6660,7 @@ public class AstDumper {
           return;
         }
         iprot.readMessageEnd();
-        iface_.startAsOperator();
+        iface_.startAsOperator(args.type_name);
         return;
       }
     }
@@ -8305,7 +8309,7 @@ public class AstDumper {
     public startProgram_args() {
       this.version = "0.0.1";
 
-      this.counter = 27L;
+      this.counter = 28L;
 
     }
 
@@ -8339,7 +8343,7 @@ public class AstDumper {
     public void clear() {
       this.version = "0.0.1";
 
-      this.counter = 27L;
+      this.counter = 28L;
 
     }
 
@@ -18796,11 +18800,13 @@ public class AstDumper {
   public static class startAsOperator_args implements org.apache.thrift.TBase<startAsOperator_args, startAsOperator_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startAsOperator_args");
 
+    private static final org.apache.thrift.protocol.TField TYPE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("type_name", org.apache.thrift.protocol.TType.STRING, (short)1);
 
+    public String type_name;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+      TYPE_NAME((short)1, "type_name");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -18815,6 +18821,8 @@ public class AstDumper {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
+          case 1: // TYPE_NAME
+            return TYPE_NAME;
           default:
             return null;
         }
@@ -18853,9 +18861,14 @@ public class AstDumper {
         return _fieldName;
       }
     }
+
+    // isset id assignments
+
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TYPE_NAME, new org.apache.thrift.meta_data.FieldMetaData("type_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startAsOperator_args.class, metaDataMap);
     }
@@ -18863,10 +18876,20 @@ public class AstDumper {
     public startAsOperator_args() {
     }
 
+    public startAsOperator_args(
+      String type_name)
+    {
+      this();
+      this.type_name = type_name;
+    }
+
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public startAsOperator_args(startAsOperator_args other) {
+      if (other.isSetType_name()) {
+        this.type_name = other.type_name;
+      }
     }
 
     public startAsOperator_args deepCopy() {
@@ -18875,15 +18898,51 @@ public class AstDumper {
 
     @Override
     public void clear() {
+      this.type_name = null;
+    }
+
+    public String getType_name() {
+      return this.type_name;
+    }
+
+    public startAsOperator_args setType_name(String type_name) {
+      this.type_name = type_name;
+      return this;
+    }
+
+    public void unsetType_name() {
+      this.type_name = null;
+    }
+
+    /** Returns true if field type_name is set (has been assigned a value) and false otherwise */
+    public boolean isSetType_name() {
+      return this.type_name != null;
+    }
+
+    public void setType_nameIsSet(boolean value) {
+      if (!value) {
+        this.type_name = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case TYPE_NAME:
+        if (value == null) {
+          unsetType_name();
+        } else {
+          setType_name((String)value);
+        }
+        break;
+
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case TYPE_NAME:
+        return getType_name();
+
       }
       throw new IllegalStateException();
     }
@@ -18895,6 +18954,8 @@ public class AstDumper {
       }
 
       switch (field) {
+      case TYPE_NAME:
+        return isSetType_name();
       }
       throw new IllegalStateException();
     }
@@ -18912,6 +18973,15 @@ public class AstDumper {
       if (that == null)
         return false;
 
+      boolean this_present_type_name = true && this.isSetType_name();
+      boolean that_present_type_name = true && that.isSetType_name();
+      if (this_present_type_name || that_present_type_name) {
+        if (!(this_present_type_name && that_present_type_name))
+          return false;
+        if (!this.type_name.equals(that.type_name))
+          return false;
+      }
+
       return true;
     }
 
@@ -18928,6 +18998,16 @@ public class AstDumper {
       int lastComparison = 0;
       startAsOperator_args typedOther = (startAsOperator_args)other;
 
+      lastComparison = Boolean.valueOf(isSetType_name()).compareTo(typedOther.isSetType_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetType_name()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type_name, typedOther.type_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -18945,6 +19025,13 @@ public class AstDumper {
           break;
         }
         switch (field.id) {
+          case 1: // TYPE_NAME
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.type_name = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
         }
@@ -18960,6 +19047,11 @@ public class AstDumper {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (this.type_name != null) {
+        oprot.writeFieldBegin(TYPE_NAME_FIELD_DESC);
+        oprot.writeString(this.type_name);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -18969,6 +19061,13 @@ public class AstDumper {
       StringBuilder sb = new StringBuilder("startAsOperator_args(");
       boolean first = true;
 
+      sb.append("type_name:");
+      if (this.type_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.type_name);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
