@@ -816,7 +816,19 @@ public final class ProgramNodeDumper implements Evaluator
 		return null;
 	}
 
-	public Value evaluate(Context cx, WithStatementNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
+	public Value evaluate(Context cx, WithStatementNode node)
+	{
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}
+        if (node.expr != null)
+        {
+            node.expr.evaluate(cx, this);
+        }
+        if (node.statement != null)
+        {
+            node.statement.evaluate(cx, this);
+        }
+		return null;
+	}
 
 	public Value evaluate(Context cx, ContinueStatementNode node)
 	{
@@ -1244,7 +1256,7 @@ public final class ProgramNodeDumper implements Evaluator
 				Value v = node.result.evaluate(cx, string_evaluator);
 				str_func_type =  Extract2String( v );
 			} else
-				str_func_type =  "Object";
+				str_func_type =  "Void";
 			
 			thrift_cli.startFunctionSignature( str_func_type );
 			
