@@ -2611,7 +2611,10 @@ XMLElementContent
             if (lookahead()==LEFTPAREN_TOKEN)
             {
                 shift();
-                result = nodeFactory.filterOperator(first,parseExpressionList(allowIn_mode),first.pos());
+//                result = nodeFactory.filterOperator(first,parseExpressionList(allowIn_mode),first.pos());
+                
+                result = nodeFactory.maple_hackedFilterOperator(first,parseExpressionList(allowIn_mode),first.pos());
+                
                 match(RIGHTPAREN_TOKEN);
             }
             else

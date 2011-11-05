@@ -406,6 +406,12 @@ public final class StringEvaluator implements Evaluator
 
     public Value evaluate(Context cx, DefaultXMLNamespaceNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
+    public Value evaluate(Context cx, FilterNode node)
+    {
+    	// not implement yet
+    	return null;
+    }
+    
     private String Extract2String( Value v )
     {
 		if( v!=null && v instanceof StringValue ) {

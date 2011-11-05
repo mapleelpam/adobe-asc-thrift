@@ -2529,8 +2529,19 @@ public final class NodeFactory implements ErrorConstants
         return node;
     }
 
+    Node maple_hackedFilterOperator( Node expr1, Node expr2, int pos )
+    {
+    	Node node = new FilterNode(expr1, expr2);
+    	
+    	return node;
+    }
+    
+    
     Node filterOperator( Node expr1, Node expr2, int pos )
     {
+    	System.out.println(" ----------------------------------> in node factory filter operator ");
+    	System.out.println("expr1 "+ expr1.toString() +" expr2 "+expr2.toString() );
+    	
     	 if (cx.scriptAssistParsing){
     		Node result = memberExpression(expr1, getExpression(expr2));
     		return result;

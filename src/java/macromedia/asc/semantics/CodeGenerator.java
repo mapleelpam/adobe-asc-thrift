@@ -5126,4 +5126,10 @@ public final class CodeGenerator extends Emitter implements Evaluator, ErrorCons
     {
         return node.expr.evaluate(cx, this);
     }
+    
+    public Value evaluate(Context cx, FilterNode node)
+    {
+    	// not implement yet
+    	return null;
+    }
 }

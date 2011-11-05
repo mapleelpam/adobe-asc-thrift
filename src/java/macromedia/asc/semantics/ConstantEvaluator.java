@@ -4243,4 +4243,9 @@ public final class ConstantEvaluator extends Emitter implements Evaluator, Error
 			}
 		}
     }
+    public Value evaluate(Context cx, FilterNode node)
+    {
+    	// not implement yet
+    	return null;
+    }
 }

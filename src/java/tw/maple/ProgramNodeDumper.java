@@ -1658,6 +1658,29 @@ public final class ProgramNodeDumper implements Evaluator
 
     public Value evaluate(Context cx, DefaultXMLNamespaceNode node){if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  return null;}
 
+    public Value evaluate(Context cx, FilterNode node)
+    {
+		if(DEBUG){System.out.println((new Throwable()).getStackTrace()[0].toString());}  
+		try {
+
+			thrift_cli.startFilter();
+
+			if (node.lhs != null)
+				node.lhs.evaluate(cx, this);
+			else
+				thrift_cli.empty();
+
+			if (node.rhs != null)
+				node.rhs.evaluate(cx, this);
+			else
+				thrift_cli.empty();
+
+			thrift_cli.endFilter();
+
+		} catch (org.apache.thrift.TException e1) {
+		}
+		return null;
+    }
     
     private String Extract2String( Value v )
     {

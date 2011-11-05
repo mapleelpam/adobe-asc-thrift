@@ -544,6 +544,25 @@ public class NodePrinter implements Evaluator
         return null;
     }
 
+    public Value evaluate(Context cx, FilterNode node)
+    {
+        indent();
+        out.print("filter");
+
+        push_in();
+        if (node.lhs != null)
+        {
+            node.lhs.evaluate(cx, this);
+        }
+        separate();
+        if (node.rhs != null)
+        {
+            node.rhs.evaluate(cx, this);
+        }
+        pop_out();
+        return null;
+    }
+    
     public Value evaluate(Context cx, BinaryExpressionNode node)
     {
         indent();

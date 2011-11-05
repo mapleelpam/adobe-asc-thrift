@@ -6494,4 +6494,9 @@ else
         }
         return v;
     }
+    public Value evaluate(Context cx, FilterNode node)
+    {
+    	// not implement yet
+    	return null;
+    }
 }

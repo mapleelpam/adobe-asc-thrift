@@ -24,6 +24,6 @@ public class Constants {
 
   public static final String PROTO_VERSION = "0.0.1";
 
-  public static final long PROTO_COUNTER = 28L;
+  public static final long PROTO_COUNTER = 29L;
 
 }

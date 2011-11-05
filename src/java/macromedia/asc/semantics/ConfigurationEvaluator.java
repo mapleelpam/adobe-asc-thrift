@@ -1518,5 +1518,9 @@ public class ConfigurationEvaluator implements Evaluator, ErrorConstants {
         return null;
     }
 
-
+    public Value evaluate(Context cx, FilterNode node)
+    {
+    	// not implement yet
+    	return null;
+    }
 }

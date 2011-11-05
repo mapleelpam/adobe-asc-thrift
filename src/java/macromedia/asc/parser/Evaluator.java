@@ -110,6 +110,9 @@ public interface Evaluator
 	Value evaluate(Context cx, UnaryExpressionNode node);
 
 	Value evaluate(Context cx, BinaryExpressionNode node);
+	
+	// add by maple
+	Value evaluate(Context cx, FilterNode node);
 
 	Value evaluate(Context cx, ConditionalExpressionNode node);
 
